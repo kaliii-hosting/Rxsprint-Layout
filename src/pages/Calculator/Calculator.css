@@ -5,6 +5,15 @@
   position: relative;
   display: flex;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 768px) {
+  .calculator-page {
+    height: auto;
+    min-height: calc(100vh - 80px);
+  }
 }
 
 /* Keyboard focus styles */
@@ -19,7 +28,8 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  overflow: auto;
+  overflow: hidden;
+  position: relative;
 }
 
 /* Tab Buttons */
@@ -54,10 +64,10 @@
 
 /* Calculator Main Layout */
 .calculator-main {
-  background: #0a0a0a;
+  background: transparent;
   border-radius: 24px;
-  overflow: hidden;
-  height: 650px;
+  overflow: visible;
+  height: auto;
   width: 100%;
   max-width: 500px;
   position: relative;
@@ -157,6 +167,7 @@
   overflow-y: auto;
   padding: 20px;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Custom scrollbar for history */
@@ -292,12 +303,14 @@
 /* Main Calculator Content */
 .calc-main-content {
   flex: 1;
-  background: transparent;
+  background: #0a0a0a;
   display: flex;
   flex-direction: column;
   padding: 40px;
   width: 100%;
   overflow: hidden;
+  border-radius: 24px;
+  min-height: 600px;
 }
 
 .calc-display {
@@ -314,6 +327,7 @@
   justify-content: flex-end;
   overflow: hidden;
   word-break: break-all;
+  flex-shrink: 0;
 }
 
 /* Calculator Keypad */
@@ -323,6 +337,7 @@
   gap: 12px;
   flex: 1;
   max-height: 320px;
+  contain: layout;
 }
 
 .calc-btn {
@@ -339,6 +354,9 @@
   justify-content: center;
   min-height: 60px;
   height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .calc-btn:hover {
@@ -404,10 +422,10 @@
 
 /* Cross Multiplication Layout */
 .cross-multiplication {
-  background: #0a0a0a;
+  background: transparent;
   border-radius: 24px;
-  overflow: hidden;
-  height: 650px;
+  overflow: visible;
+  height: auto;
   width: 100%;
   max-width: 700px;
   display: flex;
@@ -443,17 +461,20 @@
 
 .cross-main-content {
   flex: 1;
-  background: transparent;
+  background: #0a0a0a;
   display: flex;
   flex-direction: column;
   padding: 40px;
   width: 100%;
   overflow: hidden;
+  border-radius: 24px;
+  min-height: 600px;
 }
 
 .cross-display {
   margin-bottom: 30px;
   padding: 20px 0;
+  flex-shrink: 0;
 }
 
 .cross-equation {
@@ -514,6 +535,7 @@
   gap: 16px;
   flex: 1;
   max-height: 320px;
+  contain: layout;
 }
 
 /* Scrollbar */
@@ -550,7 +572,6 @@
   .calculator-page:has(.calc-sidebar) .calculator-wrapper {
     padding-right: 300px;
   }
-}
 
   .calc-main-content,
   .cross-main-content {
@@ -571,47 +592,60 @@
 @media (max-width: 768px) {
   .calculator-page {
     flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   
   .calculator-wrapper {
     padding: 16px;
-    padding-right: 16px;
-    flex: 1;
+    flex: 0 0 auto;
+    overflow: visible;
   }
   
   .calculator-main,
   .cross-multiplication {
     max-width: 100%;
     height: auto;
-    min-height: 500px;
   }
   
+  /* Move sidebar below calculator on mobile */
   .calc-sidebar {
     position: relative;
     top: auto;
     right: auto;
-    width: 100%;
-    height: 300px;
+    width: calc(100% - 32px);
+    height: 400px;
+    margin: 16px;
     border-left: none;
-    border-top: 1px solid #2a2a2a;
+    border-radius: 24px;
+    background: #1a1a1a;
+    overflow: hidden;
+    flex: 0 0 auto;
+    order: 2; /* Place after calculator */
+  }
+
+  .calculator-page:has(.calc-sidebar) .calculator-wrapper {
+    padding-right: 16px; /* Reset padding since sidebar is below */
   }
 
   .calc-main-content,
   .cross-main-content {
-    padding: 20px;
+    padding: 30px 20px;
+    min-height: auto;
   }
 
   .calc-display {
-    font-size: 36px;
+    font-size: 48px;
     padding: 16px 0;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     min-height: 80px;
   }
 
   .calc-keypad,
   .cross-keypad {
-    gap: 12px;
-    min-height: 350px;
+    gap: 10px;
+    min-height: auto;
+    max-height: none;
   }
 
   .calc-btn {
@@ -620,80 +654,92 @@
     border-radius: 16px;
   }
 
+  /* Smaller cross multiplication fields on mobile */
   .cross-input {
-    width: 100px;
-    height: 50px;
-    font-size: 24px;
+    width: 80px;
+    height: 40px;
+    font-size: 18px;
+    border-radius: 8px;
   }
 
   .equals {
-    font-size: 32px;
+    font-size: 28px;
   }
 
   .cross-equation {
-    gap: 20px;
+    gap: 15px;
+  }
+
+  .fraction-line {
+    width: 80px;
   }
 }
 
 @media (max-width: 480px) {
   .calculator-page {
-    padding: 12px;
+    padding: 0;
     min-height: 100vh;
+  }
+  
+  .calculator-wrapper {
+    padding: 12px;
+    order: 1; /* Ensure calculator comes first */
   }
   
   .calculator-main,
   .cross-multiplication {
     border-radius: 20px;
     height: auto;
-    min-height: 450px;
   }
   
   .calc-sidebar {
-    height: 200px;
+    height: 350px;
+    margin: 12px;
+    width: calc(100% - 24px);
+    order: 2; /* Ensure history comes after calculator */
   }
 
-  .calc-main-content {
-    padding: 12px;
-    border-radius: 20px 20px 0 0;
+  .calculator-page:has(.calc-sidebar) .calculator-wrapper {
+    padding-right: 12px; /* Reset padding since sidebar is below */
   }
-  
+
+  .calc-main-content,
   .cross-main-content {
-    padding: 12px;
+    padding: 20px 15px;
   }
 
   .calc-display {
-    font-size: 32px;
+    font-size: 36px;
     padding: 12px 0;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
   }
 
   .calc-keypad,
   .cross-keypad {
-    gap: 10px;
-    min-height: 300px;
+    gap: 8px;
+    min-height: auto;
   }
   
+  /* Even smaller cross multiplication fields for very small screens */
   .cross-input {
-    width: 120px;
-    height: 45px;
-    font-size: 22px;
+    width: 70px;
+    height: 35px;
+    font-size: 16px;
+    border-radius: 6px;
   }
   
   .cross-equation {
-    gap: 30px;
+    gap: 12px;
+  }
+
+  .fraction-line {
+    width: 70px;
   }
 
   .calc-btn {
     font-size: 20px;
     min-height: 50px;
-    border-radius: 12px;
-  }
-
-  .cross-input {
-    width: 80px;
-    height: 40px;
-    font-size: 20px;
-    border-radius: 8px;
+    border-radius: 16px;
   }
 
   .equals {
@@ -703,5 +749,36 @@
   .formula-text {
     font-size: 14px;
     padding: 12px;
+  }
+}
+
+/* Extra small devices (320px and below) */
+@media (max-width: 360px) {
+  .cross-input {
+    width: 60px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .cross-equation {
+    gap: 10px;
+  }
+  
+  .fraction-line {
+    width: 60px;
+  }
+  
+  .equals {
+    font-size: 20px;
+  }
+  
+  .calc-keypad,
+  .cross-keypad {
+    gap: 6px;
+  }
+  
+  .calc-btn {
+    font-size: 18px;
+    min-height: 45px;
   }
 }
