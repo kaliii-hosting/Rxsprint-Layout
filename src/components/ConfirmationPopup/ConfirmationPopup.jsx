@@ -8,7 +8,8 @@ const ConfirmationPopup = ({
   onClose, 
   showButtons = false, 
   onContinue, 
-  onViewMedication 
+  onViewMedication,
+  viewButtonText = "View Medication"
 }) => {
   useEffect(() => {
     if (isOpen && !showButtons) {
@@ -43,7 +44,7 @@ const ConfirmationPopup = ({
               className="confirmation-btn view-btn" 
               onClick={onViewMedication}
             >
-              View Medication
+              {viewButtonText}
             </button>
           </div>
         )}

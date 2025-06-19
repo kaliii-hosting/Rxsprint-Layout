@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Save, X, Calendar, Clock, FileText, Menu, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Save, X, Calendar, Clock, FileText, Menu, ArrowLeft, Mic } from 'lucide-react';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { firestore } from '../../config/firebase';
 import NoteEditConfirmPopup from '../../components/NoteEditConfirmPopup/NoteEditConfirmPopup';
@@ -28,16 +28,24 @@ const Notes = () => {
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [showMobileSidebar, setShowMobileSidebar] = useState(true);
   const [showMobileContent, setShowMobileContent] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const categories = [
     { value: 'general', label: 'General', color: '#FF5500' },
     { value: 'medical', label: 'Medical', color: '#E91E63' },
     { value: 'dosing', label: 'Dosing', color: '#9C27B0' },
     { value: 'protocols', label: 'Protocols', color: '#3F51B5' },
-    { value: 'reminders', label: 'Reminders', color: '#00BCD4' }
+    { value: 'reminders', label: 'Reminders', color: '#00BCD4' },
+    { value: 'voice', label: 'Voice', color: '#4CAF50' }
   ];
 
   useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
     // Set up real-time listener
     const notesRef = collection(firestore, 'notes');
     const unsubscribe = onSnapshot(notesRef, (snapshot) => {
@@ -58,7 +66,10 @@ const Notes = () => {
     });
     
     // Cleanup listener on unmount
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const loadNotes = async () => {
@@ -300,103 +311,179 @@ const Notes = () => {
   return (
     <div className="notes-page">
       <div className="notes-container">
-        {/* Mobile Header */}
-        <div className="mobile-header">
-          <h2>Notes</h2>
-        </div>
-        
-        {/* Sidebar - always visible on desktop, conditional on mobile */}
-        <div className="notes-sidebar">
-          <div className="sidebar-header">
-            <button 
-              className="mobile-back-btn"
-              onClick={() => setShowMobileSidebar(false)}
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <h2>Notes</h2>
-            <button className="create-note-btn" onClick={handleCreateNote}>
-              <Plus size={20} />
-            </button>
-          </div>
-          
-          <div className="search-container">
-            <Search size={18} className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search notes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-          </div>
-          
-          <div className="notes-list">
-            {loading ? (
-              <div className="loading-state">
-                <div className="spinner" />
-                <p>Loading notes...</p>
+        {/* Mobile View - Table Layout */}
+        {isMobile ? (
+          <div className="mobile-notes-table-container">
+            <div className="mobile-notes-header">
+              <h2>My Notes</h2>
+              <button className="mobile-create-btn" onClick={handleCreateNote}>
+                <Plus size={20} />
+                Create Note
+              </button>
+            </div>
+            
+            <div className="mobile-notes-table-wrapper">
+              <div className="mobile-table-scroll">
+                {loading ? (
+                  <div className="mobile-loading-state">
+                    <div className="spinner" />
+                    <p>Loading notes...</p>
+                  </div>
+                ) : notes.length > 0 ? (
+                  <table className="mobile-notes-table">
+                    <thead>
+                      <tr>
+                        <th>Note</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {notes.map(note => (
+                        <tr 
+                          key={note.id} 
+                          onClick={(e) => {
+                            if (!e.target.closest('.mobile-action-btn')) {
+                              handleSelectNote(note);
+                            }
+                          }}
+                        >
+                          <td>
+                            <span className="mobile-note-title">{note.title || 'Untitled'}</span>
+                            <span 
+                              className="mobile-note-category"
+                              style={{ backgroundColor: getCategoryColor(note.category) }}
+                            >
+                              {categories.find(c => c.value === note.category)?.label || 'General'}
+                            </span>
+                          </td>
+                          <td className="mobile-actions-cell">
+                            <button
+                              className="mobile-action-btn edit"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectNote(note);
+                              }}
+                              title="Edit note"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button
+                              className="mobile-action-btn delete"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(note.id);
+                              }}
+                              title="Delete note"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="mobile-empty-state">
+                    <FileText size={64} />
+                    <h3>No notes yet</h3>
+                    <p>Create your first note to get started</p>
+                  </div>
+                )}
               </div>
-            ) : filteredNotes.length > 0 ? (
-              filteredNotes.map(note => (
-                <div
-                  key={note.id}
-                  className={`note-item ${selectedNote?.id === note.id ? 'active' : ''}`}
-                  onClick={(e) => {
-                    // Don't select note if clicking on delete button
-                    if (!e.target.closest('.note-delete-btn')) {
-                      handleSelectNote(note);
-                    }
-                  }}
-                >
-                  <div className="note-item-header">
-                    <h3>{note.title || 'Untitled'}</h3>
-                    <div className="note-item-actions">
-                      <span 
-                        className="note-category"
-                        style={{ backgroundColor: getCategoryColor(note.category) }}
-                      >
-                        {categories.find(c => c.value === note.category)?.label || 'General'}
-                      </span>
-                      <button
-                        className="note-delete-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(note.id);
-                        }}
-                        title="Delete note"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+            </div>
+          </div>
+        ) : (
+          /* Desktop View - Keep existing layout */
+          <>
+            {/* Sidebar - always visible on desktop */}
+            <div className="notes-sidebar">
+              <div className="sidebar-header">
+                <h2>Notes</h2>
+                <button className="create-note-btn" onClick={handleCreateNote}>
+                  <Plus size={20} />
+                </button>
+              </div>
+              
+              <div className="search-container">
+                <Search size={18} className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search notes..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+              
+              <div className="notes-list">
+                {loading ? (
+                  <div className="loading-state">
+                    <div className="spinner" />
+                    <p>Loading notes...</p>
+                  </div>
+                ) : filteredNotes.length > 0 ? (
+                  filteredNotes.map(note => (
+                    <div
+                      key={note.id}
+                      className={`note-item ${selectedNote?.id === note.id ? 'active' : ''}`}
+                      onClick={(e) => {
+                        if (!e.target.closest('.note-delete-btn')) {
+                          handleSelectNote(note);
+                        }
+                      }}
+                    >
+                      <div className="note-item-header">
+                        <h3>{note.title || 'Untitled'}</h3>
+                        <div className="note-item-actions">
+                          <span 
+                            className="note-category"
+                            style={{ backgroundColor: getCategoryColor(note.category) }}
+                          >
+                            {categories.find(c => c.value === note.category)?.label || 'General'}
+                          </span>
+                          <button
+                            className="note-delete-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(note.id);
+                            }}
+                            title="Delete note"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                      <p className="note-preview">
+                        {note.content?.substring(0, 100)}
+                        {note.content?.length > 100 ? '...' : ''}
+                      </p>
+                      <div className="note-meta">
+                        <Clock size={12} />
+                        <span>{formatDate(note.updatedAt)}</span>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="empty-state">
+                    <FileText size={48} />
+                    <p>No notes found</p>
                   </div>
-                  <p className="note-preview">
-                    {note.content?.substring(0, 100)}
-                    {note.content?.length > 100 ? '...' : ''}
-                  </p>
-                  <div className="note-meta">
-                    <Clock size={12} />
-                    <span>{formatDate(note.updatedAt)}</span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="empty-state">
-                <FileText size={48} />
-                <p>No notes found</p>
+                )}
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </>
+        )}
         
-        {/* Main Content */}
-        <div className={`notes-content ${showMobileContent ? 'active' : ''}`}>
+        {/* Main Content - For both mobile and desktop */}
+        <div className={`notes-content ${showMobileContent || !isMobile ? 'active' : ''}`}>
           {selectedNote || isCreating ? (
             <div className="note-editor">
               <div className="editor-header">
-                <button className="mobile-editor-back" onClick={handleBackToList}>
-                  <ArrowLeft size={24} />
-                </button>
+                {isMobile && (
+                  <button className="mobile-editor-back" onClick={handleBackToList}>
+                    <ArrowLeft size={24} />
+                  </button>
+                )}
                 {isEditing ? (
                   <>
                     <input

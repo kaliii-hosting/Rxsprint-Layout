@@ -4,6 +4,8 @@ import gsap from 'gsap';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { storage, firestore } from '../../config/firebase';
+import { useNavigate } from 'react-router-dom';
+import ConfirmationPopup from '../ConfirmationPopup/ConfirmationPopup';
 import './VoiceTranscription.css';
 
 const VoiceTranscription = ({ isOpen, onClose }) => {
@@ -11,22 +13,27 @@ const VoiceTranscription = ({ isOpen, onClose }) => {
   const [transcription, setTranscription] = useState('');
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
   const [isSaving, setIsSaving] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [savedNoteId, setSavedNoteId] = useState(null);
+  const navigate = useNavigate();
   
   const waveformRef = useRef(null);
   const animationRef = useRef(null);
-  const socketRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null);
   const recordingStartTimeRef = useRef(null);
   const finalTranscriptionRef = useRef('');
-  
-  // AssemblyAI configuration
-  const ASSEMBLYAI_API_KEY = 'f88de59cabf64215982d489b1b14f888';
-  const ASSEMBLYAI_WS_URL = 'wss://api.assemblyai.com/v2/realtime/ws';
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
+      // Reset state when opening
+      setTranscription('');
+      setConnectionStatus('disconnected');
+      setIsSaving(false);
+      finalTranscriptionRef.current = '';
+      
       // Start recording automatically when opened
       startRecording();
       
@@ -39,7 +46,9 @@ const VoiceTranscription = ({ isOpen, onClose }) => {
       if (animationRef.current) {
         animationRef.current.kill();
       }
-      stopRecording();
+      if (isRecording) {
+        stopRecording(false); // Don't save on cleanup
+      }
     };
   }, [isOpen]);
 
@@ -84,90 +93,110 @@ const VoiceTranscription = ({ isOpen, onClose }) => {
 
   const startRecording = async () => {
     try {
+      console.log('Starting recording...');
+      
       // Get user media
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
+      console.log('Got media stream');
       
-      // Initialize WebSocket connection to AssemblyAI
-      const socket = new WebSocket(`${ASSEMBLYAI_WS_URL}?sample_rate=16000`);
-      socketRef.current = socket;
+      // Initialize Web Speech API for transcription
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        throw new Error('Speech recognition not supported in this browser');
+      }
       
-      socket.onopen = () => {
-        console.log('WebSocket connected');
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+      
+      recognition.onstart = () => {
+        console.log('Speech recognition started');
         setConnectionStatus('connected');
+      };
+      
+      recognition.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
         
-        // Send auth token
-        socket.send(JSON.stringify({
-          audio_data: '',
-          token: ASSEMBLYAI_API_KEY
-        }));
-        
-        // Start media recorder
-        const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'audio/webm;codecs=opus'
-        });
-        
-        mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
-        recordingStartTimeRef.current = Date.now();
-        
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-            
-            // Convert to base64 and send to AssemblyAI
-            const reader = new FileReader();
-            reader.onload = () => {
-              const base64data = reader.result.split(',')[1];
-              if (socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                  audio_data: base64data
-                }));
-              }
-            };
-            reader.readAsDataURL(event.data);
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
           }
-        };
-        
-        mediaRecorder.start(100); // Collect data every 100ms
-        setIsRecording(true);
-      };
-      
-      socket.onmessage = (message) => {
-        const data = JSON.parse(message.data);
-        
-        if (data.text) {
-          // Append new transcription to existing
-          setTranscription(prev => {
-            const newText = prev ? `${prev} ${data.text}` : data.text;
-            finalTranscriptionRef.current = newText;
-            return newText;
-          });
         }
         
-        if (data.message_type === 'FinalTranscript') {
-          // Final transcript received
-          console.log('Final transcript:', data.text);
+        // Update transcription with both final and interim results
+        const currentFinal = finalTranscriptionRef.current;
+        const newTranscription = currentFinal + finalTranscript + interimTranscript;
+        setTranscription(newTranscription.trim());
+        
+        // Update final transcription reference
+        if (finalTranscript) {
+          finalTranscriptionRef.current = currentFinal + finalTranscript;
+          console.log('Updated transcription:', finalTranscriptionRef.current);
         }
       };
       
-      socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
         setConnectionStatus('error');
+        if (event.error === 'not-allowed') {
+          alert('Microphone access was denied. Please allow microphone access and try again.');
+        }
       };
       
-      socket.onclose = () => {
-        console.log('WebSocket closed');
-        setConnectionStatus('disconnected');
+      recognition.onend = () => {
+        console.log('Speech recognition ended');
+        // Restart if still recording
+        if (isRecording && recognitionRef.current) {
+          try {
+            recognitionRef.current.start();
+          } catch (e) {
+            console.error('Error restarting recognition:', e);
+          }
+        }
       };
+      
+      // Start speech recognition
+      recognition.start();
+      
+      // Start media recorder for audio recording
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      recordingStartTimeRef.current = Date.now();
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+      
+      mediaRecorder.start();
+      setIsRecording(true);
       
     } catch (error) {
       console.error('Error starting recording:', error);
-      alert('Failed to access microphone. Please ensure microphone permissions are granted.');
+      setConnectionStatus('error');
+      alert(error.message || 'Failed to start recording. Please ensure microphone permissions are granted.');
     }
   };
 
-  const stopRecording = async () => {
+  const stopRecording = async (shouldSave = true) => {
+    console.log('Stopping recording...');
+    
+    // Stop speech recognition
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    
     // Stop media recorder
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
@@ -178,19 +207,17 @@ const VoiceTranscription = ({ isOpen, onClose }) => {
       });
     }
     
-    // Close WebSocket
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.close();
-    }
-    
     // Stop media stream
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
     }
     
-    // Save to Firebase if we have transcription
-    if (finalTranscriptionRef.current && audioChunksRef.current.length > 0) {
+    // Save to Firebase if we have audio data and shouldSave is true
+    if (shouldSave && audioChunksRef.current.length > 0) {
       await saveToFirebase();
+    } else if (shouldSave && audioChunksRef.current.length === 0) {
+      console.log('No audio data to save');
+      alert('No audio was recorded. Please try again.');
     }
     
     setIsRecording(false);
@@ -201,40 +228,53 @@ const VoiceTranscription = ({ isOpen, onClose }) => {
       setIsSaving(true);
       setConnectionStatus('saving');
       
-      // Create audio blob
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-      
       // Calculate duration
       const duration = Math.floor((Date.now() - recordingStartTimeRef.current) / 1000);
       
-      // Upload audio to Firebase Storage
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const fileName = `voice-notes/audio_${timestamp}.webm`;
-      const storageRef = ref(storage, fileName);
+      let audioUrl = null;
+      let fileName = null;
       
-      const snapshot = await uploadBytes(storageRef, audioBlob);
-      const audioUrl = await getDownloadURL(snapshot.ref);
+      // Try to upload audio to Firebase Storage
+      try {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        fileName = `voice-notes/audio_${timestamp}.webm`;
+        const storageRef = ref(storage, fileName);
+        
+        const snapshot = await uploadBytes(storageRef, audioBlob);
+        audioUrl = await getDownloadURL(snapshot.ref);
+        console.log('Audio uploaded successfully');
+      } catch (storageError) {
+        console.error('Error uploading audio to storage:', storageError);
+        // Continue without audio URL - just save the transcription
+      }
       
-      // Save transcription to Firestore
+      // Save transcription to Firestore (with or without audio)
       const notesRef = collection(firestore, 'notes');
-      await addDoc(notesRef, {
+      const noteData = {
         title: `Voice Note - ${new Date().toLocaleString()}`,
         content: finalTranscriptionRef.current || 'No transcription available',
         category: 'voice',
-        audioUrl: audioUrl,
-        fileName: fileName,
         duration: duration,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
-      });
+      };
+      
+      // Only add audio fields if upload was successful
+      if (audioUrl) {
+        noteData.audioUrl = audioUrl;
+        noteData.fileName = fileName;
+      }
+      
+      const docRef = await addDoc(notesRef, noteData);
       
       console.log('Voice note saved successfully');
+      setSavedNoteId(docRef.id);
       setConnectionStatus('saved');
+      setIsSaving(false);
       
-      // Show saved status briefly before closing
-      setTimeout(() => {
-        setIsSaving(false);
-      }, 1500);
+      // Show confirmation popup
+      setShowConfirmation(true);
       
     } catch (error) {
       console.error('Error saving to Firebase:', error);
@@ -248,6 +288,24 @@ const VoiceTranscription = ({ isOpen, onClose }) => {
     if (isRecording) {
       await stopRecording();
     }
+    setShowConfirmation(false);
+    onClose();
+  };
+  
+  const handleStopRecording = async () => {
+    if (isRecording) {
+      await stopRecording();
+    }
+  };
+  
+  const handleViewNote = () => {
+    setShowConfirmation(false);
+    onClose();
+    navigate('/notes', { state: { highlightNoteId: savedNoteId } });
+  };
+  
+  const handleContinue = () => {
+    setShowConfirmation(false);
     onClose();
   };
 
@@ -262,14 +320,15 @@ const VoiceTranscription = ({ isOpen, onClose }) => {
         
         <div className="transcription-content">
           <div className="transcription-text">
-            {transcription || 'Listening...'}
+            {transcription || (connectionStatus === 'connected' ? 'Listening... Speak now!' : connectionStatus === 'error' ? 'Connection error. Please try again.' : 'Connecting...')}
           </div>
           
           {/* Stop Recording Button */}
           <button 
             className="stop-recording-btn"
-            onClick={handleClose}
+            onClick={handleStopRecording}
             title="Stop Recording"
+            disabled={!isRecording || isSaving}
           >
             <Mic size={32} />
           </button>
@@ -298,6 +357,17 @@ const VoiceTranscription = ({ isOpen, onClose }) => {
           </div>
         </div>
       </div>
+      
+      {/* Confirmation Popup */}
+      <ConfirmationPopup
+        isOpen={showConfirmation}
+        message="Voice note has been transcribed and saved to the notes page"
+        onClose={handleContinue}
+        showButtons={true}
+        onContinue={handleContinue}
+        onViewMedication={handleViewNote}
+        viewButtonText="View Note"
+      />
     </div>
   );
 };

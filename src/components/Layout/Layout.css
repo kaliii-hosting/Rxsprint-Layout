@@ -108,6 +108,8 @@
   display: flex !important;
   visibility: visible !important;
   width: 100%;
+  z-index: 1;
+  isolation: isolate;
 }
 
 .search-icon {
@@ -163,6 +165,13 @@
 
 .search-container:has(.search-input:focus)::after {
   opacity: 0.1;
+}
+
+/* Disable the overlay effect on mobile to prevent glitches */
+@media (max-width: 768px) {
+  .search-container::after {
+    display: none;
+  }
 }
 
 .header .header-actions {
@@ -527,6 +536,7 @@
   max-height: 320px;
   overflow-y: auto;
   z-index: 1000;
+  isolation: isolate;
 }
 
 .search-dropdown::-webkit-scrollbar {

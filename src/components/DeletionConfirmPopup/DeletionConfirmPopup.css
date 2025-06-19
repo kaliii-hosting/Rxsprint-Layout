@@ -5,7 +5,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,19 +15,40 @@
 }
 
 .deletion-popup {
-  background: #ffffff;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 20px;
   padding: 40px;
   max-width: 480px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 85, 0, 0.1);
   animation: slideUp 0.3s ease-out;
   position: relative;
 }
 
 .deletion-popup.shake {
   animation: shake 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes shake {
@@ -43,15 +64,15 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #999;
+  color: rgba(255, 255, 255, 0.5);
   padding: 8px;
   border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .close-button:hover {
-  background: #f5f5f5;
-  color: #333;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 .deletion-icon-wrapper {
@@ -61,37 +82,38 @@
 .deletion-icon {
   width: 80px;
   height: 80px;
-  background: #fee;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.2);
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #dc3545;
+  color: #ff4444;
 }
 
 .deletion-title {
   font-size: 28px;
   font-weight: 700;
-  color: #2c3e50;
+  color: #ffffff;
   margin: 0 0 16px 0;
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .deletion-message {
   font-size: 16px;
-  color: #555;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0 0 8px 0;
   line-height: 1.5;
 }
 
 .deletion-message strong {
-  color: #333;
+  color: #ffffff;
   font-weight: 600;
 }
 
 .deletion-warning {
   font-size: 14px;
-  color: #dc3545;
+  color: #ff4444;
   margin: 0 0 32px 0;
   font-weight: 500;
 }
@@ -100,9 +122,9 @@
 .pin-section {
   margin-bottom: 32px;
   padding: 24px;
-  background: #f8f9fa;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  border: 1px solid #e9ecef;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .pin-label {
@@ -111,13 +133,13 @@
   justify-content: center;
   gap: 8px;
   margin-bottom: 20px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
   font-weight: 500;
 }
 
 .pin-label svg {
-  color: #999;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .pin-inputs {
@@ -130,7 +152,7 @@
 .pin-input {
   width: 56px;
   height: 56px;
-  border: 2px solid #ddd;
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   text-align: center;
   font-size: 24px;
@@ -138,22 +160,23 @@
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
   outline: none;
   transition: all 0.2s ease;
-  background: white;
-  color: #333;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
 }
 
 .pin-input:focus {
-  border-color: #FF5500;
-  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
+  border-color: #ff4444;
+  box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.2);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .pin-input.filled {
-  background: #f8f9fa;
-  border-color: #28a745;
+  background: rgba(255, 68, 68, 0.1);
+  border-color: rgba(255, 68, 68, 0.3);
 }
 
 .pin-input.error {
-  border-color: #dc3545;
+  border-color: #ff4444;
   animation: shake 0.3s ease-in-out;
 }
 
@@ -164,7 +187,7 @@
 }
 
 .pin-error {
-  color: #dc3545;
+  color: #ff4444;
   font-size: 14px;
   margin: 12px 0 0 0;
   font-weight: 500;
@@ -192,18 +215,21 @@
 }
 
 .cancel-btn {
-  background: #f0f0f0;
-  color: #333;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .cancel-btn:hover {
-  background: #e0e0e0;
+  background: rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .delete-btn {
-  background: #dc3545;
+  background: #ff4444;
   color: white;
+  border: 1px solid #ff4444;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -211,13 +237,16 @@
 }
 
 .delete-btn:hover:not(:disabled) {
-  background: #c82333;
+  background: #ff3333;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+  border-color: #ff3333;
 }
 
 .delete-btn:disabled {
-  background: #ccc;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.3);
   cursor: not-allowed;
   opacity: 0.6;
 }
