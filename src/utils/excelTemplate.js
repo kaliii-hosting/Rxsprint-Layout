@@ -13,9 +13,9 @@ export const downloadExcelTemplate = () => {
       'Reconstitution Volume': 'N/A',
       'Dose': '10mg',
       'Dose Frequency': 'Once daily',
-      'Route of Administration': 'Oral',
+      'Infusion Rate': 'N/A',
       'Normal Saline Bag': 'N/A',
-      'Overall Rate': 'N/A',
+      'Overfill Rule': 'N/A',
       'Filter': 'N/A',
       'Infusion Steps': 'N/A',
       'Notes': 'Take with food',
@@ -31,9 +31,9 @@ export const downloadExcelTemplate = () => {
       'Reconstitution Volume': '10mL',
       'Dose': '250mg',
       'Dose Frequency': 'Every 12 hours',
-      'Route of Administration': 'IV',
+      'Infusion Rate': 'Over 30 minutes',
       'Normal Saline Bag': '100mL',
-      'Overall Rate': '30 minutes',
+      'Overfill Rule': '30 minutes',
       'Filter': '0.22 micron',
       'Infusion Steps': '1. Reconstitute with 10mL sterile water\n2. Add to 100mL NS\n3. Infuse over 30 minutes',
       'Notes': 'Monitor for allergic reactions',
@@ -55,9 +55,9 @@ export const downloadExcelTemplate = () => {
     { wch: 20 }, // Reconstitution Volume
     { wch: 10 }, // Dose
     { wch: 15 }, // Dose Frequency
-    { wch: 20 }, // Route of Administration
+    { wch: 20 }, // Infusion Rate
     { wch: 15 }, // Normal Saline Bag
-    { wch: 12 }, // Overall Rate
+    { wch: 12 }, // Overfill Rule
     { wch: 10 }, // Filter
     { wch: 30 }, // Infusion Steps
     { wch: 25 }, // Notes

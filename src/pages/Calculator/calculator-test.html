@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator Percentage Logic Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-case {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .test-case h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .result {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .fail {
+            color: red;
+            font-weight: bold;
+        }
+        button {
+            background: #ff5500;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #e64a00;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calculator Percentage Logic Test</h1>
+    <button onclick="runTests()">Run Tests</button>
+    <div id="results"></div>
+
+    <script>
+        // Simulated calculator logic
+        const calculate = (firstValue, secondValue, operation) => {
+            switch (operation) {
+                case '+':
+                    return firstValue + secondValue;
+                case '-':
+                    return firstValue - secondValue;
+                case '×':
+                    return firstValue * secondValue;
+                case '÷':
+                    return firstValue / secondValue;
+                default:
+                    return secondValue;
+            }
+        };
+
+        const performPercentageOperation = (value, operation, previousValue) => {
+            if (operation === '×' || operation === '÷') {
+                // Convert to decimal
+                return value / 100;
+            } else if (operation === '+' || operation === '-') {
+                // Calculate percentage of the first value
+                return (previousValue * value) / 100;
+            } else {
+                // No operation, just convert to percentage
+                return value / 100;
+            }
+        };
+
+        function runTests() {
+            const tests = [
+                {
+                    name: "2 × 10%",
+                    operation: () => {
+                        const firstValue = 2;
+                        const percentValue = 10;
+                        const convertedPercent = performPercentageOperation(percentValue, '×', firstValue);
+                        return calculate(firstValue, convertedPercent, '×');
+                    },
+                    expected: 0.2
+                },
+                {
+                    name: "5 × 25%",
+                    operation: () => {
+                        const firstValue = 5;
+                        const percentValue = 25;
+                        const convertedPercent = performPercentageOperation(percentValue, '×', firstValue);
+                        return calculate(firstValue, convertedPercent, '×');
+                    },
+                    expected: 1.25
+                },
+                {
+                    name: "100 ÷ 50%",
+                    operation: () => {
+                        const firstValue = 100;
+                        const percentValue = 50;
+                        const convertedPercent = performPercentageOperation(percentValue, '÷', firstValue);
+                        return calculate(firstValue, convertedPercent, '÷');
+                    },
+                    expected: 200
+                },
+                {
+                    name: "200 + 10%",
+                    operation: () => {
+                        const firstValue = 200;
+                        const percentValue = 10;
+                        const convertedPercent = performPercentageOperation(percentValue, '+', firstValue);
+                        return calculate(firstValue, convertedPercent, '+');
+                    },
+                    expected: 220
+                },
+                {
+                    name: "150 - 20%",
+                    operation: () => {
+                        const firstValue = 150;
+                        const percentValue = 20;
+                        const convertedPercent = performPercentageOperation(percentValue, '-', firstValue);
+                        return calculate(firstValue, convertedPercent, '-');
+                    },
+                    expected: 120
+                },
+                {
+                    name: "10% (no operation)",
+                    operation: () => {
+                        const percentValue = 10;
+                        return performPercentageOperation(percentValue, null, null);
+                    },
+                    expected: 0.1
+                }
+            ];
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            tests.forEach(test => {
+                const result = test.operation();
+                const passed = Math.abs(result - test.expected) < 0.0001;
+
+                const testDiv = document.createElement('div');
+                testDiv.className = 'test-case';
+                testDiv.innerHTML = `
+                    <h3>${test.name}</h3>
+                    <div class="result">
+                        Expected: ${test.expected}<br>
+                        Got: ${result}<br>
+                        <span class="${passed ? 'success' : 'fail'}">
+                            ${passed ? '✓ PASSED' : '✗ FAILED'}
+                        </span>
+                    </div>
+                `;
+                resultsDiv.appendChild(testDiv);
+            });
+        }
+
+        // Run tests on load
+        window.onload = runTests;
+    </script>
+</body>
+</html>

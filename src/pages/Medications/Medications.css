@@ -118,6 +118,7 @@
   border-collapse: separate;
   border-spacing: 0;
   position: relative;
+  table-layout: fixed;
 }
 
 .medications-table thead {
@@ -149,6 +150,26 @@
   text-align: center;
 }
 
+.medications-table th:nth-child(2) {
+  width: 150px; /* Brand Name column */
+}
+
+.medications-table th:nth-child(3) {
+  width: 180px; /* Generic Name column */
+}
+
+.medications-table th:nth-child(4) {
+  width: 250px; /* Indication column */
+}
+
+.medications-table th:nth-child(5) {
+  width: 120px; /* Dosage Form column */
+}
+
+.medications-table th:nth-child(6) {
+  width: 100px; /* Vial Size column */
+}
+
 .medications-table th:last-child {
   text-align: right;
   width: 120px;
@@ -162,6 +183,8 @@
   font-size: 14px;
   font-weight: 400;
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .medications-table td:first-child {
@@ -259,6 +282,11 @@
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 120px;
+  display: block;
 }
 
 .generic-name {
@@ -273,6 +301,10 @@
   font-weight: 400;
   font-size: 14px;
   opacity: 0.9;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.4;
+  max-width: 200px;
 }
 
 .dosage-form {
@@ -348,6 +380,24 @@
 }
 
 .empty-state p {
+  font-size: 16px;
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #ffffff;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.loading-state .spinner {
+  margin: 0 auto 20px;
+}
+
+.loading-state p {
   font-size: 16px;
   margin: 0;
   opacity: 0.8;

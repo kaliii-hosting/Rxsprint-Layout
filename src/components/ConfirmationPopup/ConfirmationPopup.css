@@ -1,0 +1,174 @@
+/* Confirmation Popup Styles */
+.confirmation-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.confirmation-popup {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.confirmation-icon {
+  margin-bottom: 20px;
+  color: #4CAF50;
+  display: flex;
+  justify-content: center;
+}
+
+.confirmation-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 12px 0;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.confirmation-message {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin: 0;
+  line-height: 1.5;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .confirmation-popup {
+    padding: 32px 24px;
+    max-width: 90%;
+  }
+
+  .confirmation-icon svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .confirmation-title {
+    font-size: 20px;
+  }
+
+  .confirmation-message {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .confirmation-popup-overlay {
+    padding: 16px;
+  }
+
+  .confirmation-popup {
+    padding: 28px 20px;
+  }
+
+  .confirmation-icon svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .confirmation-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .confirmation-message {
+    font-size: 14px;
+  }
+}
+
+/* Button Styles */
+.confirmation-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  justify-content: center;
+}
+
+.confirmation-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  outline: none;
+  min-width: 120px;
+}
+
+.continue-btn {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.continue-btn:hover {
+  background: #e0e0e0;
+  transform: translateY(-1px);
+}
+
+.view-btn {
+  background: #FF5500;
+  color: white;
+}
+
+.view-btn:hover {
+  background: #E64A00;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 85, 0, 0.3);
+}
+
+.view-btn:active,
+.continue-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .confirmation-buttons {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .confirmation-btn {
+    width: 100%;
+    padding: 14px 20px;
+  }
+}

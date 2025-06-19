@@ -11,9 +11,9 @@ export const REQUIRED_COLUMNS = [
   'Reconstitution Volume',
   'Dose',
   'Dose Frequency',
-  'Route of Administration',
+  'Infusion Rate',
   'Normal Saline Bag',
-  'Overall Rate',
+  'Overfill Rule',
   'Filter',
   'Infusion Steps',
   'Notes',
@@ -31,9 +31,9 @@ const COLUMN_MAPPING = {
   'reconstitution volume': 'reconstitutionVolume',
   'dose': 'dose',
   'dose frequency': 'doseFrequency',
-  'route of administration': 'routeOfAdministration',
+  'infusion rate': 'infusionRate',
   'normal saline bag': 'normalSalineBag',
-  'overall rate': 'overallRate',
+  'overfill rule': 'overfillRule',
   'filter': 'filter',
   'infusion steps': 'infusionSteps',
   'notes': 'notes',
@@ -53,30 +53,82 @@ export const parseExcelFile = async (file) => {
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         
-        // Convert sheet to JSON
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false });
+        // Convert sheet to JSON with headers
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+          header: 1,
+          defval: ''
+        });
         
-        if (jsonData.length === 0) {
-          reject(new Error('Excel file is empty'));
+        if (jsonData.length < 2) {
+          reject(new Error('Excel file must contain at least a header row and one data row'));
           return;
         }
         
-        // Validate columns
-        const headers = Object.keys(jsonData[0]);
-        const validation = validateColumns(headers);
+        // Get headers from first row
+        const headers = jsonData[0];
         
-        if (!validation.isValid) {
-          reject(new Error(`Missing required columns: ${validation.missingColumns.join(', ')}`));
-          return;
+        // Parse data rows
+        const medications = [];
+        const errors = [];
+        
+        for (let i = 1; i < jsonData.length; i++) {
+          const row = jsonData[i];
+          const rowNumber = i + 1; // Excel row numbers are 1-based
+          
+          // Check if row has any data
+          const hasData = row.some(cell => cell !== null && cell !== undefined && cell !== '');
+          if (!hasData) continue;
+          
+          const medication = {};
+          let hasRequiredField = false;
+          
+          // Map row data to medication object
+          headers.forEach((header, index) => {
+            const normalizedHeader = header.toString().toLowerCase().trim();
+            const mappedKey = COLUMN_MAPPING[normalizedHeader];
+            
+            if (mappedKey) {
+              const value = row[index];
+              medication[mappedKey] = value !== null && value !== undefined ? value.toString().trim() : '';
+              
+              // Check if we have at least brand name or generic name
+              if ((mappedKey === 'brandName' || mappedKey === 'genericName') && medication[mappedKey]) {
+                hasRequiredField = true;
+              }
+            }
+          });
+          
+          // Validate the medication
+          if (!medication.brandName && !medication.genericName) {
+            errors.push({
+              row: rowNumber,
+              message: 'Missing both Brand Name and Generic Name'
+            });
+            continue;
+          }
+          
+          if (!medication.brandName) {
+            errors.push({
+              row: rowNumber,
+              message: 'Missing Brand Name',
+              severity: 'warning'
+            });
+          }
+          
+          medications.push(medication);
         }
         
-        // Transform data to match our schema
-        const transformedData = transformData(jsonData);
+        if (medications.length === 0 && errors.length === 0) {
+          reject(new Error('No valid medication data found in the Excel file'));
+          return;
+        }
         
         resolve({
-          data: transformedData,
-          rowCount: transformedData.length,
-          columns: headers
+          data: medications,
+          errors: errors,
+          rowCount: medications.length,
+          totalRows: jsonData.length - 1,
+          headers: headers
         });
         
       } catch (error) {
@@ -143,9 +195,9 @@ export const exportToExcel = (medications) => {
     'Reconstitution Volume': med.reconstitutionVolume || '',
     'Dose': med.dose || '',
     'Dose Frequency': med.doseFrequency || '',
-    'Route of Administration': med.routeOfAdministration || '',
+    'Infusion Rate': med.infusionRate || '',
     'Normal Saline Bag': med.normalSalineBag || '',
-    'Overall Rate': med.overallRate || '',
+    'Overfill Rule': med.overfillRule || '',
     'Filter': med.filter || '',
     'Infusion Steps': med.infusionSteps || '',
     'Notes': med.notes || '',

@@ -62,6 +62,27 @@ const Calculator = () => {
   const performOperation = (nextOperation) => {
     const inputValue = parseFloat(display);
 
+    // Handle percentage conversion
+    if (nextOperation === '%') {
+      if (operation === '×' || operation === '÷') {
+        // Convert current value to percentage (divide by 100)
+        const percentValue = inputValue / 100;
+        setDisplay(String(percentValue));
+        // Don't return here - let it continue to perform the operation
+      } else if (operation === '+' || operation === '-') {
+        // For addition/subtraction, calculate percentage of the first value
+        const percentValue = (previousValue * inputValue) / 100;
+        setDisplay(String(percentValue));
+        // Don't return here - let it continue to perform the operation
+      } else {
+        // No operation pending, just convert to percentage
+        const percentValue = inputValue / 100;
+        setDisplay(String(percentValue));
+        return;
+      }
+      return; // Return after setting display
+    }
+
     if (previousValue === null) {
       setPreviousValue(inputValue);
     } else if (operation) {
@@ -72,9 +93,18 @@ const Calculator = () => {
       setPreviousValue(newValue);
       
       if (nextOperation === '=') {
+        // For percentage operations, show the correct label in history
+        let label = `${currentValue}${operation}${inputValue}`;
+        if (display.includes('.') && parseFloat(display) < 1 && inputValue * 100 % 1 === 0) {
+          // This might have been a percentage operation
+          const possiblePercent = inputValue * 100;
+          if (possiblePercent === Math.round(possiblePercent)) {
+            label = `${currentValue}${operation}${possiblePercent}%`;
+          }
+        }
         const historyEntry = {
           type: 'calc',
-          label: `${currentValue}${operation}${inputValue}`,
+          label: label,
           value: String(newValue)
         };
         setHistory([...history, historyEntry]);

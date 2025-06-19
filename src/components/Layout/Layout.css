@@ -512,3 +512,142 @@
     background: rgba(255, 255, 255, 0.1);
   }
 }
+
+/* Search Dropdown Styles */
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 8px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.search-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.search-dropdown::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.search-result-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover,
+.search-result-item.selected {
+  background: rgba(255, 85, 0, 0.1);
+  border-color: rgba(255, 85, 0, 0.2);
+}
+
+.search-result-item:hover .result-brand,
+.search-result-item.selected .result-brand {
+  color: var(--primary-color);
+}
+
+.search-result-item:hover .result-icon,
+.search-result-item.selected .result-icon {
+  color: var(--primary-color);
+}
+
+.result-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.result-icon {
+  color: #666666;
+  flex-shrink: 0;
+}
+
+.result-brand {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+  transition: color 0.2s ease;
+}
+
+.result-generic {
+  font-size: 13px;
+  color: #888888;
+  font-weight: 400;
+  margin-left: 26px;
+}
+
+/* Mobile dropdown adjustments */
+@media (max-width: 768px) {
+  .search-dropdown {
+    margin-top: 6px;
+    max-height: 280px;
+  }
+
+  .search-result-item {
+    padding: 10px 16px;
+  }
+
+  .result-brand {
+    font-size: 14px;
+  }
+
+  .result-generic {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-dropdown {
+    margin-top: 4px;
+    max-height: 240px;
+    border-radius: 12px;
+  }
+
+  .search-result-item {
+    padding: 8px 12px;
+  }
+
+  .result-main {
+    gap: 8px;
+  }
+
+  .result-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .result-brand {
+    font-size: 13px;
+  }
+
+  .result-generic {
+    font-size: 11px;
+    margin-left: 22px;
+  }
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, 
@@ -13,14 +13,31 @@ import {
   Search,
   Mic,
   User,
-  Calculator as CalcIcon
+  Calculator as CalcIcon,
+  StickyNote
 } from 'lucide-react';
 import { useCalculator } from '../../contexts/CalculatorContext';
+import { useSearch } from '../../contexts/SearchContext';
+import VoiceTranscription from '../VoiceTranscription/VoiceTranscription';
 import './Layout.css';
 
 const Layout = ({ children }) => {
   const location = useLocation();
   const { toggleCalculatorMode } = useCalculator();
+  const [showVoiceTranscription, setShowVoiceTranscription] = useState(false);
+  const { 
+    searchQuery, 
+    searchResults, 
+    showDropdown, 
+    setShowDropdown,
+    performSearch, 
+    navigateToMedication,
+    clearSearch 
+  } = useSearch();
+  
+  const searchRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
@@ -31,8 +48,61 @@ const Layout = ({ children }) => {
     { path: '/workflow', icon: GitBranch, label: 'Workflow' },
     { path: '/note-generator', icon: FileText, label: 'Note Generator' },
     { path: '/pump', icon: Droplet, label: 'Pump' },
-    { path: '/supplies', icon: Package, label: 'Supplies' }
+    { path: '/supplies', icon: Package, label: 'Supplies' },
+    { path: '/notes', icon: StickyNote, label: 'Notes' }
   ];
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+          searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [setShowDropdown]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    performSearch(e.target.value);
+    setSelectedIndex(-1);
+  };
+
+  // Handle search result click
+  const handleResultClick = (medication) => {
+    navigateToMedication(medication);
+  };
+
+  // Handle keyboard navigation
+  const handleKeyDown = (e) => {
+    if (!showDropdown || searchResults.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev => 
+          prev < searchResults.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev => prev > -1 ? prev - 1 : -1);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
+          handleResultClick(searchResults[selectedIndex]);
+        }
+        break;
+      case 'Escape':
+        setShowDropdown(false);
+        setSelectedIndex(-1);
+        break;
+    }
+  };
 
   return (
     <div className="layout">
@@ -66,13 +136,38 @@ const Layout = ({ children }) => {
 
       <div className="main-container">
         <header className="header">
-          <div className="search-container">
+          <div className="search-container" ref={searchRef}>
             <Search size={20} className="search-icon" />
             <input
               type="text"
-              placeholder="Type to search"
+              placeholder="Type to search medications..."
               className="search-input"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={() => searchQuery && setShowDropdown(true)}
+              onKeyDown={handleKeyDown}
             />
+            
+            {showDropdown && searchResults.length > 0 && (
+              <div className="search-dropdown" ref={dropdownRef}>
+                {searchResults.map((medication, index) => (
+                  <div
+                    key={medication.id}
+                    className={`search-result-item ${index === selectedIndex ? 'selected' : ''}`}
+                    onClick={() => handleResultClick(medication)}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                  >
+                    <div className="result-main">
+                      <Pill size={16} className="result-icon" />
+                      <span className="result-brand">{medication.brandName}</span>
+                    </div>
+                    {medication.genericName && (
+                      <span className="result-generic">{medication.genericName}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           
           <div className="header-actions">
@@ -81,7 +176,11 @@ const Layout = ({ children }) => {
                 <CalcIcon size={20} />
               </button>
             )}
-            <button className="icon-button" title="Voice Assistant">
+            <button 
+              className="icon-button" 
+              title="Voice Assistant"
+              onClick={() => setShowVoiceTranscription(true)}
+            >
               <Mic size={20} />
             </button>
             <button className="icon-button" title="Profile">
@@ -94,6 +193,12 @@ const Layout = ({ children }) => {
           {children}
         </main>
       </div>
+      
+      {/* Voice Transcription Modal */}
+      <VoiceTranscription 
+        isOpen={showVoiceTranscription}
+        onClose={() => setShowVoiceTranscription(false)}
+      />
     </div>
   );
 };
