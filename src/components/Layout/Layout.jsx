@@ -12,12 +12,15 @@ import {
   Package,
   Search,
   Settings,
-  User
+  User,
+  Calculator as CalcIcon
 } from 'lucide-react';
+import { useCalculator } from '../../contexts/CalculatorContext';
 import './Layout.css';
 
 const Layout = ({ children }) => {
   const location = useLocation();
+  const { toggleCalculatorMode } = useCalculator();
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
@@ -73,6 +76,11 @@ const Layout = ({ children }) => {
           </div>
           
           <div className="header-actions">
+            {location.pathname === '/calculator' && (
+              <button className="icon-button" title="Toggle Calculator Mode" onClick={toggleCalculatorMode}>
+                <CalcIcon size={20} />
+              </button>
+            )}
             <button className="icon-button">
               <Settings size={20} />
             </button>

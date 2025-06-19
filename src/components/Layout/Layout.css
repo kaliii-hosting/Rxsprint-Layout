@@ -60,12 +60,12 @@
 
 .nav-item:hover {
   color: #ffffff;
-  background-color: rgba(255, 107, 53, 0.1);
+  background-color: var(--primary-light);
 }
 
 .nav-item.active {
-  color: #ff6b35;
-  background-color: rgba(255, 107, 53, 0.1);
+  color: var(--primary-color);
+  background-color: var(--primary-light);
 }
 
 .nav-item.active::before {
@@ -76,7 +76,7 @@
   transform: translateY(-50%);
   width: 4px;
   height: 30px;
-  background-color: #ff6b35;
+  background-color: var(--primary-color);
   border-radius: 0 2px 2px 0;
 }
 
@@ -125,7 +125,7 @@
 
 .search-input:focus {
   outline: none;
-  border-color: #ff6b35;
+  border-color: var(--primary-color);
   background-color: #1f1f1f;
 }
 
