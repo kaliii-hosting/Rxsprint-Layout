@@ -1,0 +1,929 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.infusion-pump-calculator {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #212529;
+}
+
+.calculator-header {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 16px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.calculator-header h2 {
+  color: #212529;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  display: inline-block;
+}
+
+.calculator-header p {
+  color: #6c757d;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+  display: inline-block;
+  margin-left: 16px;
+}
+
+.calculator-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.calculator-left-column,
+.calculator-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-section {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.section-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9ecef;
+  border-radius: 4px;
+  color: #495057;
+  font-size: 12px;
+}
+
+.input-section h3 {
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.input-grid.single-column {
+  grid-template-columns: 1fr;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-group label {
+  font-weight: 500;
+  color: #495057;
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.input-group input,
+.input-group select {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s ease;
+  background-color: #ffffff;
+  color: #212529;
+}
+
+.input-group input::placeholder {
+  color: #adb5bd;
+}
+
+.input-group select option {
+  background-color: #ffffff;
+  color: #212529;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.1);
+}
+
+.input-group input.error,
+.input-group select.error {
+  border-color: #ff4444;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.dose-input {
+  display: flex;
+  gap: 10px;
+}
+
+.dose-input input {
+  flex: 1;
+}
+
+.dose-input select {
+  width: 120px;
+}
+
+.calculate-button {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.calculate-button:hover:not(:disabled) {
+  background-color: #0b5ed7;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calculate-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.calculate-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.results-section {
+  animation: fadeIn 0.5s ease;
+}
+
+.results-section {
+  display: contents;
+}
+
+.result-card {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.result-card h4 {
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alerts-section {
+  margin-bottom: 25px;
+}
+
+.alert {
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.alert-critical {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.dose-classification {
+  margin-bottom: 16px;
+}
+
+.dose-classification h4 {
+  color: #6c757d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.dose-indicator {
+  padding: 12px 16px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.15s ease;
+}
+
+.dose-indicator.low {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+}
+
+.dose-indicator.correct {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+}
+
+.dose-indicator.high {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+
+.dose-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dose-value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.vials-section {
+  margin-bottom: 16px;
+}
+
+.vials-section h4 {
+  color: #6c757d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.vials-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vial-item {
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e9ecef;
+  font-size: 13px;
+}
+
+.vial-count {
+  font-weight: 700;
+  color: #0d6efd;
+}
+
+.vial-strength {
+  font-weight: 500;
+  color: #212529;
+}
+
+.vial-reconstitution {
+  font-size: 11px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.preparation-section {
+  margin-bottom: 16px;
+}
+
+.preparation-section h4 {
+  color: #6c757d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.preparation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.prep-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.prep-item label {
+  font-weight: 500;
+  color: #6c757d;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.prep-item span {
+  font-size: 16px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.prep-item .highlight {
+  font-size: 18px;
+  font-weight: 700;
+  color: #dc3545;
+}
+
+.infusion-steps-section {
+  margin-bottom: 16px;
+}
+
+.infusion-steps-section h4 {
+  color: #6c757d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.steps-table {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.steps-header {
+  display: grid;
+  grid-template-columns: 60px 1fr 80px 80px;
+  background: #f8f9fa;
+  padding: 8px 12px;
+  font-weight: 600;
+  color: #495057;
+  font-size: 11px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.step-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 80px 80px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e9ecef;
+  color: #212529;
+}
+
+.step-row:last-child {
+  border-bottom: none;
+}
+
+.step-row:hover {
+  background-color: #f8f9fa;
+}
+
+.total-time {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding: 12px;
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #856404;
+}
+
+.total-time strong {
+  color: #856404;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.additional-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.info-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.info-item label {
+  font-weight: 600;
+  color: #6c757d;
+  min-width: 80px;
+  font-size: 12px;
+}
+
+.info-item span {
+  color: #212529;
+  flex: 1;
+}
+
+.calculation-logic-section {
+  margin-top: 20px;
+  grid-column: 1 / -1;
+}
+
+.logic-toggle {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.logic-toggle:hover {
+  background: #5a6268;
+}
+
+.logic-content {
+  margin-top: 16px;
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.logic-content h4 {
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.logic-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.logic-content li {
+  padding: 4px 0;
+  padding-left: 16px;
+  position: relative;
+  color: #495057;
+  line-height: 1.5;
+  font-size: 12px;
+}
+
+.logic-content li:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #6c757d;
+}
+
+.preparation-method-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.method-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.method-option:hover {
+  border-color: #4CAF50;
+  background: #f1f8f4;
+}
+
+.method-option input[type="radio"] {
+  cursor: pointer;
+}
+
+.method-option label {
+  cursor: pointer;
+  margin: 0;
+  font-weight: normal;
+}
+
+.selected-method {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #e8f5e9;
+  border: 1px solid #4CAF50;
+  border-radius: 4px;
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.clear-method {
+  background: none;
+  border: 1px solid #4CAF50;
+  color: #4CAF50;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.clear-method:hover {
+  background: #4CAF50;
+  color: white;
+}
+
+.prep-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.dose-input {
+  display: flex;
+  gap: 10px;
+}
+
+.dose-input input {
+  flex: 1;
+}
+
+.dose-input select {
+  width: 140px;
+}
+
+/* Time Input Group */
+.time-input-group {
+  position: relative;
+  grid-column: 1 / -1;
+}
+
+.time-inputs {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.time-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.time-field input {
+  width: 60px;
+  text-align: center;
+}
+
+.time-label {
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 400;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Medication Info Preview */
+.medication-info-preview {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.medication-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.medication-info-header:hover {
+  background-color: #e9ecef;
+}
+
+.medication-info-header h4 {
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  margin: 0;
+}
+
+.toggle-icon {
+  font-size: 16px;
+  color: #6c757d;
+  font-weight: 400;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.medication-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.detail-item label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+}
+
+.detail-item span {
+  font-size: 13px;
+  font-weight: 500;
+  color: #212529;
+}
+
+.vial-sizes-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.vial-size-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #e9ecef;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.vial-size-item strong {
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+.reconstitution-info {
+  font-size: 11px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.vial-volume {
+  font-size: 11px;
+  color: #6c757d;
+}
+
+.special-notes {
+  color: #856404 !important;
+  font-style: italic;
+}
+
+/* Dose Comparison Preview */
+.dose-comparison {
+  margin: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #dee2e6;
+}
+
+.dose-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid;
+  font-size: 13px;
+}
+
+.dose-preview.low {
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+  color: #856404;
+}
+
+.dose-preview.correct {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.dose-preview.high {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+.dose-preview-label {
+  font-weight: 500;
+  text-transform: none;
+}
+
+.dose-preview-value {
+  font-weight: 600;
+  flex: 1;
+}
+
+.dose-preview-status {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom scrollbar */
+.infusion-pump-calculator ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.infusion-pump-calculator ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.infusion-pump-calculator ::-webkit-scrollbar-thumb {
+  background: rgba(255, 85, 0, 0.3);
+  border-radius: 4px;
+}
+
+.infusion-pump-calculator ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 85, 0, 0.5);
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .calculator-body {
+    grid-template-columns: 1fr;
+  }
+  
+  .calculator-right-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .calculator-header {
+    padding: 12px 16px;
+  }
+  
+  .calculator-header h2 {
+    font-size: 20px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  
+  .calculator-header p {
+    display: block;
+    margin-left: 0;
+    font-size: 12px;
+  }
+  
+  .calculator-body {
+    gap: 16px;
+  }
+  
+  .calculator-right-column {
+    grid-template-columns: 1fr;
+  }
+  
+  .input-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .preparation-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .steps-header,
+  .step-row {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  
+  .dose-input {
+    flex-direction: column;
+  }
+  
+  .dose-input select {
+    width: 100%;
+  }
+  
+  .time-inputs {
+    justify-content: space-between;
+  }
+  
+  .medication-details-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dose-preview {
+    font-size: 12px;
+  }
+}

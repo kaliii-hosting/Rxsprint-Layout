@@ -1,9 +1,11 @@
 import React from 'react';
+import InfusionPumpCalculator from '../../components/InfusionPumpCalculator';
+import './Pump.css';
 
 const Pump = () => {
   return (
-    <div>
-      <h1>Pump</h1>
+    <div className="pump-page">
+      <InfusionPumpCalculator />
     </div>
   );
 };

@@ -1,0 +1,11 @@
+.pump-page {
+  min-height: 100vh;
+  background-color: #0a0a0a;
+  padding: 40px;
+}
+
+@media (max-width: 768px) {
+  .pump-page {
+    padding: 20px;
+  }
+}
