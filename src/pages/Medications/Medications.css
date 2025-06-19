@@ -1,0 +1,614 @@
+/* Import Satoshi Font */
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,800,500,400&display=swap');
+
+/* Medications Page Container */
+.medications-page {
+  width: calc(100% + 80px);
+  height: calc(100% + 80px);
+  margin: -40px;
+  background: #0a0a0a;
+  padding: 40px;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Header Actions */
+.medications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 32px 0;
+  background: transparent;
+  margin: 0;
+}
+
+.header-title {
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.header-btn {
+  padding: 10px 20px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.header-btn:hover {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.header-btn.primary {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #ffffff;
+}
+
+.header-btn.primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+/* Medications Table Container */
+.medications-container {
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid rgba(255, 85, 0, 0.2);
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 280px); /* Adjusted for header + padding */
+}
+
+/* Table Wrapper for scroll */
+.table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Custom scrollbar for table wrapper */
+.table-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: rgba(255, 85, 0, 0.05);
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 85, 0, 0.3);
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 85, 0, 0.5);
+}
+
+/* Table Styles */
+.medications-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  position: relative;
+}
+
+.medications-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #ffffff;
+}
+
+.medications-table th {
+  background: #ffffff;
+  color: #000000;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  padding: 12px 24px 12px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: sticky;
+  top: 0;
+}
+
+.medications-table th:first-child {
+  padding-left: 12px;
+  padding-right: 12px;
+  width: 40px;
+  text-align: center;
+}
+
+.medications-table th:last-child {
+  text-align: right;
+  width: 120px;
+  padding-right: 12px;
+}
+
+.medications-table td {
+  padding: 20px 24px 20px 24px;
+  border-bottom: 1px solid rgba(255, 85, 0, 0.1);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.medications-table td:first-child {
+  padding-left: 12px;
+  padding-right: 12px;
+  text-align: center;
+}
+
+.medications-table td:last-child {
+  padding-right: 12px;
+}
+
+.medications-table tr {
+  transition: all 0.2s ease;
+}
+
+.medications-table tbody tr {
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.medications-table tbody tr.clickable-row {
+  cursor: pointer;
+}
+
+.medications-table tbody tr:hover,
+.medications-table tbody tr.selected {
+  background: #ffffff;
+}
+
+.medications-table tbody tr:hover td,
+.medications-table tbody tr.selected td {
+  color: #000000 !important;
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+.medications-table tbody tr:hover td *,
+.medications-table tbody tr.selected td * {
+  color: #000000 !important;
+  opacity: 1 !important;
+}
+
+.medications-table tbody tr:hover .brand-name,
+.medications-table tbody tr.selected .brand-name {
+  color: #000000 !important;
+  opacity: 1 !important;
+}
+
+.medications-table tbody tr:hover .generic-name,
+.medications-table tbody tr:hover .indication,
+.medications-table tbody tr:hover .dosage-form,
+.medications-table tbody tr:hover .vial-size,
+.medications-table tbody tr.selected .generic-name,
+.medications-table tbody tr.selected .indication,
+.medications-table tbody tr.selected .dosage-form,
+.medications-table tbody tr.selected .vial-size {
+  color: #000000 !important;
+  opacity: 1 !important;
+}
+
+.medications-table tbody tr:hover .action-btn,
+.medications-table tbody tr.selected .action-btn {
+  color: #000000;
+  border-color: rgba(0, 0, 0, 0.3);
+  opacity: 1;
+}
+
+.medications-table tbody tr:hover .action-btn:hover,
+.medications-table tbody tr.selected .action-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.5);
+}
+
+.medications-table tbody tr:hover .medication-checkbox,
+.medications-table tbody tr.selected .medication-checkbox {
+  border-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.medications-table tbody tr:hover .medication-checkbox:checked,
+.medications-table tbody tr.selected .medication-checkbox:checked {
+  background: #000000;
+  border-color: #000000;
+}
+
+.medications-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Medication Data Cells */
+.brand-name {
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 12px;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.generic-name {
+  color: #ffffff;
+  font-weight: 400;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.indication {
+  color: #ffffff;
+  font-weight: 400;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.dosage-form {
+  color: #ffffff;
+  font-weight: 400;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.vial-size {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Action Buttons */
+.actions-cell {
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-right: 0;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.action-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  opacity: 1;
+}
+
+.action-btn.edit:hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  background: rgba(255, 85, 0, 0.1);
+}
+
+.action-btn.delete:hover {
+  color: #ff4444;
+  border-color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #ffffff;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.empty-state h3 {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Checkbox */
+.checkbox-cell {
+  width: 40px;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  text-align: center;
+}
+
+.medication-checkbox {
+  width: 18px;
+  height: 18px;
+  background: rgba(255, 85, 0, 0.1);
+  border: 1.5px solid rgba(255, 85, 0, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Checkbox in header (white background) */
+.medications-table th .medication-checkbox {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+.medications-table th .medication-checkbox:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.5);
+}
+
+.medications-table th .medication-checkbox:checked {
+  background: #000000;
+  border-color: #000000;
+}
+
+.medication-checkbox:hover {
+  border-color: rgba(255, 85, 0, 0.5);
+  background: rgba(255, 85, 0, 0.2);
+}
+
+.medication-checkbox:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.medication-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .medications-header {
+    padding: 0 0 24px 0;
+  }
+  
+  .header-title {
+    font-size: 28px;
+  }
+  
+  .header-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .medications-page {
+    width: calc(100% + 40px);
+    height: calc(100% + 40px);
+    margin: -20px;
+    padding: 20px;
+  }
+  
+  .medications-container {
+    max-height: calc(100vh - 240px);
+  }
+  
+  .medications-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 0 0 20px 0;
+  }
+  
+  .header-title {
+    font-size: 24px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .medications-table th,
+  .medications-table td {
+    padding: 12px 16px 12px 0;
+    font-size: 14px;
+  }
+  
+  /* Hide all columns except checkbox, brand name, and actions on mobile */
+  .medications-table th:nth-child(3),
+  .medications-table th:nth-child(4),
+  .medications-table th:nth-child(5),
+  .medications-table th:nth-child(6),
+  .medications-table td:nth-child(3),
+  .medications-table td:nth-child(4),
+  .medications-table td:nth-child(5),
+  .medications-table td:nth-child(6) {
+    display: none;
+  }
+  
+  .brand-name {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .medications-page {
+    width: calc(100% + 30px);
+    height: calc(100% + 30px);
+    margin: -15px;
+    padding: 15px;
+  }
+  
+  .medications-container {
+    max-height: calc(100vh - 220px);
+  }
+  
+  .header-title {
+    font-size: 20px;
+  }
+  
+  .header-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  
+  .header-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .medications-table th,
+  .medications-table td {
+    padding: 10px 12px 10px 0;
+    font-size: 13px;
+  }
+  
+  .brand-name {
+    font-size: 14px;
+  }
+  
+  .action-btn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .action-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Upload Notification Styles */
+.upload-notification {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 16px 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+  max-width: 400px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.upload-notification.uploading {
+  border-color: var(--primary-color);
+}
+
+.upload-notification.success {
+  border-color: #00ff00;
+}
+
+.upload-notification.error {
+  border-color: #ff4444;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #ffffff;
+}
+
+.notification-content svg {
+  flex-shrink: 0;
+}
+
+.upload-notification.success .notification-content svg {
+  color: #00ff00;
+}
+
+.upload-notification.error .notification-content svg {
+  color: #ff4444;
+}
+
+/* Spinner Animation */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 85, 0, 0.3);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive notification */
+@media (max-width: 768px) {
+  .upload-notification {
+    top: 80px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}

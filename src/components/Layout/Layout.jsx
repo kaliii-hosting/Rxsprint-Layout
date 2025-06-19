@@ -11,7 +11,7 @@ import {
   Droplet,
   Package,
   Search,
-  Settings,
+  Mic,
   User,
   Calculator as CalcIcon
 } from 'lucide-react';
@@ -81,10 +81,10 @@ const Layout = ({ children }) => {
                 <CalcIcon size={20} />
               </button>
             )}
-            <button className="icon-button">
-              <Settings size={20} />
+            <button className="icon-button" title="Voice Assistant">
+              <Mic size={20} />
             </button>
-            <button className="icon-button">
+            <button className="icon-button" title="Profile">
               <User size={20} />
             </button>
           </div>
