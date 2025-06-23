@@ -41,6 +41,7 @@
   border-bottom: 1px solid var(--primary-border);
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 0.75rem;
   position: relative;
 }
@@ -52,6 +53,7 @@
   margin: 0;
   letter-spacing: -0.5px;
   text-transform: uppercase;
+  text-align: left;
 }
 
 .section-header svg {
@@ -332,7 +334,7 @@
   font-size: 1rem;
   font-weight: 700;
   color: var(--primary-color);
-  text-align: center;
+  text-align: left;
   margin-bottom: 1rem;
   letter-spacing: 2px;
   text-transform: uppercase;
