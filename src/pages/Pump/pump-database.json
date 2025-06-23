@@ -1,0 +1,1145 @@
+{
+  "medications": {
+    "ALDURAZYME": {
+      "brandName": "ALDURAZYME",
+      "genericName": "Laronidase",
+      "indication": "MPS I - Hurler, Scheie (moderate to severe), & Hurler-Scheie ≥ 6 months old",
+      "dosageForm": "solution",
+      "vialSizes": [
+        {
+          "strength": 2.9,
+          "unit": "mg",
+          "volume": 5,
+          "concentration": 0.58,
+          "reconstitutionSolution": null,
+          "reconstitutionVolume": null
+        }
+      ],
+      "standardDose": {
+        "value": 0.58,
+        "unit": "mg/kg",
+        "frequency": " every week"
+      },
+      "infusionRate": "over 3-4 hours",
+      "salineBagRules": {
+        "weightBased": true,
+        "rules": [
+          {
+            "minWeight": 0,
+            "maxWeight": 20,
+            "bagSize": 100,
+            "description": "≤20 kg: use 100 mL NS"
+          },
+          {
+            "minWeight": 20.1,
+            "maxWeight": null,
+            "bagSize": 250,
+            "description": ">20 kg: use 250 mL NS"
+          }
+        ]
+      },
+      "overfillRules": {
+        "50": 5,
+        "100": 7,
+        "150": 25,
+        "250": 30,
+        "500": 40,
+        "1000": 60
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "weightBased": true,
+        "steps": {
+          "≤20kg": [
+            { "rate": 2, "duration": 15, "description": "10 µg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 4, "duration": 15, "description": "20 µg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 8, "duration": 15, "description": "50 µg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 16, "duration": 15, "description": "100 µg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 32, "duration": "remainder", "description": "200 µg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          ">20kg": [
+            { "rate": 5, "duration": 15, "description": "10 µg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 10, "duration": 15, "description": "20 µg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 20, "duration": 15, "description": "50 µg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 40, "duration": 15, "description": "100 µg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 80, "duration": "remainder", "description": "200 µg/kg/hr", "rateUnit": "ml/hr" }
+          ]
+        }
+      },
+      "notes": "Remove overfill from NS bag. For ≤20 kg (100 mL): start at 2→4→8→16→32 mL/hr q15min, if vitals stable; for >20 kg (250 mL): start at 5→10→20→40→80 mL/hr q15min, if vitals stable; final rate ~3 hrs at 200 µg/kg/hr",
+      "specialDosing": "Fixed doses (no weight-based adjustments): ALDURAZYME: 0.58 mg/kg every week"
+    },
+    "CERDELGA": {
+      "brandName": "CERDELGA",
+      "genericName": "Eliglustat",
+      "indication": "Gaucher's disease type I adults NUIT on file for pediatrics",
+      "dosageForm": "oral",
+      "vialSizes": [
+        {
+          "strength": 84,
+          "unit": "mg",
+          "form": "capsules"
+        }
+      ],
+      "standardDose": {
+        "value": 84,
+        "unit": "mg",
+        "frequency": " twice daily"
+      },
+      "infusionRate": "N/A",
+      "salineBagRules": null,
+      "overfillRules": null,
+      "filter": null,
+      "infusionSteps": null,
+      "notes": "Extensive and Intermediate Metabolizers: Twice daily OR Poor Metabolizers: Once daily",
+      "specialDosing": "Extensive/Intermediate Metabolizers: 84 mg twice daily Poor Metabolizers: 84 mg once daily"
+    },
+    "CEREZYME": {
+      "brandName": "CEREZYME",
+      "genericName": "Imiglucerase",
+      "indication": "Gaucher's disease type I ≥ 2 years old",
+      "dosageForm": "lyophilized",
+      "vialSizes": [
+        {
+          "strength": 400,
+          "unit": "units",
+          "volume": 10.6,
+          "concentration": 40,
+          "reconstitutionSolution": "Sterile water or Normal Saline",
+          "reconstitutionVolume": 10.2,
+          "withdrawVolume": 10.0
+        },
+        {
+          "strength": 200,
+          "unit": "units",
+          "volume": 5.3,
+          "concentration": 40,
+          "reconstitutionSolution": "Sterile water",
+          "reconstitutionVolume": 5.1,
+          "withdrawVolume": 5.0,
+          "availability": "unavailable"
+        }
+      ],
+      "standardDose": {
+        "value": 60,
+        "unit": "units/kg",
+        "frequency": " every 2 weeks",
+        "range": {
+          "min": 2.5,
+          "max": 120,
+          "description": "2.5 units/kg 3 times weekly to 60 units/kg every 2 weeks; may reach 120 units/kg"
+        }
+      },
+      "infusionRate": "over 1-2 hours",
+      "salineBagRules": {
+        "volumeBased": true,
+        "defaultVolume": "100-200 mL NS"
+      },
+      "overfillRules": {
+        "50": 5,
+        "100": 7,
+        "150": 25,
+        "250": 30,
+        "500": 40,
+        "1000": 60
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "defaultInfusion": {
+          "duration": "1-2 hours",
+          "method": "constant rate"
+        }
+      },
+      "notes": "Final concentration = 40 units/mL (10.6 mL total); 200-unit vial unavailable",
+      "specialDosing": "Fixed doses (no weight-based adjustments): CEREZYME: 60 units/kg every 2 weeks (range: 2.5-60 units/kg)"
+    },
+    "ELAPRASE": {
+      "brandName": "ELAPRASE",
+      "genericName": "Idursulfase",
+      "indication": "MPS II - Hunter Syndrome ≥16 months old",
+      "dosageForm": "solution",
+      "vialSizes": [
+        {
+          "strength": 6,
+          "unit": "mg",
+          "volume": 3,
+          "concentration": 2
+        }
+      ],
+      "standardDose": {
+        "value": 0.5,
+        "unit": "mg/kg",
+        "frequency": " every week"
+      },
+      "infusionRate": "Taper over 1–3 hrs (max 8 hrs); limit 100 mL/hr",
+      "salineBagRules": {
+        "fixed": true,
+        "bagSize": 100,
+        "specialInstructions": "DO NOT remove drug volume or overfill"
+      },
+      "overfillRules": {
+        "100": 7,
+        "specialRule": "DO NOT remove drug volume or overfill"
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "stepwise": true,
+        "steps": [
+          { "rate": 8, "duration": 15, "description": "Initial rate", "rateUnit": "ml/hr" },
+          { "rate": "increase by 8", "duration": 15, "description": "Increase by 8 mL/hr every 15 min", "rateUnit": "ml/hr" },
+          { "rate": 100, "duration": "remainder", "description": "Maximum rate", "rateUnit": "ml/hr" }
+        ]
+      },
+      "notes": "Infuse 8ml/hr for 1st 15 min. May increase Q15 min.",
+      "specialDosing": "Fixed doses (no weight-based adjustments): ELAPRASE: 0.5 mg/kg every week"
+    },
+    "ELFABRIO": {
+      "brandName": "ELFABRIO",
+      "genericName": "Pegunigalsidase alfa-iwxj",
+      "indication": "Fabry in adults",
+      "dosageForm": "solution",
+      "vialSizes": [
+        {
+          "strength": 20,
+          "unit": "mg",
+          "volume": 10,
+          "concentration": 2
+        },
+        {
+          "strength": 5,
+          "unit": "mg",
+          "volume": 2.5,
+          "concentration": 2
+        }
+      ],
+      "standardDose": {
+        "value": 1,
+        "unit": "mg/kg",
+        "frequency": " every 2 weeks"
+      },
+      "infusionRate": "Minimum infusion time: 1.5 hrs",
+      "salineBagRules": {
+        "weightBased": true,
+        "rules": [
+          {
+            "minWeight": 0,
+            "maxWeight": 70,
+            "bagSize": 150,
+            "description": "weight < 70 kg = 150 mL NS"
+          },
+          {
+            "minWeight": 70,
+            "maxWeight": 100,
+            "bagSize": 250,
+            "description": "weight = 70–100 kg = 250 mL NS"
+          },
+          {
+            "minWeight": 100.1,
+            "maxWeight": null,
+            "bagSize": 500,
+            "description": "weight > 100 kg = 500 mL NS"
+          }
+        ]
+      },
+      "overfillRules": {
+        "50": 5,
+        "100": 7,
+        "150": 25,
+        "250": 30,
+        "500": 40,
+        "1000": 60
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "ertStatus": true,
+        "steps": {
+          "ertNaive": {
+            "<70kg": { "rate": 37.5, "rateUnit": "ml/hr", "description": "0.63 mL/min" },
+            "70-100kg": { "rate": 60, "rateUnit": "ml/hr", "description": "1 mL/min" },
+            ">100kg": { "rate": 83, "rateUnit": "ml/hr", "description": "1.38 mL/min" }
+          },
+          "ertExperienced": {
+            "<70kg": { "rate": 50, "rateUnit": "ml/hr", "description": "0.83 mL/min" },
+            "70-100kg": { "rate": 83, "rateUnit": "ml/hr", "description": "1.39 mL/min" },
+            ">100kg": { "rate": 167, "rateUnit": "ml/hr", "description": "2.78 mL/min" }
+          }
+        }
+      },
+      "notes": "N/A",
+      "specialDosing": "Standard dose: 1 mg/kg every 2 weeks Special consideration: Different infusion rates for ERT-naive vs ERT-experienced patients"
+    },
+    "ELELYSO": {
+      "brandName": "ELELYSO",
+      "genericName": "Taliglucerase alfa",
+      "indication": "Gaucher's disease type I ≥ 4 years old",
+      "dosageForm": "lyophilized",
+      "vialSizes": [
+        {
+          "strength": 200,
+          "unit": "units",
+          "volume": 5,
+          "concentration": 40,
+          "reconstitutionSolution": "Sterile water",
+          "reconstitutionVolume": 5.1
+        }
+      ],
+      "standardDose": {
+        "value": 60,
+        "unit": "units/kg",
+        "frequency": " every 2 weeks"
+      },
+      "infusionRate": "over 1-2 hrs",
+      "salineBagRules": {
+        "ageBasedPediatric": true,
+        "rules": [
+          {
+            "type": "pediatric",
+            "bagSize": [100, 120],
+            "description": "Final volume = 100–120 mL"
+          },
+          {
+            "type": "adult",
+            "bagSize": [130, 150],
+            "description": "Final volume = 130–150 mL",
+            "maxVolume": 200
+          }
+        ]
+      },
+      "overfillRules": {
+        "50": 5,
+        "100": 7,
+        "150": 25,
+        "250": 30,
+        "500": 40,
+        "1000": 60
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "ageBasedSteps": true,
+        "pediatric": {
+          "initialRate": 1,
+          "maxRate": 2,
+          "unit": "mL/min",
+          "minimumTime": 60
+        },
+        "adult": {
+          "initialRate": 1.2,
+          "maxRate": 2.2,
+          "unit": "mL/min",
+          "minimumTime": 60
+        }
+      },
+      "notes": "Final conc. 200 units/5ml",
+      "specialDosing": "Fixed doses (no weight-based adjustments): ELELYSO: 60 units/kg every 2 weeks"
+    },
+    "FABRAZYME": {
+      "brandName": "FABRAZYME",
+      "genericName": "Agalsidase Beta",
+      "indication": "Fabry ≥2 years old",
+      "dosageForm": "lyophilized",
+      "vialSizes": [
+        {
+          "strength": 35,
+          "unit": "mg",
+          "volume": 7.2,
+          "concentration": 5,
+          "reconstitutionSolution": "Sterile water or Normal Saline",
+          "reconstitutionVolume": 7.2
+        },
+        {
+          "strength": 5,
+          "unit": "mg",
+          "volume": 1.1,
+          "concentration": 5,
+          "reconstitutionSolution": "Sterile water or Normal Saline",
+          "reconstitutionVolume": 1.1
+        }
+      ],
+      "standardDose": {
+        "value": 1,
+        "unit": "mg/kg",
+        "frequency": " every 2 weeks"
+      },
+      "infusionRate": "15mg/hr",
+      "salineBagRules": {
+        "weightBased": true,
+        "rules": [
+          {
+            "minWeight": 0,
+            "maxWeight": 35,
+            "bagSize": 50,
+            "description": "weight <35 kg = 50 mL NS"
+          },
+          {
+            "minWeight": 35.1,
+            "maxWeight": 70,
+            "bagSize": 100,
+            "description": "weight = 35.1–70 kg = 100 mL NS"
+          },
+          {
+            "minWeight": 70.1,
+            "maxWeight": 100,
+            "bagSize": 200,
+            "description": "weight = 70.1–100 kg = 200 mL NS"
+          },
+          {
+            "minWeight": 100.1,
+            "maxWeight": null,
+            "bagSize": 500,
+            "description": ">100 kg = 500 mL NS"
+          }
+        ]
+      },
+      "overfillRules": {
+        "50": 5,
+        "100": 7,
+        "150": 25,
+        "250": 30,
+        "500": 40,
+        "1000": 60
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "mgBasedSteps": true,
+        "initialRate": 0.25,
+        "initialRateUnit": "mg/min",
+        "maxRateUnder30kg": 0.25,
+        "escalationRate": "0.05–0.08 mg/min per infusion",
+        "minimumDurationOver30kg": 1.5,
+        "rechallenge": {
+          "dose": 0.5,
+          "initialRate": 0.01,
+          "escalation": "double every 30 min to max 0.25 mg/min"
+        }
+      },
+      "notes": "Final concentration = 5mg/ml",
+      "specialDosing": "Standard dose: 1 mg/kg every 2 weeks Rechallenge protocol: 0.5 mg/kg (for IgE-positive or skin-test-positive patients) Special infusion: Start at 0.01 mg/min, double rate every 30 min to max 0.25 mg/min"
+    },
+    "KANUMA": {
+      "brandName": "KANUMA",
+      "genericName": "Sebalipase alfa",
+      "indication": "Lysosomal Acid Lipase (LAL) deficiency for rapidly progressive LAL presenting w/in 1st 6 months of life",
+      "dosageForm": "solution",
+      "vialSizes": [
+        {
+          "strength": 20,
+          "unit": "mg",
+          "volume": 10,
+          "concentration": 2
+        }
+      ],
+      "standardDose": {
+        "value": 1,
+        "unit": "mg/kg",
+        "frequency": " every 2 weeks",
+        "rapidProgression": 3,
+        "infantFrequency": "every week if age < 6 months"
+      },
+      "infusionRate": "Infuse over at least 2 hrs; if tolerated, may infuse over 1 hr at 1 mg/kg",
+      "salineBagRules": {
+        "weightAndDoseBased": true,
+        "rules": [
+          {
+            "minWeight": 1,
+            "maxWeight": 10.9,
+            "dose1mg": 10,
+            "dose3mg": 25
+          },
+          {
+            "minWeight": 11,
+            "maxWeight": 24.9,
+            "dose1mg": 25,
+            "dose3mg": 50
+          },
+          {
+            "minWeight": 25,
+            "maxWeight": 49.9,
+            "dose1mg": 50,
+            "dose3mg": 100
+          },
+          {
+            "minWeight": 50,
+            "maxWeight": 99.9,
+            "dose1mg": 100,
+            "dose3mg": 250
+          },
+          {
+            "minWeight": 100,
+            "maxWeight": 120.9,
+            "dose1mg": 250,
+            "dose3mg": 500
+          }
+        ]
+      },
+      "overfillRules": {
+        "50": 5,
+        "100": 7,
+        "150": 25,
+        "250": 30,
+        "500": 40,
+        "1000": 60
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "durationBased": true,
+        "minimumDuration": 120,
+        "reducedDurationCondition": "1 mg/kg dose tolerated",
+        "reducedDuration": 60
+      },
+      "notes": "Final concentration = 0.1mg/ml to 1.5mg/ml",
+      "specialDosing": "Standard dose: 1 mg/kg every 2 weeks Rapidly progressing disease: 3 mg/kg every 2 weeks Infants <6 months: Weekly dosing (instead of every 2 weeks)"
+    },
+    "LUMIZYME": {
+      "brandName": "LUMIZYME",
+      "genericName": "Aglucosidase alfa",
+      "indication": "Pompe, originally approved for late-onset No age limit",
+      "dosageForm": "lyophilized",
+      "vialSizes": [
+        {
+          "strength": 50,
+          "unit": "mg",
+          "volume": 10.3,
+          "concentration": 5,
+          "reconstitutionSolution": "Only Sterile Water",
+          "reconstitutionVolume": 10.3
+        }
+      ],
+      "standardDose": {
+        "value": 20,
+        "unit": "mg/kg",
+        "frequency": " every 2 weeks",
+        "weeklyOption": "up to 40 mg/kg weekly"
+      },
+      "infusionRate": "over 4 hours step-wise (max 7 mg/kg/hr)",
+      "salineBagRules": {
+        "weightBased": true,
+        "rules": [
+          { "minWeight": 1.25, "maxWeight": 10, "bagSize": 50 },
+          { "minWeight": 10.1, "maxWeight": 20, "bagSize": 100 },
+          { "minWeight": 20.1, "maxWeight": 30, "bagSize": 150 },
+          { "minWeight": 30.1, "maxWeight": 35, "bagSize": 200 },
+          { "minWeight": 35.1, "maxWeight": 50, "bagSize": 250 },
+          { "minWeight": 50.1, "maxWeight": 60, "bagSize": 300 },
+          { "minWeight": 60.1, "maxWeight": 100, "bagSize": 500 },
+          { "minWeight": 100.1, "maxWeight": 120, "bagSize": 600 },
+          { "minWeight": 120.1, "maxWeight": 140, "bagSize": 700 },
+          { "minWeight": 140.1, "maxWeight": 160, "bagSize": 800 },
+          { "minWeight": 160.1, "maxWeight": 180, "bagSize": 900 },
+          { "minWeight": 180.1, "maxWeight": 200, "bagSize": 1000 }
+        ]
+      },
+      "overfillRules": {
+        "50": 5,
+        "100": 7,
+        "150": 25,
+        "250": 30,
+        "300": 35,
+        "500": 40,
+        "600": 45,
+        "700": 50,
+        "800": 55,
+        "900": 58,
+        "1000": 60
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "weightBased": true,
+        "mgKgSteps": true,
+        "steps": {
+          "1.25-10kg": [
+            { "rate": 3, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 8, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 13, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 18, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "10.1-20kg": [
+            { "rate": 5, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 15, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 25, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 35, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "20.1-30kg": [
+            { "rate": 8, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 23, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 38, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 53, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "30.1-35kg": [
+            { "rate": 10, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 30, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 50, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 70, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "35.1-50kg": [
+            { "rate": 13, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 38, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 63, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 88, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "50.1-60kg": [
+            { "rate": 15, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 45, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 75, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 105, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "60.1-100kg": [
+            { "rate": 25, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 75, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 125, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 175, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "100.1-120kg": [
+            { "rate": 30, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 90, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 150, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 210, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "120.1-140kg": [
+            { "rate": 35, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 105, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 175, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 245, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "140.1-160kg": [
+            { "rate": 40, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 120, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 200, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 280, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "160.1-180kg": [
+            { "rate": 45, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 135, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 225, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 315, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "180.1-200kg": [
+            { "rate": 50, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 150, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 250, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 350, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ]
+        }
+      },
+      "notes": "Final concentration = 5mg/ml",
+      "specialDosing": "Standard dose: 20 mg/kg every 2 weeks Weekly dosing: 40 mg/kg weekly (for some patients)"
+    },
+    "NAGLAZYME": {
+      "brandName": "NAGLAZYME",
+      "genericName": "Galsulfase",
+      "indication": "MPS VI - Maroteaux-Lamy Syndrome",
+      "dosageForm": "solution",
+      "vialSizes": [
+        {
+          "strength": 5,
+          "unit": "mg",
+          "volume": 5,
+          "concentration": 1
+        }
+      ],
+      "standardDose": {
+        "value": 1,
+        "unit": "mg/kg",
+        "frequency": " every week"
+      },
+      "infusionRate": "over 4 hours step-wise",
+      "salineBagRules": {
+        "weightOrConditionBased": true,
+        "rules": [
+          {
+            "condition": "weight <20kg or fluid overload",
+            "bagSize": 100,
+            "overfillRule": "do not remove overfill"
+          },
+          {
+            "condition": "standard",
+            "bagSize": 250,
+            "overfillRule": "remove 30 mL overfill only"
+          }
+        ]
+      },
+      "overfillRules": {
+        "100": 0,
+        "250": 30,
+        "specialRule": "do not remove overfill for 100ml bag, remove overfill ONLY FOR 250 mL NS BAG→ 30 mL"
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "volumeBased": true,
+        "steps": {
+          "250mL": [
+            { "rate": 6, "duration": 60, "description": "First hour", "rateUnit": "ml/hr" },
+            { "rate": 80, "duration": 180, "description": "Remaining 3 hours", "rateUnit": "ml/hr" }
+          ],
+          "100mL": [
+            { "rate": 3, "duration": 60, "description": "First hour", "rateUnit": "ml/hr" },
+            { "rate": 39, "duration": 180, "description": "Remaining 3 hours", "rateUnit": "ml/hr" }
+          ]
+        }
+      },
+      "notes": "6 ml/hr x 1 hr, 80 ml/hr for remaining 3 hours",
+      "specialDosing": "Fixed doses (no weight-based adjustments): NAGLAZYME: 1 mg/kg every week"
+    },
+    "NEXVIAZYME": {
+      "brandName": "NEXVIAZYME",
+      "genericName": "Avalglucosidase alfa",
+      "indication": "Late Onset Pompe disease for patients > 1+ years old",
+      "dosageForm": "lyophilized",
+      "vialSizes": [
+        {
+          "strength": 100,
+          "unit": "mg",
+          "volume": 10,
+          "concentration": 10,
+          "reconstitutionSolution": "Only Sterile Water",
+          "reconstitutionVolume": 10
+        }
+      ],
+      "standardDose": {
+        "value": 20,
+        "unit": "mg/kg",
+        "frequency": " every 2 weeks",
+        "pediatricDose": 40,
+        "pediatricCondition": "if patient weight < 30 kg"
+      },
+      "infusionRate": "over 4-7 hours step-wise",
+      "salineBagRules": {
+        "weightAndDoseBased": true,
+        "specialInstructions": "Must use D5W only - NOT normal saline",
+        "rules": [
+          {
+            "dose": "20mg/kg",
+            "weightRanges": [
+              { "minWeight": 30, "maxWeight": 34.9, "bagSize": 200 },
+              { "minWeight": 35, "maxWeight": 49.9, "bagSize": 250 },
+              { "minWeight": 50, "maxWeight": 59.9, "bagSize": 300 },
+              { "minWeight": 60, "maxWeight": 99.9, "bagSize": 500 },
+              { "minWeight": 100, "maxWeight": 119.9, "bagSize": 600 },
+              { "minWeight": 120, "maxWeight": 140, "bagSize": 700 }
+            ]
+          },
+          {
+            "dose": "40mg/kg",
+            "weightRanges": [
+              { "minWeight": 5, "maxWeight": 9.9, "bagSize": 100 },
+              { "minWeight": 10, "maxWeight": 19.9, "bagSize": 200 },
+              { "minWeight": 20, "maxWeight": 29.9, "bagSize": 300 }
+            ]
+          }
+        ]
+      },
+      "overfillRules": {
+        "50": 5,
+        "100": 7,
+        "150": 25,
+        "250": 30,
+        "300": 35,
+        "500": 40,
+        "600": 45,
+        "700": 50,
+        "1000": 60
+      },
+      "filter": "Genzyme 0.2 micron filter low-protein binding",
+      "infusionSteps": {
+        "doseBasedSteps": true,
+        "mgKgSteps": true,
+        "steps": {
+          "20mg/kg": [
+            { "rate": 1, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 3, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 5, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 7, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "mg/kg/hr" }
+          ],
+          "40mg/kg_initial": [
+            { "rate": 1, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 3, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 5, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 7, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "mg/kg/hr" }
+          ],
+          "40mg/kg_subsequent": [
+            { "rate": 1, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 3, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 6, "duration": 30, "description": "6 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 8, "duration": 30, "description": "8 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 10, "duration": "remainder", "description": "10 mg/kg/hr", "rateUnit": "mg/kg/hr" }
+          ]
+        }
+      },
+      "notes": "Final concentration = 0.5 - 4 mg/ml",
+      "specialDosing": "Adults (≥30 kg): 20 mg/kg every 2 weeks Pediatric (<30 kg): 40 mg/kg every 2 weeks Note: Different infusion protocols for first vs subsequent infusions at 40 mg/kg dose"
+    },
+    "POMBILITI": {
+      "brandName": "POMBILITI",
+      "genericName": "Cipaglucosidase",
+      "indication": "Late-onset Pompe disease in adults",
+      "dosageForm": "lyophilized",
+      "vialSizes": [
+        {
+          "strength": 105,
+          "unit": "mg",
+          "volume": 7,
+          "concentration": 15,
+          "reconstitutionSolution": "Only Sterile Water",
+          "reconstitutionVolume": 7.2
+        },
+        {
+          "strength": 65,
+          "unit": "mg",
+          "form": "capsule"
+        }
+      ],
+      "standardDose": {
+        "value": 20,
+        "unit": "mg/kg",
+        "frequency": " every 2 weeks"
+      },
+      "infusionRate": "Over 4 hours",
+      "salineBagRules": {
+        "weightBased": true,
+        "rules": [
+          { "minWeight": 40, "maxWeight": 50, "bagSize": 250 },
+          { "minWeight": 50.1, "maxWeight": 60, "bagSize": 300 },
+          { "minWeight": 60.1, "maxWeight": 100, "bagSize": 500 },
+          { "minWeight": 100.1, "maxWeight": 120, "bagSize": 600 },
+          { "minWeight": 120.1, "maxWeight": 140, "bagSize": 700 }
+        ]
+      },
+      "overfillRules": {
+        "250": 30,
+        "300": 35,
+        "500": 40,
+        "600": 45,
+        "700": 50
+      },
+      "filter": "Genzyme 0.2 micron filter low-protein binding",
+      "infusionSteps": {
+        "weightBased": true,
+        "mgKgSteps": true,
+        "steps": {
+          "40-50kg": [
+            { "rate": 13, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 38, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 63, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 88, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "50.1-60kg": [
+            { "rate": 15, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 45, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 75, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 105, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "60.1-100kg": [
+            { "rate": 25, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 75, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 125, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 175, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "100.1-120kg": [
+            { "rate": 30, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 90, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 150, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 210, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ],
+          "120.1-140kg": [
+            { "rate": 35, "duration": 30, "description": "1 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 105, "duration": 30, "description": "3 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 175, "duration": 30, "description": "5 mg/kg/hr", "rateUnit": "ml/hr" },
+            { "rate": 245, "duration": "remainder", "description": "7 mg/kg/hr", "rateUnit": "ml/hr" }
+          ]
+        }
+      },
+      "notes": "",
+      "specialDosing": "Weight-based oral dosing alternative: 40-49.9 kg: 195 mg (3 capsules) 50+ kg: 260 mg (4 capsules)"
+    },
+    "VIMIZIM": {
+      "brandName": "VIMIZIM",
+      "genericName": "Elosulfase alfa",
+      "indication": "MPS IVA -Morquio A Syndrome ≥5 years old",
+      "dosageForm": "solution",
+      "vialSizes": [
+        {
+          "strength": 5,
+          "unit": "mg",
+          "volume": 5,
+          "concentration": 1
+        }
+      ],
+      "standardDose": {
+        "value": 2,
+        "unit": "mg/kg",
+        "frequency": " every week"
+      },
+      "infusionRate": "If patient weight < 25kg over 3.5hrs :If patient weight ≥ 25kg over 4.5hrs",
+      "salineBagRules": {
+        "weightBased": true,
+        "rules": [
+          {
+            "minWeight": 0,
+            "maxWeight": 25,
+            "bagSize": 100,
+            "description": "weight <25kg = 100ml NS"
+          },
+          {
+            "minWeight": 25,
+            "maxWeight": null,
+            "bagSize": 250,
+            "description": "weight ≥25kg = 250ml NS"
+          }
+        ]
+      },
+      "overfillRules": {
+        "100": 7,
+        "250": 30,
+        "specialRule": "Remove overfill from bag"
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "weightBased": true,
+        "steps": {
+          "<25kg": [
+            { "rate": 3, "duration": 15, "description": "Initial rate", "rateUnit": "ml/hr" },
+            { "rate": 6, "duration": 15, "description": "Increase by 6 mL/hr", "rateUnit": "ml/hr" },
+            { "rate": 12, "duration": 15, "description": "Increase by 6 mL/hr", "rateUnit": "ml/hr" },
+            { "rate": 18, "duration": 15, "description": "Increase by 6 mL/hr", "rateUnit": "ml/hr" },
+            { "rate": 24, "duration": 15, "description": "Increase by 6 mL/hr", "rateUnit": "ml/hr" },
+            { "rate": 30, "duration": 15, "description": "Increase by 6 mL/hr", "rateUnit": "ml/hr" },
+            { "rate": 36, "duration": "remainder", "description": "Maximum rate", "rateUnit": "ml/hr" }
+          ],
+          "≥25kg": [
+            { "rate": 6, "duration": 15, "description": "Initial rate", "rateUnit": "ml/hr" },
+            { "rate": 12, "duration": 15, "description": "Increase by 12 mL/hr", "rateUnit": "ml/hr" },
+            { "rate": 24, "duration": 15, "description": "Increase by 12 mL/hr", "rateUnit": "ml/hr" },
+            { "rate": 36, "duration": 15, "description": "Increase by 12 mL/hr", "rateUnit": "ml/hr" },
+            { "rate": 48, "duration": 15, "description": "Increase by 12 mL/hr", "rateUnit": "ml/hr" },
+            { "rate": 60, "duration": 15, "description": "Increase by 12 mL/hr", "rateUnit": "ml/hr" },
+            { "rate": 72, "duration": "remainder", "description": "Maximum rate", "rateUnit": "ml/hr" }
+          ]
+        }
+      },
+      "notes": "N/A",
+      "specialDosing": "Fixed doses (no weight-based adjustments): VIMIZIM: 2 mg/kg every week"
+    },
+    "VPRIV": {
+      "brandName": "VPRIV",
+      "genericName": "Velaglucerase alfa",
+      "indication": "Gaucher's disease type I ≥ 4 years old",
+      "dosageForm": "lyophilized",
+      "vialSizes": [
+        {
+          "strength": 400,
+          "unit": "units",
+          "volume": 4.3,
+          "concentration": 100,
+          "reconstitutionSolution": "Only Sterile Water",
+          "reconstitutionVolume": 4.3
+        }
+      ],
+      "standardDose": {
+        "value": 60,
+        "unit": "units/kg",
+        "frequency": " every 2 weeks",
+        "range": {
+          "min": 2.5,
+          "max": 120,
+          "description": "2.5 units/kg 3 times weekly to 60 units/kg every 2 weeks; may reach 120 units/kg"
+        }
+      },
+      "infusionRate": "over 1 hour",
+      "salineBagRules": {
+        "fixed": true,
+        "bagSize": 100,
+        "specialInstructions": "DO NOT remove drug volume or overfill"
+      },
+      "overfillRules": {
+        "100": 7,
+        "specialRule": "DO NOT remove drug volume or overfill"
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "simpleDuration": true,
+        "duration": 60,
+        "description": "To be infused over 1 hour"
+      },
+      "notes": "Final conc. 100 units/ml",
+      "specialDosing": "Fixed doses (no weight-based adjustments): VPRIV: 60 units/kg every 2 weeks"
+    },
+    "XENPOZYME": {
+      "brandName": "XENPOZYME",
+      "genericName": "Olipudase alfa-rpcp",
+      "indication": "Non-central nervous system manifestations of acid sphingomyelinase deficiency (ASMD) (previously known as Niemann-Pick A, A/B, and B)",
+      "dosageForm": "lyophilized",
+      "vialSizes": [
+        {
+          "strength": 20,
+          "unit": "mg",
+          "volume": 5.1,
+          "concentration": 4,
+          "reconstitutionSolution": "Only Sterile Water",
+          "reconstitutionVolume": 5.1
+        },
+        {
+          "strength": 4,
+          "unit": "mg",
+          "volume": 1.1,
+          "concentration": 4,
+          "reconstitutionSolution": "Only Sterile Water",
+          "reconstitutionVolume": 1.1
+        }
+      ],
+      "standardDose": {
+        "escalationSchedule": {
+          "week0": 0.1,
+          "week2": 0.3,
+          "week4": 0.3,
+          "week6": 0.6,
+          "week8": 0.6,
+          "week10": 1.0,
+          "week12": 2.0,
+          "week14": 3.0
+        },
+        "maintenanceDose": 3.0,
+        "unit": "mg/kg",
+        "frequency": " every 2 weeks",
+        "weightAdjustment": "if patient weight < 30 kg = use actual BW, if patient weight > 30 kg = use adjusted BW"
+      },
+      "infusionRate": "Variable based on dose and age",
+      "salineBagRules": {
+        "weightBased": true,
+        "rules": [
+          {
+            "minWeight": 0,
+            "maxWeight": 20,
+            "bagSize": 100,
+            "description": "weight < 20 kg - 100 ml NS"
+          },
+          {
+            "minWeight": 20,
+            "maxWeight": null,
+            "bagSize": 250,
+            "description": "weight > 20 kg - 250 ml NS"
+          }
+        ]
+      },
+      "overfillRules": {
+        "50": 5,
+        "100": 7,
+        "150": 25,
+        "250": 30,
+        "500": 40,
+        "1000": 60
+      },
+      "filter": "low-protein-binding 0.2 micron in-line filter",
+      "infusionSteps": {
+        "ageAndDoseBased": true,
+        "adult": {
+          "0.1mg/kg": [
+            { "rate": 20, "duration": 30, "description": "Step 1", "rateUnit": "ml/hr" },
+            { "rate": 60, "duration": "remainder", "description": "Step 2", "rateUnit": "ml/hr" }
+          ],
+          "0.3-3mg/kg": [
+            { "rate": 3.33, "duration": 60, "description": "Step 1", "rateUnit": "ml/hr" },
+            { "rate": 10, "duration": 60, "description": "Step 2", "rateUnit": "ml/hr" },
+            { "rate": 20, "duration": 60, "description": "Step 3", "rateUnit": "ml/hr" },
+            { "rate": 33.33, "duration": "remainder", "description": "Step 4", "rateUnit": "ml/hr" }
+          ]
+        },
+        "pediatric": {
+          "mgKgSteps": true,
+          "0.03mg/kg": [
+            { "rate": 0.1, "duration": "full", "description": "0.1 mg/kg/hr for entire infusion", "rateUnit": "mg/kg/hr" }
+          ],
+          "0.1mg/kg": [
+            { "rate": 0.1, "duration": 60, "description": "0.1 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 0.3, "duration": "remainder", "description": "0.3 mg/kg/hr", "rateUnit": "mg/kg/hr" }
+          ],
+          "0.3mg/kg": [
+            { "rate": 0.1, "duration": 60, "description": "0.1 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 0.3, "duration": 60, "description": "0.3 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 0.6, "duration": "remainder", "description": "0.6 mg/kg/hr", "rateUnit": "mg/kg/hr" }
+          ],
+          "0.6mg/kg": [
+            { "rate": 0.1, "duration": 60, "description": "0.1 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 0.3, "duration": 60, "description": "0.3 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 0.6, "duration": "remainder", "description": "0.6 mg/kg/hr", "rateUnit": "mg/kg/hr" }
+          ],
+          "1mg/kg": [
+            { "rate": 0.1, "duration": 60, "description": "0.1 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 0.3, "duration": 60, "description": "0.3 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 0.6, "duration": 60, "description": "0.6 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 1.0, "duration": "remainder", "description": "1 mg/kg/hr", "rateUnit": "mg/kg/hr" }
+          ],
+          "2-3mg/kg": [
+            { "rate": 0.1, "duration": 60, "description": "0.1 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 0.3, "duration": 60, "description": "0.3 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 0.6, "duration": 60, "description": "0.6 mg/kg/hr", "rateUnit": "mg/kg/hr" },
+            { "rate": 1.0, "duration": "remainder", "description": "1 mg/kg/hr", "rateUnit": "mg/kg/hr" }
+          ]
+        }
+      },
+      "notes": "May cause high ALT and/or AST within 24-48 hrs following infusion.",
+      "specialDosing": "Dose escalation schedule: Week 0: 0.1 mg/kg Week 2: 0.3 mg/kg Week 4: 0.3 mg/kg Week 6: 0.6 mg/kg Week 8: 0.6 mg/kg Week 10: 1.0 mg/kg Week 12: 2.0 mg/kg Week 14+: 3.0 mg/kg (maintenance)"
+    },
+    "ZAVESCA": {
+      "brandName": "Zavesca",
+      "genericName": "miglustat",
+      "indication": "Gaucher Neimann-Pick C (off label) Also used off label for Batten disease dosed like NPC",
+      "dosageForm": "oral",
+      "vialSizes": [
+        {
+          "strength": 100,
+          "unit": "mg",
+          "form": "capsules"
+        }
+      ],
+      "standardDose": {
+        "value": 100,
+        "unit": "mg",
+        "frequency": " three times daily",
+        "alternativeFrequencies": ["twice daily", "once daily"],
+        "adjustmentCondition": "reduce to BID-daily dosing if ADR diarrhea or tremor"
+      },
+      "infusionRate": "N/A",
+      "salineBagRules": null,
+      "overfillRules": null,
+      "filter": null,
+      "infusionSteps": null,
+      "notes": "Dose adjustment needed for renal impairment CrCl>70ml/min no adj needed CrCl 50-70ml/min = 100mg BID CrCl 30-50 ml/min = 100mg daily CrCl< 30ml/min not recommended Neimann-Pick dosing <12 yrs: BSA>1.25m^2 200mg TID >0.88-1.25m^2 200mg BID >0.73-0.88m^2 100mg TID >0.47-0.73m^2 100mg BID <0.47m^2 100mg daily",
+      "specialDosing": "Based on renal function: CrCl >70: 100 mg three times daily (TID) CrCl 50-70: 100 mg twice daily (BID) CrCl 30-50: 100 mg once daily CrCl <30: Not recommended For Niemann-Pick Type C (<12 years) based on BSA: BSA ≥1.25: 200 mg TID BSA 0.88-1.25: 200 mg BID BSA 0.73-0.88: 100 mg TID BSA 0.47-0.73: 100 mg BID BSA <0.47: 100 mg daily"
+    }
+  },
+  "configuration": {
+    "doseClassification": {
+      "low": {
+        "threshold": 0.8,
+        "label": "Below Standard",
+        "color": "#856404"
+      },
+      "correct": {
+        "minThreshold": 0.8,
+        "maxThreshold": 1.2,
+        "label": "Standard Range",
+        "color": "#155724"
+      },
+      "high": {
+        "threshold": 1.2,
+        "label": "Above Standard",
+        "color": "#721c24"
+      }
+    },
+    "overfillRules": {
+      "50": 5,
+      "100": 7,
+      "150": 25,
+      "250": 30,
+      "500": 40,
+      "1000": 60
+    },
+    "primeVolume": {
+      "default": 10,
+      "unit": "mL"
+    },
+    "flushVolume": {
+      "default": 10,
+      "unit": "mL"
+    }
+  }
+}

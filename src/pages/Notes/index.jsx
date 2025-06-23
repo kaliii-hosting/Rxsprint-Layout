@@ -1,100 +1,65 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Save, X, Calendar, Clock, FileText, Menu, ArrowLeft, Mic } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Save, X, Calendar, Clock, FileText, Star, Filter, ChevronDown } from 'lucide-react';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { firestore } from '../../config/firebase';
-import NoteEditConfirmPopup from '../../components/NoteEditConfirmPopup/NoteEditConfirmPopup';
-import NoteSaveConfirmPopup from '../../components/NoteSaveConfirmPopup/NoteSaveConfirmPopup';
+import { useTheme } from '../../contexts/ThemeContext';
 import './Notes.css';
 
 const Notes = () => {
+  const { theme } = useTheme();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNote, setSelectedNote] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [sortBy, setSortBy] = useState('updated');
+  const [selectAll, setSelectAll] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    category: 'general'
+    starred: false
   });
   
-  // Popup states
-  const [showEditPopup, setShowEditPopup] = useState(false);
-  const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
-  const [editPopupMode, setEditPopupMode] = useState('edit'); // 'edit', 'save', 'delete'
-  const [pendingAction, setPendingAction] = useState(null);
-  const [savedNoteId, setSavedNoteId] = useState(null);
-  const [confirmationMessage, setConfirmationMessage] = useState('');
-  const [showMobileSidebar, setShowMobileSidebar] = useState(true);
-  const [showMobileContent, setShowMobileContent] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  const categories = [
-    { value: 'general', label: 'General', color: '#FF5500' },
-    { value: 'medical', label: 'Medical', color: '#E91E63' },
-    { value: 'dosing', label: 'Dosing', color: '#9C27B0' },
-    { value: 'protocols', label: 'Protocols', color: '#3F51B5' },
-    { value: 'reminders', label: 'Reminders', color: '#00BCD4' },
-    { value: 'voice', label: 'Voice', color: '#4CAF50' }
-  ];
+  // Simple confirmation state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteNoteId, setDeleteNoteId] = useState(null);
+  
+  // Sort field and direction states
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
-    // Set up real-time listener
-    const notesRef = collection(firestore, 'notes');
-    const unsubscribe = onSnapshot(notesRef, (snapshot) => {
-      const notesData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        updatedAt: doc.data().updatedAt?.toDate() || new Date()
-      }));
-      
-      // Sort by updated date, most recent first
-      const sortedNotes = notesData.sort((a, b) => b.updatedAt - a.updatedAt);
-      setNotes(sortedNotes);
+    if (!firestore) {
+      console.warn('Firestore not available, running in offline mode');
       setLoading(false);
-    }, (error) => {
-      console.error('Error loading notes:', error);
-      setLoading(false);
-    });
-    
-    // Cleanup listener on unmount
-    return () => {
-      unsubscribe();
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+      return;
+    }
 
-  const loadNotes = async () => {
     try {
-      setLoading(true);
       const notesRef = collection(firestore, 'notes');
-      const snapshot = await getDocs(notesRef);
+      const unsubscribe = onSnapshot(notesRef, (snapshot) => {
+        const notesData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate() || new Date(),
+          updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+          selected: false
+        }));
+        
+        setNotes(notesData);
+        setLoading(false);
+      }, (error) => {
+        console.error('Error loading notes:', error);
+        setLoading(false);
+      });
       
-      const notesData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        updatedAt: doc.data().updatedAt?.toDate() || new Date()
-      }));
-      
-      // Sort by updated date, most recent first
-      const sortedNotes = notesData.sort((a, b) => b.updatedAt - a.updatedAt);
-      
-      setNotes(sortedNotes);
+      return () => unsubscribe();
     } catch (error) {
-      console.error('Error loading notes:', error);
-    } finally {
+      console.error('Firebase connection error:', error);
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleCreateNote = () => {
     setIsCreating(true);
@@ -103,38 +68,35 @@ const Notes = () => {
     setFormData({
       title: '',
       content: '',
-      category: 'general'
+      starred: false
     });
-    
-    // Show content on mobile when creating new note
-    if (window.innerWidth <= 768) {
-      setShowMobileContent(true);
-    }
   };
 
-  const handleSelectNote = (note) => {
+  const handleSelectAll = () => {
+    const newSelectAll = !selectAll;
+    setSelectAll(newSelectAll);
+    setNotes(notes.map(note => ({ ...note, selected: newSelectAll })));
+  };
+
+  const handleSelectNote = (id) => {
+    setNotes(notes.map(note => 
+      note.id === id ? { ...note, selected: !note.selected } : note
+    ));
+  };
+  
+  const handleRowClick = (note) => {
     setSelectedNote(note);
     setFormData({
       title: note.title || '',
       content: note.content || '',
-      category: note.category || 'general'
+      starred: note.starred || false
     });
     setIsEditing(false);
     setIsCreating(false);
-    
-    // Show content on mobile when note is selected
-    if (window.innerWidth <= 768) {
-      setShowMobileContent(true);
-    }
   };
 
   const handleEdit = () => {
-    // Show PIN confirmation for editing
-    setEditPopupMode('edit');
-    setShowEditPopup(true);
-    setPendingAction(() => () => {
-      setIsEditing(true);
-    });
+    setIsEditing(true);
   };
 
   const handleCancel = () => {
@@ -144,38 +106,31 @@ const Notes = () => {
       setFormData({
         title: '',
         content: '',
-        category: 'general'
+        starred: false
       });
-      // Go back to list on mobile
-      if (window.innerWidth <= 768) {
-        setShowMobileContent(false);
-      }
     } else if (selectedNote) {
       setFormData({
         title: selectedNote.title || '',
         content: selectedNote.content || '',
-        category: selectedNote.category || 'general'
+        starred: selectedNote.starred || false
       });
     }
     setIsEditing(false);
   };
 
   const handleSave = async () => {
-    // If creating new note, bypass PIN
-    if (isCreating) {
-      await processSave();
-    } else {
-      // Show PIN confirmation for saving existing note
-      setEditPopupMode('save');
-      setShowEditPopup(true);
-      setPendingAction(() => processSave);
+    if (!formData.title.trim()) {
+      alert('Please enter a title for the note.');
+      return;
     }
-  };
-  
-  const processSave = async () => {
+
+    if (!firestore) {
+      alert('Database connection not available. Please check your connection.');
+      return;
+    }
+
     try {
       if (isCreating) {
-        // Create new note
         const notesRef = collection(firestore, 'notes');
         const docRef = await addDoc(notesRef, {
           ...formData,
@@ -183,68 +138,108 @@ const Notes = () => {
           updatedAt: serverTimestamp()
         });
         
-        setSavedNoteId(docRef.id);
         setIsCreating(false);
-        setConfirmationMessage('New note created successfully');
+        setSelectedNote({ id: docRef.id, ...formData });
       } else if (selectedNote) {
-        // Update existing note
         const noteRef = doc(firestore, 'notes', selectedNote.id);
         await updateDoc(noteRef, {
           ...formData,
           updatedAt: serverTimestamp()
         });
-        
-        setSavedNoteId(selectedNote.id);
-        setConfirmationMessage('Note saved successfully');
       }
       
       setIsEditing(false);
-      setShowSaveConfirmation(true);
-      
     } catch (error) {
       console.error('Error saving note:', error);
       alert('Failed to save note. Please try again.');
     }
   };
 
-  const handleDelete = async (noteId) => {
-    // Show PIN confirmation for deletion
-    setEditPopupMode('delete');
-    setShowEditPopup(true);
-    setPendingAction(() => () => processDelete(noteId));
+  const handleDelete = (noteId) => {
+    setDeleteNoteId(noteId);
+    setShowDeleteConfirm(true);
   };
-  
-  const processDelete = async (noteId) => {
+
+  const confirmDelete = async () => {
+    if (!deleteNoteId || !firestore) return;
+    
     try {
-      await deleteDoc(doc(firestore, 'notes', noteId));
+      await deleteDoc(doc(firestore, 'notes', deleteNoteId));
       
-      if (selectedNote?.id === noteId) {
+      if (selectedNote?.id === deleteNoteId) {
         setSelectedNote(null);
         setFormData({
           title: '',
           content: '',
-          category: 'general'
+          category: 'general',
+          starred: false
         });
+        setIsCreating(false);
+        setIsEditing(false);
       }
       
-      setConfirmationMessage('Note deleted successfully');
-      setShowSaveConfirmation(true);
-      
-      // Auto-hide after 2 seconds for deletion
-      setTimeout(() => {
-        setShowSaveConfirmation(false);
-      }, 2000);
-      
+      setShowDeleteConfirm(false);
+      setDeleteNoteId(null);
     } catch (error) {
       console.error('Error deleting note:', error);
       alert('Failed to delete note. Please try again.');
     }
   };
 
-  const filteredNotes = notes.filter(note =>
-    note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    note.content.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const toggleStar = async (note) => {
+    if (!firestore) return;
+    
+    try {
+      const noteRef = doc(firestore, 'notes', note.id);
+      await updateDoc(noteRef, {
+        starred: !note.starred
+      });
+    } catch (error) {
+      console.error('Error updating star status:', error);
+    }
+  };
+
+  // Filter and sort notes
+  const filteredNotes = notes.filter(note => {
+    const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         note.content.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
+  });
+
+  // Sorting function
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Filter and sort notes
+  const getFilteredAndSortedNotes = () => {
+    let filtered = [...filteredNotes];
+
+    // Apply sorting
+    if (sortField) {
+      filtered.sort((a, b) => {
+        let aValue = a[sortField] || '';
+        let bValue = b[sortField] || '';
+
+        // Convert to uppercase for case-insensitive sorting
+        if (typeof aValue === 'string') aValue = aValue.toUpperCase();
+        if (typeof bValue === 'string') bValue = bValue.toUpperCase();
+
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  };
+
+  const displayNotes = getFilteredAndSortedNotes();
 
   const formatDate = (date) => {
     if (!date) return '';
@@ -268,341 +263,329 @@ const Notes = () => {
     }
   };
 
-  const getCategoryColor = (category) => {
-    const cat = categories.find(c => c.value === category);
-    return cat ? cat.color : '#FF5500';
-  };
-  
-  const handleConfirmEdit = () => {
-    setShowEditPopup(false);
-    if (pendingAction) {
-      pendingAction();
-      setPendingAction(null);
+  // Handler for Edit button
+  const handleEditSelected = () => {
+    const selectedNotes = notes.filter(note => note.selected);
+    if (selectedNotes.length === 0) {
+      alert('Please select a note to edit');
+      return;
     }
-  };
-  
-  const handleCancelEdit = () => {
-    setShowEditPopup(false);
-    setPendingAction(null);
-  };
-  
-  const handleSaveConfirmationClose = () => {
-    setShowSaveConfirmation(false);
-    setSavedNoteId(null);
-  };
-  
-  const handleViewSavedNote = () => {
-    setShowSaveConfirmation(false);
-    if (savedNoteId) {
-      const note = notes.find(n => n.id === savedNoteId);
-      if (note) {
-        handleSelectNote(note);
-      }
+    if (selectedNotes.length > 1) {
+      alert('Please select only one note to edit');
+      return;
     }
-    setSavedNoteId(null);
+    handleRowClick(selectedNotes[0]);
+    setIsEditing(true);
   };
 
-  const handleBackToList = () => {
-    setShowMobileContent(false);
+  // Handler for Delete button
+  const handleDeleteSelected = () => {
+    const selectedNotes = notes.filter(note => note.selected);
+    if (selectedNotes.length === 0) {
+      alert('Please select at least one note to delete');
+      return;
+    }
+    if (selectedNotes.length === 1) {
+      handleDelete(selectedNotes[0].id);
+    } else {
+      if (confirm(`Are you sure you want to delete ${selectedNotes.length} notes?`)) {
+        selectedNotes.forEach(note => handleDelete(note.id));
+      }
+    }
+  };
+
+  const closeNote = () => {
     setSelectedNote(null);
     setIsEditing(false);
+    setIsCreating(false);
+    setFormData({
+      title: '',
+      content: '',
+      category: 'general',
+      starred: false
+    });
   };
 
   return (
-    <div className="notes-page">
-      <div className="notes-container">
-        {/* Mobile View - Table Layout */}
-        {isMobile ? (
-          <div className="mobile-notes-table-container">
-            <div className="mobile-notes-header">
-              <h2>My Notes</h2>
-              <button className="mobile-create-btn" onClick={handleCreateNote}>
-                <Plus size={20} />
-                Create Note
-              </button>
+    <div className="notes-page page-container">
+      <div className="notes-content">
+        <div className="notes-dashboard">
+          <div className="dashboard-card">
+            <div className="card-header">
+              <h3>Notes Database</h3>
+              <FileText size={24} />
             </div>
-            
-            <div className="mobile-notes-table-wrapper">
-              <div className="mobile-table-scroll">
-                {loading ? (
-                  <div className="mobile-loading-state">
-                    <div className="spinner" />
-                    <p>Loading notes...</p>
-                  </div>
-                ) : notes.length > 0 ? (
-                  <table className="mobile-notes-table">
-                    <thead>
-                      <tr>
-                        <th>Note</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {notes.map(note => (
-                        <tr 
-                          key={note.id} 
-                          onClick={(e) => {
-                            if (!e.target.closest('.mobile-action-btn')) {
-                              handleSelectNote(note);
-                            }
-                          }}
-                        >
-                          <td>
-                            <span className="mobile-note-title">{note.title || 'Untitled'}</span>
-                            <span 
-                              className="mobile-note-category"
-                              style={{ backgroundColor: getCategoryColor(note.category) }}
-                            >
-                              {categories.find(c => c.value === note.category)?.label || 'General'}
-                            </span>
-                          </td>
-                          <td className="mobile-actions-cell">
-                            <button
-                              className="mobile-action-btn edit"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSelectNote(note);
-                              }}
-                              title="Edit note"
-                            >
-                              <Edit2 size={16} />
-                            </button>
-                            <button
-                              className="mobile-action-btn delete"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(note.id);
-                              }}
-                              title="Delete note"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <div className="mobile-empty-state">
-                    <FileText size={64} />
-                    <h3>No notes yet</h3>
-                    <p>Create your first note to get started</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ) : (
-          /* Desktop View - Keep existing layout */
-          <>
-            {/* Sidebar - always visible on desktop */}
-            <div className="notes-sidebar">
-              <div className="sidebar-header">
-                <h2>Notes</h2>
-                <button className="create-note-btn" onClick={handleCreateNote}>
-                  <Plus size={20} />
-                </button>
+            <div className="card-body">
+              <div className="filter-options">
+                <div className="search-container">
+                  <Search size={18} />
+                  <input
+                    type="text"
+                    placeholder="Search notes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="search-input"
+                  />
+                </div>
+                <div className="results-count">{displayNotes.length} Results</div>
               </div>
               
-              <div className="search-container">
-                <Search size={18} className="search-icon" />
-                <input
-                  type="text"
-                  placeholder="Search notes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
-                />
-              </div>
-              
-              <div className="notes-list">
+              <div className="notes-container">
                 {loading ? (
                   <div className="loading-state">
                     <div className="spinner" />
                     <p>Loading notes...</p>
                   </div>
-                ) : filteredNotes.length > 0 ? (
-                  filteredNotes.map(note => (
-                    <div
-                      key={note.id}
-                      className={`note-item ${selectedNote?.id === note.id ? 'active' : ''}`}
-                      onClick={(e) => {
-                        if (!e.target.closest('.note-delete-btn')) {
-                          handleSelectNote(note);
-                        }
-                      }}
-                    >
-                      <div className="note-item-header">
-                        <h3>{note.title || 'Untitled'}</h3>
-                        <div className="note-item-actions">
-                          <span 
-                            className="note-category"
-                            style={{ backgroundColor: getCategoryColor(note.category) }}
-                          >
-                            {categories.find(c => c.value === note.category)?.label || 'General'}
-                          </span>
-                          <button
-                            className="note-delete-btn"
+                ) : displayNotes.length > 0 ? (
+                  <div className="table-wrapper">
+                    <table className="prescriptions-table">
+                      <thead>
+                        <tr>
+                          <th className="checkbox-cell">
+                            <div className="add-icon" onClick={handleCreateNote}>+</div>
+                          </th>
+                          <th className="sortable" onClick={() => handleSort('title')}>
+                            <span>Title</span>
+                            {sortField === 'title' && (
+                              <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                            )}
+                          </th>
+                          <th className="sortable" onClick={() => handleSort('content')}>
+                            <span>Content Preview</span>
+                            {sortField === 'content' && (
+                              <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                            )}
+                          </th>
+                          <th className="sortable" onClick={() => handleSort('updatedAt')}>
+                            <span>Last Updated</span>
+                            {sortField === 'updatedAt' && (
+                              <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                            )}
+                          </th>
+                          <th>Starred</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {displayNotes.map((note, index) => (
+                          <tr 
+                            key={note.id} 
+                            className="prescription-row"
                             onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(note.id);
+                              if (!e.target.closest('.checkbox-cell') && !e.target.closest('.view-link')) {
+                                handleRowClick(note);
+                              }
                             }}
-                            title="Delete note"
                           >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </div>
-                      <p className="note-preview">
-                        {note.content?.substring(0, 100)}
-                        {note.content?.length > 100 ? '...' : ''}
-                      </p>
-                      <div className="note-meta">
-                        <Clock size={12} />
-                        <span>{formatDate(note.updatedAt)}</span>
-                      </div>
+                            <td className="checkbox-cell">
+                              <input
+                                type="checkbox"
+                                className="prescription-checkbox"
+                                checked={note.selected || false}
+                                onChange={() => handleSelectNote(note.id)}
+                              />
+                            </td>
+                            <td className="brand-name">{note.title?.toUpperCase() || 'UNTITLED'}</td>
+                            <td className="generic-name">
+                              {note.content ? 
+                                (note.content.length > 100 ? 
+                                  note.content.substring(0, 100) + '...' : 
+                                  note.content
+                                ) : 
+                                'No content'
+                              }
+                            </td>
+                            <td className="dosage-form">{formatDate(note.updatedAt)}</td>
+                            <td className="vial-size">
+                              {note.starred ? (
+                                <Star size={16} className="starred-icon" fill="currentColor" />
+                              ) : (
+                                '-'
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    
+                    <div className="action-buttons prescription-actions">
+                      <button className="calculate-btn add-note-btn" onClick={handleCreateNote}>
+                        <Plus size={16} />
+                        Add New Note
+                      </button>
+                      <button className="reset-btn edit" onClick={handleEditSelected}>
+                        <Edit2 size={16} />
+                        Edit
+                      </button>
+                      <button className="reset-btn delete" onClick={handleDeleteSelected}>
+                        <Trash2 size={16} />
+                        Delete
+                      </button>
                     </div>
-                  ))
+                  </div>
                 ) : (
                   <div className="empty-state">
-                    <FileText size={48} />
-                    <p>No notes found</p>
+                    <h3>No notes added yet</h3>
+                    <p>Click "Add Note" to start adding notes</p>
                   </div>
                 )}
               </div>
             </div>
-          </>
-        )}
-        
-        {/* Main Content - For both mobile and desktop */}
-        <div className={`notes-content ${showMobileContent || !isMobile ? 'active' : ''}`}>
-          {selectedNote || isCreating ? (
-            <div className="note-editor">
-              <div className="editor-header">
-                {isMobile && (
-                  <button className="mobile-editor-back" onClick={handleBackToList}>
-                    <ArrowLeft size={24} />
-                  </button>
-                )}
-                {isEditing ? (
-                  <>
-                    <input
-                      type="text"
-                      className="note-title-input"
-                      placeholder="Note title..."
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    />
-                    <div className="editor-actions">
-                      <select
-                        className="category-select"
-                        value={formData.category}
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        style={{ borderColor: getCategoryColor(formData.category) }}
-                      >
-                        {categories.map(cat => (
-                          <option key={cat.value} value={cat.value}>
-                            {cat.label}
-                          </option>
-                        ))}
-                      </select>
-                      <button className="cancel-btn" onClick={handleCancel}>
-                        <X size={18} />
-                        Cancel
-                      </button>
-                      <button className="save-btn" onClick={handleSave}>
-                        <Save size={18} />
-                        Save
-                      </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Note Editor Modal */}
+      {(selectedNote || isCreating) && (
+        <div className="modal-overlay" onClick={closeNote}>
+          <div className="note-editor-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{isCreating ? 'Create New Note' : (isEditing ? 'Edit Note' : 'View Note')}</h2>
+              <button 
+                className="close-btn"
+                onClick={closeNote}
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              {isEditing || isCreating ? (
+                <div className="note-form-section">
+                  <div className="section-header">
+                    <h3>Note Details</h3>
+                    <FileText size={20} />
+                  </div>
+                  <div className="input-grid">
+                    <div className="input-group">
+                      <label>Note Title</label>
+                      <input
+                        type="text"
+                        className="pump-input"
+                        placeholder="Enter note title..."
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        autoFocus
+                      />
                     </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="note-title-display">
-                      <h1>{formData.title || 'Untitled'}</h1>
-                      <span 
-                        className="note-category-display"
-                        style={{ backgroundColor: getCategoryColor(formData.category) }}
-                      >
-                        {categories.find(c => c.value === formData.category)?.label || 'General'}
-                      </span>
+                    
+                    <div className="input-group">
+                      <label>Note Content</label>
+                      <textarea
+                        className="pump-input note-textarea"
+                        placeholder="Write your note here..."
+                        value={formData.content}
+                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                        rows="12"
+                      />
                     </div>
-                    <div className="editor-actions">
-                      <button className="edit-btn" onClick={handleEdit}>
-                        <Edit2 size={18} />
-                        Edit
-                      </button>
-                      <button 
-                        className="delete-btn" 
-                        onClick={() => handleDelete(selectedNote.id)}
-                      >
-                        <Trash2 size={18} />
-                        Delete
-                      </button>
+
+                    <div className="input-group checkbox-group">
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={formData.starred}
+                          onChange={(e) => setFormData({ ...formData, starred: e.target.checked })}
+                        />
+                        <span>Star this note for quick access</span>
+                      </label>
                     </div>
-                  </>
-                )}
-              </div>
-              
-              <div className="editor-body">
-                {isEditing ? (
-                  <textarea
-                    className="note-content-input"
-                    placeholder="Start typing your note..."
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  />
-                ) : (
+                  </div>
+                </div>
+              ) : (
+                <div className="note-view-section">
+                  <div className="section-header">
+                    <h3>{formData.title || 'Untitled'}</h3>
+                    {selectedNote?.starred && (
+                      <Star className="starred-indicator" size={20} fill="#ff5500" />
+                    )}
+                  </div>
+                  
+                  <div className="note-meta-info">
+                    {selectedNote && (
+                      <div className="timestamps">
+                        <span className="timestamp">
+                          <Calendar size={14} />
+                          Created {selectedNote.createdAt?.toLocaleDateString()}
+                        </span>
+                        <span className="timestamp">
+                          <Clock size={14} />
+                          Updated {formatDate(selectedNote.updatedAt)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="note-content-display">
-                    {formData.content || 'No content'}
-                  </div>
-                )}
-              </div>
-              
-              {selectedNote && !isCreating && (
-                <div className="note-footer">
-                  <div className="note-timestamp">
-                    <Calendar size={14} />
-                    <span>Created: {selectedNote.createdAt?.toLocaleDateString()}</span>
-                  </div>
-                  <div className="note-timestamp">
-                    <Clock size={14} />
-                    <span>Updated: {formatDate(selectedNote.updatedAt)}</span>
+                    <div className="content-wrapper">
+                      {formData.content || <em style={{ color: '#999' }}>No content</em>}
+                    </div>
                   </div>
                 </div>
               )}
             </div>
-          ) : (
-            <div className="no-note-selected">
-              <FileText size={64} />
-              <h2>Select a note to view</h2>
-              <p>Choose a note from the sidebar or create a new one</p>
-              <button className="create-note-cta" onClick={handleCreateNote}>
-                <Plus size={20} />
-                Create New Note
+            
+            <div className="action-buttons modal-footer">
+              {isEditing || isCreating ? (
+                <>
+                  <button className="reset-btn" onClick={handleCancel}>
+                    Cancel
+                  </button>
+                  <button className="calculate-btn" onClick={handleSave}>
+                    <Save size={16} />
+                    Save Note
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="reset-btn" onClick={() => handleDelete(selectedNote.id)}>
+                    <Trash2 size={16} />
+                    Delete
+                  </button>
+                  <button className="calculate-btn" onClick={handleEdit}>
+                    <Edit2 size={16} />
+                    Edit Note
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Delete Note</h3>
+              <button 
+                className="close-modal-btn"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                <X size={20} />
               </button>
             </div>
-          )}
+            <div className="modal-body">
+              <p>Are you sure you want to delete this note? This action cannot be undone.</p>
+            </div>
+            <div className="modal-actions">
+              <button 
+                className="cancel-btn"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="delete-confirm-btn"
+                onClick={confirmDelete}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-      
-      {/* Edit/Delete Confirmation Popup */}
-      <NoteEditConfirmPopup
-        isOpen={showEditPopup}
-        noteTitle={selectedNote?.title || formData.title || 'this note'}
-        onConfirm={handleConfirmEdit}
-        onCancel={handleCancelEdit}
-        mode={editPopupMode}
-      />
-      
-      {/* Save Confirmation Popup */}
-      <NoteSaveConfirmPopup
-        isOpen={showSaveConfirmation}
-        message={confirmationMessage}
-        onClose={handleSaveConfirmationClose}
-        onViewNote={handleViewSavedNote}
-        showButtons={!confirmationMessage.includes('deleted')}
-      />
+      )}
     </div>
   );
 };

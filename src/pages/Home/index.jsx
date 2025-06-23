@@ -164,7 +164,7 @@ const Home = () => {
   const ecgPath = "M -200,200 L 0,200 L 100,200 L 120,200 L 130,180 L 140,220 L 150,200 L 200,200 L 250,200 L 260,120 L 270,280 L 280,200 L 350,200 L 400,200 L 420,200 L 430,180 L 440,220 L 450,200 L 500,200 L 550,200 L 560,120 L 570,280 L 580,200 L 650,200 L 700,200 L 720,200 L 730,180 L 740,220 L 750,200 L 800,200 L 850,200 L 860,120 L 870,280 L 880,200 L 950,200 L 1000,200 L 1100,200 L 1120,200 L 1130,180 L 1140,220 L 1150,200 L 1200,200";
 
   return (
-    <div className="home-page-wrapper">
+    <div className="home-page-wrapper page-container">
       <div className="home-container" ref={containerRef}>
         <div className="animation-wrapper">
           <div className="bg-gradient"></div>

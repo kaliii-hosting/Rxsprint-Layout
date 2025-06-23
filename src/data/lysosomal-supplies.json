@@ -1,0 +1,414 @@
+{
+  "calculator_name": "Lysosomal Medical Supply Calculator",
+  "description": "Calculates all medical supplies for lysosomal enzyme replacement therapy, exactly matching Excel with all IV types, gravity logic, and universal ADR/pre-meds supplies.",
+  "input_fields": {
+    "mg_per_dose": {
+      "type": "number",
+      "label": "Mg per dose",
+      "required": true
+    },
+    "doses_per_month": {
+      "type": "number",
+      "label": "Number of doses per month",
+      "required": true
+    },
+    "sprx_quantity": {
+      "type": "number",
+      "label": "SPRX quantity to dispense",
+      "required": true
+    },
+    "volume_to_infuse": {
+      "type": "number",
+      "label": "Volume to infuse drug in (mL)",
+      "required": true
+    },
+    "infusion_via_gravity": {
+      "type": "select",
+      "label": "Will patient be infusing via gravity?",
+      "options": ["Yes", "No"],
+      "required": true
+    },
+    "iv_supplies_type": {
+      "type": "select",
+      "label": "Type of IV Supplies Needed",
+      "options": ["PORT SUPPLIES", "PIV SUPPLIES", "PIC SUPPLIES", "CENTRAL SUPPLIES"],
+      "required": true
+    },
+    "adr_pre_meds": {
+      "type": "select",
+      "label": "ADR or Pre-Meds required?",
+      "options": ["YES", "NO"],
+      "required": true
+    }
+  },
+
+  "medications": {
+    "ALDURAZYME": {
+      "name": "Aldurazyme",
+      "ndc": "58468-0070-01",
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "IV EXT .22 MICR FILT 10\"", "irc": "38258", "qty": "doses_per_month", "note": "CONSULT RPH IF DIFFERENT FILTER NEEDED"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month", "note": "Selection depending on patient/nurse preference"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (250ML/BAG)", "irc": "37725", "qty": 500}
+      ]
+    },
+    "CEREZYME": {
+      "name": "Cerezyme",
+      "ndc": "58468-4663-01",
+      "sterile_water_per_vial": 5.1,
+      "vial_sizes": [200, 400],
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "IV EXT .22 MICR FILT 10\"", "irc": "38258", "qty": "doses_per_month"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (100ML/BAG)", "irc": "27674", "qty": "doses_per_month"}
+      ]
+    },
+    "ELAPRASE": {
+      "name": "Elaprase",
+      "ndc": "54092-0700-01",
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "IV EXT SET 7\" 0.2 MICRON FILT", "irc": "41320", "qty": "doses_per_month", "note": "MANUFACTURER RECOMMENDED DO NOT SUBSTITUTE"},
+        {"name": "AMBER 5\" X 8\" 3MIL BAGS ++", "irc": "43089", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (100ML/BAG)", "irc": "27674", "qty": "doses_per_month"}
+      ]
+    },
+    "ELELYSO": {
+      "name": "Elelyso",
+      "ndc": "00069-0106-01",
+      "sterile_water_per_vial": 5.1,
+      "vial_size": 200,
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "IV EXT SET 7\" 0.2 MICRON FILT", "irc": "41320", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "STERILE WATER INJ (10ML/VL)", "irc": "11398", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (100ML/BAG)", "irc": "27674", "qty": "doses_per_month"}
+      ]
+    },
+    "FABRAZYME": {
+      "name": "Fabrazyme",
+      "ndc": "58468-0040-01",
+      "sterile_water_per_vial": 7.2,
+      "vial_sizes": [5, 35],
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "IV EXT .22 MICR FILT 10\"", "irc": "38258", "qty": "doses_per_month", "note": "CONSULT RPH IF DIFFERENT FILTER NEEDED"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "STERILE WATER INJ (10ML/VL)", "irc": "11398", "qty": "doses_per_month"},
+        {"name": "STERILE WATER INJ (20ML/VL)", "irc": "29813", "qty": "doses_per_month"},
+        {"name": "STERILE WATER SDV (50ML)", "irc": "29632", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (250ML/BAG)", "irc": "37725", "qty": "doses_per_month"}
+      ]
+    },
+    "KANUMA": {
+      "name": "Kanuma",
+      "ndc": "25682-0007-01",
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "IV EXT .22 MICR FILT 10\"", "irc": "38258", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "STERILE WATER INJ (10ML/VL)", "irc": "11398", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (100ML/BAG)", "irc": "27674", "qty": "doses_per_month"}
+      ]
+    },
+    "LUMIZYME": {
+      "name": "Lumizyme",
+      "ndc": "58468-0160-01",
+      "sterile_water_per_vial": 10.3,
+      "vial_size": 50,
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "IV EXT .22 MICR FILT 10\"", "irc": "38258", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "STERILE WATER INJ (10ML/VL)", "irc": "11398", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (100ML/BAG)", "irc": "27674", "qty": "doses_per_month"}
+      ]
+    },
+    "NAGLAZYME": {
+      "name": "Naglazyme",
+      "ndc": "68135-0020-01",
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "IV EXT .22 MICR FILT 10\"", "irc": "38258", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (100ML/BAG)", "irc": "27674", "qty": "doses_per_month"}
+      ]
+    },
+    "NEXVIAZYME": {
+      "name": "Nexviazyme",
+      "ndc": "58468-0426-01",
+      "sterile_water_per_vial": 10.0,
+      "vial_size": 100,
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "FILTERSET 0.2MICRON BAXTER", "irc": "44470", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "STERILE WATER INJ (10ML/VL)", "irc": "11398", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (100ML/BAG)", "irc": "40621", "qty": "doses_per_month"}
+      ]
+    },
+    "VIMIZIM": {
+      "name": "Vimizim",
+      "ndc": "68135-0100-01",
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "IV EXT .22 MICR FILT 10\"", "irc": "38258", "qty": "doses_per_month"},
+        {"name": "AMBER 5\" X 8\" 3MIL BAGS ++", "irc": "43089", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (100ML/BAG)", "irc": "27674", "qty": "doses_per_month"}
+      ]
+    },
+    "VPRIV": {
+      "name": "VPRIV",
+      "ndc": "54092-0701-04",
+      "sterile_water_per_vial": 4.3,
+      "vial_size": 400,
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "IV EXT SET 7\" 0.2 MICRON FILT", "irc": "41320", "qty": "doses_per_month"},
+        {"name": "AMBER 5\" X 8\" 3MIL BAGS ++", "irc": "43089", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (100ML/BAG)", "irc": "27674", "qty": "doses_per_month"},
+        {"name": "STERILE WATER INJ (10ML/VL)", "irc": "11398", "qty": "doses_per_month"}
+      ]
+    },
+    "XENPOZYME": {
+      "name": "Xenpozyme",
+      "ndc": "58468-0050-01",
+      "sterile_water_per_vial": 5.0,
+      "vial_sizes": [4, 10, 20],
+      "base_supplies": [
+        {"name": "TUBING 92\" CURLIN NO/DEHP", "irc": "36282", "qty": "doses_per_month"},
+        {"name": "FILTERSET 0.2MICRON BAXTER", "irc": "44470", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML L/L NO NDL", "irc": "43637", "qty": "doses_per_month"},
+        {"name": "SYRINGE 20ML L/L NO NDL", "irc": "36842", "qty": "doses_per_month"},
+        {"name": "SYRINGE 30ML L/L NO NDL", "irc": "37100", "qty": "doses_per_month"},
+        {"name": "SYRINGE 50-60ML L/L NO NEEDLE", "irc": "24288", "qty": "doses_per_month"},
+        {"name": "NEEDLE 18G X 1\" HYPO", "irc": "52210", "qty": "doses_per_month"},
+        {"name": "NEEDLE 20G X 1\"", "irc": "39767", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10CC 21G 1\" L/L (with needle)", "irc": "17217", "qty": "doses_per_month"},
+        {"name": "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", "irc": "8248", "qty": "doses_per_month"},
+        {"name": "SOD CHLOR (100ML/BAG)", "irc": "27674", "qty": "doses_per_month"}
+      ]
+    }
+  },
+
+  "iv_type_supplies": {
+    "PORT SUPPLIES": [
+      {"name": "CENTRAL LINE DRESSING KIT", "irc": "48513"},
+      {"name": "ULTRA SITE 2 WAY CAPLESS VAL", "irc": "27471"},
+      {"name": "IV EXT SET W/14\" ULT SITE", "irc": "35408"},
+      {"name": "HEPARIN L/L FLUSH SYRINGE (100 UNITS/ML)", "irc": "33503", "note": "CONSULT RPH FOR CORRECT STRENGTH"},
+      {"name": "HEPARIN L/F SYR (3ML/SYR) (10 UNITS/ML)", "irc": "35027"},
+      {"name": "GRIPPER PLUS 22G 3/4\"", "irc": "37752", "note": "Selection depending on patient/nurse preference"},
+      {"name": "HUBER NEEDLE 22G X 1\"", "irc": "30878"},
+      {"name": "GRIPPER PLUS 20G X 1\"", "irc": "33857"},
+      {"name": "HUBER ++ NEEDLE 20G3/4\" SAFEST", "irc": "44833"},
+      {"name": "SOD CHLOR POSIFL SF (10ML)", "irc": "35290"},
+      {"name": "BIOPATCH ++ DISK 1\" STERILE", "irc": "39061"}
+    ],
+    "PIV SUPPLIES": [
+      {"name": "IV START KIT MSIV-014698", "irc": "37247"},
+      {"name": "CLAVE EXT SET 7\" REMOV MCR CLV", "irc": "43187"},
+      {"name": "IV CATH INTROCAN 22G X 1\"", "irc": "39333"},
+      {"name": "IV CATH INTROCAN SAFETY", "irc": "35348"},
+      {"name": "NORMAL SALINE FLUSH (10ML)", "irc": "33633"}
+    ],
+    "PIC SUPPLIES": [
+      {"name": "DRESSING CHANGE PICC/MIDLIN", "irc": "48515"},
+      {"name": "ULTRA SITE 2 WAY CAPLESS VAL", "irc": "27471"},
+      {"name": "IV EXT SET W/14\" ULT SITE", "irc": "35408"},
+      {"name": "HEPARIN L/L FLUSH SYRINGE (100 UNITS/ML)", "irc": "33503", "note": "CONSULT RPH FOR CORRECT STRENGTH"},
+      {"name": "HEPARIN L/F SYR (3ML/SYR) (10 UNITS/ML)", "irc": "35027"},
+      {"name": "GRIPPER PLUS 22G 3/4\"", "irc": "37752", "note": "Selection depending on patient/nurse preference"},
+      {"name": "HUBER NEEDLE 22G X 1\"", "irc": "30878"},
+      {"name": "GRIPPER PLUS 20G X 1\"", "irc": "33857"},
+      {"name": "HUBER ++ NEEDLE 20G3/4\" SAFEST", "irc": "44833"},
+      {"name": "SOD CHLOR POSIFL SF (10ML)", "irc": "35290"},
+      {"name": "BIOPATCH ++ DISK 1\" STERILE", "irc": "39061"}
+    ],
+    "CENTRAL SUPPLIES": [
+      {"name": "CENTRAL LINE DRESSING KIT", "irc": "48513"},
+      {"name": "ULTRA SITE 2 WAY CAPLESS VAL", "irc": "27471"},
+      {"name": "IV EXT SET W/14\" ULT SITE", "irc": "35408"},
+      {"name": "HEPARIN L/L FLUSH SYRINGE (100 UNITS/ML)", "irc": "33503", "note": "CONSULT RPH FOR CORRECT STRENGTH"},
+      {"name": "HEPARIN L/F SYR (3ML/SYR) (10 UNITS/ML)", "irc": "35027"},
+      {"name": "SOD CHLOR POSIFL SF (10ML)", "irc": "35290"}
+    ]
+  },
+
+  "gravity_supplies": [
+    {"name": "IV EXT SET CNTRL FLW 19\"", "irc": "35289"},
+    {"name": "IV SET SOL/DUO VENT SPK 104\"", "irc": "32666"},
+    {"name": "IV ADMIN SET 92: D-A-F (combo set)", "irc": "34959"}
+  ],
+
+  "dr_cvs_supplies": [
+    {"name": "SHARPS CONTAINER MAILBACK 1GL", "irc": "22640", "qty": 1},
+    {"name": "GLOVES NITRILE CHEMO PF MD", "irc": "34096", "qty": 100},
+    {"name": "STERILE DISPS DRAPE 18 X 26", "irc": "38490", "qty": 1},
+    {"name": "ALCOHOL SWABS", "irc": "36267", "qty": 100},
+    {"name": "TEGADERM 2 3/8\" X 2 3/4\"", "irc": "33855", "qty": "doses_per_month"},
+    {"name": "TOURNIQUET ADJUSTABLE", "irc": "33903", "qty": "doses_per_month"}
+  ],
+
+  "adr_pre_meds_supplies": [
+    {"name": "SYRINGE 3ML L/L NO NEEDLE 9657 (for ADR meds)", "irc": "34399", "qty": 1},
+    {"name": "SOD CHLOR (50ML/BAG) (Rx needed; used to keep vein open)", "irc": "39735", "qty": 50, "note": "RX NEEDED, DOSING MAY VARY"},
+    {"name": "SOD CHLOR (500ML/BAG) (Rx needed; used for hydration)", "irc": "27770", "qty": 500},
+    {"name": "EPINEPHRINE AUTO-INJ (2/PACK) 0.3 MG", "irc": "43424", "qty": 2},
+    {"name": "EPINEPHRINE AUTO-INJ (2/PACK) 0.15 MG", "irc": "43197", "qty": 2},
+    {"name": "LIDOCAINE/PRILOCAINE CRM", "irc": "53005", "qty": 30},
+    {"name": "ACETAMINOPHEN (tablets)", "irc": "48180", "qty": 1},
+    {"name": "ACETAMINOPHEN XS (tablets)", "irc": "47577", "qty": 1},
+    {"name": "PAIN RELIEF++ CHILDRENS (liquid)", "irc": "39739"},
+    {"name": "IBUPROFEN (tablets)", "irc": "47077", "qty": 1},
+    {"name": "IBUPROFEN (tablets)", "irc": "43418", "qty": 1},
+    {"name": "IBUPROFEN (tablets)", "irc": "43490", "qty": 1},
+    {"name": "IBUPROFEN (tablets)", "irc": "46839", "qty": 1},
+    {"name": "IBUPROFEN SUSP++ (liquid)", "irc": "30560"},
+    {"name": "CHILDRENS IBUPROFEN++", "irc": "41727"},
+    {"name": "LORATADINE (tablets)", "irc": "45214", "qty": 1},
+    {"name": "LORATADINE CHILD SYRUP", "irc": "48543"},
+    {"name": "CHILDRENS ALLERGY (liquid)", "irc": "46980"},
+    {"name": "ALLERGY (DIPHENHYDRAMINE)", "irc": "39681", "qty": 1},
+    {"name": "BANOPHEN", "irc": "24771", "qty": 1},
+    {"name": "BANOPHEN", "irc": "26804", "qty": 1},
+    {"name": "FAMOTIDINE", "irc": "29376", "qty": 1},
+    {"name": "FAMOTIDINE", "irc": "42260", "qty": 1},
+    {"name": "DIPHENHYDRAMINE (1ML/VL)", "irc": "14771"},
+    {"name": "DIPHENHYDRAMINE SDV (1ML/VL)", "irc": "25682"},
+    {"name": "SOLU MEDROL SDV (1ML/A-O-V)", "irc": "34028"},
+    {"name": "SOLU MEDROL SDV ACT-O-VIAL", "irc": "33702"},
+    {"name": "SOLU-CORTEF SDV (2ML/ACT-O-VL)", "irc": "34321"}
+  ],
+
+  "calculation_rules": {
+    "base_quantity": {
+      "formula": "doses_per_month * item_multiplier",
+      "default_multiplier": 1
+    },
+    "saline_volume_selection": [
+      {"max": 100, "product": "SOD CHLOR (100ML/BAG)", "irc": "27674"},
+      {"max": 250, "product": "SOD CHLOR (250ML/BAG)", "irc": "37725"},
+      {"max": 500, "product": "SOD CHLOR (500ML/BAG)", "irc": "27770"}
+    ],
+    "gravity_infusion": {
+      "condition": "infusion_via_gravity == 'Yes'",
+      "add_items": [
+        {"name": "IV EXT SET CNTRL FLW 19\"", "irc": "35289"},
+        {"name": "IV SET SOL/DUO VENT SPK 104\"", "irc": "32666"},
+        {"name": "IV ADMIN SET 92: D-A-F (combo set)", "irc": "34959"}
+      ]
+    }
+  },
+
+  "logic": {
+    "when_adr_pre_meds_yes": {
+      "add_supplies": "adr_pre_meds_supplies"
+    },
+    "when_iv_type_selected": {
+      "PIV SUPPLIES": "iv_type_supplies.PIV SUPPLIES",
+      "PORT SUPPLIES": "iv_type_supplies.PORT SUPPLIES",
+      "PIC SUPPLIES": "iv_type_supplies.PIC SUPPLIES",
+      "CENTRAL SUPPLIES": "iv_type_supplies.CENTRAL SUPPLIES"
+    },
+    "when_gravity_yes": {
+      "add_supplies": "gravity_supplies"
+    }
+  },
+
+  "sterile_water_products": {
+    "10": {"name": "STERILE WATER INJ (10ML/VL)", "irc": "11398"},
+    "20": {"name": "STERILE WATER INJ (20ML/VL)", "irc": "29813"},
+    "50": {"name": "STERILE WATER SDV (50ML)", "irc": "29632"},
+    "100": {"name": "STERILE WATER INJ (100ML/VL)", "irc": "40621"}
+  },
+  
+  "notes": {
+    "consult_rph": "Some supplies require RPH consult for correct strength or filter type.",
+    "multiple_ircs": "Some supplies have multiple IRCs for regulatory coverage, all must be included.",
+    "excel_quantities": "Minimum quantities per SPRX should match Excel where stated."
+  }
+}

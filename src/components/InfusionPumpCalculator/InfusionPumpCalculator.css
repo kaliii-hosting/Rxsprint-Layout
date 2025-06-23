@@ -2,8 +2,8 @@
 
 .infusion-pump-calculator {
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
   padding: 20px;
   background-color: #f8f9fa;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -37,10 +37,10 @@
 }
 
 .calculator-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 20px;
-  align-items: start;
+  width: 100%;
 }
 
 .calculator-left-column,
@@ -48,6 +48,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
 }
 
 .input-section {
@@ -88,7 +89,7 @@
 
 .input-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 12px;
 }
 
@@ -193,6 +194,7 @@
 
 .results-section {
   animation: fadeIn 0.5s ease;
+  width: 100%;
 }
 
 .results-section {
@@ -355,7 +357,7 @@
 
 .preparation-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
 }
 
@@ -485,7 +487,7 @@
 
 .calculation-logic-section {
   margin-top: 20px;
-  grid-column: 1 / -1;
+  width: 100%;
 }
 
 .logic-toggle {
@@ -856,18 +858,16 @@
 
 /* Responsive Styles */
 @media (max-width: 1024px) {
-  .calculator-body {
-    grid-template-columns: 1fr;
-  }
-  
-  .calculator-right-column {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+  .infusion-pump-calculator {
+    padding: 15px;
   }
 }
 
 @media (max-width: 768px) {
+  .infusion-pump-calculator {
+    padding: 10px;
+  }
+  
   .calculator-header {
     padding: 12px 16px;
   }
@@ -888,17 +888,13 @@
     gap: 16px;
   }
   
-  .calculator-right-column {
-    grid-template-columns: 1fr;
-  }
-  
   .input-grid {
     grid-template-columns: 1fr;
     gap: 12px;
   }
   
   .preparation-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
   
   .steps-header,
@@ -926,4 +922,47 @@
   .dose-preview {
     font-size: 12px;
   }
+}
+
+/* Dose Safety Indicator */
+.dose-safety-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  margin-top: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dose-safety-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dose-safety-message {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dose-safety-description {
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0.9;
 }

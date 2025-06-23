@@ -7,7 +7,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--bg-modal-backdrop, rgba(0, 0, 0, 0.8));
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -26,8 +26,8 @@
 }
 
 .note-save-popup {
-  background: #1a1a1a;
-  border: 1px solid rgba(0, 255, 0, 0.3);
+  background: var(--bg-modal, #1a1a1a);
+  border: 1px solid var(--success-color-alpha, rgba(0, 255, 0, 0.3));
   border-radius: 16px;
   padding: 40px;
   max-width: 420px;
@@ -49,7 +49,7 @@
 }
 
 .popup-icon {
-  color: #00ff00;
+  color: var(--success-color, #00ff00);
   margin-bottom: 24px;
   display: flex;
   justify-content: center;
@@ -71,7 +71,7 @@
 }
 
 .popup-title {
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   font-size: 28px;
   font-weight: 700;
   margin: 0 0 12px 0;
@@ -80,7 +80,7 @@
 }
 
 .popup-message {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.8));
   font-size: 16px;
   margin: 0 0 32px 0;
   line-height: 1.5;
@@ -107,19 +107,19 @@
 
 .continue-btn {
   background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.2));
 }
 
 .continue-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #ffffff;
+  background: var(--button-hover-bg, rgba(255, 255, 255, 0.05));
+  border-color: var(--border-hover-color, rgba(255, 255, 255, 0.3));
+  color: var(--text-primary, #ffffff);
 }
 
 .view-note-btn {
   background: var(--primary-color);
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   border: 1px solid var(--primary-color);
 }
 

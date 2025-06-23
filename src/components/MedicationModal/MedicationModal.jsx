@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  X, Edit3, Save, ArrowLeft, 
-  Package, Heart, Pill, Beaker, 
-  TestTube, Droplet, Timer, Calendar,
-  Activity, Zap, FlaskConical, Filter,
-  FileText, AlertCircle, Star
+  X, Edit3, Save, ArrowLeft
 } from 'lucide-react';
 import './MedicationModal.css';
 
-const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, allowEdit }) => {
+const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, allowEdit, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     brandName: '',
@@ -49,23 +45,21 @@ const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, a
         notes: medication.notes || '',
         specialDosing: medication.specialDosing || ''
       });
-      // If this is a new medication, start in editing mode
-      setIsEditing(medication.isNew === true || allowEdit === true);
+      
+      if (allowEdit) {
+        setIsEditing(true);
+      } else {
+        setIsEditing(false);
+      }
     }
   }, [medication, allowEdit]);
 
-  // Initialize textarea heights when editing mode changes
   useEffect(() => {
-    if (isEditing) {
-      const textareas = document.querySelectorAll('textarea');
-      textareas.forEach(textarea => {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-      });
+    if (allowEdit && medication?.isNew) {
+      setIsEditing(true);
     }
-  }, [isEditing, formData]);
+  }, [allowEdit, medication]);
 
-  // Define handlers before conditional return
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -73,58 +67,17 @@ const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, a
     }));
   };
 
-  // Handle Enter key for new lines
-  const handleKeyDown = (e, field) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const cursorPosition = e.target.selectionStart;
-      const currentValue = formData[field] || '';
-      const newValue = 
-        currentValue.substring(0, cursorPosition) + 
-        '\n' + 
-        currentValue.substring(cursorPosition);
-      
-      handleInputChange(field, newValue);
-      
-      // Set cursor position after state update
-      setTimeout(() => {
-        if (e.target) {
-          e.target.selectionStart = cursorPosition + 1;
-          e.target.selectionEnd = cursorPosition + 1;
-          // Trigger resize
-          handleTextareaResize({ target: e.target });
-        }
-      }, 0);
-    }
-  };
-
-  // Auto-resize textarea
-  const handleTextareaResize = (e) => {
-    const textarea = e.target;
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
-  };
-
-  // Conditional return AFTER all hooks
-  if (!isOpen || !medication) {
-    return null;
-  }
-
   const handleSave = () => {
-    console.log('=== MedicationModal handleSave ===');
-    console.log('medication object:', medication);
-    console.log('medication.id:', medication.id, 'type:', typeof medication.id);
-    console.log('formData:', formData);
+    if (!medication || !medication.id) {
+      console.error('Cannot save: No medication or medication ID');
+      return;
+    }
     
-    // Ensure we pass all original medication data plus updated form fields
     const dataToSave = {
-      ...medication, // Preserve all original fields
-      ...formData,  // Override with edited fields
-      id: medication.id // Explicitly ensure ID is included
+      ...medication,
+      ...formData,
+      id: medication.id
     };
-    
-    console.log('dataToSave:', dataToSave);
-    console.log('dataToSave.id:', dataToSave.id, 'type:', typeof dataToSave.id);
     
     onSave(dataToSave);
     setIsEditing(false);
@@ -132,201 +85,336 @@ const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, a
 
   const handleCancel = () => {
     setFormData({
-      brandName: medication.brandName || '',
-      indication: medication.indication || '',
-      genericName: medication.genericName || '',
-      dosageForm: medication.dosageForm || '',
-      vialSize: medication.vialSize || '',
-      reconstitutionSolution: medication.reconstitutionSolution || '',
-      reconstitutionVolume: medication.reconstitutionVolume || '',
-      dose: medication.dose || '',
-      doseFrequency: medication.doseFrequency || '',
-      infusionRate: medication.infusionRate || '',
-      normalSalineBag: medication.normalSalineBag || '',
-      overfillRule: medication.overfillRule || '',
-      filter: medication.filter || '',
-      infusionSteps: medication.infusionSteps || '',
-      notes: medication.notes || '',
-      specialDosing: medication.specialDosing || ''
+      brandName: medication?.brandName || '',
+      indication: medication?.indication || '',
+      genericName: medication?.genericName || '',
+      dosageForm: medication?.dosageForm || '',
+      vialSize: medication?.vialSize || '',
+      reconstitutionSolution: medication?.reconstitutionSolution || '',
+      reconstitutionVolume: medication?.reconstitutionVolume || '',
+      dose: medication?.dose || '',
+      doseFrequency: medication?.doseFrequency || '',
+      infusionRate: medication?.infusionRate || '',
+      normalSalineBag: medication?.normalSalineBag || '',
+      overfillRule: medication?.overfillRule || '',
+      filter: medication?.filter || '',
+      infusionSteps: medication?.infusionSteps || '',
+      notes: medication?.notes || '',
+      specialDosing: medication?.specialDosing || ''
     });
     setIsEditing(false);
   };
 
-  // Field configurations with icons
-  const fieldConfigs = {
-    // Primary fields (displayed in cards)
-    primary: [
-      { key: 'brandName', label: 'Brand Name', icon: Package, color: '#FF5500' },
-      { key: 'indication', label: 'Indication', icon: Heart, color: '#E91E63' },
-      { key: 'genericName', label: 'Generic Name', icon: Pill, color: '#9C27B0' },
-      { key: 'dosageForm', label: 'Dosage Form', icon: FlaskConical, color: '#673AB7' },
-      { key: 'vialSize', label: 'Vial Size', icon: TestTube, color: '#3F51B5' },
-      { key: 'reconstitutionSolution', label: 'Reconstitution Solution', icon: Droplet, color: '#2196F3' },
-      { key: 'reconstitutionVolume', label: 'Reconstitution Volume', icon: Beaker, color: '#00BCD4' },
-      { key: 'dose', label: 'Dose', icon: Zap, color: '#009688' },
-      { key: 'doseFrequency', label: 'Dose Frequency', icon: Calendar, color: '#4CAF50' }
-    ],
-    // Secondary fields (displayed in full-width cards)
-    secondary: [
-      { key: 'infusionRate', label: 'Infusion Rate', icon: Activity, color: '#FF9800' },
-      { key: 'normalSalineBag', label: 'Normal Saline Bag', icon: Droplet, color: '#795548' },
-      { key: 'overfillRule', label: 'Overfill Rule', icon: AlertCircle, color: '#607D8B' },
-      { key: 'filter', label: 'Filter', icon: Filter, color: '#FF5722' },
-      { key: 'infusionSteps', label: 'Infusion Steps', icon: FileText, color: '#00ACC1' },
-      { key: 'notes', label: 'Notes', icon: FileText, color: '#8BC34A' },
-      { key: 'specialDosing', label: 'Special Dosing', icon: Star, color: '#FFC107' }
-    ]
+  const handleEdit = () => {
+    onRequestEdit();
   };
 
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this medication?')) {
+      onDelete(medication.id);
+    }
+  };
+
+  const updateFieldAndSave = (field, value) => {
+    const updatedData = {
+      ...medication,
+      ...formData,
+      [field]: value,
+      id: medication.id
+    };
+    onSave(updatedData);
+  };
+
+  const incrementDecrementValues = [
+    { field: 'vialSize', label: 'Vial Size' },
+    { field: 'reconstitutionVolume', label: 'Reconstitution Volume' },
+    { field: 'dose', label: 'Dose' },
+    { field: 'infusionRate', label: 'Infusion Rate' },
+    { field: 'normalSalineBag', label: 'Normal Saline Bag' }
+  ];
+
+  if (!isOpen) return null;
+
   return (
-    <div 
-      className="medication-modal-overlay" 
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}>
-      <div className="medication-modal">
-        {/* Enhanced Header */}
-        <div className="modal-header-enhanced">
-          <div className="header-top">
-            <button className="back-button" onClick={onClose}>
-              <ArrowLeft size={20} />
-              Back
+    <div className="modal-prescription-profile">
+          <div className="modal-profile-header">
+            <h1 className="modal-profile-title">
+              {isEditing ? (medication?.isNew ? 'NEW MEDICATION' : `EDITING: ${medication?.brandName?.toUpperCase() || 'MEDICATION'}`) : (medication?.brandName?.toUpperCase() || 'MEDICATION')}
+            </h1>
+            <button className="modal-header-back-button" onClick={onClose}>
+              <ArrowLeft size={18} />
+              Back to Medications
             </button>
-            <div className="header-actions">
-              {!isEditing ? (
-                <button className="edit-button" onClick={() => {
-                  if (onRequestEdit && !medication?.isNew) {
-                    onRequestEdit();
-                  } else {
-                    setIsEditing(true);
-                  }
-                }}>
-                  <Edit3 size={18} />
-                  Edit
-                </button>
-              ) : (
-                <>
-                  <button className="cancel-button" onClick={handleCancel}>
-                    Cancel
-                  </button>
-                  <button className="save-button" onClick={handleSave}>
-                    <Save size={18} />
-                    Save
-                  </button>
-                </>
-              )}
-            </div>
           </div>
           
-          {/* Medication Info Display */}
-          <div className="header-medication-info">
-            <div className="med-info-primary">
-              <h1 className="brand-name-display">
-                {medication?.isNew ? 'New Medication' : (formData.brandName || 'Medication')}
-              </h1>
-              <span className="generic-name-display">
-                {medication?.isNew && !formData.genericName ? 'Enter medication details' : (formData.genericName || 'Generic Name')}
-              </span>
-            </div>
-            {(!medication?.isNew || formData.indication) && (
-              <div className="indication-display">
-                <Heart size={16} />
-                <span>{formData.indication || 'Indication'}</span>
+          <div className="modal-prescriptions-section">
+            {isEditing && (
+              <div className="modal-brand-name-section">
+                <input
+                  className="modal-brand-name-input"
+                  value={formData.brandName}
+                  onChange={(e) => handleInputChange('brandName', e.target.value)}
+                  placeholder="Enter brand name"
+                />
               </div>
             )}
-          </div>
-        </div>
-
-        <div className="modal-content-dashboard">
-          {/* Primary Fields Grid */}
-          <div className="dashboard-grid">
-            {fieldConfigs.primary.map((field) => {
-              const Icon = field.icon;
-              return (
-                <div key={field.key} className="dashboard-card">
-                  <div className="card-icon" style={{ backgroundColor: `${field.color}20`, color: field.color }}>
-                    <Icon size={24} />
-                  </div>
-                  <div className="card-content">
-                    <label className="card-label">{field.label}</label>
-                    {isEditing ? (
-                      <textarea
-                        className="card-input card-textarea"
-                        value={formData[field.key] ?? ''}
-                        onChange={(e) => {
-                          handleInputChange(field.key, e.target.value);
-                          handleTextareaResize(e);
-                        }}
-                        onKeyDown={(e) => handleKeyDown(e, field.key)}
-                        placeholder={`Enter ${field.label.toLowerCase()}`}
-                        rows={1}
-                      />
-                    ) : (
-                      <div className="card-value" style={{ whiteSpace: 'pre-wrap' }}>{formData[field.key] || 'Not specified'}</div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Secondary Fields - Full Width */}
-          <div className="dashboard-full-width">
-            {fieldConfigs.secondary.map((field) => {
-              const Icon = field.icon;
-              const isTextArea = ['infusionSteps', 'notes', 'specialDosing'].includes(field.key);
-              
-              return (
-                <div key={field.key} className="full-width-card">
-                  <div className="full-card-header">
-                    <div className="card-icon" style={{ backgroundColor: `${field.color}20`, color: field.color }}>
-                      <Icon size={24} />
-                    </div>
-                    <h3 className="full-card-label">{field.label}</h3>
-                  </div>
-                  <div className="full-card-content">
-                    {isEditing ? (
-                      isTextArea ? (
+            
+            <div className="modal-table-wrapper">
+              <table className="modal-prescriptions-table">
+                <thead>
+                  <tr>
+                    <th>Indication</th>
+                    <th>Generic Name</th>
+                    <th>Dosage Form</th>
+                    <th>Vial Size</th>
+                    <th>Reconstitution Solution</th>
+                    <th>Reconstitution Volume</th>
+                    <th>Dose</th>
+                    <th>Dose Frequency</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      {isEditing ? (
                         <textarea
-                          className="full-card-textarea"
-                          value={formData[field.key] ?? ''}
-                          onChange={(e) => {
-                            handleInputChange(field.key, e.target.value);
-                            handleTextareaResize(e);
-                          }}
-                          onKeyDown={(e) => handleKeyDown(e, field.key)}
-                          onInput={handleTextareaResize}
-                          placeholder={`Enter ${field.label.toLowerCase()}`}
-                          rows={3}
+                          className="modal-table-input"
+                          value={formData.indication}
+                          onChange={(e) => handleInputChange('indication', e.target.value)}
+                          placeholder="Enter indication"
+                          rows="2"
                         />
                       ) : (
-                        <textarea
-                          className="full-card-input full-card-single-line"
-                          value={formData[field.key] ?? ''}
-                          onChange={(e) => {
-                            handleInputChange(field.key, e.target.value);
-                            handleTextareaResize(e);
-                          }}
-                          onKeyDown={(e) => handleKeyDown(e, field.key)}
-                          placeholder={`Enter ${field.label.toLowerCase()}`}
-                          rows={1}
+                        <div className="modal-field-display">
+                          {formData.indication || 'Not specified'}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className="modal-table-input"
+                          value={formData.genericName}
+                          onChange={(e) => handleInputChange('genericName', e.target.value)}
+                          placeholder="Enter generic name"
                         />
-                      )
-                    ) : (
-                      <div className="full-card-value" style={{ whiteSpace: 'pre-wrap' }}>
-                        {formData[field.key] || 'Not specified'}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                      ) : (
+                        formData.genericName || 'Not specified'
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className="modal-table-input"
+                          value={formData.dosageForm}
+                          onChange={(e) => handleInputChange('dosageForm', e.target.value)}
+                          placeholder="Enter dosage form"
+                        />
+                      ) : (
+                        formData.dosageForm || 'Not specified'
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className="modal-table-input"
+                          value={formData.vialSize}
+                          onChange={(e) => handleInputChange('vialSize', e.target.value)}
+                          placeholder="Enter vial size"
+                        />
+                      ) : (
+                        formData.vialSize || 'Not specified'
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className="modal-table-input"
+                          value={formData.reconstitutionSolution}
+                          onChange={(e) => handleInputChange('reconstitutionSolution', e.target.value)}
+                          placeholder="Enter solution"
+                        />
+                      ) : (
+                        formData.reconstitutionSolution || 'Not specified'
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className="modal-table-input"
+                          value={formData.reconstitutionVolume}
+                          onChange={(e) => handleInputChange('reconstitutionVolume', e.target.value)}
+                          placeholder="Enter volume"
+                        />
+                      ) : (
+                        formData.reconstitutionVolume || 'Not specified'
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className="modal-table-input"
+                          value={formData.dose}
+                          onChange={(e) => handleInputChange('dose', e.target.value)}
+                          placeholder="Enter dose"
+                        />
+                      ) : (
+                        formData.dose || 'Not specified'
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className="modal-table-input"
+                          value={formData.doseFrequency}
+                          onChange={(e) => handleInputChange('doseFrequency', e.target.value)}
+                          placeholder="Enter frequency"
+                        />
+                      ) : (
+                        formData.doseFrequency || 'Not specified'
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="modal-table-wrapper">
+              <table className="modal-prescriptions-table">
+                <thead>
+                  <tr>
+                    <th>Infusion Rate</th>
+                    <th>Normal Saline Bag</th>
+                    <th>Overfill Rule</th>
+                    <th>Filter</th>
+                    <th>Infusion Steps</th>
+                    <th>Notes</th>
+                    <th>Special Dosing</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className="modal-table-input"
+                          value={formData.infusionRate}
+                          onChange={(e) => handleInputChange('infusionRate', e.target.value)}
+                          placeholder="Enter rate"
+                        />
+                      ) : (
+                        formData.infusionRate || 'Not specified'
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className="modal-table-input"
+                          value={formData.normalSalineBag}
+                          onChange={(e) => handleInputChange('normalSalineBag', e.target.value)}
+                          placeholder="Enter bag size"
+                        />
+                      ) : (
+                        formData.normalSalineBag || 'Not specified'
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className="modal-table-input"
+                          value={formData.overfillRule}
+                          onChange={(e) => handleInputChange('overfillRule', e.target.value)}
+                          placeholder="Enter rule"
+                        />
+                      ) : (
+                        formData.overfillRule || 'Not specified'
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className="modal-table-input"
+                          value={formData.filter}
+                          onChange={(e) => handleInputChange('filter', e.target.value)}
+                          placeholder="Enter filter"
+                        />
+                      ) : (
+                        formData.filter || 'Not specified'
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <textarea
+                          className="modal-table-input"
+                          value={formData.infusionSteps}
+                          onChange={(e) => handleInputChange('infusionSteps', e.target.value)}
+                          placeholder="Enter infusion steps"
+                          rows="2"
+                        />
+                      ) : (
+                        <div className="modal-field-display">
+                          {formData.infusionSteps || 'Not specified'}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <textarea
+                          className="modal-table-input"
+                          value={formData.notes}
+                          onChange={(e) => handleInputChange('notes', e.target.value)}
+                          placeholder="Enter notes"
+                          rows="2"
+                        />
+                      ) : (
+                        <div className="modal-field-display">
+                          {formData.notes || 'Not specified'}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <textarea
+                          className="modal-table-input"
+                          value={formData.specialDosing}
+                          onChange={(e) => handleInputChange('specialDosing', e.target.value)}
+                          placeholder="Enter dosing"
+                          rows="2"
+                        />
+                      ) : (
+                        <div className="modal-field-display">
+                          {formData.specialDosing || 'Not specified'}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <div className="modal-prescription-actions">
+                {!isEditing ? (
+                  <>
+                    <button className="modal-prescription-btn edit" onClick={handleEdit}>
+                      Edit
+                    </button>
+                    <button className="modal-prescription-btn delete" onClick={handleDelete}>
+                      Delete
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className="modal-prescription-btn save" onClick={handleSave}>
+                      Save
+                    </button>
+                    <button className="modal-prescription-btn cancel" onClick={handleCancel}>
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
   );
 };
 

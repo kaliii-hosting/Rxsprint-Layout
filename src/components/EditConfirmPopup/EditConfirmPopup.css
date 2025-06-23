@@ -5,7 +5,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--bg-modal-backdrop, rgba(0, 0, 0, 0.8));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,14 +15,14 @@
 }
 
 .edit-popup {
-  background: #1a1a1a;
-  border: 1px solid rgba(255, 85, 0, 0.2);
+  background: var(--bg-modal, #1a1a1a);
+  border: 1px solid var(--primary-color-alpha, rgba(255, 85, 0, 0.2));
   border-radius: 20px;
   padding: 40px;
   max-width: 480px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 85, 0, 0.1);
+  box-shadow: 0 20px 60px var(--shadow-color, rgba(0, 0, 0, 0.5)), 0 0 0 1px var(--primary-color-alpha, rgba(255, 85, 0, 0.1));
   animation: slideUp 0.3s ease-out;
   position: relative;
 }
@@ -64,15 +64,15 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.5));
   padding: 8px;
   border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .close-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background: var(--button-hover-bg, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary, #ffffff);
 }
 
 .edit-icon-wrapper {
@@ -82,32 +82,32 @@
 .edit-icon {
   width: 80px;
   height: 80px;
-  background: rgba(255, 85, 0, 0.1);
-  border: 1px solid rgba(255, 85, 0, 0.2);
+  background: var(--primary-color-alpha-bg, rgba(255, 85, 0, 0.1));
+  border: 1px solid var(--primary-color-alpha, rgba(255, 85, 0, 0.2));
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #FF5500;
+  color: var(--primary-color, #FF5500);
 }
 
 .edit-title {
   font-size: 28px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   margin: 0 0 16px 0;
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .edit-message {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
   margin: 0 0 32px 0;
   line-height: 1.5;
 }
 
 .edit-message strong {
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   font-weight: 600;
 }
 
@@ -115,9 +115,9 @@
 .pin-section {
   margin-bottom: 32px;
   padding: 24px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--input-bg, rgba(255, 255, 255, 0.05));
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
 }
 
 .pin-label {
@@ -126,13 +126,13 @@
   justify-content: center;
   gap: 8px;
   margin-bottom: 20px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
   font-size: 14px;
   font-weight: 500;
 }
 
 .pin-label svg {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.5));
 }
 
 .pin-inputs {
@@ -145,7 +145,7 @@
 .pin-input {
   width: 56px;
   height: 56px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid var(--border-color, rgba(255, 255, 255, 0.2));
   border-radius: 12px;
   text-align: center;
   font-size: 24px;
@@ -153,19 +153,19 @@
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
   outline: none;
   transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+  background: var(--input-bg, rgba(255, 255, 255, 0.05));
+  color: var(--text-primary, #ffffff);
 }
 
 .pin-input:focus {
-  border-color: #FF5500;
-  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.2);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary-color, #FF5500);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha, rgba(255, 85, 0, 0.2));
+  background: var(--input-focus-bg, rgba(255, 255, 255, 0.08));
 }
 
 .pin-input.filled {
-  background: rgba(255, 85, 0, 0.1);
-  border-color: rgba(255, 85, 0, 0.3);
+  background: var(--primary-color-alpha-bg, rgba(255, 85, 0, 0.1));
+  border-color: var(--primary-color-alpha, rgba(255, 85, 0, 0.3));
 }
 
 .pin-input.error {
@@ -208,21 +208,21 @@
 }
 
 .cancel-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--button-bg, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary, #ffffff);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.2));
 }
 
 .cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--button-hover-bg, rgba(255, 255, 255, 0.15));
   transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--border-hover-color, rgba(255, 255, 255, 0.3));
 }
 
 .confirm-btn {
-  background: #FF5500;
-  color: white;
-  border: 1px solid #FF5500;
+  background: var(--primary-color, #FF5500);
+  color: var(--text-primary, white);
+  border: 1px solid var(--primary-color, #FF5500);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -230,16 +230,16 @@
 }
 
 .confirm-btn:hover:not(:disabled) {
-  background: #E64A00;
+  background: var(--primary-hover, #E64A00);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 85, 0, 0.3);
-  border-color: #E64A00;
+  box-shadow: 0 4px 12px var(--primary-color-alpha, rgba(255, 85, 0, 0.3));
+  border-color: var(--primary-hover, #E64A00);
 }
 
 .confirm-btn:disabled {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.3);
+  background: var(--button-bg, rgba(255, 255, 255, 0.1));
+  border-color: var(--border-color, rgba(255, 255, 255, 0.2));
+  color: var(--text-disabled, rgba(255, 255, 255, 0.3));
   cursor: not-allowed;
   opacity: 0.6;
 }

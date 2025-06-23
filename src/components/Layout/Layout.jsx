@@ -8,23 +8,29 @@ import {
   MessageSquare, 
   GitBranch,
   FileText,
-  Droplet,
   Package,
   Search,
   Mic,
   User,
   Calculator as CalcIcon,
-  StickyNote
+  StickyNote,
+  ScanLine,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useCalculator } from '../../contexts/CalculatorContext';
 import { useSearch } from '../../contexts/SearchContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import VoiceTranscription from '../VoiceTranscription/VoiceTranscription';
+import CurlinPumpIcon from '../icons/CurlinPumpIcon';
 import './Layout.css';
 
 const Layout = ({ children }) => {
   const location = useLocation();
   const { toggleCalculatorMode } = useCalculator();
+  const { theme, toggleTheme } = useTheme();
   const [showVoiceTranscription, setShowVoiceTranscription] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { 
     searchQuery, 
     searchResults, 
@@ -47,9 +53,10 @@ const Layout = ({ children }) => {
     { path: '/chat', icon: MessageSquare, label: 'Chat' },
     { path: '/workflow', icon: GitBranch, label: 'Workflow' },
     { path: '/note-generator', icon: FileText, label: 'Note Generator' },
-    { path: '/pump', icon: Droplet, label: 'Pump' },
+    { path: '/pump', icon: CurlinPumpIcon, label: 'Pump' },
     { path: '/supplies', icon: Package, label: 'Supplies' },
-    { path: '/notes', icon: StickyNote, label: 'Notes' }
+    { path: '/notes', icon: StickyNote, label: 'Notes' },
+    { path: '/analyzer', icon: ScanLine, label: 'Analyzer' }
   ];
 
   // Handle click outside to close dropdown
@@ -183,8 +190,12 @@ const Layout = ({ children }) => {
             >
               <Mic size={20} />
             </button>
-            <button className="icon-button" title="Profile">
-              <User size={20} />
+            <button 
+              className="icon-button theme-toggle" 
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              onClick={toggleTheme}
+            >
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
           </div>
         </header>

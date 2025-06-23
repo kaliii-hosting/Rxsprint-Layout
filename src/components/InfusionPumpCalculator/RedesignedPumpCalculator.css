@@ -1,0 +1,919 @@
+/* Import Satoshi Font to match Supplies Calculator */
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,800,500,400&display=swap');
+
+/* Main Container - Full Width Layout */
+.pump-calculator-container {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.pump-calculator-full-width {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(1rem, 2vw, 2rem);
+}
+
+/* Calculator Section - Full Width Cards */
+.calculator-section {
+  width: 100%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.calculator-section:hover {
+  border-color: var(--primary-border);
+  box-shadow: 0 8px 32px var(--primary-shadow);
+}
+
+/* Section Headers */
+.section-header {
+  background: var(--primary-light);
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--primary-border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.section-header h3 {
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+.section-header svg {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+/* Section Content */
+.section-content {
+  padding: clamp(1.5rem, 3vw, 2rem);
+}
+
+.section-description {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Setup Grid - Medication Setup Section */
+.setup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.setup-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  background: var(--button-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.info-display svg {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+/* Dose Grid - Dose Calculation Section */
+.dose-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.dose-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.calculated-values {
+  grid-column: 1 / -1;
+  background: var(--button-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.calculated-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.calc-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.calc-value {
+  color: var(--primary-color);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Parameters Grid - Additional Parameters Section */
+.params-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.param-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.param-item.infusion-mode {
+  grid-column: 1 / -1;
+}
+
+/* Section Labels */
+.section-label {
+  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-label svg {
+  width: 16px;
+  height: 16px;
+  color: var(--primary-color);
+}
+
+/* Input Styles */
+.supply-input {
+  width: 100%;
+  padding: clamp(0.625rem, 1.5vw, 0.875rem) clamp(0.875rem, 2vw, 1rem);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: all 0.2s ease;
+}
+
+.supply-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.supply-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background: var(--input-bg);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.supply-input.error {
+  border-color: var(--error-color);
+}
+
+/* Custom Dropdown */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.supply-dropdown {
+  width: 100%;
+  padding: clamp(0.625rem, 1.5vw, 0.875rem) clamp(0.875rem, 2vw, 1rem);
+  padding-right: 2.5rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.2s ease;
+}
+
+.supply-dropdown:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background: var(--input-bg);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.supply-dropdown option {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.dropdown-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+/* Dose Input Group */
+.dose-input-group {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dose-unit-dropdown {
+  width: 120px;
+}
+
+/* Time Input Row */
+.time-input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.time-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.time-label {
+  font-size: clamp(0.75rem, 1.2vw, 0.875rem);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Radio Group */
+.radio-group {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.radio-option input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+
+.radio-label {
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  color: var(--text-primary);
+}
+
+/* Helper Text */
+.helper-text {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-top: 0.25rem;
+}
+
+/* Error Text */
+.error-text {
+  color: var(--error-color);
+  font-size: clamp(0.75rem, 1.2vw, 0.875rem);
+  margin-top: 0.25rem;
+}
+
+/* Dose Safety Indicator */
+.dose-safety-indicator {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.dose-safety-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-align: center;
+  margin-bottom: 1rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.dose-safety-bar {
+  position: relative;
+  display: flex;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 3px solid #2c1810;
+  background: #2c1810;
+  margin-bottom: 1rem;
+}
+
+.dose-zone {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 1px;
+}
+
+.dose-zone.low-dose {
+  background: #856404;
+  color: #fff2cc;
+}
+
+.dose-zone.correct-dose {
+  background: #155724;
+  color: #d4edda;
+}
+
+.dose-zone.high-dose {
+  background: #721c24;
+  color: #f8d7da;
+}
+
+.zone-label {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.dose-pointer {
+  position: absolute;
+  top: -5px;
+  transform: translateX(-50%);
+  z-index: 10;
+  transition: left 0.3s ease;
+}
+
+.pointer-arrow {
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 20px solid #ffffff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.dose-safety-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.dose-percentage {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.standard-dose {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+}
+
+.dose-safety-section {
+  grid-column: 1 / -1;
+}
+
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.calculate-btn,
+.reset-btn {
+  padding: clamp(0.75rem, 1.5vw, 1rem) clamp(1.5rem, 3vw, 2rem);
+  border-radius: 8px;
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.calculate-btn {
+  background: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  color: white;
+  min-width: 200px;
+}
+
+.calculate-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--primary-shadow);
+}
+
+.calculate-btn.primary {
+  min-width: 250px;
+}
+
+.reset-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.reset-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: var(--button-bg);
+}
+
+
+/* Action Section */
+.action-section {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+}
+
+.action-section .action-buttons {
+  justify-content: center;
+  margin-top: 0;
+}
+
+/* Results Section */
+.results-section {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--primary-border);
+}
+
+.results-section .section-header {
+  background: var(--primary-light);
+}
+
+/* Results Grid */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.result-card {
+  background: var(--button-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.result-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-border);
+}
+
+.result-label {
+  font-size: clamp(0.625rem, 1vw, 0.75rem);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.result-value {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.result-value.volume-remove {
+  color: var(--error-color);
+}
+
+/* Vial Breakdown */
+.vial-breakdown {
+  background: var(--button-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.vial-breakdown h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.75rem 0;
+}
+
+.vial-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.vial-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  color: var(--text-primary);
+}
+
+.vial-item .check-icon {
+  color: var(--success-color);
+  flex-shrink: 0;
+}
+
+/* Infusion Table */
+.infusion-plan-section {
+  background: var(--button-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.infusion-plan-section h4 {
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.manual-rate-indicator {
+  font-size: 0.75rem;
+  color: var(--primary-color);
+  text-transform: none;
+  font-weight: 500;
+  margin-left: auto;
+  background: var(--primary-light);
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid var(--primary-border);
+}
+
+.infusion-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.infusion-table .table-header {
+  display: grid;
+  grid-template-columns: 60px 100px 100px 100px 1fr;
+  padding: 0.75rem 1rem;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: clamp(0.625rem, 1vw, 0.75rem);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.infusion-table .table-body {
+  padding: 0;
+}
+
+.infusion-table .table-row {
+  display: grid;
+  grid-template-columns: 60px 100px 100px 100px 1fr;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.15s ease;
+  align-items: center;
+}
+
+.infusion-table .table-row:last-child {
+  border-bottom: none;
+}
+
+.infusion-table .table-row:hover {
+  background: var(--bg-tertiary);
+}
+
+.infusion-table .table-row.flush-step {
+  background: var(--primary-light);
+  border-color: var(--primary-border);
+}
+
+/* Table Cells */
+.header-step,
+.header-rate,
+.header-duration-hours,
+.header-duration-minutes,
+.header-volume,
+.header-validation,
+.header-description,
+.header-actions,
+.cell-step {
+  font-weight: 600;
+}
+
+.header-rate,
+.header-duration-hours,
+.header-duration-minutes,
+.header-volume,
+.cell-rate,
+.cell-duration-hours,
+.cell-duration-minutes,
+.cell-volume {
+  text-align: center;
+}
+
+.cell-step {
+  font-size: clamp(0.75rem, 1.2vw, 0.875rem);
+  color: var(--primary-color);
+}
+
+.cell-rate,
+.cell-duration,
+.cell-volume {
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.cell-description {
+  font-size: clamp(0.75rem, 1.2vw, 0.875rem);
+  color: var(--text-secondary);
+}
+
+/* Infusion Summary */
+.infusion-summary {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.summary-row:not(:last-child) {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.summary-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.summary-value {
+  font-weight: 700;
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+/* Scrollbar Styling */
+.pump-calculator-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.pump-calculator-container::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.pump-calculator-container::-webkit-scrollbar-thumb {
+  background: var(--primary-light);
+  border-radius: 4px;
+}
+
+.pump-calculator-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .setup-grid,
+  .dose-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .time-input-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .pump-calculator-full-width {
+    padding: 1rem;
+  }
+  
+  .section-content {
+    padding: 1rem;
+  }
+  
+  .section-header {
+    padding: 1rem;
+  }
+  
+  .results-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .params-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .time-input-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .dose-input-group {
+    grid-template-columns: 1fr;
+  }
+  
+  .dose-unit-dropdown {
+    width: 100%;
+  }
+  
+  .radio-group {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .calculate-btn,
+  .reset-btn {
+    width: 100%;
+  }
+  
+  .step-controls {
+    position: static;
+    transform: none;
+    margin-left: auto;
+  }
+  
+  .infusion-table .table-header,
+  .infusion-table .table-row {
+    grid-template-columns: 50px 80px 80px 80px 1fr;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .infusion-steps-table {
+    font-size: 0.75rem;
+  }
+  
+  .infusion-steps-table th {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .infusion-steps-table td {
+    padding: 0.5rem;
+  }
+  
+  .rate-time-inputs {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .rate-input,
+  .time-input,
+  .volume-input {
+    width: 60px;
+  }
+  
+  .until-complete-option {
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+  
+  .flush-note {
+    font-size: 0.625rem;
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+  
+  .infusion-table .table-header,
+  .infusion-table .table-row {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+  
+  .infusion-table .table-header {
+    display: none;
+  }
+  
+  .infusion-table .table-row > div {
+    text-align: left !important;
+  }
+  
+  .infusion-table .table-row > div:before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: inline-block;
+    width: 100px;
+    text-transform: uppercase;
+    font-size: 0.625rem;
+  }
+}
+
+/* Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.calculator-section {
+  animation: fadeInUp 0.3s ease backwards;
+}
+
+.calculator-section:nth-child(1) { animation-delay: 0.05s; }
+.calculator-section:nth-child(2) { animation-delay: 0.1s; }
+.calculator-section:nth-child(3) { animation-delay: 0.15s; }
+.calculator-section:nth-child(4) { animation-delay: 0.2s; }
+.calculator-section:nth-child(5) { animation-delay: 0.25s; }
+.calculator-section:nth-child(6) { animation-delay: 0.3s; }

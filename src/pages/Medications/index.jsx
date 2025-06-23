@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit2, Trash2, Plus, Upload, Grid, FileSpreadsheet, CheckCircle, AlertCircle, Download } from 'lucide-react';
+import { Edit2, Trash2, Plus, Upload, Grid, FileSpreadsheet, CheckCircle, AlertCircle, Download, Pill } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { storage, firestore } from '../../config/firebase';
@@ -12,6 +12,7 @@ import ConfirmationPopup from '../../components/ConfirmationPopup/ConfirmationPo
 import DeletionConfirmPopup from '../../components/DeletionConfirmPopup/DeletionConfirmPopup';
 import EditConfirmPopup from '../../components/EditConfirmPopup/EditConfirmPopup';
 import ExcelImportPreview from '../../components/ExcelImportPreview/ExcelImportPreview';
+import ExcelOptionsPopup from '../../components/ExcelOptionsPopup/ExcelOptionsPopup';
 import { generateMedicationCode } from '../../utils/medicationCode';
 import { useLocation } from 'react-router-dom';
 import { useSearch } from '../../contexts/SearchContext';
@@ -38,7 +39,17 @@ const Medications = () => {
   const [pendingSaveData, setPendingSaveData] = useState(null);
   const [showImportPreview, setShowImportPreview] = useState(false);
   const [parsedExcelData, setParsedExcelData] = useState(null);
+  const [showExcelOptions, setShowExcelOptions] = useState(false);
   const fileInputRef = useRef(null);
+  
+  // Sorting state
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+  
+  // Filter state
+  const [showSterileSolutions, setShowSterileSolutions] = useState(false);
+  const [showLyophilizedPowders, setShowLyophilizedPowders] = useState(false);
+  const [showCapsules, setShowCapsules] = useState(false);
   
   const location = useLocation();
   const { loadMedications: reloadSearchData } = useSearch();
@@ -396,6 +407,16 @@ const Medications = () => {
     fileInputRef.current?.click();
   };
 
+  const handleExcelUpload = () => {
+    setShowExcelOptions(false);
+    triggerFileInput();
+  };
+
+  const handleExcelDownload = () => {
+    setShowExcelOptions(false);
+    downloadExcelTemplate();
+  };
+
   const handleSelectAction = () => {
     const selectedMeds = medications.filter(med => med.selected);
     console.log('Selected medications:', selectedMeds);
@@ -492,8 +513,8 @@ const Medications = () => {
       
       console.log('Data to update in Firebase:', dataToUpdate);
       
-      // Check if this is a new medication
-      const isNewMedication = medicationId.startsWith('new_');
+      // Check if this is a new medication (temp_ prefix from handleCreateMedication)
+      const isNewMedication = medicationId.startsWith('new_') || medicationId.startsWith('temp_');
       
       // All other IDs are treated as Firebase document IDs
       const isFirebaseId = !isNewMedication;
@@ -634,84 +655,220 @@ const Medications = () => {
     }
   };
 
+  // Handler for Add Medication button
+  const handleCreateMedication = async () => {
+    try {
+      // Create a new medication object with a temporary ID
+      const newMedication = {
+        id: `temp_${Date.now()}`, // Temporary ID until saved to Firebase
+        brandName: '',
+        genericName: '',
+        dosageForm: '',
+        vialSize: '',
+        indication: '',
+        reconstitutionSolution: '',
+        reconstitutionVolume: '',
+        dose: '',
+        doseFrequency: '',
+        infusionRate: '',
+        normalSalineBag: '',
+        overfillRule: '',
+        filter: '',
+        infusionSteps: '',
+        notes: '',
+        specialDosing: '',
+        isNew: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+      
+      setSelectedMedication(newMedication);
+      setAllowModalEdit(true);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Error creating new medication:', error);
+      alert('Failed to create new medication');
+    }
+  };
+
+  // Handler for Edit button
+  const handleEditSelected = () => {
+    const selectedMeds = medications.filter(med => med.selected);
+    if (selectedMeds.length === 0) {
+      alert('Please select a medication to edit');
+      return;
+    }
+    if (selectedMeds.length > 1) {
+      alert('Please select only one medication to edit');
+      return;
+    }
+    handleEdit(selectedMeds[0].id);
+  };
+
+  // Handler for Delete button
+  const handleDeleteSelected = () => {
+    const selectedMeds = medications.filter(med => med.selected);
+    if (selectedMeds.length === 0) {
+      alert('Please select at least one medication to delete');
+      return;
+    }
+    if (selectedMeds.length === 1) {
+      handleDelete(selectedMeds[0].id);
+    } else {
+      if (confirm(`Are you sure you want to delete ${selectedMeds.length} medications?`)) {
+        selectedMeds.forEach(med => handleDelete(med.id));
+      }
+    }
+  };
+
+  // Sorting function
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Filter and sort medications
+  const getFilteredAndSortedMedications = () => {
+    let filtered = [...medications];
+
+    // Apply filters
+    if (showSterileSolutions || showLyophilizedPowders || showCapsules) {
+      filtered = filtered.filter(med => {
+        const dosageForm = med.dosageForm?.toLowerCase() || '';
+        if (showSterileSolutions && dosageForm.includes('solution')) return true;
+        if (showLyophilizedPowders && dosageForm.includes('powder')) return true;
+        if (showCapsules && dosageForm.includes('capsule')) return true;
+        return false;
+      });
+    }
+
+    // Apply sorting
+    if (sortField) {
+      filtered.sort((a, b) => {
+        let aValue = a[sortField] || '';
+        let bValue = b[sortField] || '';
+
+        // Convert to uppercase for case-insensitive sorting
+        if (typeof aValue === 'string') aValue = aValue.toUpperCase();
+        if (typeof bValue === 'string') bValue = bValue.toUpperCase();
+
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  };
+
+  const displayMedications = getFilteredAndSortedMedications();
+
   return (
-    <div className="medications-page">
-      <div className="medications-header">
-        <h1 className="header-title">Medications</h1>
-        <div className="header-actions">
-          <button className="header-btn primary" onClick={handleAddDrug}>
-            <Plus size={18} />
-            Add Drug
-          </button>
-          <button className="header-btn" onClick={handleAddField}>
-            <Grid size={18} />
-            Add Field
-          </button>
-          <button className="header-btn" onClick={triggerFileInput}>
-            <Upload size={18} />
-            Import Excel
-          </button>
-          <button className="header-btn" onClick={downloadExcelTemplate} title="Download Excel template">
-            <Download size={18} />
-            Template
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls"
-            onChange={handleImportExcel}
-            style={{ display: 'none' }}
-          />
-        </div>
-      </div>
-
-      {/* Upload Status Notification */}
-      {uploadStatus && (
-        <div className={`upload-notification ${uploadStatus}`}>
-          <div className="notification-content">
-            {uploadStatus === 'uploading' && <div className="spinner" />}
-            {uploadStatus === 'success' && <CheckCircle size={20} />}
-            {uploadStatus === 'error' && <AlertCircle size={20} />}
-            <span>{uploadMessage}</span>
-          </div>
-        </div>
-      )}
-
-      <div className="medications-container">
+    <div className="medications-page page-container">
+      {/* Show modal directly if open, otherwise show normal page */}
+      {isModalOpen ? (
+        <MedicationModal
+          medication={selectedMedication}
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          onSave={handleModalSave}
+          onRequestEdit={handleRequestEditFromModal}
+          allowEdit={allowModalEdit}
+          onDelete={(med) => {
+            handleModalClose();
+            handleDelete(med.id);
+          }}
+        />
+      ) : (
+        <>
+          
+          <div className="medications-content">
+            <div className="medications-dashboard">
+              <div className="dashboard-card">
+                <div className="card-header">
+                  <h3>Medication Database</h3>
+                  <Pill size={24} />
+                </div>
+                <div className="card-body">
+                  <div className="filter-options">
+                    <label className="filter-checkbox">
+                      <input 
+                        type="checkbox" 
+                        checked={showSterileSolutions}
+                        onChange={(e) => setShowSterileSolutions(e.target.checked)}
+                      />
+                      <span>Show Sterile Solutions</span>
+                    </label>
+                    <label className="filter-checkbox">
+                      <input 
+                        type="checkbox" 
+                        checked={showLyophilizedPowders}
+                        onChange={(e) => setShowLyophilizedPowders(e.target.checked)}
+                      />
+                      <span>Show Lyophilized Powders</span>
+                    </label>
+                    <label className="filter-checkbox">
+                      <input 
+                        type="checkbox" 
+                        checked={showCapsules}
+                        onChange={(e) => setShowCapsules(e.target.checked)}
+                      />
+                      <span>Show Capsules</span>
+                    </label>
+                    <div className="results-count">{displayMedications.length} Results</div>
+                  </div>
+                  
+                  <div className="medications-container">
         {loading ? (
           <div className="loading-state">
             <div className="spinner" />
             <p>Loading medications...</p>
           </div>
-        ) : medications.length > 0 ? (
+        ) : displayMedications.length > 0 ? (
           <div className="table-wrapper">
-            <table className="medications-table">
+            <table className="prescriptions-table">
               <thead>
                 <tr>
                   <th className="checkbox-cell">
-                    <input
-                      type="checkbox"
-                      className="medication-checkbox"
-                      checked={selectAll}
-                      onChange={handleSelectAll}
-                    />
+                    <div className="add-icon" onClick={() => setShowExcelOptions(true)}>+</div>
                   </th>
-                  <th>Brand Name</th>
-                  <th>Generic Name</th>
-                  <th>Indication</th>
-                  <th>Dosage Form</th>
-                  <th>Vial Size</th>
-                  <th>Actions</th>
+                  <th className="sortable" onClick={() => handleSort('brandName')}>
+                    <span>Brand Name</span>
+                    {sortField === 'brandName' && (
+                      <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                    )}
+                  </th>
+                  <th className="sortable" onClick={() => handleSort('genericName')}>
+                    <span>Generic Name</span>
+                    {sortField === 'genericName' && (
+                      <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                    )}
+                  </th>
+                  <th className="sortable" onClick={() => handleSort('dosageForm')}>
+                    <span>Dosage Form</span>
+                    {sortField === 'dosageForm' && (
+                      <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                    )}
+                  </th>
+                  <th className="sortable" onClick={() => handleSort('vialSize')}>
+                    <span>Vial Size</span>
+                    {sortField === 'vialSize' && (
+                      <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                    )}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {medications.map((medication) => (
+                {displayMedications.map((medication, index) => (
                   <tr 
                     key={medication.id} 
-                    className={`${medication.selected ? 'selected' : ''} clickable-row`}
+                    className="prescription-row"
                     onClick={(e) => {
-                      // Don't open modal if clicking on checkbox or action buttons
-                      if (!e.target.closest('.checkbox-cell') && !e.target.closest('.actions-cell')) {
+                      if (!e.target.closest('.checkbox-cell') && !e.target.closest('.view-link')) {
                         handleRowClick(medication);
                       }
                     }}
@@ -719,38 +876,25 @@ const Medications = () => {
                     <td className="checkbox-cell">
                       <input
                         type="checkbox"
-                        className="medication-checkbox"
+                        className="prescription-checkbox"
                         checked={medication.selected}
                         onChange={() => handleSelectMedication(medication.id)}
                       />
                     </td>
-                    <td className="brand-name">{medication.brandName}</td>
-                    <td className="generic-name">{medication.genericName}</td>
-                    <td className="indication">{medication.indication}</td>
-                    <td className="dosage-form">{medication.dosageForm}</td>
-                    <td className="vial-size">{medication.vialSize}</td>
-                    <td>
-                      <div className="actions-cell">
-                        <button
-                          className="action-btn edit"
-                          onClick={() => handleEdit(medication.id)}
-                          title="Edit medication"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button
-                          className="action-btn delete"
-                          onClick={() => handleDelete(medication.id)}
-                          title="Delete medication"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
+                    <td className="brand-name">{medication.brandName?.toUpperCase() || 'DUPIXENT PEN'}</td>
+                    <td className="generic-name">{medication.genericName?.toUpperCase() || 'DUPILUMAB'}</td>
+                    <td className="dosage-form">{medication.dosageForm || 'INJECTION'}</td>
+                    <td className="vial-size">{medication.vialSize || '300MG/ML'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            
+            <div className="prescription-actions">
+              <button className="prescription-btn add-medication" onClick={() => handleCreateMedication()}>Add Medication</button>
+              <button className="prescription-btn edit" onClick={() => handleEditSelected()}>Edit</button>
+              <button className="prescription-btn delete" onClick={() => handleDeleteSelected()}>Delete</button>
+            </div>
           </div>
         ) : (
           <div className="empty-state">
@@ -758,17 +902,13 @@ const Medications = () => {
             <p>Click "Add Drug" to start adding medications</p>
           </div>
         )}
-      </div>
-
-      {/* Medication Modal */}
-      <MedicationModal
-        medication={selectedMedication}
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-        onSave={handleModalSave}
-        onRequestEdit={handleRequestEditFromModal}
-        allowEdit={allowModalEdit}
-      />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Confirmation Popup */}
       <ConfirmationPopup
@@ -805,6 +945,34 @@ const Medications = () => {
         onCancel={handleCancelImport}
         existingMedications={medications}
       />
+      
+      {/* Excel Options Popup */}
+      <ExcelOptionsPopup
+        isOpen={showExcelOptions}
+        onClose={() => setShowExcelOptions(false)}
+        onUpload={handleExcelUpload}
+        onDownload={handleExcelDownload}
+      />
+      
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx,.xls"
+        onChange={handleImportExcel}
+        style={{ display: 'none' }}
+      />
+
+      {/* Upload Status Notification */}
+      {uploadStatus && (
+        <div className={`upload-notification ${uploadStatus}`}>
+          <div className="notification-content">
+            {uploadStatus === 'uploading' && <div className="spinner" />}
+            {uploadStatus === 'success' && <CheckCircle size={20} />}
+            {uploadStatus === 'error' && <AlertCircle size={20} />}
+            <span>{uploadMessage}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

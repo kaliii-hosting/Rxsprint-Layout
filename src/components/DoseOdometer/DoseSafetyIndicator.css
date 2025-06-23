@@ -1,0 +1,163 @@
+/* Dose Safety Indicator */
+.dose-safety-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 85, 0, 0.3);
+  border-radius: 12px;
+  position: relative;
+}
+
+.dose-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ff5500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.dose-gauge {
+  position: relative;
+  width: 280px;
+  height: 80px;
+  border: 3px solid rgba(101, 77, 45, 0.8);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(101, 77, 45, 0.2);
+}
+
+.dose-sections {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.dose-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.dose-section.low-dose {
+  background: rgba(101, 77, 45, 0.8);
+  color: #f59e0b;
+}
+
+.dose-section.correct-dose {
+  background: #22c55e;
+  color: #ffffff;
+}
+
+.dose-section.high-dose {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.dose-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.dose-pointer {
+  position: absolute;
+  top: -8px;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  z-index: 10;
+  transition: left 0.5s ease-in-out;
+}
+
+.pointer-triangle {
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 16px solid #ffffff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.dose-value {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+/* Animation for gauge transitions */
+.dose-gauge:hover .dose-section {
+  transform: scale(1.02);
+}
+
+.dose-section.low-dose:hover {
+  background: rgba(101, 77, 45, 1);
+}
+
+.dose-section.correct-dose:hover {
+  background: #16a34a;
+}
+
+.dose-section.high-dose:hover {
+  background: #dc2626;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .dose-gauge {
+    width: 240px;
+    height: 70px;
+  }
+
+  .dose-title {
+    font-size: 1rem;
+  }
+
+  .dose-label {
+    font-size: 0.75rem;
+  }
+
+  .pointer-triangle {
+    border-left-width: 10px;
+    border-right-width: 10px;
+    border-top-width: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dose-gauge {
+    width: 200px;
+    height: 60px;
+  }
+
+  .dose-safety-indicator {
+    padding: 1rem;
+  }
+
+  .dose-title {
+    font-size: 0.875rem;
+  }
+
+  .dose-label {
+    font-size: 0.625rem;
+  }
+
+  .pointer-triangle {
+    border-left-width: 8px;
+    border-right-width: 8px;
+    border-top-width: 12px;
+  }
+}

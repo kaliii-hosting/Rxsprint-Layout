@@ -1,0 +1,323 @@
+{
+  "pumpCalculationLogic": {
+    "requiredInputs": {
+      "patientWeight": {
+        "type": "number",
+        "unit": "kg",
+        "required": true
+      },
+      "medicationSelection": {
+        "type": "string",
+        "required": true
+      },
+      "prescribedDose": {
+        "type": "number",
+        "required": true
+      },
+      "totalInfusionVolume": {
+        "type": "number",
+        "unit": "ml",
+        "note": "Can be auto-calculated based on weight"
+      },
+      "primeVolume": {
+        "type": "number",
+        "unit": "ml",
+        "default": 10
+      },
+      "flushVolume": {
+        "type": "number",
+        "unit": "ml",
+        "default": 10
+      },
+      "totalInfusionTime": {
+        "type": "object",
+        "properties": {
+          "hours": "number",
+          "minutes": "number"
+        }
+      },
+      "infusionMode": {
+        "type": "string",
+        "options": ["Add to empty bag", "Remove Overfill"]
+      }
+    },
+    
+    "bagSelectionAndOverfill": {
+      "description": "Select IV bag size based on patient weight per drug rules",
+      "standardOverfillVolumes": {
+        "50": {
+          "bagSize": 50,
+          "overfillRemoval": 5,
+          "unit": "ml"
+        },
+        "100": {
+          "bagSize": 100,
+          "overfillRemoval": 7,
+          "unit": "ml"
+        },
+        "150": {
+          "bagSize": 150,
+          "overfillRemoval": 25,
+          "unit": "ml"
+        },
+        "250": {
+          "bagSize": 250,
+          "overfillRemoval": 30,
+          "unit": "ml"
+        },
+        "500": {
+          "bagSize": 500,
+          "overfillRemoval": 40,
+          "unit": "ml"
+        },
+        "1000": {
+          "bagSize": 1000,
+          "overfillRemoval": 60,
+          "unit": "ml"
+        }
+      },
+      "exceptions": {
+        "ELAPRASE": {
+          "removeDrugVolume": false
+        }
+      },
+      "calculation": "totalRemoval = drugVolume + overfillVolume",
+      "note": "Only applies for 'Remove Overfill' option"
+    },
+    
+    "drugVolumeDetermination": {
+      "sterileSolutions": {
+        "description": "Volume = volume of total number of vials to achieve prescribed dose",
+        "calculationMethod": "directVolume"
+      },
+      "lyophilizedPowders": {
+        "description": "Count vials needed, multiply by reconstitution volume to achieve prescribed dose",
+        "calculationMethod": "reconstitutionVolume"
+      },
+      "optimization": {
+        "description": "Optimize vial combinations for vials with different strength to minimize waste and minimize number of vials",
+        "rules": [
+          "When multiple vial sizes are available, combine larger vials with smaller vials to minimize waste",
+          "Round down smaller remainders to avoid using additional vials for minimal amounts",
+          "Example: For 2.53 mg remainder when vials are 5mg and 10mg, do not add another vial"
+        ]
+      },
+      "volumeRounding": {
+        "description": "Round drug volumes and removal volumes to facilitate easier measurement",
+        "rules": {
+          "drugVolume": "Round up to nearest 2.5 mL or 5 mL for volumes > 10 mL",
+          "removeFromBag": "Round up to nearest 5 mL for easier measurement",
+          "examples": [
+            "47.5 mL drug volume → 50 mL",
+            "77.5 mL removal → 80 mL"
+          ]
+        }
+      }
+    },
+    
+    "infusionRateCalculations": {
+      "medicationProtocols": {
+        "description": "Use medication-specific protocols when available",
+        "required": true
+      },
+      "pumpDisplayLimitations": {
+        "maxDigitsWithDecimal": 3,
+        "maxDigitsWithoutDecimal": 4,
+        "examples": ["999.9", "9999"],
+        "invalidExample": "999.9x"
+      },
+      "rounding": {
+        "description": "Round infusion rate down to the nearest full number",
+        "rule": "Always round DOWN to nearest whole number for safety",
+        "examples": [
+          "166.67 → 166",
+          "83.9 → 83", 
+          "250.1 → 250",
+          "99.99 → 99"
+        ]
+      },
+      "baseCalculation": {
+        "formula": "infusionRate (mL/hr) = totalInfusionVolume ÷ totalTime (min) × 60",
+        "note": "Calculate using full total infusion volume before subtracting flush volume"
+      }
+    },
+    
+    "medicationSpecificSteps": {
+      "description": "Each medication must follow its specific infusion steps from the database",
+      "requirements": {
+        "followDatabaseProtocols": true,
+        "lastStepAlwaysFlush": true,
+        "maintainStepSequence": true,
+        "sumOfStepDurationsMustEqualTotalTime": true
+      }
+    },
+    
+    "infusionVolumeModes": {
+      "addToEmptyBag": {
+        "removeOverfill": false,
+        "calculation": "Add drug volume + NS to reach target bag size. Total infusion volume = bag size"
+      },
+      "removeOverfill": {
+        "removeOverfill": true,
+        "calculation": "Remove (drug volume + overfill volume) from bag, then add drug back. Total infusion volume = original bag size",
+        "importantNote": "The total infusion volume remains at the original bag size, NOT the reduced volume after removal"
+      }
+    },
+    
+    "workflowSteps": {
+      "step1": {
+        "name": "User Inputs",
+        "actions": [
+          "Prescribed dose",
+          "Total infusion volume",
+          "Medication selection (solution or powder)"
+        ]
+      },
+      "step2": {
+        "name": "Medication Volume Calculation",
+        "actions": [
+          "If solution: use strength to calculate required volume",
+          "If powder: use reconstitution volume per vial to calculate required volume",
+          "Compute total medication volume needed"
+        ]
+      },
+      "step3": {
+        "name": "Overfill Calculation",
+        "actions": [
+          "Determine overfill based on NS bag size",
+          "For Remove Overfill mode: Remove (drug volume + overfill) from bag, add drug back",
+          "For Add to Empty Bag mode: Add drug + NS to reach bag size",
+          "CRITICAL: Total infusion volume = original bag size (not reduced volume)"
+        ]
+      },
+      "step4": {
+        "name": "Prime & Flush Volumes",
+        "actions": [
+          "Prime volume (irrelevant to calcs) = default 10 mL",
+          "Flush volume (used in step volume calc) = default 10 mL",
+          "Last infusion step = flush volume at calculated infusion rate"
+        ]
+      },
+      "step5": {
+        "name": "Infusion Rate Rules",
+        "actions": [
+          "Calculate infusion rate using formula",
+          "Round result to fit pump rules"
+        ]
+      },
+      "step6": {
+        "name": "Step Volume Calculation",
+        "actions": [
+          "Subtract flush volume from total infusion volume",
+          "Remaining volume is divided among steps",
+          "Calculate step durations: (step volume × 60) ÷ infusion rate = time in minutes"
+        ]
+      }
+    },
+    
+    "stepCalculationExample": {
+      "step1": {
+        "volume": 10,
+        "calculation": "10 × 60 = 600 ÷ 40 = 15 mins"
+      },
+      "step2": {
+        "volume": 27.5,
+        "calculation": "27.5 × 60 = 1650 ÷ infusion rate = 15 mins"
+      },
+      "step3": {
+        "volume": 32.5,
+        "calculation": "32.5 × 60 = 1950 ÷ infusion rate = 30 mins"
+      },
+      "step4": {
+        "calculation": "Sum of step 1, 2, 3 volumes minus step 5 (flush volume)"
+      },
+      "step5": {
+        "description": "Flush step",
+        "volume": 20,
+        "note": "Flush volume is picked by doctor, can be any value"
+      },
+      "verification": {
+        "totalVolume": "Sum of all step volumes = total infusion volume",
+        "totalTime": "Sum of all step durations = total infusion time"
+      }
+    },
+    
+    "criticalRules": {
+      "totalInfusionVolumeRule": {
+        "rule": "Total infusion volume ALWAYS equals the original bag size, regardless of removal amounts",
+        "explanation": "In Remove Overfill mode, even though you physically remove volume from the bag, the pump is programmed to infuse the full original bag volume",
+        "example": "250 mL bag - 80 mL removal + 50 mL drug = 220 mL actual volume, but total infusion volume = 250 mL"
+      },
+      "infusionRateCalculation": {
+        "rule": "Infusion rate must be calculated using the full total infusion volume before subtracting the flush volume",
+        "note": "Prime volume is irrelevant and should not be included in any calculations"
+      },
+      "flushVolumeHandling": {
+        "rule": "Flush volume is only subtracted when determining the total volume distributed across infusion steps",
+        "note": "The total volume used in all infusion steps (excluding the final flush) should always equal the total infusion volume minus the flush volume"
+      },
+      "rateBasedOnOriginalVolume": {
+        "rule": "The calculated infusion rate itself must be based on the complete original infusion volume, without subtracting the flush"
+      },
+      "infusionRateSafetyRounding": {
+        "rule": "All infusion rates MUST be rounded DOWN to the nearest whole number for patient safety",
+        "explanation": "Rounding down ensures the infusion never exceeds the prescribed rate, preventing overdosing",
+        "examples": ["83.7 → 83 mL/hr", "99.9 → 99 mL/hr", "250.1 → 250 mL/hr"]
+      }
+    },
+    
+    "drugVolumeVariability": {
+      "lyophilizedPowder": {
+        "calculation": "Number of reconstitution volume per all vials needed to achieve prescribed dose"
+      },
+      "sterileSolution": {
+        "calculation": "Total of combined vials volume used to achieve prescribed dose"
+      }
+    }
+  },
+  
+  "enhancedFeatures": {
+    "dataManagement": {
+      "source": "Firebase database",
+      "type": "Dynamic medication data"
+    },
+    
+    "adaptiveFormFields": {
+      "description": "Fields that show/hide based on medication requirements",
+      "conditionalFields": {
+        "ertStatus": {
+          "condition": "Only shows for medications that need it"
+        },
+        "doseEscalation": {
+          "condition": "Based on medication protocol"
+        },
+        "companionDrug": {
+          "example": "POMBILITI + OPFOLDA",
+          "condition": "When medication requires companion drug"
+        },
+        "rapidlyProgressingDisease": {
+          "condition": "For specific disease protocols"
+        },
+        "metabolizerStatus": {
+          "condition": "When relevant to medication metabolism"
+        }
+      }
+    },
+    
+    "advancedOptions": {
+      "type": "Collapsible section",
+      "features": {
+        "manualSalineBagSizeOverride": {
+          "description": "Allow manual selection of saline bag size"
+        },
+        "customInfusionRateOverride": {
+          "description": "Override calculated infusion rate"
+        },
+        "manualVialSelection": {
+          "description": "Manually select vial combinations"
+        }
+      },
+      "characteristics": "More flexible and extensible"
+    }
+  }
+}

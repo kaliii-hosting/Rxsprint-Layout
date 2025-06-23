@@ -1,0 +1,282 @@
+/* Dose Odometer Styles */
+.dose-odometer-container {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.dose-odometer-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.odometer-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  height: 180px;
+}
+
+/* Gauge Arc */
+.odometer-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.odometer-background {
+  fill: none;
+  stroke: #2a2a2a;
+  stroke-width: 20;
+  stroke-linecap: round;
+}
+
+.odometer-track {
+  fill: none;
+  stroke-width: 20;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.5s ease-in-out;
+}
+
+/* Color zones */
+.odometer-zone-low {
+  fill: none;
+  stroke: #f0ad4e;
+  stroke-width: 20;
+  stroke-linecap: round;
+  opacity: 0.3;
+}
+
+.odometer-zone-optimal {
+  fill: none;
+  stroke: #5cb85c;
+  stroke-width: 20;
+  stroke-linecap: round;
+  opacity: 0.3;
+}
+
+.odometer-zone-high {
+  fill: none;
+  stroke: #d9534f;
+  stroke-width: 20;
+  stroke-linecap: round;
+  opacity: 0.3;
+}
+
+/* Indicator needle */
+.odometer-indicator {
+  fill: none;
+  stroke-width: 24;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.5));
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.odometer-indicator.low {
+  stroke: #f0ad4e;
+  filter: drop-shadow(0 0 12px rgba(240, 173, 78, 0.6));
+}
+
+.odometer-indicator.optimal {
+  stroke: #5cb85c;
+  filter: drop-shadow(0 0 12px rgba(92, 184, 92, 0.6));
+}
+
+.odometer-indicator.high {
+  stroke: #d9534f;
+  filter: drop-shadow(0 0 12px rgba(217, 83, 79, 0.6));
+}
+
+/* Center display */
+.odometer-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -20%);
+  text-align: center;
+}
+
+.odometer-value {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.odometer-value.low {
+  color: #f0ad4e;
+}
+
+.odometer-value.optimal {
+  color: #5cb85c;
+}
+
+.odometer-value.high {
+  color: #d9534f;
+}
+
+.odometer-unit {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+  display: block;
+}
+
+.odometer-status {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.odometer-status.low {
+  background: rgba(240, 173, 78, 0.2);
+  color: #f0ad4e;
+  border: 1px solid rgba(240, 173, 78, 0.3);
+}
+
+.odometer-status.optimal {
+  background: rgba(92, 184, 92, 0.2);
+  color: #5cb85c;
+  border: 1px solid rgba(92, 184, 92, 0.3);
+}
+
+.odometer-status.high {
+  background: rgba(217, 83, 79, 0.2);
+  color: #d9534f;
+  border: 1px solid rgba(217, 83, 79, 0.3);
+}
+
+/* Scale labels */
+.odometer-labels {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.odometer-label {
+  position: absolute;
+  font-size: 11px;
+  color: #666;
+  font-weight: 500;
+  transform-origin: center;
+}
+
+.odometer-label.min {
+  bottom: 20px;
+  left: 20px;
+}
+
+.odometer-label.max {
+  bottom: 20px;
+  right: 20px;
+}
+
+.odometer-label.optimal {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #5cb85c;
+}
+
+/* Range info */
+.odometer-ranges {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #2a2a2a;
+}
+
+.range-item {
+  text-align: center;
+  flex: 1;
+}
+
+.range-label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.range-value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.range-value.low {
+  color: #f0ad4e;
+}
+
+.range-value.optimal {
+  color: #5cb85c;
+}
+
+.range-value.high {
+  color: #d9534f;
+}
+
+/* Animation */
+@keyframes pulseGlow {
+  0% {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 16px currentColor);
+  }
+  100% {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+}
+
+.odometer-indicator.optimal {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Loading state */
+.odometer-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .odometer-wrapper {
+    max-width: 250px;
+    height: 150px;
+  }
+  
+  .odometer-value {
+    font-size: 28px;
+  }
+  
+  .odometer-ranges {
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+}

@@ -1,19 +1,23 @@
-/* Wrapper to handle the content padding */
+/* Home page fills entire canvas */
 .home-page-wrapper {
+  background: var(--bg-primary);
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
   position: relative;
-  margin: -40px;
-  width: calc(100% + 80px);
-  height: calc(100% + 80px);
-  min-height: calc(100vh - 80px + 80px);
-  background: #000000;
   overflow: hidden;
 }
 
 .home-container {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
-  background: #000000;
+  background: var(--bg-primary);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -21,7 +25,11 @@
 }
 
 .animation-wrapper {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
   display: flex;
@@ -32,13 +40,16 @@
 /* Background gradient */
 .bg-gradient {
   position: absolute;
+  top: -50%;
+  left: -50%;
   width: 200%;
   height: 200%;
   background: radial-gradient(circle at center, 
-    rgba(255, 85, 0, 0.1) 0%, 
-    rgba(255, 85, 0, 0.05) 30%, 
+    var(--primary-light) 0%, 
+    var(--primary-light) 30%, 
     transparent 70%);
   animation: pulseGradient 4s ease-in-out infinite;
+  transform-origin: center;
 }
 
 @keyframes pulseGradient {
@@ -55,6 +66,10 @@
 /* Particles container */
 .particles-container {
   position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -62,17 +77,21 @@
 
 .particle {
   position: absolute;
-  width: 4px;
-  height: 4px;
-  background: rgba(255, 85, 0, 0.6);
+  width: clamp(0.125rem, 0.3vw, 0.25rem);
+  height: clamp(0.125rem, 0.3vw, 0.25rem);
+  background: var(--primary-color);
   border-radius: 50%;
   filter: blur(1px);
-  box-shadow: 0 0 10px rgba(255, 85, 0, 0.5);
+  box-shadow: 0 0 0.625rem var(--primary-light);
 }
 
 /* ECG Line */
 .ecg-container {
   position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
   display: flex;
@@ -82,29 +101,40 @@
 }
 
 .ecg-line {
-  stroke: #ff5500;
-  stroke-width: 3;
+  stroke: var(--primary-color);
+  stroke-width: clamp(2, 0.5vw, 4);
   fill: none;
-  filter: drop-shadow(0 0 10px rgba(255, 85, 0, 0.8)) 
-          drop-shadow(0 0 20px rgba(255, 85, 0, 0.5));
+  filter: drop-shadow(0 0 0.625rem var(--primary-color)) 
+          drop-shadow(0 0 1.25rem var(--primary-light));
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .ecg-glow {
-  stroke: #ff5500;
-  stroke-width: 8;
+  stroke: var(--primary-color);
+  stroke-width: clamp(6, 1vw, 10);
   fill: none;
-  filter: blur(15px);
+  filter: blur(clamp(0.5rem, 1vw, 0.9375rem));
   opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+  .ecg-line {
+    stroke-width: 2;
+  }
+  
+  .ecg-glow {
+    stroke-width: 6;
+  }
 }
 
 /* Logo container */
 .logo-container {
   position: relative;
   z-index: 10;
-  width: 200px;
-  height: 200px;
+  width: clamp(7.5rem, 15vw, 12.5rem);
+  max-width: 80vw;
+  height: clamp(7.5rem, 15vw, 12.5rem);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,11 +150,12 @@
 }
 
 .logo-image {
-  width: 180px;
+  width: clamp(6.25rem, 12vw, 11.25rem);
   height: auto;
-  filter: drop-shadow(0 0 30px rgba(255, 85, 0, 0.6));
+  filter: drop-shadow(0 0 1.875rem var(--primary-light));
   position: relative;
   z-index: 2;
+  max-width: 90%;
 }
 
 /* Heart pulse effect */
@@ -134,9 +165,9 @@
   height: 100%;
   border-radius: 50%;
   background: radial-gradient(circle, 
-    rgba(255, 85, 0, 0.3) 0%, 
+    var(--primary-light) 0%, 
     transparent 70%);
-  filter: blur(20px);
+  filter: blur(clamp(10px, 2vw, 20px));
 }
 
 .heart-glow {
@@ -147,67 +178,67 @@
   left: -10%;
   border-radius: 50%;
   background: radial-gradient(circle, 
-    rgba(255, 85, 0, 0.4) 0%, 
+    var(--primary-light) 0%, 
     transparent 60%);
-  filter: blur(30px);
+  filter: blur(clamp(1rem, 3vw, 1.875rem));
 }
 
 /* ECG SVG */
 .ecg-svg {
   position: absolute;
-  width: 120%;
-  height: 400px;
+  width: 120vw;
+  height: 40vh;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  min-width: 100%;
+  min-height: 200px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .home-page-wrapper {
-    margin: -20px;
-    width: calc(100% + 40px);
-    height: calc(100% + 40px);
-  }
-  
+/* Landscape mode optimization */
+@media (orientation: landscape) and (max-height: 600px) {
   .logo-container {
-    width: 150px;
-    height: 150px;
-  }
-  
-  .logo-image {
-    width: 130px;
+    width: clamp(6rem, 12vh, 10rem);
+    height: clamp(6rem, 12vh, 10rem);
   }
   
   .ecg-svg {
-    width: 130%;
-    height: 300px;
+    height: clamp(12rem, 25vh, 18rem);
   }
 }
 
-@media (max-width: 480px) {
-  .home-page-wrapper {
-    margin: -15px;
-    width: calc(100% + 30px);
-    height: calc(100% + 30px);
-  }
-  
+/* Very large screens */
+@media (min-width: 1600px) {
   .logo-container {
-    width: 120px;
-    height: 120px;
-  }
-  
-  .logo-image {
-    width: 100px;
+    width: clamp(12.5rem, 20vw, 20rem);
+    height: clamp(12.5rem, 20vw, 20rem);
   }
   
   .ecg-svg {
-    width: 140%;
-    height: 250px;
+    height: clamp(25rem, 35vh, 35rem);
   }
-  
-  .particle {
-    width: 3px;
-    height: 3px;
+}
+
+/* Ultra-wide screens */
+@media (min-aspect-ratio: 21/9) {
+  .ecg-svg {
+    width: clamp(150%, 180vw, 200%);
+  }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+  .bg-gradient {
+    top: -25%;
+    left: -25%;
+    width: 150%;
+    height: 150%;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .logo-image {
+    image-rendering: -webkit-optimize-contrast;
   }
 }

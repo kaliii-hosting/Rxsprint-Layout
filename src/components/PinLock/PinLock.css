@@ -4,7 +4,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #000000;
+  background-color: var(--bg-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,6 +12,148 @@
   overflow: hidden;
 }
 
+/* Animation wrapper from home page */
+.pin-lock-overlay .animation-wrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* Background gradient */
+.pin-lock-overlay .bg-gradient {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, 
+    var(--primary-light) 0%, 
+    var(--primary-light) 30%, 
+    transparent 70%);
+  animation: pulseGradient 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes pulseGradient {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+/* Particles container */
+.pin-lock-overlay .particles-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pin-lock-overlay .particle {
+  position: absolute;
+  width: clamp(0.125rem, 0.3vw, 0.25rem);
+  height: clamp(0.125rem, 0.3vw, 0.25rem);
+  background: var(--primary-color);
+  border-radius: 50%;
+  filter: blur(1px);
+  box-shadow: 0 0 0.625rem var(--primary-light);
+}
+
+/* ECG Line */
+.pin-lock-overlay .ecg-line {
+  stroke: var(--primary-color);
+  stroke-width: clamp(2, 0.5vw, 4);
+  fill: none;
+  filter: drop-shadow(0 0 0.625rem var(--primary-color)) 
+          drop-shadow(0 0 1.25rem var(--primary-light));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pin-lock-overlay .ecg-glow {
+  stroke: var(--primary-color);
+  stroke-width: clamp(6, 1vw, 10);
+  fill: none;
+  filter: blur(clamp(0.5rem, 1vw, 0.9375rem));
+  opacity: 0.6;
+}
+
+/* Logo container */
+.pin-lock-overlay .logo-container {
+  position: absolute;
+  z-index: 2;
+  width: clamp(7.5rem, 15vw, 12.5rem);
+  max-width: 80vw;
+  height: clamp(7.5rem, 15vw, 12.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pin-lock-overlay .logo-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pin-lock-overlay .logo-image {
+  width: clamp(6.25rem, 12vw, 11.25rem);
+  height: auto;
+  filter: drop-shadow(0 0 1.875rem var(--primary-light));
+  position: relative;
+  z-index: 2;
+  max-width: 90%;
+}
+
+/* Heart pulse effect */
+.pin-lock-overlay .heart-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, 
+    var(--primary-light) 0%, 
+    transparent 70%);
+  filter: blur(clamp(10px, 2vw, 20px));
+}
+
+.pin-lock-overlay .heart-glow {
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  top: -10%;
+  left: -10%;
+  border-radius: 50%;
+  background: radial-gradient(circle, 
+    var(--primary-light) 0%, 
+    transparent 60%);
+  filter: blur(clamp(1rem, 3vw, 1.875rem));
+}
+
+/* ECG SVG */
+.pin-lock-overlay .ecg-svg {
+  position: absolute;
+  width: clamp(100%, 120vw, 150%);
+  height: clamp(15rem, 30vh, 25rem);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.8;
+}
+
+/* Remove old stars animation as we're using the new particles */
 .pin-lock-stars {
   position: absolute;
   width: 100%;
@@ -38,16 +180,34 @@
 }
 
 .pin-lock-container {
-  background: #0a0a0a;
-  border: none;
+  background: var(--bg-modal);
+  border: 1px solid var(--primary-border);
   border-radius: 24px;
   padding: 48px 40px;
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  box-shadow: var(--shadow-lg),
+              0 0 100px var(--primary-light);
   position: relative;
-  backdrop-filter: blur(10px);
-  animation: fadeInScale 0.5s ease-out;
+  backdrop-filter: blur(20px);
+  z-index: 10;
+  opacity: 0;
+  transform: scale(0.9) translateY(20px);
+}
+
+/* Desktop scaling for PIN container */
+@media (min-width: 769px) {
+  .pin-lock-container {
+    max-width: 400px;
+    padding: 36px 32px;
+  }
+}
+
+@media (min-width: 1441px) {
+  .pin-lock-container {
+    max-width: 380px;
+    padding: 32px 28px;
+  }
 }
 
 @keyframes fadeInScale {
@@ -64,20 +224,61 @@
 .pin-lock-icon {
   width: 80px;
   height: 80px;
-  background: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 24px;
-  color: #ffffff;
-  box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3);
+  color: var(--text-primary);
+  box-shadow: 0 4px 15px var(--primary-light),
+              0 0 30px var(--primary-light);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Desktop icon sizing */
+@media (min-width: 769px) {
+  .pin-lock-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+  }
+  
+  .pin-lock-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (min-width: 1441px) {
+  .pin-lock-icon {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+.pin-lock-icon::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, var(--primary-light), transparent);
+  transform: rotate(45deg);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
 
 .pin-lock-title {
   font-size: 28px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   text-align: center;
   margin: 0 0 8px 0;
   letter-spacing: 2px;
@@ -85,10 +286,33 @@
 
 .pin-lock-subtitle {
   font-size: 14px;
-  color: #666666;
+  color: var(--text-tertiary);
   text-align: center;
   margin: 0 0 32px 0;
   letter-spacing: 0.5px;
+}
+
+/* Desktop text sizing */
+@media (min-width: 769px) {
+  .pin-lock-title {
+    font-size: 22px;
+    letter-spacing: 1.5px;
+  }
+  
+  .pin-lock-subtitle {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+}
+
+@media (min-width: 1441px) {
+  .pin-lock-title {
+    font-size: 20px;
+  }
+  
+  .pin-lock-subtitle {
+    font-size: 12px;
+  }
 }
 
 .pin-dots {
@@ -102,18 +326,29 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background-color: #2a2a2a;
-  border: none;
+  background-color: var(--button-bg);
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .pin-dot.filled {
   background-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(255, 85, 0, 0.3);
+  box-shadow: 0 0 10px var(--primary-light),
+              0 0 20px var(--primary-light),
+              inset 0 0 10px var(--primary-light);
+  border-color: var(--primary-color);
+  animation: dotPulse 0.3s ease-out;
+}
+
+@keyframes dotPulse {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
 .pin-dots.error .pin-dot.filled {
-  background-color: #ff4757;
+  background-color: var(--error-color);
   animation: shake 0.5s ease-in-out;
 }
 
@@ -135,9 +370,9 @@
   width: 80px;
   height: 80px;
   border-radius: 20px;
-  background: #3a3a3a;
-  border: none;
-  color: #ffffff;
+  background: var(--button-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   font-size: 28px;
   font-weight: 400;
   cursor: pointer;
@@ -145,14 +380,46 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: none;
+  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+/* Desktop button sizing */
+@media (min-width: 769px) {
+  .pin-button {
+    width: 65px;
+    height: 65px;
+    font-size: 22px;
+    border-radius: 16px;
+  }
+  
+  .pin-pad {
+    gap: 10px;
+    max-width: 240px;
+  }
+}
+
+@media (min-width: 1441px) {
+  .pin-button {
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+    border-radius: 14px;
+  }
+  
+  .pin-pad {
+    max-width: 220px;
+  }
 }
 
 .pin-button:hover {
-  background: #4a4a4a;
+  background: var(--button-hover-bg);
   transform: scale(1.05);
+  border-color: var(--primary-border);
+  box-shadow: var(--shadow-lg),
+              0 0 20px var(--primary-light);
 }
 
 .pin-button:active {
@@ -175,21 +442,22 @@
 }
 
 .pin-button.number {
-  background: #3a3a3a;
+  background: var(--button-bg);
 }
 
 .pin-button.number:hover {
-  background: #4a4a4a;
+  background: var(--button-hover-bg);
+  border-color: var(--primary-border);
 }
 
 .pin-button-delete {
   background: var(--primary-color);
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .pin-button-delete:hover {
   background: var(--primary-hover);
-  box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3);
+  box-shadow: 0 4px 15px var(--primary-light);
 }
 
 .system-status {
@@ -197,7 +465,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: #666666;
+  color: var(--text-tertiary);
   font-size: 12px;
   letter-spacing: 1px;
 }
@@ -206,18 +474,35 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #00ff00;
-  box-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
-  animation: pulse 2s ease-in-out infinite;
+  background-color: var(--primary-color);
+  box-shadow: 0 0 8px var(--primary-light),
+              0 0 16px var(--primary-light);
+  animation: statusPulse 2s ease-in-out infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+@keyframes statusPulse {
+  0%, 100% { 
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
 }
 
 /* Responsive styles */
+/* Mobile optimizations for animation elements */
 @media (max-width: 768px) {
+  .pin-lock-overlay .logo-container {
+    width: clamp(6rem, 12vw, 10rem);
+    height: clamp(6rem, 12vw, 10rem);
+  }
+  
+  .pin-lock-overlay .ecg-svg {
+    height: clamp(12rem, 25vh, 20rem);
+  }
+  
   .pin-lock-container {
     padding: 40px 32px;
     max-width: 450px;

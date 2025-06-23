@@ -1,33 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator as CalcIcon, Trash2, Clock } from 'lucide-react';
-import { useCalculator } from '../../contexts/CalculatorContext';
 import './Calculator.css';
 
 const Calculator = () => {
-  const { activeTab, setActiveTab } = useCalculator();
-  const [showHistory, setShowHistory] = useState(true);
-  
+  // Calculator mode state
+  const [calculatorMode, setCalculatorMode] = useState('standard'); // 'standard' or 'cross'
+
   // Standard calculator state
   const [display, setDisplay] = useState('0');
   const [previousValue, setPreviousValue] = useState(null);
   const [operation, setOperation] = useState(null);
   const [waitingForNewValue, setWaitingForNewValue] = useState(false);
-  const [history, setHistory] = useState([]);
+  const [calculationDisplay, setCalculationDisplay] = useState('');
 
   // Cross multiplication state
   const [crossValues, setCrossValues] = useState({ A: '', B: '', C: '', D: '' });
   const [activeField, setActiveField] = useState('A');
   
-  // Get current expression for display
-  const getCurrentExpression = () => {
-    if (previousValue !== null && operation) {
-      if (waitingForNewValue) {
-        return `${previousValue}${operation}`;
-      }
-      return `${previousValue}${operation}${display}`;
-    }
-    return display !== '0' ? display : '';
-  };
 
   // Standard calculator functions
   const inputNumber = (num) => {
@@ -53,11 +41,9 @@ const Calculator = () => {
     setPreviousValue(null);
     setOperation(null);
     setWaitingForNewValue(false);
+    setCalculationDisplay('');
   };
 
-  const clearHistory = () => {
-    setHistory([{ type: 'date', value: 'Today' }]);
-  };
 
   const performOperation = (nextOperation) => {
     const inputValue = parseFloat(display);
@@ -85,6 +71,9 @@ const Calculator = () => {
 
     if (previousValue === null) {
       setPreviousValue(inputValue);
+      if (nextOperation !== '=') {
+        setCalculationDisplay(`${inputValue} ${nextOperation}`);
+      }
     } else if (operation) {
       const currentValue = previousValue || 0;
       const newValue = calculate(currentValue, inputValue, operation);
@@ -93,24 +82,12 @@ const Calculator = () => {
       setPreviousValue(newValue);
       
       if (nextOperation === '=') {
-        // For percentage operations, show the correct label in history
-        let label = `${currentValue}${operation}${inputValue}`;
-        if (display.includes('.') && parseFloat(display) < 1 && inputValue * 100 % 1 === 0) {
-          // This might have been a percentage operation
-          const possiblePercent = inputValue * 100;
-          if (possiblePercent === Math.round(possiblePercent)) {
-            label = `${currentValue}${operation}${possiblePercent}%`;
-          }
-        }
-        const historyEntry = {
-          type: 'calc',
-          label: label,
-          value: String(newValue)
-        };
-        setHistory([...history, historyEntry]);
+        setCalculationDisplay(`${currentValue} ${operation} ${inputValue} =`);
         setPreviousValue(null);
         setOperation(null);
         return;
+      } else {
+        setCalculationDisplay(`${newValue} ${nextOperation}`);
       }
     }
 
@@ -212,7 +189,8 @@ const Calculator = () => {
         e.preventDefault();
       }
 
-      if (activeTab === 'calculator') {
+      // Only handle keyboard input for active calculator mode
+      if (calculatorMode === 'standard') {
         // Standard calculator keyboard handling
         switch(e.key) {
           case '0': case '1': case '2': case '3': case '4':
@@ -255,7 +233,7 @@ const Calculator = () => {
             }
             break;
         }
-      } else if (activeTab === 'cross') {
+      } else if (calculatorMode === 'cross') {
         // Cross multiplication keyboard handling
         switch(e.key) {
           case '0': case '1': case '2': case '3': case '4':
@@ -297,161 +275,144 @@ const Calculator = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeTab, display, activeField, previousValue, operation, crossValues]);
+  }, [display, activeField, previousValue, operation, crossValues, calculatorMode]);
 
   return (
     <div className="calculator-page">
       <div className="calculator-wrapper">
-        {activeTab === 'calculator' ? (
-          <div className="calculator-main">
-            <div className="calc-main-content">
-              <div className="calc-display">{display}</div>
-              
-              <div className="calc-keypad">
-                <button className="calc-btn number" onClick={() => inputNumber(7)}>7</button>
-                <button className="calc-btn number" onClick={() => inputNumber(8)}>8</button>
-                <button className="calc-btn number" onClick={() => inputNumber(9)}>9</button>
-                <button className="calc-btn function" onClick={clear}>C</button>
-                <button className="calc-btn operation" onClick={() => performOperation('÷')}>÷</button>
-                
-                <button className="calc-btn number" onClick={() => inputNumber(4)}>4</button>
-                <button className="calc-btn number" onClick={() => inputNumber(5)}>5</button>
-                <button className="calc-btn number" onClick={() => inputNumber(6)}>6</button>
-                <button className="calc-btn function"></button>
-                <button className="calc-btn operation" onClick={() => performOperation('×')}>×</button>
-                
-                <button className="calc-btn number" onClick={() => inputNumber(1)}>1</button>
-                <button className="calc-btn number" onClick={() => inputNumber(2)}>2</button>
-                <button className="calc-btn number" onClick={() => inputNumber(3)}>3</button>
-                <button className="calc-btn function" onClick={() => performOperation('%')}>%</button>
-                <button className="calc-btn operation" onClick={() => performOperation('-')}>−</button>
-                
-                <button className="calc-btn special" onClick={() => setActiveTab('cross')}>
-                  <CalcIcon size={20} />
-                </button>
-                <button className="calc-btn number" onClick={() => inputNumber(0)}>0</button>
-                <button className="calc-btn number" onClick={inputDecimal}>.</button>
-                <button className="calc-btn equals" onClick={() => performOperation('=')}>=</button>
-                <button className="calc-btn operation" onClick={() => performOperation('+')}>+</button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="cross-multiplication">
-            <div className="cross-main-content">
-              <div className="cross-display">
-                <div className="cross-equation">
-                  <div className="fraction">
-                    <input
-                      type="text"
-                      value={crossValues.A}
-                      onClick={() => setActiveField('A')}
-                      className={`cross-input ${activeField === 'A' ? 'active' : ''}`}
-                      placeholder="A"
-                      readOnly
-                    />
-                    <div className="fraction-line"></div>
-                    <input
-                      type="text"
-                      value={crossValues.B}
-                      onClick={() => setActiveField('B')}
-                      className={`cross-input ${activeField === 'B' ? 'active' : ''}`}
-                      placeholder="B"
-                      readOnly
-                    />
-                  </div>
-                  <div className="equals">=</div>
-                  <div className="fraction">
-                    <input
-                      type="text"
-                      value={crossValues.C}
-                      onClick={() => setActiveField('C')}
-                      className={`cross-input ${activeField === 'C' ? 'active' : ''}`}
-                      placeholder="C"
-                      readOnly
-                    />
-                    <div className="fraction-line"></div>
-                    <input
-                      type="text"
-                      value={crossValues.D}
-                      onClick={() => setActiveField('D')}
-                      className={`cross-input ${activeField === 'D' ? 'active' : ''}`}
-                      placeholder="D"
-                      readOnly
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="cross-keypad">
-                <button className="calc-btn number" onClick={() => inputCrossNumber('7')}>7</button>
-                <button className="calc-btn number" onClick={() => inputCrossNumber('8')}>8</button>
-                <button className="calc-btn number" onClick={() => inputCrossNumber('9')}>9</button>
-                <button className="calc-btn function" onClick={clearCross}>⌫</button>
-                <button className="calc-btn operation" onClick={resetCross}>C</button>
-                
-                <button className="calc-btn number" onClick={() => inputCrossNumber('4')}>4</button>
-                <button className="calc-btn number" onClick={() => inputCrossNumber('5')}>5</button>
-                <button className="calc-btn number" onClick={() => inputCrossNumber('6')}>6</button>
-                <button className="calc-btn function disabled">+/-</button>
-                <button className="calc-btn operation disabled">×</button>
-                
-                <button className="calc-btn number" onClick={() => inputCrossNumber('1')}>1</button>
-                <button className="calc-btn number" onClick={() => inputCrossNumber('2')}>2</button>
-                <button className="calc-btn number" onClick={() => inputCrossNumber('3')}>3</button>
-                <button className="calc-btn function disabled">%</button>
-                <button className="calc-btn operation disabled">−</button>
-                
-                <button className="calc-btn special" onClick={() => setActiveTab('calculator')}>
-                  <CalcIcon size={20} />
-                </button>
-                <button className="calc-btn number" onClick={() => inputCrossNumber('0')}>0</button>
-                <button className="calc-btn number" onClick={inputCrossDecimal}>.</button>
-                <button className="calc-btn equals" onClick={calculateCross}>=</button>
-                <button className="calc-btn operation disabled">+</button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-      
-      {activeTab === 'calculator' && showHistory && (
-        <div className="calc-sidebar">
-          <div className="sidebar-header">
-            <h3 className="history-title">History</h3>
-            <button className="delete-icon-btn" onClick={clearHistory}>
-              <Trash2 size={18} />
-            </button>
-          </div>
-          <div className="history-list">
-            {getCurrentExpression() && (
-              <div className="history-item current-input">
-                <div className="calc-label">Current</div>
-                <div className="calc-result current">{getCurrentExpression()}</div>
-              </div>
-            )}
-            {history.length === 0 && !getCurrentExpression() ? (
-              <div className="empty-history">
-                <p>No calculations yet</p>
-                <p className="empty-hint">Your calculation history will appear here</p>
-              </div>
-            ) : (
-              history.map((item, index) => (
-                <div key={index} className={`history-item ${item.type}`}>
-                  {item.type === 'date' ? (
-                    <div className="date-label">{item.value}</div>
-                  ) : (
-                    <>
-                      <div className="calc-label">{item.label}</div>
-                      <div className="calc-result">{item.value}</div>
-                    </>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
+        {/* Calculator Mode Toggle */}
+        <div className="calculator-toggle">
+          <button 
+            className={`toggle-btn ${calculatorMode === 'standard' ? 'active' : ''}`}
+            onClick={() => setCalculatorMode('standard')}
+          >
+            Standard Calculator
+          </button>
+          <button 
+            className={`toggle-btn ${calculatorMode === 'cross' ? 'active' : ''}`}
+            onClick={() => setCalculatorMode('cross')}
+          >
+            Cross Multiplication
+          </button>
         </div>
-      )}
+
+        <div className="calculator-container">
+          {calculatorMode === 'standard' ? (
+            /* Standard Calculator */
+            <div className="calculator-main">
+              <div className="calc-main-content">
+                <div className="calc-calculation-display">{calculationDisplay}</div>
+                <div className="calc-display">{display}</div>
+                
+                <div className="calc-keypad">
+                  <button className="calc-btn function" onClick={clear}>C</button>
+                  <button className="calc-btn function" onClick={() => performOperation('%')}>%</button>
+                  <button className="calc-btn function"></button>
+                  <button className="calc-btn function"></button>
+                  <button className="calc-btn operation" onClick={() => performOperation('÷')}>÷</button>
+                  
+                  <button className="calc-btn number" onClick={() => inputNumber(7)}>7</button>
+                  <button className="calc-btn number" onClick={() => inputNumber(8)}>8</button>
+                  <button className="calc-btn number" onClick={() => inputNumber(9)}>9</button>
+                  <button className="calc-btn function"></button>
+                  <button className="calc-btn operation" onClick={() => performOperation('×')}>×</button>
+                  
+                  <button className="calc-btn number" onClick={() => inputNumber(4)}>4</button>
+                  <button className="calc-btn number" onClick={() => inputNumber(5)}>5</button>
+                  <button className="calc-btn number" onClick={() => inputNumber(6)}>6</button>
+                  <button className="calc-btn function"></button>
+                  <button className="calc-btn operation" onClick={() => performOperation('-')}>−</button>
+                  
+                  <button className="calc-btn number" onClick={() => inputNumber(1)}>1</button>
+                  <button className="calc-btn number" onClick={() => inputNumber(2)}>2</button>
+                  <button className="calc-btn number" onClick={() => inputNumber(3)}>3</button>
+                  <button className="calc-btn function"></button>
+                  <button className="calc-btn operation" onClick={() => performOperation('+')}>+</button>
+                  
+                  <button className="calc-btn number zero-btn" onClick={() => inputNumber(0)}>0</button>
+                  <button className="calc-btn number" onClick={inputDecimal}>.</button>
+                  <button className="calc-btn equals" onClick={() => performOperation('=')}>=</button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Cross Multiplication Calculator */
+            <div className="cross-multiplication">
+              <div className="cross-main-content">
+                <div className="cross-display">
+                  <div className="cross-equation">
+                    <div className="fraction">
+                      <input
+                        type="text"
+                        value={crossValues.A}
+                        onClick={() => setActiveField('A')}
+                        className={`cross-input ${activeField === 'A' ? 'active' : ''}`}
+                        placeholder="A"
+                        readOnly
+                      />
+                      <div className="fraction-line"></div>
+                      <input
+                        type="text"
+                        value={crossValues.B}
+                        onClick={() => setActiveField('B')}
+                        className={`cross-input ${activeField === 'B' ? 'active' : ''}`}
+                        placeholder="B"
+                        readOnly
+                      />
+                    </div>
+                    <div className="equals">=</div>
+                    <div className="fraction">
+                      <input
+                        type="text"
+                        value={crossValues.C}
+                        onClick={() => setActiveField('C')}
+                        className={`cross-input ${activeField === 'C' ? 'active' : ''}`}
+                        placeholder="C"
+                        readOnly
+                      />
+                      <div className="fraction-line"></div>
+                      <input
+                        type="text"
+                        value={crossValues.D}
+                        onClick={() => setActiveField('D')}
+                        className={`cross-input ${activeField === 'D' ? 'active' : ''}`}
+                        placeholder="D"
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="cross-keypad">
+                  <button className="calc-btn number" onClick={() => inputCrossNumber('7')}>7</button>
+                  <button className="calc-btn number" onClick={() => inputCrossNumber('8')}>8</button>
+                  <button className="calc-btn number" onClick={() => inputCrossNumber('9')}>9</button>
+                  <button className="calc-btn function" onClick={clearCross}>⌫</button>
+                  <button className="calc-btn operation" onClick={resetCross}>C</button>
+                  
+                  <button className="calc-btn number" onClick={() => inputCrossNumber('4')}>4</button>
+                  <button className="calc-btn number" onClick={() => inputCrossNumber('5')}>5</button>
+                  <button className="calc-btn number" onClick={() => inputCrossNumber('6')}>6</button>
+                  <button className="calc-btn function disabled">+/-</button>
+                  <button className="calc-btn operation disabled">×</button>
+                  
+                  <button className="calc-btn number" onClick={() => inputCrossNumber('1')}>1</button>
+                  <button className="calc-btn number" onClick={() => inputCrossNumber('2')}>2</button>
+                  <button className="calc-btn number" onClick={() => inputCrossNumber('3')}>3</button>
+                  <button className="calc-btn function disabled">%</button>
+                  <button className="calc-btn operation disabled">−</button>
+                  
+                  <button className="calc-btn function"></button>
+                  <button className="calc-btn number" onClick={() => inputCrossNumber('0')}>0</button>
+                  <button className="calc-btn number" onClick={inputCrossDecimal}>.</button>
+                  <button className="calc-btn equals" onClick={calculateCross}>=</button>
+                  <button className="calc-btn operation disabled">+</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
