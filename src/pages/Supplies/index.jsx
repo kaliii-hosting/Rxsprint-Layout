@@ -410,13 +410,16 @@ const Supplies = () => {
       }
 
       const doses = parseInt(dosesPerMonth) || 0;
-      const sprxQty = parseInt(sprxQuantity) || 0;
+      const needsSterileWater = ['CEREZYME', 'ELELYSO', 'FABRAZYME', 'LUMIZYME', 'NEXVIAZYME', 'VPRIV', 'XENPOZYME'].includes(selectedMedication);
+      const sprxQty = needsSterileWater ? (parseInt(sprxQuantity) || 0) : 0;
       const log = [];
 
-      console.log('Input values:', { doses, sprxQty, sprxQuantity });
+      console.log('Input values:', { doses, sprxQty, sprxQuantity, needsSterileWater });
       log.push(`Calculating supplies for ${medication.name}`);
       log.push(`Doses per month: ${doses}`);
-      log.push(`SPRX quantity: ${sprxQty}`);
+      if (needsSterileWater) {
+        log.push(`SPRX quantity: ${sprxQty}`);
+      }
 
       // Base Supplies
       let baseSupplies = medication.base_supplies.map(supply => {
@@ -731,6 +734,12 @@ const Supplies = () => {
       setNumber35mgVials('');
       setShowResults(false);
       setCalculatedSupplies(null);
+      
+      // Clear SPRX if medication doesn't need sterile water
+      const needsSterileWater = ['CEREZYME', 'ELELYSO', 'FABRAZYME', 'LUMIZYME', 'NEXVIAZYME', 'VPRIV', 'XENPOZYME'].includes(selectedMedication);
+      if (!needsSterileWater) {
+        setSprxQuantity('');
+      }
     }
   }, [selectedMedication]);
 
@@ -855,19 +864,22 @@ const Supplies = () => {
       );
     }
     
-    // Fourth field: SPRX Quantity
-    inputs.push(
-      <div key="sprx" className="input-group">
-        <label>SPRX quantity to dispense</label>
-        <input
-          type="number"
-          value={sprxQuantity}
-          onChange={(e) => setSprxQuantity(e.target.value)}
-          placeholder="Enter SPRX quantity"
-          className="supply-input"
-        />
-      </div>
-    );
+    // Fourth field: SPRX Quantity (only for medications that need sterile water)
+    const needsSterileWater = ['CEREZYME', 'ELELYSO', 'FABRAZYME', 'LUMIZYME', 'NEXVIAZYME', 'VPRIV', 'XENPOZYME'].includes(selectedMedication);
+    if (needsSterileWater) {
+      inputs.push(
+        <div key="sprx" className="input-group">
+          <label>SPRX quantity to dispense</label>
+          <input
+            type="number"
+            value={sprxQuantity}
+            onChange={(e) => setSprxQuantity(e.target.value)}
+            placeholder="Enter SPRX quantity"
+            className="supply-input"
+          />
+        </div>
+      );
+    }
     
     // Fifth field: Volume to infuse
     inputs.push(
@@ -884,7 +896,6 @@ const Supplies = () => {
     );
     
     // Sixth field: Sterile water vial size (only for specific medications)
-    const needsSterileWater = ['CEREZYME', 'ELELYSO', 'FABRAZYME', 'LUMIZYME', 'NEXVIAZYME', 'VPRIV', 'XENPOZYME'].includes(selectedMedication);
     if (needsSterileWater) {
       inputs.push(
         <div key="sterile-water" className="input-group">
@@ -1063,9 +1074,11 @@ const Supplies = () => {
           {/* Results Dashboard */}
           {showResults && calculatedSupplies && (
             <div className="results-dashboard">
-              <div style={{background: '#f0f0f0', color: '#666', padding: '8px', marginBottom: '10px', borderRadius: '8px', textAlign: 'center', fontSize: '0.9rem'}}>
-                SPRX Quantity: {sprxQuantity || 0} (Minimum pharmacy can dispense)
-              </div>
+              {['CEREZYME', 'ELELYSO', 'FABRAZYME', 'LUMIZYME', 'NEXVIAZYME', 'VPRIV', 'XENPOZYME'].includes(selectedMedication) && (
+                <div style={{background: '#f0f0f0', color: '#666', padding: '8px', marginBottom: '10px', borderRadius: '8px', textAlign: 'center', fontSize: '0.9rem'}}>
+                  SPRX Quantity: {sprxQuantity || 0} (Minimum pharmacy can dispense)
+                </div>
+              )}
               <div className="results-header">
                 <h2>Calculated Supplies</h2>
                 <div>

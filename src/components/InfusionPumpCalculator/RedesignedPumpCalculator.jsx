@@ -20,38 +20,18 @@ import pumpLogic from '../../pages/Pump/pump-logic.json';
 
 // Dose Safety Indicator Component
 const DoseSafetyIndicator = ({ doseSafety, standardDose }) => {
-  const getIndicatorPosition = () => {
-    if (doseSafety.classification === 'unknown') return 50;
-    
-    // Map the ratio to position on the indicator (0-100%)
-    // Low: 0-40%, Correct: 40-60%, High: 60-100%
-    if (doseSafety.classification === 'low') {
-      return Math.max(5, Math.min(35, doseSafety.ratio * 40));
-    } else if (doseSafety.classification === 'correct') {
-      return 50; // Center position for correct dose
-    } else {
-      return Math.min(95, Math.max(65, 60 + (doseSafety.ratio - 1.2) * 20));
-    }
-  };
-
   return (
     <div className="dose-safety-indicator">
       <div className="dose-safety-title">DOSE SAFETY</div>
       <div className="dose-safety-bar">
-        <div className="dose-zone low-dose">
+        <div className={`dose-zone low-dose ${doseSafety.classification === 'low' ? 'active' : ''}`}>
           <span className="zone-label">LOW DOSE</span>
         </div>
-        <div className="dose-zone correct-dose">
+        <div className={`dose-zone correct-dose ${doseSafety.classification === 'correct' ? 'active' : ''}`}>
           <span className="zone-label">CORRECT DOSE</span>
         </div>
-        <div className="dose-zone high-dose">
+        <div className={`dose-zone high-dose ${doseSafety.classification === 'high' ? 'active' : ''}`}>
           <span className="zone-label">HIGH DOSE</span>
-        </div>
-        <div 
-          className="dose-pointer"
-          style={{ left: `${getIndicatorPosition()}%` }}
-        >
-          <div className="pointer-arrow"></div>
         </div>
       </div>
       {doseSafety.classification !== 'unknown' && (
