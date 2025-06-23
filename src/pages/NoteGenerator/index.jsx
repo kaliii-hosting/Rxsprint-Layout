@@ -1,948 +1,857 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
+  FileText, 
   Copy, 
   Check, 
-  X, 
-  FileText,
-  Lock,
-  ChevronDown,
-  Wand2,
-  Save,
-  AlertCircle,
-  Search,
-  Filter,
+  RefreshCw,
+  Info,
   Calendar,
+  User,
+  Pill,
+  AlertCircle,
+  Activity,
+  Heart,
+  Baby,
+  Plane,
+  Home,
   Clock,
-  Archive
+  Package,
+  ChevronDown
 } from 'lucide-react';
-import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  serverTimestamp,
-  onSnapshot,
-  query,
-  orderBy
-} from 'firebase/firestore';
-import { firestore } from '../../config/firebase';
 import { useTheme } from '../../contexts/ThemeContext';
-import PinLock from '../../components/PinLock/PinLock';
 import './NoteGenerator.css';
 
 const NoteGenerator = () => {
   const { theme } = useTheme();
-  const [noteTemplates, setNoteTemplates] = useState([]);
-  const [filledTemplates, setFilledTemplates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState('templates'); // 'templates' or 'generator'
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showPinLock, setShowPinLock] = useState(false);
-  const [showTableView, setShowTableView] = useState(false);
-  const [pendingAction, setPendingAction] = useState(null);
-  const [selectedNote, setSelectedNote] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showPinned, setShowPinned] = useState(false);
-  const [copiedId, setCopiedId] = useState(null);
+  const [activeTemplate, setActiveTemplate] = useState('refill'); // 'refill' or 'intervention'
+  const [copiedNote, setCopiedNote] = useState(null);
   
-  // Form state for create/edit templates
-  const [formData, setFormData] = useState({
-    title: '',
-    fields: [
-      { title: '', content: '' }
-    ],
-    isPinned: false
+  // Refill Note Form State
+  const [refillForm, setRefillForm] = useState({
+    primaryMedication: '',
+    medicationSig: '',
+    allergies: '',
+    newMedications: '',
+    mentalPhysicalChanges: '',
+    patientWeight: '',
+    doseAppropriate: '',
+    numberOfDoses: '',
+    ivAccessIssues: '',
+    epiPenOnHand: '',
+    attackDetails: '',
+    frequencyIncrease: '',
+    upcomingInterventions: '',
+    travelPlans: '',
+    pregnancy: '',
+    mdoPregnancyCounseling: '',
+    lastFillHospitalized: '',
+    lastFillErVisits: '',
+    lastFillMissedDoses: '',
+    compliance: '',
+    nextDoseDate: '',
+    lastDoseDate: '',
+    rphConsult: '',
+    listOrderItems: '',
+    enterShipDate: ''
   });
 
-  // Form state for filling out templates
-  const [templateFormData, setTemplateFormData] = useState({
-    templateId: '',
-    templateTitle: '',
-    fields: []
+  // Intervention Note Form State
+  const [interventionForm, setInterventionForm] = useState({
+    patientWeight: '',
+    dose: '',
+    numberOfDoses: '',
+    attackDetails: '',
+    frequencySeverity: '',
+    upcomingInterventions: '',
+    pregnancyStatus: '',
+    mdoPregnancyCounseling: '',
+    compliance: '',
+    nextDoseDate: '',
+    lastDoseDate: '',
+    rphConsult: ''
   });
 
-  // Load templates and filled templates from Firebase
-  useEffect(() => {
-    if (!firestore) {
-      console.warn('Firestore not available, running in offline mode');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      // Load templates
-      const templatesQ = query(collection(firestore, 'noteTemplates'), orderBy('createdAt', 'desc'));
-      const templatesUnsubscribe = onSnapshot(templatesQ, (snapshot) => {
-        const templatesData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setNoteTemplates(templatesData);
-        setLoading(false);
-      }, (error) => {
-        console.error('Error loading note templates:', error);
-        setLoading(false);
-      });
-
-      // Load filled templates
-      const filledQ = query(collection(firestore, 'filledTemplates'), orderBy('createdAt', 'desc'));
-      const filledUnsubscribe = onSnapshot(filledQ, (snapshot) => {
-        const filledData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setFilledTemplates(filledData);
-      }, (error) => {
-        console.error('Error loading filled templates:', error);
-      });
-
-      return () => {
-        templatesUnsubscribe();
-        filledUnsubscribe();
-      };
-    } catch (error) {
-      console.error('Firebase connection error:', error);
-      setLoading(false);
-    }
-  }, []);
-
-  // Filter templates based on search and pin status
-  const filteredTemplates = noteTemplates.filter(template => {
-    const matchesSearch = template.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPinFilter = showPinned ? template.isPinned : true;
-    return matchesSearch && matchesPinFilter;
-  });
-
-  // Handle pin unlock
-  const handlePinUnlock = useCallback(() => {
-    setShowPinLock(false);
-    if (pendingAction) {
-      if (pendingAction.type === 'edit') {
-        handleEdit(pendingAction.note);
-      } else if (pendingAction.type === 'delete') {
-        handleDelete(pendingAction.note);
-      }
-      setPendingAction(null);
-    }
-  }, [pendingAction]);
-
-  // Add field to form
-  const addField = () => {
-    if (formData.fields.length < 10) {
-      setFormData(prev => ({
-        ...prev,
-        fields: [...prev.fields, { title: '', content: '' }]
-      }));
-    }
-  };
-
-  // Remove field from form
-  const removeField = (index) => {
-    if (formData.fields.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        fields: prev.fields.filter((_, i) => i !== index)
-      }));
-    }
-  };
-
-  // Update field in form
-  const updateField = (index, field, value) => {
-    setFormData(prev => ({
+  // Update refill form field
+  const updateRefillField = (field, value) => {
+    setRefillForm(prev => ({
       ...prev,
-      fields: prev.fields.map((f, i) => 
-        i === index ? { ...f, [field]: value } : f
-      )
+      [field]: value
     }));
   };
 
-  // Create new template
-  const handleCreate = async () => {
-    if (!formData.title || formData.fields.every(f => !f.title)) {
-      return;
-    }
+  // Update intervention form field
+  const updateInterventionField = (field, value) => {
+    setInterventionForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
-    if (!firestore) {
-      console.error('Firebase not available');
-      alert('Database connection not available. Please check your connection.');
-      return;
+  // Generate refill note
+  const generateRefillNote = () => {
+    const fields = [];
+    
+    // Build the note based on filled fields
+    if (refillForm.primaryMedication) {
+      fields.push(`Reviewed notes and order for ${refillForm.primaryMedication}`);
     }
     
-    try {
-      await addDoc(collection(firestore, 'noteTemplates'), {
-        title: formData.title,
-        fields: formData.fields.map(f => ({ title: f.title, placeholder: f.content || '' })),
-        isPinned: formData.isPinned,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-
-      setShowCreateModal(false);
-      setFormData({
-        title: '',
-        fields: [{ title: '', content: '' }],
-        isPinned: false
-      });
-    } catch (error) {
-      console.error('Error creating template:', error);
+    if (refillForm.patientWeight) {
+      fields.push(`Patient weight is ${refillForm.patientWeight} kg`);
     }
+    
+    if (refillForm.doseAppropriate) {
+      fields.push(`Dose is ${refillForm.doseAppropriate}`);
+    }
+    
+    if (refillForm.numberOfDoses) {
+      fields.push(`Number of doses on hand: ${refillForm.numberOfDoses}`);
+    }
+    
+    if (refillForm.attackDetails) {
+      fields.push(`Attack details: ${refillForm.attackDetails}`);
+    }
+    
+    if (refillForm.frequencyIncrease) {
+      fields.push(`Frequency and severity of attacks: ${refillForm.frequencyIncrease}`);
+    }
+    
+    if (refillForm.upcomingInterventions) {
+      fields.push(`Upcoming health related interventions: ${refillForm.upcomingInterventions}`);
+    }
+    
+    if (refillForm.pregnancy) {
+      fields.push(`Pregnancy/Breastfeeding status: ${refillForm.pregnancy}`);
+    }
+    
+    if (refillForm.mdoPregnancyCounseling) {
+      fields.push(`MDO pregnancy counseling: ${refillForm.mdoPregnancyCounseling}`);
+    }
+    
+    if (refillForm.compliance) {
+      fields.push(`Compliance is ${refillForm.compliance}`);
+    }
+    
+    if (refillForm.nextDoseDate) {
+      fields.push(`Date of next dose: ${refillForm.nextDoseDate}`);
+    }
+    
+    if (refillForm.lastDoseDate) {
+      fields.push(`Date of last dose: ${refillForm.lastDoseDate}`);
+    }
+    
+    if (refillForm.rphConsult) {
+      fields.push(`RPH consult: ${refillForm.rphConsult}`);
+    }
+    
+    fields.push('Ok to send on');
+    
+    return `***REFILL NOTE*** ${fields.join(' . ')} .`;
   };
 
-  // Update existing template
-  const handleUpdate = async () => {
-    if (!selectedNote || !formData.title || formData.fields.every(f => !f.title)) {
-      return;
+  // Generate intervention note
+  const generateInterventionNote = () => {
+    const fields = [];
+    
+    fields.push('***REFILL NOTE*** Reviewed notes and order for');
+    
+    if (interventionForm.patientWeight) {
+      fields.push(`Patient weight is ${interventionForm.patientWeight} kg`);
     }
-
-    try {
-      await updateDoc(doc(firestore, 'noteTemplates', selectedNote.id), {
-        title: formData.title,
-        fields: formData.fields.map(f => ({ title: f.title, placeholder: f.content || '' })),
-        isPinned: formData.isPinned,
-        updatedAt: serverTimestamp()
-      });
-
-      setShowEditModal(false);
-      setSelectedNote(null);
-      setFormData({
-        title: '',
-        fields: [{ title: '', content: '' }],
-        isPinned: false
-      });
-    } catch (error) {
-      console.error('Error updating template:', error);
+    
+    if (interventionForm.dose) {
+      fields.push(`Dose is ${interventionForm.dose}`);
     }
-  };
-
-  // Open template for generator
-  const handleUseTemplate = (template) => {
-    setSelectedTemplate(template);
-    setTemplateFormData({
-      templateId: template.id,
-      templateTitle: template.title,
-      fields: template.fields.map(f => ({ title: f.title, content: '', placeholder: f.placeholder }))
-    });
-    setActiveSection('generator');
-  };
-
-  // Save filled template to Firebase
-  const saveFilledTemplate = async () => {
-    if (!firestore) {
-      console.error('Firebase not available');
-      return;
+    
+    if (interventionForm.numberOfDoses) {
+      fields.push(`Number of doses on hand: ${interventionForm.numberOfDoses}`);
     }
-
-    if (!templateFormData.fields.some(f => f.content)) {
-      return;
+    
+    if (interventionForm.attackDetails) {
+      fields.push(`Attack details: ${interventionForm.attackDetails}`);
     }
-
-    try {
-      const content = templateFormData.fields
-        .filter(f => f.content)
-        .map(f => f.content)
-        .join('. ');
-
-      await addDoc(collection(firestore, 'filledTemplates'), {
-        templateId: templateFormData.templateId,
-        templateTitle: templateFormData.templateTitle,
-        fields: templateFormData.fields,
-        generatedContent: content,
-        createdAt: serverTimestamp(),
-        patientInfo: {
-          // Add any patient-specific fields here if needed
-        }
-      });
-
-      // Reset form after saving
-      setTemplateFormData({
-        templateId: '',
-        templateTitle: '',
-        fields: []
-      });
-      setSelectedTemplate(null);
-      setActiveSection('templates');
-    } catch (error) {
-      console.error('Error saving filled template:', error);
+    
+    if (interventionForm.frequencySeverity) {
+      fields.push(`Frequency and severity of attacks: ${interventionForm.frequencySeverity}`);
     }
-  };
-
-  // Delete template
-  const handleDelete = async (template) => {
-    try {
-      await deleteDoc(doc(firestore, 'noteTemplates', template.id));
-      setShowDeleteConfirm(false);
-      setSelectedNote(null);
-    } catch (error) {
-      console.error('Error deleting template:', error);
+    
+    if (interventionForm.upcomingInterventions) {
+      fields.push(`Upcoming health related interventions: ${interventionForm.upcomingInterventions}`);
     }
-  };
-
-  // Request edit (with pin check)
-  const requestEdit = (note) => {
-    setPendingAction({ type: 'edit', note });
-    setShowPinLock(true);
-  };
-
-  // Request delete (with pin check)
-  const requestDelete = (note) => {
-    setSelectedNote(note);
-    setPendingAction({ type: 'delete', note });
-    setShowPinLock(true);
-  };
-
-  // Handle edit after pin unlock
-  const handleEdit = (note) => {
-    setSelectedNote(note);
-    setFormData({
-      title: note.title,
-      fields: note.fields || [{ title: '', content: '' }],
-      isPinned: note.isPinned || false
-    });
-    setShowEditModal(true);
+    
+    if (interventionForm.pregnancyStatus) {
+      fields.push(`Pregnancy/Breastfeeding status: ${interventionForm.pregnancyStatus}`);
+    }
+    
+    if (interventionForm.mdoPregnancyCounseling) {
+      fields.push(`MDO pregnancy counseling: ${interventionForm.mdoPregnancyCounseling}`);
+    }
+    
+    if (interventionForm.compliance) {
+      fields.push(`Compliance is ${interventionForm.compliance}`);
+    }
+    
+    if (interventionForm.nextDoseDate) {
+      fields.push(`Date of next dose: ${interventionForm.nextDoseDate}`);
+    }
+    
+    if (interventionForm.lastDoseDate) {
+      fields.push(`Date of last dose: ${interventionForm.lastDoseDate}`);
+    }
+    
+    if (interventionForm.rphConsult) {
+      fields.push(`RPH consult ${interventionForm.rphConsult}`);
+    }
+    
+    fields.push('Ok to send on');
+    
+    return fields.join(' . ') + ' .';
   };
 
   // Copy to clipboard
-  const copyToClipboard = async (item) => {
+  const copyToClipboard = async (text, noteType) => {
     try {
-      const textToCopy = item.content || item.generatedContent || '';
-      await navigator.clipboard.writeText(textToCopy);
-      setCopiedId(item.id);
-      setTimeout(() => setCopiedId(null), 2000);
+      await navigator.clipboard.writeText(text);
+      setCopiedNote(noteType);
+      setTimeout(() => setCopiedNote(null), 2000);
     } catch (error) {
       console.error('Error copying to clipboard:', error);
     }
   };
 
-  // Toggle pin status (only for templates)
-  const togglePin = async (template) => {
-    try {
-      await updateDoc(doc(firestore, 'noteTemplates', template.id), {
-        isPinned: !template.isPinned,
-        updatedAt: serverTimestamp()
-      });
-    } catch (error) {
-      console.error('Error toggling pin status:', error);
-    }
+  // Reset forms
+  const resetRefillForm = () => {
+    setRefillForm({
+      primaryMedication: '',
+      medicationSig: '',
+      allergies: '',
+      newMedications: '',
+      mentalPhysicalChanges: '',
+      patientWeight: '',
+      doseAppropriate: '',
+      numberOfDoses: '',
+      ivAccessIssues: '',
+      epiPenOnHand: '',
+      attackDetails: '',
+      frequencyIncrease: '',
+      upcomingInterventions: '',
+      travelPlans: '',
+      pregnancy: '',
+      mdoPregnancyCounseling: '',
+      lastFillHospitalized: '',
+      lastFillErVisits: '',
+      lastFillMissedDoses: '',
+      compliance: '',
+      nextDoseDate: '',
+      lastDoseDate: '',
+      rphConsult: '',
+      listOrderItems: '',
+      enterShipDate: ''
+    });
   };
 
-  if (loading) {
-    return (
-      <div className="note-generator-page">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading note generator...</p>
-        </div>
-      </div>
-    );
-  }
+  const resetInterventionForm = () => {
+    setInterventionForm({
+      patientWeight: '',
+      dose: '',
+      numberOfDoses: '',
+      attackDetails: '',
+      frequencySeverity: '',
+      upcomingInterventions: '',
+      pregnancyStatus: '',
+      mdoPregnancyCounseling: '',
+      compliance: '',
+      nextDoseDate: '',
+      lastDoseDate: '',
+      rphConsult: ''
+    });
+  };
 
   return (
     <div className="note-generator-page page-container">
       <div className="note-generator-content">
         <div className="note-generator-dashboard">
-          {/* Section Selector Card */}
-          <div className="dashboard-card section-card">
+          {/* Template Selector Card */}
+          <div className="dashboard-card template-selector-card">
             <div className="card-header">
-              <h3>Note Generator</h3>
+              <h3>Note Template</h3>
               <FileText size={20} />
             </div>
             <div className="card-body">
-              <div className="section-grid">
+              <div className="template-selector-grid">
                 <button
-                  className={`section-tile ${activeSection === 'templates' ? 'selected' : ''}`}
-                  onClick={() => setActiveSection('templates')}
+                  className={`template-selector-btn ${activeTemplate === 'refill' ? 'active' : ''}`}
+                  onClick={() => setActiveTemplate('refill')}
                 >
-                  <div className="section-icon">
-                    <Archive size={24} />
-                  </div>
-                  <span className="section-name">Manage Templates</span>
-                  <span className="section-description">Create and edit note templates</span>
-                  {activeSection === 'templates' && (
-                    <Check className="check-icon" size={16} />
-                  )}
+                  <Package size={24} />
+                  <span>Refill Note</span>
+                  {activeTemplate === 'refill' && <Check size={16} className="check-icon" />}
                 </button>
-                
                 <button
-                  className={`section-tile ${activeSection === 'generator' ? 'selected' : ''}`}
-                  onClick={() => setActiveSection('generator')}
-                  disabled={!selectedTemplate}
+                  className={`template-selector-btn ${activeTemplate === 'intervention' ? 'active' : ''}`}
+                  onClick={() => setActiveTemplate('intervention')}
                 >
-                  <div className="section-icon">
-                    <Wand2 size={24} />
-                  </div>
-                  <span className="section-name">Generate Notes</span>
-                  <span className="section-description">Use templates to create notes</span>
-                  {activeSection === 'generator' && (
-                    <Check className="check-icon" size={16} />
-                  )}
+                  <Activity size={24} />
+                  <span>Intervention Note</span>
+                  {activeTemplate === 'intervention' && <Check size={16} className="check-icon" />}
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Templates Section */}
-          {activeSection === 'templates' && (
+          {/* Refill Note Form */}
+          {activeTemplate === 'refill' && (
             <>
-              {/* Template Controls Card */}
-              <div className="dashboard-card controls-card">
+              <div className="dashboard-card note-form-card">
                 <div className="card-header">
-                  <h3>Template Management</h3>
-                  <div className="header-actions">
-                    <button className="create-btn" onClick={() => setShowCreateModal(true)}>
-                      <Plus size={18} />
-                      Create Template
-                    </button>
-                    <button className="table-view-btn" onClick={() => setShowTableView(true)}>
-                      <FileText size={18} />
-                      View Filled Templates
-                    </button>
-                  </div>
+                  <h3>Refill Note Information</h3>
+                  <Package size={20} />
                 </div>
                 <div className="card-body">
-                  <div className="controls-grid">
-                    <div className="search-container">
-                      <Search size={18} />
-                      <input
-                        type="text"
-                        placeholder="Search templates..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="search-input"
-                      />
+                  <div className="note-form-grid">
+                    {/* Primary Information Section */}
+                    <div className="form-section">
+                      <h4 className="section-title">
+                        <Pill size={16} />
+                        Medication Information
+                      </h4>
+                      <div className="input-grid">
+                        <div className="input-group">
+                          <label>Primary Medication Name</label>
+                          <input
+                            type="text"
+                            value={refillForm.primaryMedication}
+                            onChange={(e) => updateRefillField('primaryMedication', e.target.value)}
+                            placeholder="Enter medication name"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Medication Sig</label>
+                          <input
+                            type="text"
+                            value={refillForm.medicationSig}
+                            onChange={(e) => updateRefillField('medicationSig', e.target.value)}
+                            placeholder="Enter medication sig"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>New or updated allergies</label>
+                          <input
+                            type="text"
+                            value={refillForm.allergies}
+                            onChange={(e) => updateRefillField('allergies', e.target.value)}
+                            placeholder="Enter any new allergies"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>New medications started</label>
+                          <input
+                            type="text"
+                            value={refillForm.newMedications}
+                            onChange={(e) => updateRefillField('newMedications', e.target.value)}
+                            placeholder="List new medications"
+                            className="note-input"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className="filter-controls">
-                      <button 
-                        className={`filter-btn ${showPinned ? 'active' : ''}`}
-                        onClick={() => setShowPinned(!showPinned)}
-                      >
-                        <Lock size={16} />
-                        Pinned Only
-                      </button>
+
+                    {/* Patient Status Section */}
+                    <div className="form-section">
+                      <h4 className="section-title">
+                        <User size={16} />
+                        Patient Status
+                      </h4>
+                      <div className="input-grid">
+                        <div className="input-group">
+                          <label>Mental or physical changes that could be considered side effects</label>
+                          <textarea
+                            value={refillForm.mentalPhysicalChanges}
+                            onChange={(e) => updateRefillField('mentalPhysicalChanges', e.target.value)}
+                            placeholder="Describe any changes"
+                            className="note-input note-textarea"
+                            rows="2"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Patient weight (kg)</label>
+                          <input
+                            type="text"
+                            value={refillForm.patientWeight}
+                            onChange={(e) => updateRefillField('patientWeight', e.target.value)}
+                            placeholder="Enter weight in kg"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Dose is appropriate/high/low</label>
+                          <div className="custom-dropdown">
+                            <select
+                              value={refillForm.doseAppropriate}
+                              onChange={(e) => updateRefillField('doseAppropriate', e.target.value)}
+                              className="note-dropdown"
+                            >
+                              <option value="">Select...</option>
+                              <option value="appropriate">Appropriate</option>
+                              <option value="high">High</option>
+                              <option value="low">Low</option>
+                            </select>
+                            <ChevronDown className="dropdown-icon" size={16} />
+                          </div>
+                        </div>
+                        <div className="input-group">
+                          <label>Number of doses on hand</label>
+                          <input
+                            type="text"
+                            value={refillForm.numberOfDoses}
+                            onChange={(e) => updateRefillField('numberOfDoses', e.target.value)}
+                            placeholder="Enter number of doses"
+                            className="note-input"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Treatment Details Section */}
+                    <div className="form-section">
+                      <h4 className="section-title">
+                        <Activity size={16} />
+                        Treatment Details
+                      </h4>
+                      <div className="input-grid">
+                        <div className="input-group">
+                          <label>Issues with IV access/ injection site</label>
+                          <input
+                            type="text"
+                            value={refillForm.ivAccessIssues}
+                            onChange={(e) => updateRefillField('ivAccessIssues', e.target.value)}
+                            placeholder="Describe any issues"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Epi-pen on hand</label>
+                          <div className="custom-dropdown">
+                            <select
+                              value={refillForm.epiPenOnHand}
+                              onChange={(e) => updateRefillField('epiPenOnHand', e.target.value)}
+                              className="note-dropdown"
+                            >
+                              <option value="">Select...</option>
+                              <option value="Yes">Yes</option>
+                              <option value="No">No</option>
+                              <option value="N/A">N/A</option>
+                            </select>
+                            <ChevronDown className="dropdown-icon" size={16} />
+                          </div>
+                        </div>
+                        <div className="input-group">
+                          <label>Attack details (or N/A)</label>
+                          <textarea
+                            value={refillForm.attackDetails}
+                            onChange={(e) => updateRefillField('attackDetails', e.target.value)}
+                            placeholder="Enter attack details or N/A"
+                            className="note-input note-textarea"
+                            rows="2"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Has there been an increase in frequency or severity of attacks?</label>
+                          <input
+                            type="text"
+                            value={refillForm.frequencyIncrease}
+                            onChange={(e) => updateRefillField('frequencyIncrease', e.target.value)}
+                            placeholder="Yes/No and details"
+                            className="note-input"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Health Status Section */}
+                    <div className="form-section">
+                      <h4 className="section-title">
+                        <Heart size={16} />
+                        Health Status
+                      </h4>
+                      <div className="input-grid">
+                        <div className="input-group">
+                          <label>Upcoming interventions (procedures, surgery, dental, etc)</label>
+                          <textarea
+                            value={refillForm.upcomingInterventions}
+                            onChange={(e) => updateRefillField('upcomingInterventions', e.target.value)}
+                            placeholder="List any upcoming interventions"
+                            className="note-input note-textarea"
+                            rows="2"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Travel plans</label>
+                          <input
+                            type="text"
+                            value={refillForm.travelPlans}
+                            onChange={(e) => updateRefillField('travelPlans', e.target.value)}
+                            placeholder="Enter travel plans if any"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Pregnancy/ Breastfeeding/ Planning to become pregnant</label>
+                          <input
+                            type="text"
+                            value={refillForm.pregnancy}
+                            onChange={(e) => updateRefillField('pregnancy', e.target.value)}
+                            placeholder="Enter status"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>MDO pregnancy counseling</label>
+                          <input
+                            type="text"
+                            value={refillForm.mdoPregnancyCounseling}
+                            onChange={(e) => updateRefillField('mdoPregnancyCounseling', e.target.value)}
+                            placeholder="Yes/No"
+                            className="note-input"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Recent History Section */}
+                    <div className="form-section">
+                      <h4 className="section-title">
+                        <Clock size={16} />
+                        Recent History
+                      </h4>
+                      <div className="input-grid">
+                        <div className="input-group">
+                          <label>Since your last fill, have you been hospitalized</label>
+                          <input
+                            type="text"
+                            value={refillForm.lastFillHospitalized}
+                            onChange={(e) => updateRefillField('lastFillHospitalized', e.target.value)}
+                            placeholder="Yes/No and details"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Since your last fill, have you had any er visits</label>
+                          <input
+                            type="text"
+                            value={refillForm.lastFillErVisits}
+                            onChange={(e) => updateRefillField('lastFillErVisits', e.target.value)}
+                            placeholder="Yes/No and details"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Since your last fill, have you missed any doses?</label>
+                          <input
+                            type="text"
+                            value={refillForm.lastFillMissedDoses}
+                            onChange={(e) => updateRefillField('lastFillMissedDoses', e.target.value)}
+                            placeholder="Yes/No and details"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Compliance</label>
+                          <input
+                            type="text"
+                            value={refillForm.compliance}
+                            onChange={(e) => updateRefillField('compliance', e.target.value)}
+                            placeholder="Enter compliance status"
+                            className="note-input"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Dosing Schedule Section */}
+                    <div className="form-section">
+                      <h4 className="section-title">
+                        <Calendar size={16} />
+                        Dosing Schedule
+                      </h4>
+                      <div className="input-grid">
+                        <div className="input-group">
+                          <label>When is the next dose to be taken (list date and time if time is known)</label>
+                          <input
+                            type="text"
+                            value={refillForm.nextDoseDate}
+                            onChange={(e) => updateRefillField('nextDoseDate', e.target.value)}
+                            placeholder="Enter date and time"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>When was the last dose taken?</label>
+                          <input
+                            type="text"
+                            value={refillForm.lastDoseDate}
+                            onChange={(e) => updateRefillField('lastDoseDate', e.target.value)}
+                            placeholder="Enter date and time"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>RPH consult completed/declined</label>
+                          <input
+                            type="text"
+                            value={refillForm.rphConsult}
+                            onChange={(e) => updateRefillField('rphConsult', e.target.value)}
+                            placeholder="Completed/Declined"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>List order items (note: "supplies" can be used for ancillary items)</label>
+                          <textarea
+                            value={refillForm.listOrderItems}
+                            onChange={(e) => updateRefillField('listOrderItems', e.target.value)}
+                            placeholder="List items"
+                            className="note-input note-textarea"
+                            rows="2"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Enter ship date</label>
+                          <input
+                            type="date"
+                            value={refillForm.enterShipDate}
+                            onChange={(e) => updateRefillField('enterShipDate', e.target.value)}
+                            className="note-input"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Templates Grid Card */}
-              <div className="dashboard-card templates-card">
+              {/* Refill Note Output */}
+              <div className="dashboard-card note-output-card">
                 <div className="card-header">
-                  <h3>Available Templates</h3>
-                  <span className="template-count">{filteredTemplates.length} templates</span>
+                  <h3>Generated Refill Note</h3>
+                  <div className="header-actions">
+                    <button className="reset-btn" onClick={resetRefillForm}>
+                      <RefreshCw size={16} />
+                      Reset Form
+                    </button>
+                  </div>
                 </div>
                 <div className="card-body">
-                  {filteredTemplates.length === 0 ? (
-                    <div className="empty-state">
-                      <FileText size={64} />
-                      <h3>No templates yet</h3>
-                      <p>Create your first template to get started</p>
-                      <button className="create-note-cta" onClick={() => setShowCreateModal(true)}>
-                        <Plus size={20} />
-                        Create Template
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="templates-grid">
-                      {filteredTemplates.map(template => (
-                        <div key={template.id} className="template-card">
-                          <div className="template-header">
-                            <h4 className="template-title">{template.title}</h4>
-                            <div className="template-actions">
-                              <button 
-                                className={`icon-btn ${template.isPinned ? 'pinned' : ''}`}
-                                onClick={() => togglePin(template)}
-                                title={template.isPinned ? 'Unpin' : 'Pin'}
-                              >
-                                <Lock size={16} />
-                              </button>
-                              <button 
-                                className="icon-btn"
-                                onClick={() => requestEdit(template)}
-                                title="Edit"
-                              >
-                                <Edit2 size={16} />
-                              </button>
-                              <button 
-                                className="icon-btn delete"
-                                onClick={() => requestDelete(template)}
-                                title="Delete"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          </div>
-                          
-                          <div className="template-content">
-                            <div className="template-fields">
-                              {template.fields?.map((field, index) => (
-                                <div key={index} className="template-field">
-                                  <strong>{field.title}</strong>
-                                  {field.placeholder && <span className="placeholder">({field.placeholder})</span>}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div className="template-footer">
-                            <span className="template-date">
-                              <Calendar size={12} />
-                              {template.createdAt?.toDate?.()?.toLocaleDateString() || 'Recently created'}
-                            </span>
-                            <button 
-                              className="use-template-btn"
-                              onClick={() => handleUseTemplate(template)}
-                            >
-                              <Wand2 size={16} />
-                              Use Template
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <div 
+                    className="generated-note-output"
+                    onClick={() => copyToClipboard(generateRefillNote(), 'refill')}
+                  >
+                    <p>{generateRefillNote()}</p>
+                    {copiedNote === 'refill' && (
+                      <div className="copied-indicator">
+                        <Check size={16} />
+                        Copied to clipboard!
+                      </div>
+                    )}
+                  </div>
+                  <div className="note-actions">
+                    <button 
+                      className="copy-note-btn primary"
+                      onClick={() => copyToClipboard(generateRefillNote(), 'refill')}
+                    >
+                      <Copy size={16} />
+                      Copy Note to Clipboard
+                    </button>
+                  </div>
                 </div>
               </div>
             </>
           )}
 
-          {/* Generator Section */}
-          {activeSection === 'generator' && selectedTemplate && (
-            <div className="dashboard-card generator-card">
-              <div className="card-header">
-                <h3>Fill Template</h3>
-                <div className="header-actions">
-                  <button 
-                    className="back-btn"
-                    onClick={() => {
-                      setActiveSection('templates');
-                      setSelectedTemplate(null);
-                      setTemplateFormData({ templateId: '', templateTitle: '', fields: [] });
-                    }}
-                  >
-                    ← Back to Templates
-                  </button>
+          {/* Intervention Note Form */}
+          {activeTemplate === 'intervention' && (
+            <>
+              <div className="dashboard-card note-form-card">
+                <div className="card-header">
+                  <h3>Intervention Note Information</h3>
+                  <Activity size={20} />
                 </div>
-              </div>
-              <div className="card-body">
-                <div className="generator-form">
-                  {/* Template Selection Display */}
-                  <div className="template-form-section">
-                    <div className="section-header">
-                      <h3>Selected Template</h3>
-                      <FileText size={20} />
-                    </div>
-                    <div className="selected-template-display">
-                      <div className="template-info-card">
-                        <h4>{selectedTemplate.title}</h4>
-                        <span className="field-count">{selectedTemplate.fields?.length || 0} fields to complete</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Input Fields Section */}
-                  <div className="template-form-section">
-                    <div className="section-header">
-                      <h3>Complete Template Fields</h3>
-                      <Wand2 size={20} />
-                    </div>
-                    <div className="input-grid">
-                      {templateFormData.fields.map((field, index) => (
-                        <div key={index} className="input-group">
-                          <label>{field.title}</label>
-                          {field.placeholder && (
-                            <span className="field-hint">{field.placeholder}</span>
-                          )}
-                          <textarea
-                            value={field.content}
-                            onChange={(e) => setTemplateFormData(prev => ({
-                              ...prev,
-                              fields: prev.fields.map((f, i) => 
-                                i === index ? { ...f, content: e.target.value } : f
-                              )
-                            }))}
-                            placeholder={field.placeholder || `Enter ${field.title}`}
-                            className="pump-input template-textarea"
-                            rows="4"
+                <div className="card-body">
+                  <div className="note-form-grid">
+                    <div className="form-section">
+                      <h4 className="section-title">
+                        <Info size={16} />
+                        Patient Information
+                      </h4>
+                      <div className="input-grid">
+                        <div className="input-group">
+                          <label>Patient weight (kg)</label>
+                          <input
+                            type="text"
+                            value={interventionForm.patientWeight}
+                            onChange={(e) => updateInterventionField('patientWeight', e.target.value)}
+                            placeholder="Enter weight in kg"
+                            className="note-input"
                           />
                         </div>
-                      ))}
+                        <div className="input-group">
+                          <label>Dose</label>
+                          <input
+                            type="text"
+                            value={interventionForm.dose}
+                            onChange={(e) => updateInterventionField('dose', e.target.value)}
+                            placeholder="Enter dose"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Number of doses on hand</label>
+                          <input
+                            type="text"
+                            value={interventionForm.numberOfDoses}
+                            onChange={(e) => updateInterventionField('numberOfDoses', e.target.value)}
+                            placeholder="Enter number of doses"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Attack details</label>
+                          <textarea
+                            value={interventionForm.attackDetails}
+                            onChange={(e) => updateInterventionField('attackDetails', e.target.value)}
+                            placeholder="Enter attack details"
+                            className="note-input note-textarea"
+                            rows="2"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Frequency and severity of attacks</label>
+                          <input
+                            type="text"
+                            value={interventionForm.frequencySeverity}
+                            onChange={(e) => updateInterventionField('frequencySeverity', e.target.value)}
+                            placeholder="Describe frequency and severity"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Upcoming health related interventions</label>
+                          <textarea
+                            value={interventionForm.upcomingInterventions}
+                            onChange={(e) => updateInterventionField('upcomingInterventions', e.target.value)}
+                            placeholder="List interventions"
+                            className="note-input note-textarea"
+                            rows="2"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Pregnancy/Breastfeeding status</label>
+                          <input
+                            type="text"
+                            value={interventionForm.pregnancyStatus}
+                            onChange={(e) => updateInterventionField('pregnancyStatus', e.target.value)}
+                            placeholder="Enter status"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>MDO pregnancy counseling</label>
+                          <input
+                            type="text"
+                            value={interventionForm.mdoPregnancyCounseling}
+                            onChange={(e) => updateInterventionField('mdoPregnancyCounseling', e.target.value)}
+                            placeholder="Yes/No"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Compliance</label>
+                          <input
+                            type="text"
+                            value={interventionForm.compliance}
+                            onChange={(e) => updateInterventionField('compliance', e.target.value)}
+                            placeholder="Enter compliance status"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Date of next dose</label>
+                          <input
+                            type="text"
+                            value={interventionForm.nextDoseDate}
+                            onChange={(e) => updateInterventionField('nextDoseDate', e.target.value)}
+                            placeholder="Enter date"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Date of last dose</label>
+                          <input
+                            type="text"
+                            value={interventionForm.lastDoseDate}
+                            onChange={(e) => updateInterventionField('lastDoseDate', e.target.value)}
+                            placeholder="Enter date"
+                            className="note-input"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>RPH consult</label>
+                          <input
+                            type="text"
+                            value={interventionForm.rphConsult}
+                            onChange={(e) => updateInterventionField('rphConsult', e.target.value)}
+                            placeholder="Status"
+                            className="note-input"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  {/* Generated Note Output */}
-                  {templateFormData.fields.some(f => f.content) && (
-                    <div className="template-form-section">
-                      <div className="section-header">
-                        <h3>Generated Note Preview</h3>
-                        <Check size={20} />
-                      </div>
-                      <div className="generated-output-card">
-                        <div 
-                          className="generated-note-display"
-                          onClick={() => {
-                            const content = templateFormData.fields
-                              .filter(f => f.content)
-                              .map(f => f.content)
-                              .join('. ');
-                            copyToClipboard({ id: 'temp', content });
-                          }}
-                          title="Click to copy generated note"
-                        >
-                          <p>
-                            {templateFormData.fields
-                              .filter(f => f.content)
-                              .map(f => f.content)
-                              .join('. ')}
-                          </p>
-                          {copiedId === 'temp' && (
-                            <div className="copied-indicator">
-                              <Check size={16} />
-                              Copied!
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="action-buttons">
-                          <button 
-                            className="reset-btn"
-                            onClick={() => {
-                              setTemplateFormData(prev => ({
-                                ...prev,
-                                fields: prev.fields.map(f => ({ ...f, content: '' }))
-                              }));
-                            }}
-                          >
-                            Clear All
-                          </button>
-                          <button 
-                            className="copy-note-btn"
-                            onClick={() => {
-                              const content = templateFormData.fields
-                                .filter(f => f.content)
-                                .map(f => f.content)
-                                .join('. ');
-                              copyToClipboard({ id: 'temp', content });
-                            }}
-                          >
-                            <Copy size={16} />
-                            Copy Note
-                          </button>
-                          <button 
-                            className="calculate-btn save-template-btn"
-                            onClick={saveFilledTemplate}
-                            disabled={!templateFormData.fields.some(f => f.content)}
-                          >
-                            <Save size={16} />
-                            Save Note
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Statistics Card */}
-          <div className="dashboard-card stats-card">
-            <div className="card-header">
-              <h3>Statistics</h3>
-              <Archive size={20} />
-            </div>
-            <div className="card-body">
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <div className="stat-value">{noteTemplates.length}</div>
-                  <div className="stat-label">Total Templates</div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-value">{noteTemplates.filter(t => t.isPinned).length}</div>
-                  <div className="stat-label">Pinned</div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-value">{filledTemplates.length}</div>
-                  <div className="stat-label">Generated Notes</div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-value">
-                    {filledTemplates.filter(f => {
-                      const dayAgo = new Date();
-                      dayAgo.setDate(dayAgo.getDate() - 1);
-                      return f.createdAt?.toDate() > dayAgo;
-                    }).length}
-                  </div>
-                  <div className="stat-label">Generated Today</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Create/Edit Modal */}
-      {(showCreateModal || showEditModal) && (
-        <div className="modal-overlay" onClick={() => {
-          setShowCreateModal(false);
-          setShowEditModal(false);
-          setSelectedNote(null);
-          setFormData({
-            title: '',
-            fields: [{ title: '', content: '' }],
-            isPinned: false
-          });
-        }}>
-          <div className="template-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="template-modal-header">
-              <h2>{showEditModal ? 'Edit Template' : 'New Template'}</h2>
-              <button 
-                className="close-btn"
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setShowEditModal(false);
-                  setSelectedNote(null);
-                  setFormData({
-                    title: '',
-                    fields: [{ title: '', content: '' }],
-                    isPinned: false
-                  });
-                }}
-              >
-                <X size={24} />
-              </button>
-            </div>
-            
-            <div className="template-modal-body">
-              <div className="template-form-section">
-                <div className="section-header">
-                  <h3>Template Details</h3>
-                  <FileText size={20} />
-                </div>
-                <div className="input-grid">
-                  <div className="input-group">
-                    <label>Template Title</label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder="Enter template title"
-                      className="pump-input"
-                    />
-                  </div>
-                  <div className="input-group checkbox-group">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={formData.isPinned}
-                        onChange={(e) => setFormData(prev => ({ ...prev, isPinned: e.target.checked }))}
-                      />
-                      <span>Pin this template for quick access</span>
-                    </label>
-                  </div>
                 </div>
               </div>
 
-              <div className="template-form-section">
-                <div className="section-header">
-                  <h3>Template Fields</h3>
+              {/* Intervention Note Output */}
+              <div className="dashboard-card note-output-card">
+                <div className="card-header">
+                  <h3>Generated Intervention Note</h3>
                   <div className="header-actions">
-                    {formData.fields.length < 10 && (
-                      <button className="calculate-btn add-field-btn" onClick={addField}>
-                        <Plus size={16} />
-                        Add Field
-                      </button>
+                    <button className="reset-btn" onClick={resetInterventionForm}>
+                      <RefreshCw size={16} />
+                      Reset Form
+                    </button>
+                  </div>
+                </div>
+                <div className="card-body">
+                  <div 
+                    className="generated-note-output"
+                    onClick={() => copyToClipboard(generateInterventionNote(), 'intervention')}
+                  >
+                    <p>{generateInterventionNote()}</p>
+                    {copiedNote === 'intervention' && (
+                      <div className="copied-indicator">
+                        <Check size={16} />
+                        Copied to clipboard!
+                      </div>
                     )}
                   </div>
-                </div>
-
-                <div className="input-grid">
-                  {formData.fields.map((field, index) => (
-                    <div key={index} className="field-entry-section">
-                      <div className="field-entry-header">
-                        <span className="field-number">Field {index + 1}</span>
-                        {formData.fields.length > 1 && (
-                          <button 
-                            className="remove-field-btn"
-                            onClick={() => removeField(index)}
-                          >
-                            <X size={16} />
-                          </button>
-                        )}
-                      </div>
-                      <div className="input-group">
-                        <label>Field Title</label>
-                        <input
-                          type="text"
-                          value={field.title}
-                          onChange={(e) => updateField(index, 'title', e.target.value)}
-                          placeholder="e.g., Patient Name, Diagnosis, Treatment Plan"
-                          className="pump-input"
-                        />
-                      </div>
-                      <div className="input-group">
-                        <label>Placeholder Text (optional)</label>
-                        <textarea
-                          value={field.content}
-                          onChange={(e) => updateField(index, 'content', e.target.value)}
-                          placeholder="Helpful text to guide users when filling this field"
-                          className="pump-input template-textarea"
-                          rows="3"
-                        />
-                      </div>
-                    </div>
-                  ))}
+                  <div className="note-actions">
+                    <button 
+                      className="copy-note-btn primary"
+                      onClick={() => copyToClipboard(generateInterventionNote(), 'intervention')}
+                    >
+                      <Copy size={16} />
+                      Copy Note to Clipboard
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <div className="action-buttons template-modal-footer">
-              <button 
-                className="reset-btn cancel-btn"
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setShowEditModal(false);
-                  setSelectedNote(null);
-                  setFormData({
-                    title: '',
-                    fields: [{ title: '', content: '' }],
-                    isPinned: false
-                  });
-                }}
-              >
-                Cancel
-              </button>
-              <button 
-                className="calculate-btn save-btn"
-                onClick={showEditModal ? handleUpdate : handleCreate}
-                disabled={!formData.title || formData.fields.every(f => !f.title)}
-              >
-                <Save size={16} />
-                {showEditModal ? 'Update Template' : 'Create Template'}
-              </button>
-            </div>
-          </div>
+            </>
+          )}
         </div>
-      )}
-
-      {/* Filled Templates Table View */}
-      {showTableView && (
-        <div className="modal-overlay" onClick={() => setShowTableView(false)}>
-          <div className="table-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Filled Templates Database</h2>
-              <button 
-                className="close-btn"
-                onClick={() => setShowTableView(false)}
-              >
-                <X size={24} />
-              </button>
-            </div>
-            
-            <div className="table-modal-body">
-              {filledTemplates.length === 0 ? (
-                <div className="empty-table-state">
-                  <FileText size={48} />
-                  <h3>No filled templates yet</h3>
-                  <p>Use a template to generate your first note</p>
-                </div>
-              ) : (
-                <div className="filled-templates-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Template</th>
-                        <th>Fields</th>
-                        <th>Generated Content</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filledTemplates.map((filled) => (
-                        <tr key={filled.id}>
-                          <td className="date-cell">
-                            {filled.createdAt?.toDate?.()?.toLocaleDateString() || 'Recently created'}
-                          </td>
-                          <td className="template-cell">
-                            <strong>{filled.templateTitle}</strong>
-                          </td>
-                          <td className="fields-cell">
-                            <div 
-                              className="fields-summary-paragraph"
-                              onClick={() => {
-                                const fieldsText = filled.fields?.map(field => field.content).filter(content => content).join(', ') + '.';
-                                copyToClipboard({ id: `fields-${filled.id}`, content: fieldsText, generatedContent: fieldsText });
-                              }}
-                              title="Click to copy fields content"
-                            >
-                              {filled.fields?.map(field => field.content).filter(content => content).join(', ')}.
-                              {copiedId === `fields-${filled.id}` && (
-                                <div className="copied-indicator-small">
-                                  <Check size={12} />
-                                  Copied!
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="content-cell">
-                            <div 
-                              className="content-preview"
-                              onClick={() => copyToClipboard(filled)}
-                              title="Click to copy"
-                            >
-                              {filled.generatedContent}
-                              {copiedId === filled.id && (
-                                <div className="copied-indicator-small">
-                                  <Check size={12} />
-                                  Copied!
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="actions-cell">
-                            <button 
-                              className="copy-btn-small"
-                              onClick={() => copyToClipboard(filled)}
-                              title="Copy content"
-                            >
-                              <Copy size={14} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-            
-            <div className="table-modal-footer">
-              <p className="table-info">
-                Total filled templates: {filledTemplates.length}
-              </p>
-              <button 
-                className="close-table-btn"
-                onClick={() => setShowTableView(false)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Pin Lock */}
-      {showPinLock && (
-        <PinLock onUnlock={handlePinUnlock} />
-      )}
+      </div>
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Calculator, ChevronDown, Check, AlertCircle, Info } from 'lucide-react';
+import { firestore } from '../../config/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import './Supplies.css';
 
 const Supplies = () => {
@@ -396,10 +398,29 @@ const Supplies = () => {
     }
   }, [selectedMedication, dosesPerMonth, mgPerDose, unitsPerDose, numberOfVials, number5mgVials, number35mgVials, volumeToInfuse, gravityInfusion, ivSuppliesType, adrPremedsRequired, sprxQuantity, sterileWaterVialSize, isHomeInfusion]);
 
+  // Save calculation to Firebase
+  const saveToFirebase = async (calculationData) => {
+    if (!firestore) {
+      console.log('Firebase not available - running in offline mode');
+      return;
+    }
+    
+    try {
+      const docRef = await addDoc(collection(firestore, 'supplies_calculations'), {
+        ...calculationData,
+        timestamp: serverTimestamp(),
+        createdAt: new Date().toISOString()
+      });
+      console.log('Calculation saved to Firebase with ID:', docRef.id);
+    } catch (error) {
+      console.error('Error saving to Firebase:', error);
+    }
+  };
+
   const calculateSupplies = () => {
     try {
       console.log('=== SUPPLIES CALCULATOR UPDATE CHECK ===');
-      console.log('Version: 2024-01-23 with SPRX fixes');
+      console.log('Version: 2024-01-23 v3 - SPRX only for CEREZYME, ELELYSO, NEXVIAZYME, XENPOZYME');
       
       if (!selectedMedication || !dosesPerMonth) return;
 
@@ -410,16 +431,13 @@ const Supplies = () => {
       }
 
       const doses = parseInt(dosesPerMonth) || 0;
-      const needsSterileWater = ['CEREZYME', 'ELELYSO', 'FABRAZYME', 'LUMIZYME', 'NEXVIAZYME', 'VPRIV', 'XENPOZYME'].includes(selectedMedication);
-      const sprxQty = needsSterileWater ? (parseInt(sprxQuantity) || 0) : 0;
+      const sprxQty = parseInt(sprxQuantity) || 0;
       const log = [];
 
-      console.log('Input values:', { doses, sprxQty, sprxQuantity, needsSterileWater });
+      console.log('Input values:', { doses, sprxQty, sprxQuantity });
       log.push(`Calculating supplies for ${medication.name}`);
       log.push(`Doses per month: ${doses}`);
-      if (needsSterileWater) {
-        log.push(`SPRX quantity: ${sprxQty}`);
-      }
+      log.push(`SPRX quantity: ${sprxQty}`);
 
       // Base Supplies
       let baseSupplies = medication.base_supplies.map(supply => {
@@ -620,14 +638,39 @@ const Supplies = () => {
       // SPRX minimum has been applied to all per-dose items as per Excel "MINIMUM QUANTITY IN SPRX" header
 
       setCalculationLog(log);
-      setCalculatedSupplies({
+      const calculationResults = {
         baseSupplies,
         ivSupplies,
         gravitySupplies,
         adrSupplies,
         standardSupplies
-      });
+      };
+      setCalculatedSupplies(calculationResults);
       setShowResults(true);
+      
+      // Save to Firebase
+      const calculationData = {
+        medication: selectedMedication,
+        inputs: {
+          mgPerDose: mgPerDose || null,
+          unitsPerDose: unitsPerDose || null,
+          dosesPerMonth: doses,
+          sprxQuantity: sprxQty,
+          volumeToInfuse: volumeToInfuse || null,
+          gravityInfusion,
+          ivSuppliesType,
+          adrPremedsRequired,
+          number5mgVials: number5mgVials || null,
+          number35mgVials: number35mgVials || null,
+          numberOfVials: numberOfVials || null,
+          isHomeInfusion: isHomeInfusion || null,
+          sterileWaterVialSize: sterileWaterVialSize || null
+        },
+        results: calculationResults,
+        calculationLog: log
+      };
+      
+      saveToFirebase(calculationData);
     } catch (error) {
       console.error('Error calculating supplies:', error);
       alert('An error occurred while calculating supplies. Please check your inputs and try again.');
@@ -735,10 +778,11 @@ const Supplies = () => {
       setShowResults(false);
       setCalculatedSupplies(null);
       
-      // Clear SPRX if medication doesn't need sterile water
-      const needsSterileWater = ['CEREZYME', 'ELELYSO', 'FABRAZYME', 'LUMIZYME', 'NEXVIAZYME', 'VPRIV', 'XENPOZYME'].includes(selectedMedication);
-      if (!needsSterileWater) {
-        setSprxQuantity('');
+      // Don't clear SPRX - all medications have this field based on screenshots
+      
+      // Reset home infusion for medications that don't need it
+      if (selectedMedication !== 'NAGLAZYME' && selectedMedication !== 'VIMIZIM') {
+        setIsHomeInfusion('NO');
       }
     }
   }, [selectedMedication]);
@@ -784,7 +828,7 @@ const Supplies = () => {
     if (medication.inputType === 'mg' || medication.inputType === 'mg_with_vials') {
       inputs.push(
         <div key="mg" className="input-group">
-          <label>{selectedMedication === 'FABRAZYME' || selectedMedication === 'LUMIZYME' || selectedMedication === 'VPRIV' ? 'MG' : 'Mg'} per dose</label>
+          <label>Mg per dose</label>
           <input
             type="number"
             value={mgPerDose}
@@ -823,7 +867,7 @@ const Supplies = () => {
       </div>
     );
     
-    // Third field(s): Vial inputs for specific medications
+    // Third field: Vial inputs for specific medications (BEFORE SPRX)
     if (selectedMedication === 'FABRAZYME') {
       inputs.push(
         <div key="5mg-vials" className="input-group">
@@ -864,24 +908,21 @@ const Supplies = () => {
       );
     }
     
-    // Fourth field: SPRX Quantity (only for medications that need sterile water)
-    const needsSterileWater = ['CEREZYME', 'ELELYSO', 'FABRAZYME', 'LUMIZYME', 'NEXVIAZYME', 'VPRIV', 'XENPOZYME'].includes(selectedMedication);
-    if (needsSterileWater) {
-      inputs.push(
-        <div key="sprx" className="input-group">
-          <label>SPRX quantity to dispense</label>
-          <input
-            type="number"
-            value={sprxQuantity}
-            onChange={(e) => setSprxQuantity(e.target.value)}
-            placeholder="Enter SPRX quantity"
-            className="supply-input"
-          />
-        </div>
-      );
-    }
+    // Fourth field: SPRX Quantity - ALL medications have this field per screenshots
+    inputs.push(
+      <div key="sprx" className="input-group">
+        <label>SPRX quantity to dispense</label>
+        <input
+          type="number"
+          value={sprxQuantity}
+          onChange={(e) => setSprxQuantity(e.target.value)}
+          placeholder="Enter SPRX quantity"
+          className="supply-input"
+        />
+      </div>
+    );
     
-    // Fifth field: Volume to infuse
+    // Volume to infuse drug in
     inputs.push(
       <div key="volume" className="input-group">
         <label>Volume to infuse drug in</label>
@@ -895,7 +936,8 @@ const Supplies = () => {
       </div>
     );
     
-    // Sixth field: Sterile water vial size (only for specific medications)
+    // Sterile water vial size (only for medications that need sterile water)
+    const needsSterileWater = ['CEREZYME', 'ELELYSO', 'FABRAZYME', 'LUMIZYME', 'NEXVIAZYME', 'VPRIV', 'XENPOZYME'].includes(selectedMedication);
     if (needsSterileWater) {
       inputs.push(
         <div key="sterile-water" className="input-group">
@@ -916,7 +958,7 @@ const Supplies = () => {
       );
     }
     
-    // Seventh field: Gravity infusion
+    // Will patient be infusing via gravity?
     inputs.push(
       <div key="gravity" className="input-group">
         <label>Will patient be infusing via gravity?</label>
@@ -926,15 +968,15 @@ const Supplies = () => {
             onChange={(e) => setGravityInfusion(e.target.value)}
             className="supply-dropdown"
           >
-            <option value="Yes">Yes</option>
             <option value="No">No</option>
+            <option value="Yes">Yes</option>
           </select>
           <ChevronDown className="dropdown-icon" size={16} />
         </div>
       </div>
     );
     
-    // Eighth field: IV Supplies Type
+    // Type of IV Supplies Needed
     inputs.push(
       <div key="iv-type" className="input-group">
         <label>Type of IV Supplies Needed</label>
@@ -954,7 +996,7 @@ const Supplies = () => {
       </div>
     );
     
-    // Ninth field: ADR/Pre-Meds
+    // ADR or Pre-Meds required?
     inputs.push(
       <div key="adr" className="input-group">
         <label>ADR or Pre-Meds required?</label>
@@ -964,15 +1006,15 @@ const Supplies = () => {
             onChange={(e) => setAdrPremedsRequired(e.target.value)}
             className="supply-dropdown"
           >
-            <option value="YES">YES</option>
             <option value="NO">NO</option>
+            <option value="YES">YES</option>
           </select>
           <ChevronDown className="dropdown-icon" size={16} />
         </div>
       </div>
     );
     
-    // Tenth field: Home infusion for specific medications (Naglazyme and Vimizim)
+    // Is this a home infusion patient? (only for Naglazyme and Vimizim)
     if (selectedMedication === 'NAGLAZYME' || selectedMedication === 'VIMIZIM') {
       inputs.push(
         <div key="home-infusion" className="input-group">
@@ -1031,7 +1073,7 @@ const Supplies = () => {
           </div>
 
           {/* Input Parameters Card */}
-          {selectedMedication && (
+          {selectedMedication && suppliesData.medications[selectedMedication] && (
             <div className="dashboard-card input-card">
               <div className="card-header">
                 <h3>Input Parameters for {suppliesData.medications[selectedMedication].name}</h3>
@@ -1074,7 +1116,7 @@ const Supplies = () => {
           {/* Results Dashboard */}
           {showResults && calculatedSupplies && (
             <div className="results-dashboard">
-              {['CEREZYME', 'ELELYSO', 'FABRAZYME', 'LUMIZYME', 'NEXVIAZYME', 'VPRIV', 'XENPOZYME'].includes(selectedMedication) && (
+              {['CEREZYME', 'ELELYSO', 'NEXVIAZYME', 'XENPOZYME'].includes(selectedMedication) && (
                 <div style={{background: '#f0f0f0', color: '#666', padding: '8px', marginBottom: '10px', borderRadius: '8px', textAlign: 'center', fontSize: '0.9rem'}}>
                   SPRX Quantity: {sprxQuantity || 0} (Minimum pharmacy can dispense)
                 </div>
@@ -1082,9 +1124,11 @@ const Supplies = () => {
               <div className="results-header">
                 <h2>Calculated Supplies</h2>
                 <div>
-                  <div className="medication-badge" style={{ background: suppliesData.medications[selectedMedication].color }}>
-                    {suppliesData.medications[selectedMedication].name}
-                  </div>
+                  {suppliesData.medications[selectedMedication] && (
+                    <div className="medication-badge" style={{ background: suppliesData.medications[selectedMedication].color }}>
+                      {suppliesData.medications[selectedMedication].name}
+                    </div>
+                  )}
                 </div>
               </div>
 

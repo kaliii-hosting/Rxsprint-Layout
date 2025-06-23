@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getStorage } from 'firebase/storage';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getDatabase } from 'firebase/database';
@@ -13,29 +13,66 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:899974287244:web:24d847c7bc039a6c5490a9"
 };
 
-// Initialize Firebase
+// Initialize Firebase - check if already initialized
 let app;
 let storage;
 let firestore;
 let database;
 
 try {
-  app = initializeApp(firebaseConfig);
+  // Check if Firebase app already exists
+  if (getApps().length === 0) {
+    app = initializeApp(firebaseConfig);
+    console.log('Firebase app initialized');
+  } else {
+    app = getApp();
+    console.log('Using existing Firebase app');
+  }
   
-  // Initialize Firebase services with error handling
-  storage = getStorage(app);
-  firestore = getFirestore(app);
-  database = getDatabase(app);
+  // Initialize Firebase services
+  try {
+    storage = getStorage(app);
+    console.log('Firebase Storage initialized');
+  } catch (error) {
+    console.error('Storage initialization error:', error);
+    storage = null;
+  }
   
-  console.log('Firebase initialized successfully');
+  try {
+    firestore = getFirestore(app);
+    console.log('Firestore initialized');
+  } catch (error) {
+    console.error('Firestore initialization error:', error);
+    firestore = null;
+  }
+  
+  try {
+    database = getDatabase(app);
+    console.log('Realtime Database initialized');
+  } catch (error) {
+    console.error('Database initialization error:', error);
+    database = null;
+  }
+  
+  console.log('Firebase services initialization complete');
 } catch (error) {
-  console.error('Firebase initialization error:', error);
+  console.error('Firebase app initialization error:', error);
+  console.error('Error details:', error.message, error.stack);
   
-  // Create mock services for offline mode
+  // Set all to null if app initialization fails
+  app = null;
   storage = null;
   firestore = null;
   database = null;
 }
+
+// Log the final state
+console.log('Firebase initialization status:', {
+  app: !!app,
+  storage: !!storage,
+  firestore: !!firestore,
+  database: !!database
+});
 
 export { storage, firestore, database };
 export default app;

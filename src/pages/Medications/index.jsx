@@ -3,8 +3,7 @@ import { Edit2, Trash2, Plus, Upload, Grid, FileSpreadsheet, CheckCircle, AlertC
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { storage, firestore } from '../../config/firebase';
-import { getFirestore } from 'firebase/firestore';
-import app from '../../config/firebase';
+import { defaultMedications } from '../../data/defaultMedications';
 import { parseExcelFile } from '../../utils/excelParser';
 import { downloadExcelTemplate } from '../../utils/excelTemplate';
 import MedicationModal from '../../components/MedicationModal/MedicationModal';
@@ -75,6 +74,35 @@ const Medications = () => {
   const loadMedications = async () => {
     try {
       setLoading(true);
+      
+      // Check if firestore is available
+      if (!firestore) {
+        console.error('Firestore is not initialized, using default medications');
+        // Use default medications as fallback
+        const fallbackMedications = defaultMedications.map(med => ({
+          ...med,
+          selected: false
+        }));
+        
+        // Sort medications alphabetically by brand name
+        const sortedMedications = fallbackMedications.sort((a, b) => {
+          const brandA = (a.brandName || '').toLowerCase();
+          const brandB = (b.brandName || '').toLowerCase();
+          return brandA.localeCompare(brandB);
+        });
+        
+        setMedications(sortedMedications);
+        setUploadStatus('error');
+        setUploadMessage('Database connection not available. Running in offline mode with default medications.');
+        
+        // Clear message after delay
+        setTimeout(() => {
+          setUploadStatus(null);
+          setUploadMessage('');
+        }, 5000);
+        return;
+      }
+      
       const medicationsRef = collection(firestore, 'medications');
       const snapshot = await getDocs(medicationsRef);
       
@@ -92,12 +120,46 @@ const Medications = () => {
       });
       
       setMedications(sortedMedications);
+      console.log(`Loaded ${sortedMedications.length} medications from Firebase`);
+      
       // Also reload search data
-      reloadSearchData();
+      if (reloadSearchData) {
+        reloadSearchData();
+      }
     } catch (error) {
       console.error('Error loading medications:', error);
+      console.error('Error details:', error.code, error.message);
+      
+      // Use default medications as fallback
+      console.log('Loading default medications as fallback');
+      const fallbackMedications = defaultMedications.map(med => ({
+        ...med,
+        selected: false
+      }));
+      
+      // Sort medications alphabetically by brand name
+      const sortedMedications = fallbackMedications.sort((a, b) => {
+        const brandA = (a.brandName || '').toLowerCase();
+        const brandB = (b.brandName || '').toLowerCase();
+        return brandA.localeCompare(brandB);
+      });
+      
+      setMedications(sortedMedications);
+      
       setUploadStatus('error');
-      setUploadMessage('Failed to load medications');
+      if (error.code === 'permission-denied') {
+        setUploadMessage('Permission denied. Please check Firebase security rules. Using default medications.');
+      } else if (error.code === 'unavailable') {
+        setUploadMessage('Firebase is unavailable. Using default medications.');
+      } else {
+        setUploadMessage(`Failed to load from Firebase. Using default medications.`);
+      }
+      
+      // Clear message after delay
+      setTimeout(() => {
+        setUploadStatus(null);
+        setUploadMessage('');
+      }, 5000);
     } finally {
       setLoading(false);
     }
@@ -733,6 +795,12 @@ const Medications = () => {
 
   // Filter and sort medications
   const getFilteredAndSortedMedications = () => {
+    // Ensure medications is always an array
+    if (!Array.isArray(medications)) {
+      console.error('Medications is not an array:', medications);
+      return [];
+    }
+
     let filtered = [...medications];
 
     // Apply filters
@@ -762,7 +830,7 @@ const Medications = () => {
       });
     }
 
-    return filtered;
+    return filtered || [];
   };
 
   const displayMedications = getFilteredAndSortedMedications();
@@ -828,7 +896,7 @@ const Medications = () => {
             <div className="spinner" />
             <p>Loading medications...</p>
           </div>
-        ) : displayMedications.length > 0 ? (
+        ) : displayMedications && displayMedications.length > 0 ? (
           <div className="table-wrapper">
             <table className="prescriptions-table">
               <thead>
