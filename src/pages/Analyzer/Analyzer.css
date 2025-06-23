@@ -486,7 +486,7 @@
   color: var(--text-primary);
   font-weight: 600;
   font-size: 0.875rem;
-  background: var(--secondary-background);
+  background: transparent;
   display: flex;
   align-items: center;
   border-right: 1px solid var(--border-subtle);
@@ -498,7 +498,7 @@
   padding: 0.875rem 1rem;
   color: var(--foreground);
   font-size: 0.875rem;
-  background: var(--input-background);
+  background: transparent;
   display: flex;
   align-items: center;
   word-break: break-word;
@@ -522,7 +522,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--input-background);
+  background: transparent;
   position: relative;
   overflow: hidden;
   contain: layout;
@@ -696,43 +696,40 @@
 
 /* Row Highlighting Styles - Matching Supplies Page Design */
 .table-row.match-row {
-  background: var(--success-color);
-  border-color: var(--success-color);
-  opacity: 0.2;
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
   transition: all 0.15s ease;
   position: relative;
 }
 
 .table-row.match-row:hover {
-  opacity: 0.3;
+  background: rgba(16, 185, 129, 0.15);
   transform: none;
   box-shadow: none;
 }
 
 .table-row.mismatch-row {
-  background: var(--error-color);
-  border-color: var(--error-color);
-  opacity: 0.2;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
   transition: all 0.15s ease;
   position: relative;
 }
 
 .table-row.mismatch-row:hover {
-  opacity: 0.3;
+  background: rgba(239, 68, 68, 0.15);
   transform: none;
   box-shadow: none;
 }
 
 .table-row.partial-row {
-  background: var(--warning-color);
-  border-color: var(--warning-color);
-  opacity: 0.2;
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
   transition: all 0.15s ease;
   position: relative;
 }
 
 .table-row.partial-row:hover {
-  opacity: 0.3;
+  background: rgba(245, 158, 11, 0.15);
   transform: none;
   box-shadow: none;
 }
@@ -740,48 +737,42 @@
 /* Override default table row styles for highlighted rows */
 .table-row.match-row .field-label,
 .table-row.match-row .field-value {
-  color: var(--success-color);
+  color: var(--text-primary);
   opacity: 1;
   font-weight: 500;
 }
 
 .table-row.mismatch-row .field-label,
 .table-row.mismatch-row .field-value {
-  color: var(--error-color);
+  color: var(--text-primary);
   opacity: 1;
   font-weight: 500;
 }
 
 .table-row.partial-row .field-label,
 .table-row.partial-row .field-value {
-  color: var(--warning-color);
+  color: var(--text-primary);
   opacity: 1;
   font-weight: 500;
 }
 
-/* Status indicators for highlighted rows */
+/* Status indicators for highlighted rows - keep their original colors */
 .table-row.match-row .status-indicator {
   background: var(--success-color);
   border-color: var(--success-color);
-  opacity: 1;
+  color: white;
 }
 
 .table-row.mismatch-row .status-indicator {
   background: var(--error-color);
   border-color: var(--error-color);
-  opacity: 1;
+  color: white;
 }
 
 .table-row.partial-row .status-indicator {
   background: var(--warning-color);
   border-color: var(--warning-color);
-  opacity: 1;
-}
-
-.table-row.match-row .status-icon,
-.table-row.mismatch-row .status-icon,
-.table-row.partial-row .status-icon {
-  color: var(--text-primary);
+  color: white;
 }
 
 /* Section headers enhanced */

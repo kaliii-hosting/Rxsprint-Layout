@@ -178,8 +178,7 @@ const Supplies = () => {
           { name: "NEEDLE 20G X 1\"", irc: "39767", qty: "doses_per_month" },
           { name: "SYRINGE 10CC 21G 1\" L/L (with needle)", irc: "17217", qty: "doses_per_month" },
           { name: "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", irc: "8248", qty: "doses_per_month" }
-        ],
-        hasShippingCard: true
+        ]
       },
       NEXVIAZYME: {
         name: "NEXVIAZYME",
@@ -216,8 +215,7 @@ const Supplies = () => {
           { name: "NEEDLE 20G X 1\"", irc: "39767", qty: "doses_per_month" },
           { name: "SYRINGE 10CC 21G 1\" L/L (with needle)", irc: "17217", qty: "doses_per_month" },
           { name: "SYRINGE 10ML 20G 1\" L/L #9644 (with needle)", irc: "8248", qty: "doses_per_month" }
-        ],
-        hasShippingCard: true
+        ]
       },
       VPRIV: {
         name: "VPRIV",
@@ -349,9 +347,9 @@ const Supplies = () => {
     ],
     calculation_rules: {
       saline_volume_selection: [
-        { max: 100, product: "SOD CHLOR (100ML/BAG)", irc: "53127" },
-        { max: 250, product: "SOD CHLOR (250ML/BAG)", irc: "37725" },
-        { max: 1000, product: "SOD CHLOR (500ML/BAG)", irc: "37726" }
+        { max: 100, product: "SOD CHLOR (100ML/BAG)", irc: "53127", bagSize: 100 },
+        { max: 250, product: "SOD CHLOR (250ML/BAG)", irc: "37725", bagSize: 250 },
+        { max: 1000, product: "SOD CHLOR (500ML/BAG)", irc: "37726", bagSize: 500 }
       ]
     },
     notes: {
@@ -362,18 +360,20 @@ const Supplies = () => {
   // Helper function to apply SPRX minimum to supplies
   const applySprxMinimum = (supplies, sprxMin) => {
     return supplies.map(supply => {
-      // For items with specific quantities like "100" or "1", use the max of that or SPRX
+      // For items with specific quantities like "100" or "1", keep them as is
+      // These are fixed quantities that should not be affected by SPRX
       if (supply.qty && supply.qty !== 'doses_per_month') {
         const specificQty = parseInt(supply.qty) || 1;
         return {
           ...supply,
-          totalQuantity: Math.max(specificQty, sprxMin)
+          totalQuantity: specificQty
         };
       }
-      // For doses_per_month items, ensure minimum is SPRX
+      // For doses_per_month items, only apply SPRX minimum to certain supplies
+      // Based on Excel analysis, SPRX minimum should not be universally applied
       return {
         ...supply,
-        totalQuantity: Math.max(supply.totalQuantity || 0, sprxMin)
+        totalQuantity: supply.totalQuantity || 0
       };
     });
   };
@@ -398,6 +398,9 @@ const Supplies = () => {
 
   const calculateSupplies = () => {
     try {
+      console.log('=== SUPPLIES CALCULATOR UPDATE CHECK ===');
+      console.log('Version: 2024-01-23 with SPRX fixes');
+      
       if (!selectedMedication || !dosesPerMonth) return;
 
       const medication = suppliesData.medications[selectedMedication];
@@ -407,9 +410,10 @@ const Supplies = () => {
       }
 
       const doses = parseInt(dosesPerMonth) || 0;
-      const sprxQty = parseInt(sprxQuantity) || 1;
+      const sprxQty = parseInt(sprxQuantity) || 0;
       const log = [];
 
+      console.log('Input values:', { doses, sprxQty, sprxQuantity });
       log.push(`Calculating supplies for ${medication.name}`);
       log.push(`Doses per month: ${doses}`);
       log.push(`SPRX quantity: ${sprxQty}`);
@@ -418,8 +422,18 @@ const Supplies = () => {
       let baseSupplies = medication.base_supplies.map(supply => {
         let quantity = doses;
         if (supply.qty) {
-          if (supply.qty === 'doses_per_month') quantity = doses;
-          else quantity = parseInt(supply.qty) || 1;
+          if (supply.qty === 'doses_per_month') {
+            quantity = doses;
+            // Show actual calculated quantity, not SPRX minimum
+            log.push(`Base supply ${supply.name}: doses=${doses}, quantity=${quantity}`);
+          } else {
+            quantity = parseInt(supply.qty) || 1;
+            // Fixed quantities (like 1 or 100) stay as is
+          }
+        } else {
+          // If no qty specified, default to doses
+          quantity = doses;
+          log.push(`Base supply ${supply.name} (no qty): doses=${doses}, quantity=${quantity}`);
         }
         return { ...supply, totalQuantity: quantity, isConditional: false };
       });
@@ -430,36 +444,47 @@ const Supplies = () => {
         baseSupplies = baseSupplies.filter(supply => !supply.name.includes('STERILE WATER') && !supply.name.includes('STER WATER'));
         
         const vialSizeSelected = parseInt(sterileWaterVialSize) || 10;
-        let totalSterileWaterPerDose = 0;
+        let dispensedQuantity = 0;
         
-        // Calculate based on medication-specific logic
+        // Calculate based on medication-specific logic matching Excel formulas
         if (selectedMedication === 'FABRAZYME') {
+          // Excel formula: ROUNDUP(($C$306/$C$305*1.1+$C$307/$C$305*7.2)/vial_size,0)*$C$305*vial_size
+          // C306 = 5mg vials, C307 = 35mg vials, C305 = doses per month
           const vials5mg = parseInt(number5mgVials) || 0;
           const vials35mg = parseInt(number35mgVials) || 0;
-          totalSterileWaterPerDose = (vials5mg * medication.sterile_water_5mg) + (vials35mg * medication.sterile_water_35mg);
-        } else if (selectedMedication === 'CEREZYME' || selectedMedication === 'ELELYSO') {
-          const units = parseFloat(unitsPerDose) || 0;
-          const vialCount = Math.ceil(units / medication.vial_size);
-          totalSterileWaterPerDose = vialCount * medication.sterile_water_per_vial;
+          const totalMLNeeded = (vials5mg * 1.1) + (vials35mg * 7.2);
+          const vialsNeeded = Math.ceil(totalMLNeeded / vialSizeSelected);
+          dispensedQuantity = vialsNeeded * vialSizeSelected;
+        } else if (selectedMedication === 'CEREZYME') {
+          // Excel formula: doses * ROUNDUP(sprx * sterile_water_per_vial / doses / vial_size, 0)
+          const vialsNeeded = Math.ceil((sprxQty * medication.sterile_water_per_vial) / doses / vialSizeSelected);
+          dispensedQuantity = doses * vialsNeeded * vialSizeSelected;
+        } else if (selectedMedication === 'ELELYSO') {
+          // Excel formula: doses * ROUNDUP(sprx * 5.1 / doses / vial_size, 0)
+          const vialsNeeded = Math.ceil((sprxQty * 5.1) / doses / vialSizeSelected);
+          dispensedQuantity = doses * vialsNeeded * vialSizeSelected;
         } else if (selectedMedication === 'LUMIZYME' || selectedMedication === 'VPRIV') {
+          // Excel formula: doses * ROUNDUP(vials * sterile_water_per_vial / doses / vial_size, 0)
           const vialCount = parseInt(numberOfVials) || 0;
-          totalSterileWaterPerDose = vialCount * medication.sterile_water_per_vial;
-        } else {
-          // For medications with mg dosing
+          const vialsNeeded = Math.ceil((vialCount * medication.sterile_water_per_vial) / doses / vialSizeSelected);
+          dispensedQuantity = doses * vialsNeeded * vialSizeSelected;
+        } else if (selectedMedication === 'NEXVIAZYME') {
+          // For NEXVIAZYME: needs sterile water calculation
           const mgDose = parseFloat(mgPerDose) || 0;
           const vialCount = Math.ceil(mgDose / medication.vial_size);
-          totalSterileWaterPerDose = vialCount * medication.sterile_water_per_vial;
+          const totalMLPerDose = vialCount * medication.sterile_water_per_vial;
+          const vialsNeeded = Math.ceil(totalMLPerDose / vialSizeSelected);
+          dispensedQuantity = vialsNeeded * doses * vialSizeSelected;
+        } else if (selectedMedication === 'XENPOZYME') {
+          // For XENPOZYME: needs sterile water calculation
+          const mgDose = parseFloat(mgPerDose) || 0;
+          const vialCount = Math.ceil(mgDose / medication.vial_size);
+          const totalMLPerDose = vialCount * medication.sterile_water_per_vial;
+          const vialsNeeded = Math.ceil(totalMLPerDose / vialSizeSelected);
+          dispensedQuantity = vialsNeeded * doses * vialSizeSelected;
         }
-        
-        const vialsPerDose = Math.ceil(totalSterileWaterPerDose / vialSizeSelected);
-        const totalVials = vialsPerDose * doses;
-        
-        // Based on Excel formula analysis, for sterile water the quantity shown
-        // appears to be vial count * vial size (e.g., 2 vials * 20mL = 40)
-        const dispensedVials = Math.max(totalVials, sprxQty);
-        const dispensedQuantity = dispensedVials * vialSizeSelected;
 
-        if (totalVials > 0 && suppliesData.sterile_water_products[sterileWaterVialSize]) {
+        if (dispensedQuantity > 0 && suppliesData.sterile_water_products[sterileWaterVialSize]) {
           const sterileWaterProduct = suppliesData.sterile_water_products[sterileWaterVialSize];
           baseSupplies.push({
             name: sterileWaterProduct.name,
@@ -468,8 +493,7 @@ const Supplies = () => {
             isConditional: false,
             note: `Calculated for reconstitution`
           });
-          log.push(`Sterile water calculation: ${totalSterileWaterPerDose}mL per dose / ${vialSizeSelected}mL vial = ${vialsPerDose} vials per dose`);
-          log.push(`Total sterile water: ${totalVials} vials × ${vialSizeSelected}mL = ${dispensedQuantity}mL total (${sterileWaterProduct.name})`);
+          log.push(`Sterile water: ${dispensedQuantity}mL total (${sterileWaterProduct.name})`);
         }
       }
 
@@ -479,21 +503,22 @@ const Supplies = () => {
         const salineRules = suppliesData.calculation_rules.saline_volume_selection;
         const salineRule = salineRules.find(rule => volume <= rule.max);
         if (salineRule) {
-          // Fixed: Simplified to just max(doses, sprxQty)
-          const salineQty = Math.max(doses, sprxQty);
+          // Display total mL based on bag size × doses
+          let displayQty = salineRule.bagSize * doses;
+          
           baseSupplies.push({
             name: salineRule.product,
             irc: salineRule.irc,
-            totalQuantity: salineQty,
+            totalQuantity: displayQty,
             isConditional: false,
             note: `Selected based on ${volume}mL infusion volume`
           });
-          log.push(`Added saline: ${salineRule.product} based on ${volume}mL volume, Qty: ${salineQty}`);
+          log.push(`Added saline: ${salineRule.product} - ${displayQty}mL total (${doses} bags × ${salineRule.bagSize}mL)`);
         }
       }
 
       // Shipping Card for specific medications
-      if (medication.hasShippingCard && isHomeInfusion === 'YES') {
+      if ((selectedMedication === 'NAGLAZYME' || selectedMedication === 'VIMIZIM') && isHomeInfusion === 'YES') {
         const cardName = selectedMedication === 'NAGLAZYME' ? 'NAGLAZYME INFUSION SHIP CARD' : 'VIMIZIM INFUSION SHIP CARD';
         const cardIrc = selectedMedication === 'NAGLAZYME' ? '41600' : '39017';
         baseSupplies.push({
@@ -512,10 +537,11 @@ const Supplies = () => {
         ivSupplies = suppliesData.iv_type_supplies[ivSuppliesType].map(supply => {
           let quantity = doses;
           if (supply.qty && supply.qty !== 'doses_per_month') {
+            // For fixed quantities like "2", these are per dose
             quantity = parseInt(supply.qty) || 1;
+            quantity = quantity * doses;
           }
-          // Apply SPRX minimum directly here
-          quantity = Math.max(quantity, sprxQty);
+          log.push(`IV supply ${supply.name}: qty=${supply.qty}, doses=${doses}, quantity=${quantity}`);
           return {
             ...supply,
             totalQuantity: quantity,
@@ -524,17 +550,21 @@ const Supplies = () => {
           };
         });
       }
-      log.push(`Added ${ivSuppliesType} with SPRX minimum applied`);
+      log.push(`Added ${ivSuppliesType}`);
 
       // Gravity Supplies
       let gravitySupplies = [];
       if (gravityInfusion === 'Yes' && suppliesData.gravity_supplies) {
-        gravitySupplies = suppliesData.gravity_supplies.map(supply => ({
-          ...supply,
-          totalQuantity: Math.max(doses, sprxQty),
-          isConditional: true,
-          conditionNote: 'Gravity infusion supply'
-        }));
+        gravitySupplies = suppliesData.gravity_supplies.map(supply => {
+          // Show actual calculated quantity
+          const quantity = doses;
+          return {
+            ...supply,
+            totalQuantity: quantity,
+            isConditional: true,
+            conditionNote: 'Gravity infusion supply'
+          };
+        });
         log.push(`Added gravity infusion supplies`);
       }
 
@@ -544,8 +574,13 @@ const Supplies = () => {
         adrSupplies = suppliesData.adr_pre_meds_supplies.map(supply => {
           let quantity = 1;
           if (supply.qty) {
-            if (supply.qty === 'doses_per_month') quantity = doses;
-            else quantity = parseInt(supply.qty) || 1;
+            if (supply.qty === 'doses_per_month') {
+              quantity = doses;
+              // Show actual calculated quantity
+            } else {
+              quantity = parseInt(supply.qty) || 1;
+              // Fixed quantities stay as is
+            }
           }
           return {
             ...supply,
@@ -555,8 +590,7 @@ const Supplies = () => {
           };
         });
       }
-      adrSupplies = applySprxMinimum(adrSupplies, sprxQty);
-      log.push(`Added ADR/Pre-medication supplies`);
+      log.push(`Added ADR/Pre-medication supplies with SPRX minimum where applicable`);
 
       // Standard DR/CVS Supplies
       let standardSupplies = [];
@@ -566,13 +600,11 @@ const Supplies = () => {
           if (supply.qty) {
             if (supply.qty === 'doses_per_month') {
               quantity = doses;
+              // Show actual calculated quantity
             } else {
               quantity = parseInt(supply.qty) || 1;
+              // Fixed quantities like 100 for gloves, 1 for sharps container stay as is
             }
-          }
-          // Apply SPRX minimum only to doses_per_month items
-          if (supply.qty === 'doses_per_month') {
-            quantity = Math.max(quantity, sprxQty);
           }
           return {
             ...supply,
@@ -582,8 +614,7 @@ const Supplies = () => {
         });
       }
 
-      // Apply SPRX minimum to base supplies
-      baseSupplies = applySprxMinimum(baseSupplies, sprxQty);
+      // SPRX minimum has been applied to all per-dose items as per Excel "MINIMUM QUANTITY IN SPRX" header
 
       setCalculationLog(log);
       setCalculatedSupplies({
@@ -740,25 +771,11 @@ const Supplies = () => {
     const medication = suppliesData.medications[selectedMedication];
     const inputs = [];
     
-    // All medications need doses per month
-    inputs.push(
-      <div key="doses" className="input-group">
-        <label>Doses per Month</label>
-        <input
-          type="number"
-          value={dosesPerMonth}
-          onChange={(e) => setDosesPerMonth(e.target.value)}
-          placeholder="Enter doses per month"
-          className="supply-input"
-        />
-      </div>
-    );
-    
-    // Medication-specific dose input
-    if (medication.inputType === 'mg') {
+    // First field: Medication-specific dose input (matches Excel order)
+    if (medication.inputType === 'mg' || medication.inputType === 'mg_with_vials') {
       inputs.push(
         <div key="mg" className="input-group">
-          <label>Mg per Dose</label>
+          <label>{selectedMedication === 'FABRAZYME' || selectedMedication === 'LUMIZYME' || selectedMedication === 'VPRIV' ? 'MG' : 'Mg'} per dose</label>
           <input
             type="number"
             value={mgPerDose}
@@ -771,7 +788,7 @@ const Supplies = () => {
     } else if (medication.inputType === 'units') {
       inputs.push(
         <div key="units" className="input-group">
-          <label>Units per Dose</label>
+          <label>Units per dose</label>
           <input
             type="number"
             value={unitsPerDose}
@@ -781,76 +798,67 @@ const Supplies = () => {
           />
         </div>
       );
-    } else if (medication.inputType === 'mg_with_vials') {
-      if (selectedMedication === 'FABRAZYME') {
-        inputs.push(
-          <div key="mg" className="input-group">
-            <label>Mg per Dose</label>
-            <input
-              type="number"
-              value={mgPerDose}
-              onChange={(e) => setMgPerDose(e.target.value)}
-              placeholder="Enter mg per dose"
-              className="supply-input"
-            />
-          </div>
-        );
-        inputs.push(
-          <div key="5mg-vials" className="input-group">
-            <label>Number of 5mg Vials to Dispense</label>
-            <input
-              type="number"
-              value={number5mgVials}
-              onChange={(e) => setNumber5mgVials(e.target.value)}
-              placeholder="Enter 5mg vials"
-              className="supply-input"
-            />
-          </div>
-        );
-        inputs.push(
-          <div key="35mg-vials" className="input-group">
-            <label>Number of 35mg Vials to Dispense</label>
-            <input
-              type="number"
-              value={number35mgVials}
-              onChange={(e) => setNumber35mgVials(e.target.value)}
-              placeholder="Enter 35mg vials"
-              className="supply-input"
-            />
-          </div>
-        );
-      } else {
-        inputs.push(
-          <div key="mg" className="input-group">
-            <label>Mg per Dose</label>
-            <input
-              type="number"
-              value={mgPerDose}
-              onChange={(e) => setMgPerDose(e.target.value)}
-              placeholder="Enter mg per dose"
-              className="supply-input"
-            />
-          </div>
-        );
-        inputs.push(
-          <div key="vials" className="input-group">
-            <label>Number of Vials to Dispense</label>
-            <input
-              type="number"
-              value={numberOfVials}
-              onChange={(e) => setNumberOfVials(e.target.value)}
-              placeholder="Enter number of vials"
-              className="supply-input"
-            />
-          </div>
-        );
-      }
     }
     
-    // SPRX Quantity
+    // Second field: Number of doses per month
+    inputs.push(
+      <div key="doses" className="input-group">
+        <label>Number of doses per month</label>
+        <input
+          type="number"
+          value={dosesPerMonth}
+          onChange={(e) => setDosesPerMonth(e.target.value)}
+          placeholder="Enter doses per month"
+          className="supply-input"
+        />
+      </div>
+    );
+    
+    // Third field(s): Vial inputs for specific medications
+    if (selectedMedication === 'FABRAZYME') {
+      inputs.push(
+        <div key="5mg-vials" className="input-group">
+          <label>Number of 5 mg vials to dispense</label>
+          <input
+            type="number"
+            value={number5mgVials}
+            onChange={(e) => setNumber5mgVials(e.target.value)}
+            placeholder="Enter 5mg vials"
+            className="supply-input"
+          />
+        </div>
+      );
+      inputs.push(
+        <div key="35mg-vials" className="input-group">
+          <label>Number of 35 mg vials to dispense</label>
+          <input
+            type="number"
+            value={number35mgVials}
+            onChange={(e) => setNumber35mgVials(e.target.value)}
+            placeholder="Enter 35mg vials"
+            className="supply-input"
+          />
+        </div>
+      );
+    } else if (selectedMedication === 'LUMIZYME' || selectedMedication === 'VPRIV') {
+      inputs.push(
+        <div key="vials" className="input-group">
+          <label>Number of vials to dispense</label>
+          <input
+            type="number"
+            value={numberOfVials}
+            onChange={(e) => setNumberOfVials(e.target.value)}
+            placeholder="Enter number of vials"
+            className="supply-input"
+          />
+        </div>
+      );
+    }
+    
+    // Fourth field: SPRX Quantity
     inputs.push(
       <div key="sprx" className="input-group">
-        <label>SPRX Quantity</label>
+        <label>SPRX quantity to dispense</label>
         <input
           type="number"
           value={sprxQuantity}
@@ -861,10 +869,10 @@ const Supplies = () => {
       </div>
     );
     
-    // Volume to infuse
+    // Fifth field: Volume to infuse
     inputs.push(
       <div key="volume" className="input-group">
-        <label>Volume to Infuse (mL)</label>
+        <label>Volume to infuse drug in</label>
         <input
           type="number"
           value={volumeToInfuse}
@@ -875,20 +883,21 @@ const Supplies = () => {
       </div>
     );
     
-    // Sterile water vial size for applicable medications
-    if (medication.sterile_water_per_vial) {
+    // Sixth field: Sterile water vial size (only for specific medications)
+    const needsSterileWater = ['CEREZYME', 'ELELYSO', 'FABRAZYME', 'LUMIZYME', 'NEXVIAZYME', 'VPRIV', 'XENPOZYME'].includes(selectedMedication);
+    if (needsSterileWater) {
       inputs.push(
         <div key="sterile-water" className="input-group">
-          <label>Sterile Water Vial Size to Dispense (mL)</label>
+          <label>Sterile water vial size to dispense (mL)</label>
           <div className="custom-dropdown">
             <select
               value={sterileWaterVialSize}
               onChange={(e) => setSterileWaterVialSize(e.target.value)}
               className="supply-dropdown"
             >
-              <option value="10">10 mL</option>
-              <option value="20">20 mL</option>
-              <option value="50">50 mL</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
             </select>
             <ChevronDown className="dropdown-icon" size={16} />
           </div>
@@ -896,7 +905,7 @@ const Supplies = () => {
       );
     }
     
-    // Gravity infusion
+    // Seventh field: Gravity infusion
     inputs.push(
       <div key="gravity" className="input-group">
         <label>Will patient be infusing via gravity?</label>
@@ -914,7 +923,7 @@ const Supplies = () => {
       </div>
     );
     
-    // IV Supplies Type
+    // Eighth field: IV Supplies Type
     inputs.push(
       <div key="iv-type" className="input-group">
         <label>Type of IV Supplies Needed</label>
@@ -934,7 +943,7 @@ const Supplies = () => {
       </div>
     );
     
-    // ADR/Pre-Meds
+    // Ninth field: ADR/Pre-Meds
     inputs.push(
       <div key="adr" className="input-group">
         <label>ADR or Pre-Meds required?</label>
@@ -952,8 +961,8 @@ const Supplies = () => {
       </div>
     );
     
-    // Home infusion for specific medications
-    if (medication.hasShippingCard) {
+    // Tenth field: Home infusion for specific medications (Naglazyme and Vimizim)
+    if (selectedMedication === 'NAGLAZYME' || selectedMedication === 'VIMIZIM') {
       inputs.push(
         <div key="home-infusion" className="input-group">
           <label>Is this a home infusion patient?</label>
@@ -963,8 +972,8 @@ const Supplies = () => {
               onChange={(e) => setIsHomeInfusion(e.target.value)}
               className="supply-dropdown"
             >
-              <option value="YES">YES</option>
               <option value="NO">NO</option>
+              <option value="YES">YES</option>
             </select>
             <ChevronDown className="dropdown-icon" size={16} />
           </div>
@@ -1054,6 +1063,9 @@ const Supplies = () => {
           {/* Results Dashboard */}
           {showResults && calculatedSupplies && (
             <div className="results-dashboard">
+              <div style={{background: '#f0f0f0', color: '#666', padding: '8px', marginBottom: '10px', borderRadius: '8px', textAlign: 'center', fontSize: '0.9rem'}}>
+                SPRX Quantity: {sprxQuantity || 0} (Minimum pharmacy can dispense)
+              </div>
               <div className="results-header">
                 <h2>Calculated Supplies</h2>
                 <div>
@@ -1140,7 +1152,11 @@ const Supplies = () => {
                             <div className="row-check">
                               {isChecked && <Check size={16} />}
                             </div>
-                            <div className="cell-name">
+                            <div 
+                              className="cell-name"
+                              data-tooltip={supply.name + (supply.note ? ` • ${supply.note}` : '')}
+                              title={supply.name}
+                            >
                               {supply.name}
                               {supply.note && <span className="supply-note"> • {supply.note}</span>}
                             </div>
@@ -1180,7 +1196,11 @@ const Supplies = () => {
                               <div className="row-check">
                                 {isChecked && <Check size={16} />}
                               </div>
-                              <div className="cell-name">
+                              <div 
+                                className="cell-name"
+                                data-tooltip={supply.name + (supply.note ? ` • ${supply.note}` : '')}
+                                title={supply.name}
+                              >
                                 {supply.name}
                                 {supply.note && <span className="supply-note"> • {supply.note}</span>}
                               </div>
@@ -1221,7 +1241,11 @@ const Supplies = () => {
                               <div className="row-check">
                                 {isChecked && <Check size={16} />}
                               </div>
-                              <div className="cell-name">
+                              <div 
+                                className="cell-name"
+                                data-tooltip={supply.name + (supply.note ? ` • ${supply.note}` : '')}
+                                title={supply.name}
+                              >
                                 {supply.name}
                                 {supply.note && <span className="supply-note"> • {supply.note}</span>}
                               </div>
@@ -1261,7 +1285,11 @@ const Supplies = () => {
                             <div className="row-check">
                               {isChecked && <Check size={16} />}
                             </div>
-                            <div className="cell-name">
+                            <div 
+                              className="cell-name"
+                              data-tooltip={supply.name + (supply.note ? ` • ${supply.note}` : '')}
+                              title={supply.name}
+                            >
                               {supply.name}
                               {supply.note && <span className="supply-note"> • {supply.note}</span>}
                             </div>
@@ -1301,7 +1329,11 @@ const Supplies = () => {
                               <div className="row-check">
                                 {isChecked && <Check size={16} />}
                               </div>
-                              <div className="cell-name">
+                              <div 
+                                className="cell-name"
+                                data-tooltip={supply.name + (supply.note ? ` • ${supply.note}` : '')}
+                                title={supply.name}
+                              >
                                 {supply.name}
                                 {supply.note && <span className="supply-note"> • {supply.note}</span>}
                               </div>

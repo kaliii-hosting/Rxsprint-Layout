@@ -112,6 +112,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-height: 90px; /* Ensure consistent height for alignment */
 }
 
 .input-group label {
@@ -120,6 +121,10 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  min-height: 2.5em; /* Fixed height for label area */
+  display: flex;
+  align-items: flex-end;
+  line-height: 1.2;
 }
 
 /* Input Styles - Matching existing pop-up inputs */
@@ -386,16 +391,34 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
+.supply-category::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #39ff14 0%, #32e60d 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 .supply-category:hover {
   border-color: var(--primary-border);
-  box-shadow: 0 4px 16px var(--primary-light);
+  box-shadow: 0 8px 24px rgba(57, 255, 20, 0.15);
+  transform: translateY(-2px);
+}
+
+.supply-category:hover::before {
+  transform: scaleX(1);
 }
 
 /* Category Header */
@@ -494,11 +517,13 @@
   grid-template-columns: 30px 1fr 60px 40px;
   padding: 0.375rem 0.5rem;
   border-bottom: 1px solid var(--border-color);
-  transition: all 0.15s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   align-items: center;
   cursor: pointer;
   position: relative;
   min-height: 32px;
+  border-radius: 4px;
+  margin: 2px 0;
 }
 
 .table-row.compact {
@@ -512,7 +537,9 @@
 }
 
 .table-row:hover:not(.checked) {
-  background: var(--bg-tertiary);
+  background: rgba(57, 255, 20, 0.05);
+  transform: translateX(2px);
+  box-shadow: 0 2px 4px rgba(57, 255, 20, 0.1);
 }
 
 .table-row.conditional {
@@ -528,6 +555,59 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  position: relative;
+}
+
+/* Tooltip for truncated names */
+.cell-name[title] {
+  cursor: help;
+}
+
+.cell-name:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  max-width: 300px;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.cell-name:hover::after {
+  opacity: 1;
+  transform: translateY(-5px);
+}
+
+/* Arrow for tooltip */
+.cell-name:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 20px;
+  margin-bottom: -5px;
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  transform: translateY(5px);
+  transition: all 0.3s ease;
+  z-index: 1001;
+}
+
+.cell-name:hover::before {
+  opacity: 1;
+  transform: translateY(-5px);
 }
 
 .table-row.compact .cell-name {
@@ -567,7 +647,20 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto;
-  transition: all 0.15s ease;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: relative;
+}
+
+.row-check::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(57, 255, 20, 0.3);
+  transform: scale(0);
+  opacity: 0;
+  transition: all 0.3s ease;
 }
 
 .table-row.compact .row-check {
@@ -582,35 +675,78 @@
 }
 
 .table-row:hover .row-check {
-  border-color: var(--text-secondary);
+  border-color: rgba(57, 255, 20, 0.5);
+  transform: scale(1.1);
+}
+
+.table-row:hover .row-check::after {
+  transform: scale(1.5);
+  opacity: 1;
+}
+
+.table-row:active .row-check {
+  transform: scale(0.95);
 }
 
 /* Checked Row Styles */
 .table-row.checked {
-  background: var(--success-color);
-  border-color: var(--success-color);
-  opacity: 0.2;
+  background: linear-gradient(135deg, #39ff14 0%, #32e60d 100%);
+  border: 1px solid #2acc0a;
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.4), inset 0 0 10px rgba(57, 255, 20, 0.2);
+  transform: scale(1.02);
+  opacity: 1;
+  animation: checkPulse 0.4s ease;
+}
+
+@keyframes checkPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(57, 255, 20, 0.4);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 30px rgba(57, 255, 20, 0.6);
+  }
+  100% {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.4), inset 0 0 10px rgba(57, 255, 20, 0.2);
+  }
+}
+
+.table-row.checked:hover {
+  transform: scale(1.025);
+  box-shadow: 0 0 25px rgba(57, 255, 20, 0.5), inset 0 0 15px rgba(57, 255, 20, 0.3);
 }
 
 .table-row.checked .row-check {
-  background: var(--success-color);
-  border-color: var(--success-color);
+  background: #000000;
+  border-color: #000000;
   opacity: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .table-row.checked .row-check svg {
-  color: var(--text-primary);
+  color: #39ff14;
+  filter: drop-shadow(0 0 2px #39ff14);
 }
 
 .table-row.checked .cell-name {
-  color: var(--success-color);
+  color: #000000;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   opacity: 1;
 }
 
 .table-row.checked .cell-irc,
 .table-row.checked .cell-qty {
-  color: var(--success-color);
-  opacity: 0.9;
+  color: #000000;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.table-row.checked .supply-note {
+  color: #000000;
+  opacity: 0.8;
 }
 
 /* Medication Codes */
@@ -806,6 +942,14 @@
   
   .input-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .input-group {
+    min-height: 80px; /* Slightly smaller on mobile */
+  }
+  
+  .input-group label {
+    min-height: 2em; /* Adjust for mobile */
   }
   
   .medication-grid {
