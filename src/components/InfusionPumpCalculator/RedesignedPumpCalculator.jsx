@@ -12,11 +12,13 @@ import {
   Check,
   Pill,
   FlaskConical,
-  Settings
+  Settings,
+  Plus,
+  Minus,
+  X
 } from 'lucide-react';
 import './RedesignedPumpCalculator.css';
 import pumpDatabase from '../../pages/Pump/pump-database.json';
-import pumpLogic from '../../pages/Pump/pump-logic.json';
 
 // Dose Safety Indicator Component
 const DoseSafetyIndicator = ({ doseSafety, standardDose }) => {
@@ -57,13 +59,24 @@ const RedesignedPumpCalculator = () => {
     flushVolume: '10',
     totalInfusionTime: { hours: '', minutes: '' },
     infusionMode: 'removeOverfill', // 'removeOverfill' or 'addToEmptyBag'
-    infusionRate: '' // For manual infusion rate input
+    infusionRate: '', // For manual infusion rate input
+    useCustomSteps: false // Toggle for custom infusion steps
   });
   
   const [selectedMedication, setSelectedMedication] = useState(null);
   const [results, setResults] = useState(null);
   const [showResults, setShowResults] = useState(false);
   const [errors, setErrors] = useState({});
+  
+  // Custom infusion steps state
+  const [customInfusionSteps, setCustomInfusionSteps] = useState([
+    { id: 1, rate: '', duration: '', volume: '', description: 'Step 1' }
+  ]);
+  const [customStepsValidation, setCustomStepsValidation] = useState({
+    volumeValid: false,
+    durationValid: false,
+    stepsValid: []
+  });
 
   // Get medications list
   const medications = useMemo(() => {
@@ -216,6 +229,88 @@ const RedesignedPumpCalculator = () => {
     }));
   };
 
+  // Add custom infusion step
+  const addCustomStep = () => {
+    const newId = Math.max(...customInfusionSteps.map(s => s.id)) + 1;
+    setCustomInfusionSteps(prev => [...prev, {
+      id: newId,
+      rate: '',
+      duration: '',
+      volume: '',
+      description: `Step ${newId}`
+    }]);
+  };
+
+  // Remove custom infusion step
+  const removeCustomStep = (id) => {
+    if (customInfusionSteps.length > 1) {
+      setCustomInfusionSteps(prev => prev.filter(step => step.id !== id));
+    }
+  };
+
+  // Update custom infusion step
+  const updateCustomStep = (id, field, value) => {
+    setCustomInfusionSteps(prev => prev.map(step => 
+      step.id === id ? { ...step, [field]: value } : step
+    ));
+  };
+
+  // Validate custom infusion steps
+  const validateCustomSteps = useCallback(() => {
+    if (!inputs.useCustomSteps || customInfusionSteps.length === 0) {
+      return { volumeValid: true, durationValid: true, stepsValid: [] };
+    }
+
+    const totalVolume = parseFloat(inputs.totalInfusionVolume) || 0;
+    const totalMinutes = (parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + 
+                        (parseInt(inputs.totalInfusionTime.minutes) || 0);
+
+    // Calculate totals from custom steps
+    let stepVolumeTotal = 0;
+    let stepDurationTotal = 0;
+    const stepsValidation = [];
+
+    customInfusionSteps.forEach(step => {
+      const volume = parseFloat(step.volume) || 0;
+      const duration = parseFloat(step.duration) || 0;
+      const rate = parseFloat(step.rate) || 0;
+
+      stepVolumeTotal += volume;
+      stepDurationTotal += duration;
+
+      // Validate individual step
+      const stepValid = {
+        id: step.id,
+        volumeValid: volume > 0,
+        durationValid: duration > 0,
+        rateValid: rate > 0,
+        rateMatchesVolume: Math.abs((rate * duration / 60) - volume) < 0.1 // Allow small rounding difference
+      };
+      
+      stepsValidation.push(stepValid);
+    });
+
+    // Validate totals
+    const volumeValid = Math.abs(stepVolumeTotal - totalVolume) < 0.1; // Allow small rounding difference
+    const durationValid = Math.abs(stepDurationTotal - totalMinutes) < 1; // Allow 1 minute difference
+
+    return {
+      volumeValid,
+      durationValid,
+      stepsValid: stepsValidation,
+      stepVolumeTotal,
+      stepDurationTotal
+    };
+  }, [inputs.useCustomSteps, inputs.totalInfusionVolume, inputs.totalInfusionTime, customInfusionSteps]);
+
+  // Update validation when custom steps change
+  useEffect(() => {
+    if (inputs.useCustomSteps) {
+      const validation = validateCustomSteps();
+      setCustomStepsValidation(validation);
+    }
+  }, [inputs.useCustomSteps, customInfusionSteps, inputs.totalInfusionVolume, inputs.totalInfusionTime, validateCustomSteps]);
+
 
   // Calculate vial combination
   const calculateVialCombination = useCallback(() => {
@@ -312,14 +407,43 @@ const RedesignedPumpCalculator = () => {
     return Math.floor(rate);
   }, []);
 
-  // Calculate infusion steps based on medication protocol
+  // Calculate infusion steps based on medication protocol or custom steps
   const calculateInfusionSteps = useCallback((totalVolume, totalTimeMinutes, infusionRate) => {
     if (!selectedMedicationData || !totalVolume || !totalTimeMinutes) return [];
 
     const steps = [];
     const flushVolume = parseFloat(inputs.flushVolume) || 10;
-    const remainingVolume = totalVolume - flushVolume;
     const flushDuration = Math.round((flushVolume / infusionRate) * 60);
+
+    // If using custom steps, return them as-is
+    if (inputs.useCustomSteps && customInfusionSteps.length > 0) {
+      customInfusionSteps.forEach((customStep, index) => {
+        if (customStep.volume && customStep.duration && customStep.rate) {
+          steps.push({
+            step: index + 1,
+            rate: parseFloat(customStep.rate),
+            duration: parseFloat(customStep.duration),
+            volume: parseFloat(customStep.volume),
+            description: customStep.description || `Step ${index + 1}`
+          });
+        }
+      });
+
+      // Add flush step for custom steps
+      steps.push({
+        step: steps.length + 1,
+        rate: infusionRate,
+        duration: flushDuration,
+        volume: flushVolume,
+        description: 'Flush',
+        isFlush: true
+      });
+
+      return steps;
+    }
+
+    // Original logic for non-custom steps
+    const remainingVolume = totalVolume - flushVolume;
     const remainingTime = totalTimeMinutes - flushDuration;
 
     // If manual infusion rate is provided, force calculate simple steps
@@ -489,7 +613,7 @@ const RedesignedPumpCalculator = () => {
     }
 
     return steps;
-  }, [selectedMedicationData, inputs.patientWeight, inputs.flushVolume, inputs.infusionRate]);
+  }, [selectedMedicationData, inputs.patientWeight, inputs.flushVolume, inputs.infusionRate, inputs.useCustomSteps, customInfusionSteps]);
 
   // Validate inputs
   const validateInputs = () => {
@@ -515,6 +639,24 @@ const RedesignedPumpCalculator = () => {
                         (parseInt(inputs.totalInfusionTime.minutes) || 0);
     if (totalMinutes <= 0) {
       newErrors.totalInfusionTime = 'Please enter a valid infusion time';
+    }
+
+    // Validate custom steps if enabled
+    if (inputs.useCustomSteps) {
+      const validation = validateCustomSteps();
+      if (!validation.volumeValid) {
+        newErrors.customSteps = 'Total volume of custom steps must equal total infusion volume';
+      } else if (!validation.durationValid) {
+        newErrors.customSteps = 'Total duration of custom steps must equal total infusion time';
+      } else {
+        // Check if any individual step is invalid
+        const hasInvalidStep = validation.stepsValid.some(step => 
+          !step.volumeValid || !step.durationValid || !step.rateValid || !step.rateMatchesVolume
+        );
+        if (hasInvalidStep) {
+          newErrors.customSteps = 'All custom steps must have valid rate, duration, and volume';
+        }
+      }
     }
 
     setErrors(newErrors);
@@ -636,12 +778,21 @@ const RedesignedPumpCalculator = () => {
       flushVolume: '10',
       totalInfusionTime: { hours: '', minutes: '' },
       infusionMode: 'removeOverfill',
-      infusionRate: ''
+      infusionRate: '',
+      useCustomSteps: false
     });
     setSelectedMedication(null);
     setResults(null);
     setShowResults(false);
     setErrors({});
+    setCustomInfusionSteps([
+      { id: 1, rate: '', duration: '', volume: '', description: 'Step 1' }
+    ]);
+    setCustomStepsValidation({
+      volumeValid: false,
+      durationValid: false,
+      stepsValid: []
+    });
   };
 
   // Format number
@@ -945,9 +1096,140 @@ const RedesignedPumpCalculator = () => {
                   </label>
                 </div>
               </div>
+
+              {/* Use Custom Infusion Steps */}
+              <div className="param-item custom-steps-toggle">
+                <label className="checkbox-option">
+                  <input
+                    type="checkbox"
+                    checked={inputs.useCustomSteps}
+                    onChange={(e) => handleInputChange('useCustomSteps', e.target.checked)}
+                  />
+                  <span className="checkbox-label">Use Custom Infusion Steps</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Custom Infusion Steps Section */}
+        {inputs.useCustomSteps && (
+          <div className="calculator-section">
+            <div className="section-header">
+              <Activity size={20} />
+              <h3>Custom Infusion Steps</h3>
+              <div className="custom-steps-validation">
+                {customStepsValidation.volumeValid ? (
+                  <div className="validation-indicator valid">
+                    <Check size={16} />
+                    <span>Volume: {customStepsValidation.stepVolumeTotal?.toFixed(1)} mL</span>
+                  </div>
+                ) : (
+                  <div className="validation-indicator invalid">
+                    <X size={16} />
+                    <span>Volume: {customStepsValidation.stepVolumeTotal?.toFixed(1)} mL</span>
+                  </div>
+                )}
+                {customStepsValidation.durationValid ? (
+                  <div className="validation-indicator valid">
+                    <Check size={16} />
+                    <span>Duration: {customStepsValidation.stepDurationTotal} min</span>
+                  </div>
+                ) : (
+                  <div className="validation-indicator invalid">
+                    <X size={16} />
+                    <span>Duration: {customStepsValidation.stepDurationTotal} min</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="section-content">
+              <div className="custom-steps-container">
+                {customInfusionSteps.map((step, index) => {
+                  const stepValidation = customStepsValidation.stepsValid.find(v => v.id === step.id) || {};
+                  const isStepValid = stepValidation.volumeValid && stepValidation.durationValid && 
+                                     stepValidation.rateValid && stepValidation.rateMatchesVolume;
+                  
+                  return (
+                    <div key={step.id} className={`custom-step-row ${isStepValid ? 'valid' : ''}`}>
+                      <div className="step-number">Step {index + 1}</div>
+                      <div className="step-inputs">
+                        <div className="step-input-group">
+                          <label>Rate (mL/hr)</label>
+                          <input
+                            type="number"
+                            value={step.rate}
+                            onChange={(e) => updateCustomStep(step.id, 'rate', e.target.value)}
+                            placeholder="0"
+                            className="supply-input"
+                          />
+                        </div>
+                        <div className="step-input-group">
+                          <label>Duration (min)</label>
+                          <input
+                            type="number"
+                            value={step.duration}
+                            onChange={(e) => updateCustomStep(step.id, 'duration', e.target.value)}
+                            placeholder="0"
+                            className="supply-input"
+                          />
+                        </div>
+                        <div className="step-input-group">
+                          <label>Volume (mL)</label>
+                          <input
+                            type="number"
+                            value={step.volume}
+                            onChange={(e) => updateCustomStep(step.id, 'volume', e.target.value)}
+                            placeholder="0"
+                            className="supply-input"
+                          />
+                        </div>
+                        <div className="step-input-group">
+                          <label>Description</label>
+                          <input
+                            type="text"
+                            value={step.description}
+                            onChange={(e) => updateCustomStep(step.id, 'description', e.target.value)}
+                            placeholder="Step description"
+                            className="supply-input"
+                          />
+                        </div>
+                      </div>
+                      <div className="step-actions">
+                        {isStepValid ? (
+                          <div className="step-valid-indicator">
+                            <Check size={20} className="valid-icon" />
+                          </div>
+                        ) : (
+                          <div className="step-invalid-indicator">
+                            <X size={20} className="invalid-icon" />
+                          </div>
+                        )}
+                        <button
+                          className="remove-step-btn"
+                          onClick={() => removeCustomStep(step.id)}
+                          disabled={customInfusionSteps.length === 1}
+                        >
+                          <Minus size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+                <button className="add-step-btn" onClick={addCustomStep}>
+                  <Plus size={16} />
+                  Add Infusion Step
+                </button>
+              </div>
+              {errors.customSteps && (
+                <div className="custom-steps-error">
+                  <AlertCircle size={16} />
+                  <span>{errors.customSteps}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
 
         {/* Action Buttons */}

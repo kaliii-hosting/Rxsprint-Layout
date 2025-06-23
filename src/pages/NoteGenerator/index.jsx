@@ -309,323 +309,319 @@ const NoteGenerator = () => {
                 </div>
                 <div className="card-body">
                   <div className="note-form-grid">
-                    {/* Primary Information Section */}
-                    <div className="form-section">
-                      <h4 className="section-title">
-                        <Pill size={16} />
-                        Medication Information
-                      </h4>
-                      <div className="input-grid">
-                        <div className="input-group">
-                          <label>Primary Medication Name</label>
-                          <input
-                            type="text"
-                            value={refillForm.primaryMedication}
-                            onChange={(e) => updateRefillField('primaryMedication', e.target.value)}
-                            placeholder="Enter medication name"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Medication Sig</label>
-                          <input
-                            type="text"
-                            value={refillForm.medicationSig}
-                            onChange={(e) => updateRefillField('medicationSig', e.target.value)}
-                            placeholder="Enter medication sig"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>New or updated allergies</label>
-                          <input
-                            type="text"
-                            value={refillForm.allergies}
-                            onChange={(e) => updateRefillField('allergies', e.target.value)}
-                            placeholder="Enter any new allergies"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>New medications started</label>
-                          <input
-                            type="text"
-                            value={refillForm.newMedications}
-                            onChange={(e) => updateRefillField('newMedications', e.target.value)}
-                            placeholder="List new medications"
-                            className="note-input"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Patient Status Section */}
-                    <div className="form-section">
-                      <h4 className="section-title">
-                        <User size={16} />
-                        Patient Status
-                      </h4>
-                      <div className="input-grid">
-                        <div className="input-group">
-                          <label>Mental or physical changes that could be considered side effects</label>
-                          <textarea
-                            value={refillForm.mentalPhysicalChanges}
-                            onChange={(e) => updateRefillField('mentalPhysicalChanges', e.target.value)}
-                            placeholder="Describe any changes"
-                            className="note-input note-textarea"
-                            rows="2"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Patient weight (kg)</label>
-                          <input
-                            type="text"
-                            value={refillForm.patientWeight}
-                            onChange={(e) => updateRefillField('patientWeight', e.target.value)}
-                            placeholder="Enter weight in kg"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Dose is appropriate/high/low</label>
-                          <div className="custom-dropdown">
-                            <select
-                              value={refillForm.doseAppropriate}
-                              onChange={(e) => updateRefillField('doseAppropriate', e.target.value)}
-                              className="note-dropdown"
-                            >
-                              <option value="">Select...</option>
-                              <option value="appropriate">Appropriate</option>
-                              <option value="high">High</option>
-                              <option value="low">Low</option>
-                            </select>
-                            <ChevronDown className="dropdown-icon" size={16} />
+                    {/* Main Section 1: Clinical Information */}
+                    <div className="main-section">
+                      {/* Medication & Patient Core */}
+                      <div className="form-section">
+                        <h4 className="section-title">
+                          <Pill size={16} />
+                          Medication & Patient Core
+                        </h4>
+                        <div className="input-grid">
+                          <div className="input-group">
+                            <label>Primary Medication Name</label>
+                            <input
+                              type="text"
+                              value={refillForm.primaryMedication}
+                              onChange={(e) => updateRefillField('primaryMedication', e.target.value)}
+                              placeholder="Enter medication name"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Medication Sig</label>
+                            <input
+                              type="text"
+                              value={refillForm.medicationSig}
+                              onChange={(e) => updateRefillField('medicationSig', e.target.value)}
+                              placeholder="Enter medication sig"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Patient weight (kg)</label>
+                            <input
+                              type="text"
+                              value={refillForm.patientWeight}
+                              onChange={(e) => updateRefillField('patientWeight', e.target.value)}
+                              placeholder="Enter weight in kg"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Dose is appropriate/high/low</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={refillForm.doseAppropriate}
+                                onChange={(e) => updateRefillField('doseAppropriate', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="appropriate">Appropriate</option>
+                                <option value="high">High</option>
+                                <option value="low">Low</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
+                          </div>
+                          <div className="input-group">
+                            <label>New or updated allergies</label>
+                            <input
+                              type="text"
+                              value={refillForm.allergies}
+                              onChange={(e) => updateRefillField('allergies', e.target.value)}
+                              placeholder="Enter any new allergies"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>New medications started</label>
+                            <input
+                              type="text"
+                              value={refillForm.newMedications}
+                              onChange={(e) => updateRefillField('newMedications', e.target.value)}
+                              placeholder="List new medications"
+                              className="note-input"
+                            />
                           </div>
                         </div>
-                        <div className="input-group">
-                          <label>Number of doses on hand</label>
-                          <input
-                            type="text"
-                            value={refillForm.numberOfDoses}
-                            onChange={(e) => updateRefillField('numberOfDoses', e.target.value)}
-                            placeholder="Enter number of doses"
-                            className="note-input"
-                          />
-                        </div>
                       </div>
-                    </div>
 
-                    {/* Treatment Details Section */}
-                    <div className="form-section">
-                      <h4 className="section-title">
-                        <Activity size={16} />
-                        Treatment Details
-                      </h4>
-                      <div className="input-grid">
-                        <div className="input-group">
-                          <label>Issues with IV access/ injection site</label>
-                          <input
-                            type="text"
-                            value={refillForm.ivAccessIssues}
-                            onChange={(e) => updateRefillField('ivAccessIssues', e.target.value)}
-                            placeholder="Describe any issues"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Epi-pen on hand</label>
-                          <div className="custom-dropdown">
-                            <select
-                              value={refillForm.epiPenOnHand}
-                              onChange={(e) => updateRefillField('epiPenOnHand', e.target.value)}
-                              className="note-dropdown"
-                            >
-                              <option value="">Select...</option>
-                              <option value="Yes">Yes</option>
-                              <option value="No">No</option>
-                              <option value="N/A">N/A</option>
-                            </select>
-                            <ChevronDown className="dropdown-icon" size={16} />
+                      {/* Clinical Status */}
+                      <div className="form-section">
+                        <h4 className="section-title">
+                          <Activity size={16} />
+                          Clinical Status
+                        </h4>
+                        <div className="input-grid">
+                          <div className="input-group">
+                            <label>Attack details (or N/A)</label>
+                            <textarea
+                              value={refillForm.attackDetails}
+                              onChange={(e) => updateRefillField('attackDetails', e.target.value)}
+                              placeholder="Enter attack details or N/A"
+                              className="note-input note-textarea"
+                              rows="2"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Has there been an increase in frequency or severity of attacks?</label>
+                            <input
+                              type="text"
+                              value={refillForm.frequencyIncrease}
+                              onChange={(e) => updateRefillField('frequencyIncrease', e.target.value)}
+                              placeholder="Yes/No and details"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Mental or physical changes that could be considered side effects</label>
+                            <textarea
+                              value={refillForm.mentalPhysicalChanges}
+                              onChange={(e) => updateRefillField('mentalPhysicalChanges', e.target.value)}
+                              placeholder="Describe any changes"
+                              className="note-input note-textarea"
+                              rows="2"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Issues with IV access/ injection site</label>
+                            <input
+                              type="text"
+                              value={refillForm.ivAccessIssues}
+                              onChange={(e) => updateRefillField('ivAccessIssues', e.target.value)}
+                              placeholder="Describe any issues"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Compliance</label>
+                            <input
+                              type="text"
+                              value={refillForm.compliance}
+                              onChange={(e) => updateRefillField('compliance', e.target.value)}
+                              placeholder="Enter compliance status"
+                              className="note-input"
+                            />
                           </div>
                         </div>
-                        <div className="input-group">
-                          <label>Attack details (or N/A)</label>
-                          <textarea
-                            value={refillForm.attackDetails}
-                            onChange={(e) => updateRefillField('attackDetails', e.target.value)}
-                            placeholder="Enter attack details or N/A"
-                            className="note-input note-textarea"
-                            rows="2"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Has there been an increase in frequency or severity of attacks?</label>
-                          <input
-                            type="text"
-                            value={refillForm.frequencyIncrease}
-                            onChange={(e) => updateRefillField('frequencyIncrease', e.target.value)}
-                            placeholder="Yes/No and details"
-                            className="note-input"
-                          />
+                      </div>
+
+                      {/* Health Interventions */}
+                      <div className="form-section">
+                        <h4 className="section-title">
+                          <Heart size={16} />
+                          Health Interventions
+                        </h4>
+                        <div className="input-grid">
+                          <div className="input-group">
+                            <label>Upcoming interventions (procedures, surgery, dental, etc)</label>
+                            <textarea
+                              value={refillForm.upcomingInterventions}
+                              onChange={(e) => updateRefillField('upcomingInterventions', e.target.value)}
+                              placeholder="List any upcoming interventions"
+                              className="note-input note-textarea"
+                              rows="2"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Pregnancy/ Breastfeeding/ Planning to become pregnant</label>
+                            <input
+                              type="text"
+                              value={refillForm.pregnancy}
+                              onChange={(e) => updateRefillField('pregnancy', e.target.value)}
+                              placeholder="Enter status"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>MDO pregnancy counseling</label>
+                            <input
+                              type="text"
+                              value={refillForm.mdoPregnancyCounseling}
+                              onChange={(e) => updateRefillField('mdoPregnancyCounseling', e.target.value)}
+                              placeholder="Yes/No"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Travel plans</label>
+                            <input
+                              type="text"
+                              value={refillForm.travelPlans}
+                              onChange={(e) => updateRefillField('travelPlans', e.target.value)}
+                              placeholder="Enter travel plans if any"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Since your last fill, have you been hospitalized</label>
+                            <input
+                              type="text"
+                              value={refillForm.lastFillHospitalized}
+                              onChange={(e) => updateRefillField('lastFillHospitalized', e.target.value)}
+                              placeholder="Yes/No and details"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Since your last fill, have you had any er visits</label>
+                            <input
+                              type="text"
+                              value={refillForm.lastFillErVisits}
+                              onChange={(e) => updateRefillField('lastFillErVisits', e.target.value)}
+                              placeholder="Yes/No and details"
+                              className="note-input"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Health Status Section */}
-                    <div className="form-section">
-                      <h4 className="section-title">
-                        <Heart size={16} />
-                        Health Status
-                      </h4>
-                      <div className="input-grid">
-                        <div className="input-group">
-                          <label>Upcoming interventions (procedures, surgery, dental, etc)</label>
-                          <textarea
-                            value={refillForm.upcomingInterventions}
-                            onChange={(e) => updateRefillField('upcomingInterventions', e.target.value)}
-                            placeholder="List any upcoming interventions"
-                            className="note-input note-textarea"
-                            rows="2"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Travel plans</label>
-                          <input
-                            type="text"
-                            value={refillForm.travelPlans}
-                            onChange={(e) => updateRefillField('travelPlans', e.target.value)}
-                            placeholder="Enter travel plans if any"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Pregnancy/ Breastfeeding/ Planning to become pregnant</label>
-                          <input
-                            type="text"
-                            value={refillForm.pregnancy}
-                            onChange={(e) => updateRefillField('pregnancy', e.target.value)}
-                            placeholder="Enter status"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>MDO pregnancy counseling</label>
-                          <input
-                            type="text"
-                            value={refillForm.mdoPregnancyCounseling}
-                            onChange={(e) => updateRefillField('mdoPregnancyCounseling', e.target.value)}
-                            placeholder="Yes/No"
-                            className="note-input"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Recent History Section */}
-                    <div className="form-section">
-                      <h4 className="section-title">
-                        <Clock size={16} />
-                        Recent History
-                      </h4>
-                      <div className="input-grid">
-                        <div className="input-group">
-                          <label>Since your last fill, have you been hospitalized</label>
-                          <input
-                            type="text"
-                            value={refillForm.lastFillHospitalized}
-                            onChange={(e) => updateRefillField('lastFillHospitalized', e.target.value)}
-                            placeholder="Yes/No and details"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Since your last fill, have you had any er visits</label>
-                          <input
-                            type="text"
-                            value={refillForm.lastFillErVisits}
-                            onChange={(e) => updateRefillField('lastFillErVisits', e.target.value)}
-                            placeholder="Yes/No and details"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Since your last fill, have you missed any doses?</label>
-                          <input
-                            type="text"
-                            value={refillForm.lastFillMissedDoses}
-                            onChange={(e) => updateRefillField('lastFillMissedDoses', e.target.value)}
-                            placeholder="Yes/No and details"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Compliance</label>
-                          <input
-                            type="text"
-                            value={refillForm.compliance}
-                            onChange={(e) => updateRefillField('compliance', e.target.value)}
-                            placeholder="Enter compliance status"
-                            className="note-input"
-                          />
+                    {/* Main Section 2: Dosing & Order Management */}
+                    <div className="main-section">
+                      {/* Dosing Schedule */}
+                      <div className="form-section">
+                        <h4 className="section-title">
+                          <Calendar size={16} />
+                          Dosing Schedule
+                        </h4>
+                        <div className="input-grid">
+                          <div className="input-group">
+                            <label>When is the next dose to be taken (list date and time if time is known)</label>
+                            <input
+                              type="text"
+                              value={refillForm.nextDoseDate}
+                              onChange={(e) => updateRefillField('nextDoseDate', e.target.value)}
+                              placeholder="Enter date and time"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>When was the last dose taken?</label>
+                            <input
+                              type="text"
+                              value={refillForm.lastDoseDate}
+                              onChange={(e) => updateRefillField('lastDoseDate', e.target.value)}
+                              placeholder="Enter date and time"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Since your last fill, have you missed any doses?</label>
+                            <input
+                              type="text"
+                              value={refillForm.lastFillMissedDoses}
+                              onChange={(e) => updateRefillField('lastFillMissedDoses', e.target.value)}
+                              placeholder="Yes/No and details"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Number of doses on hand</label>
+                            <input
+                              type="text"
+                              value={refillForm.numberOfDoses}
+                              onChange={(e) => updateRefillField('numberOfDoses', e.target.value)}
+                              placeholder="Enter number of doses"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>RPH consult completed/declined</label>
+                            <input
+                              type="text"
+                              value={refillForm.rphConsult}
+                              onChange={(e) => updateRefillField('rphConsult', e.target.value)}
+                              placeholder="Completed/Declined"
+                              className="note-input"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Dosing Schedule Section */}
-                    <div className="form-section">
-                      <h4 className="section-title">
-                        <Calendar size={16} />
-                        Dosing Schedule
-                      </h4>
-                      <div className="input-grid">
-                        <div className="input-group">
-                          <label>When is the next dose to be taken (list date and time if time is known)</label>
-                          <input
-                            type="text"
-                            value={refillForm.nextDoseDate}
-                            onChange={(e) => updateRefillField('nextDoseDate', e.target.value)}
-                            placeholder="Enter date and time"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>When was the last dose taken?</label>
-                          <input
-                            type="text"
-                            value={refillForm.lastDoseDate}
-                            onChange={(e) => updateRefillField('lastDoseDate', e.target.value)}
-                            placeholder="Enter date and time"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>RPH consult completed/declined</label>
-                          <input
-                            type="text"
-                            value={refillForm.rphConsult}
-                            onChange={(e) => updateRefillField('rphConsult', e.target.value)}
-                            placeholder="Completed/Declined"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>List order items (note: "supplies" can be used for ancillary items)</label>
-                          <textarea
-                            value={refillForm.listOrderItems}
-                            onChange={(e) => updateRefillField('listOrderItems', e.target.value)}
-                            placeholder="List items"
-                            className="note-input note-textarea"
-                            rows="2"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Enter ship date</label>
-                          <input
-                            type="date"
-                            value={refillForm.enterShipDate}
-                            onChange={(e) => updateRefillField('enterShipDate', e.target.value)}
-                            className="note-input"
-                          />
+                      {/* Order Management */}
+                      <div className="form-section">
+                        <h4 className="section-title">
+                          <Package size={16} />
+                          Order Management
+                        </h4>
+                        <div className="input-grid">
+                          <div className="input-group">
+                            <label>List order items (note: "supplies" can be used for ancillary items)</label>
+                            <textarea
+                              value={refillForm.listOrderItems}
+                              onChange={(e) => updateRefillField('listOrderItems', e.target.value)}
+                              placeholder="List items"
+                              className="note-input note-textarea"
+                              rows="2"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Enter ship date</label>
+                            <input
+                              type="date"
+                              value={refillForm.enterShipDate}
+                              onChange={(e) => updateRefillField('enterShipDate', e.target.value)}
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Epi-pen on hand</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={refillForm.epiPenOnHand}
+                                onChange={(e) => updateRefillField('epiPenOnHand', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="N/A">N/A</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -681,131 +677,168 @@ const NoteGenerator = () => {
                 </div>
                 <div className="card-body">
                   <div className="note-form-grid">
-                    <div className="form-section">
-                      <h4 className="section-title">
-                        <Info size={16} />
-                        Patient Information
-                      </h4>
-                      <div className="input-grid">
-                        <div className="input-group">
-                          <label>Patient weight (kg)</label>
-                          <input
-                            type="text"
-                            value={interventionForm.patientWeight}
-                            onChange={(e) => updateInterventionField('patientWeight', e.target.value)}
-                            placeholder="Enter weight in kg"
-                            className="note-input"
-                          />
+                    {/* Main Section 1: Patient & Clinical Information */}
+                    <div className="main-section">
+                      {/* Patient Core Information */}
+                      <div className="form-section">
+                        <h4 className="section-title">
+                          <User size={16} />
+                          Patient Core Information
+                        </h4>
+                        <div className="input-grid">
+                          <div className="input-group">
+                            <label>Patient weight (kg)</label>
+                            <input
+                              type="text"
+                              value={interventionForm.patientWeight}
+                              onChange={(e) => updateInterventionField('patientWeight', e.target.value)}
+                              placeholder="Enter weight in kg"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Dose</label>
+                            <input
+                              type="text"
+                              value={interventionForm.dose}
+                              onChange={(e) => updateInterventionField('dose', e.target.value)}
+                              placeholder="Enter dose"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Number of doses on hand</label>
+                            <input
+                              type="text"
+                              value={interventionForm.numberOfDoses}
+                              onChange={(e) => updateInterventionField('numberOfDoses', e.target.value)}
+                              placeholder="Enter number of doses"
+                              className="note-input"
+                            />
+                          </div>
                         </div>
-                        <div className="input-group">
-                          <label>Dose</label>
-                          <input
-                            type="text"
-                            value={interventionForm.dose}
-                            onChange={(e) => updateInterventionField('dose', e.target.value)}
-                            placeholder="Enter dose"
-                            className="note-input"
-                          />
+                      </div>
+
+                      {/* Clinical Status */}
+                      <div className="form-section">
+                        <h4 className="section-title">
+                          <Activity size={16} />
+                          Clinical Status
+                        </h4>
+                        <div className="input-grid">
+                          <div className="input-group">
+                            <label>Attack details</label>
+                            <textarea
+                              value={interventionForm.attackDetails}
+                              onChange={(e) => updateInterventionField('attackDetails', e.target.value)}
+                              placeholder="Enter attack details"
+                              className="note-input note-textarea"
+                              rows="2"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Frequency and severity of attacks</label>
+                            <input
+                              type="text"
+                              value={interventionForm.frequencySeverity}
+                              onChange={(e) => updateInterventionField('frequencySeverity', e.target.value)}
+                              placeholder="Describe frequency and severity"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Compliance</label>
+                            <input
+                              type="text"
+                              value={interventionForm.compliance}
+                              onChange={(e) => updateInterventionField('compliance', e.target.value)}
+                              placeholder="Enter compliance status"
+                              className="note-input"
+                            />
+                          </div>
                         </div>
-                        <div className="input-group">
-                          <label>Number of doses on hand</label>
-                          <input
-                            type="text"
-                            value={interventionForm.numberOfDoses}
-                            onChange={(e) => updateInterventionField('numberOfDoses', e.target.value)}
-                            placeholder="Enter number of doses"
-                            className="note-input"
-                          />
+                      </div>
+                    </div>
+
+                    {/* Main Section 2: Health Status & Dosing */}
+                    <div className="main-section">
+                      {/* Health Interventions */}
+                      <div className="form-section">
+                        <h4 className="section-title">
+                          <Heart size={16} />
+                          Health Interventions
+                        </h4>
+                        <div className="input-grid">
+                          <div className="input-group">
+                            <label>Upcoming health related interventions</label>
+                            <textarea
+                              value={interventionForm.upcomingInterventions}
+                              onChange={(e) => updateInterventionField('upcomingInterventions', e.target.value)}
+                              placeholder="List interventions"
+                              className="note-input note-textarea"
+                              rows="2"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Pregnancy/Breastfeeding status</label>
+                            <input
+                              type="text"
+                              value={interventionForm.pregnancyStatus}
+                              onChange={(e) => updateInterventionField('pregnancyStatus', e.target.value)}
+                              placeholder="Enter status"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>MDO pregnancy counseling</label>
+                            <input
+                              type="text"
+                              value={interventionForm.mdoPregnancyCounseling}
+                              onChange={(e) => updateInterventionField('mdoPregnancyCounseling', e.target.value)}
+                              placeholder="Yes/No"
+                              className="note-input"
+                            />
+                          </div>
                         </div>
-                        <div className="input-group">
-                          <label>Attack details</label>
-                          <textarea
-                            value={interventionForm.attackDetails}
-                            onChange={(e) => updateInterventionField('attackDetails', e.target.value)}
-                            placeholder="Enter attack details"
-                            className="note-input note-textarea"
-                            rows="2"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Frequency and severity of attacks</label>
-                          <input
-                            type="text"
-                            value={interventionForm.frequencySeverity}
-                            onChange={(e) => updateInterventionField('frequencySeverity', e.target.value)}
-                            placeholder="Describe frequency and severity"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Upcoming health related interventions</label>
-                          <textarea
-                            value={interventionForm.upcomingInterventions}
-                            onChange={(e) => updateInterventionField('upcomingInterventions', e.target.value)}
-                            placeholder="List interventions"
-                            className="note-input note-textarea"
-                            rows="2"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Pregnancy/Breastfeeding status</label>
-                          <input
-                            type="text"
-                            value={interventionForm.pregnancyStatus}
-                            onChange={(e) => updateInterventionField('pregnancyStatus', e.target.value)}
-                            placeholder="Enter status"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>MDO pregnancy counseling</label>
-                          <input
-                            type="text"
-                            value={interventionForm.mdoPregnancyCounseling}
-                            onChange={(e) => updateInterventionField('mdoPregnancyCounseling', e.target.value)}
-                            placeholder="Yes/No"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Compliance</label>
-                          <input
-                            type="text"
-                            value={interventionForm.compliance}
-                            onChange={(e) => updateInterventionField('compliance', e.target.value)}
-                            placeholder="Enter compliance status"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Date of next dose</label>
-                          <input
-                            type="text"
-                            value={interventionForm.nextDoseDate}
-                            onChange={(e) => updateInterventionField('nextDoseDate', e.target.value)}
-                            placeholder="Enter date"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Date of last dose</label>
-                          <input
-                            type="text"
-                            value={interventionForm.lastDoseDate}
-                            onChange={(e) => updateInterventionField('lastDoseDate', e.target.value)}
-                            placeholder="Enter date"
-                            className="note-input"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>RPH consult</label>
-                          <input
-                            type="text"
-                            value={interventionForm.rphConsult}
-                            onChange={(e) => updateInterventionField('rphConsult', e.target.value)}
-                            placeholder="Status"
-                            className="note-input"
-                          />
+                      </div>
+
+                      {/* Dosing Information */}
+                      <div className="form-section">
+                        <h4 className="section-title">
+                          <Calendar size={16} />
+                          Dosing Information
+                        </h4>
+                        <div className="input-grid">
+                          <div className="input-group">
+                            <label>Date of next dose</label>
+                            <input
+                              type="text"
+                              value={interventionForm.nextDoseDate}
+                              onChange={(e) => updateInterventionField('nextDoseDate', e.target.value)}
+                              placeholder="Enter date"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Date of last dose</label>
+                            <input
+                              type="text"
+                              value={interventionForm.lastDoseDate}
+                              onChange={(e) => updateInterventionField('lastDoseDate', e.target.value)}
+                              placeholder="Enter date"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>RPH consult</label>
+                            <input
+                              type="text"
+                              value={interventionForm.rphConsult}
+                              onChange={(e) => updateInterventionField('rphConsult', e.target.value)}
+                              placeholder="Status"
+                              className="note-input"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
