@@ -1,12 +1,20 @@
 .pump-page {
-  min-height: 100vh;
-  background-color: var(--bg-secondary);
-  padding: 0;
+  background: var(--bg-secondary);
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100%;
+  height: auto;
   width: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
 }
 
-@media (max-width: 768px) {
-  .pump-page {
-    padding: 0;
-  }
+.pump-page.page-container {
+  min-height: 100vh;
+  height: auto;
+  padding: 0;
 }

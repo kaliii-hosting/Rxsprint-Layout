@@ -551,7 +551,7 @@
   left: 0;
   right: 0;
   margin-top: 8px;
-  background: var(--bg-tertiary);
+  background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: 16px;
   box-shadow: var(--shadow-lg);
@@ -559,6 +559,11 @@
   overflow-y: auto;
   z-index: 1000;
   isolation: isolate;
+}
+
+/* Dark theme override for search dropdown */
+[data-theme="dark"] .search-dropdown {
+  background: #000000;
 }
 
 .search-dropdown::-webkit-scrollbar {

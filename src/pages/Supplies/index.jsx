@@ -1041,6 +1041,7 @@ const Supplies = () => {
     <div className="supplies-page page-container">
       <div className="supplies-content">
         <div className="supplies-dashboard">
+
           {/* Medication Selector Card */}
           <div className="dashboard-card medication-card">
             <div className="card-header">
