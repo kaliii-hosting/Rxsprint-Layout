@@ -79,6 +79,7 @@ const RedesignedPumpCalculator = () => {
   const [showResults, setShowResults] = useState(false);
   const [errors, setErrors] = useState({});
   const [doseSafety, setDoseSafety] = useState({ classification: 'unknown', ratio: 0, color: '#6c757d' });
+  const [fixedInfusionError, setFixedInfusionError] = useState('');
   
   // Custom infusion steps state
   const [customInfusionSteps, setCustomInfusionSteps] = useState([
@@ -450,6 +451,11 @@ const RedesignedPumpCalculator = () => {
         return newErrors;
       });
     }
+    
+    // Clear fixed infusion error when infusion rate is entered
+    if (field === 'infusionRate' && value) {
+      setFixedInfusionError('');
+    }
   };
 
   // Handle time input changes
@@ -503,11 +509,60 @@ const RedesignedPumpCalculator = () => {
     }
   };
 
-  // Update custom infusion step
+  // Update custom infusion step with automatic calculations
   const updateCustomStep = (id, field, value) => {
-    setCustomInfusionSteps(prev => prev.map(step => 
-      step.id === id ? { ...step, [field]: value } : step
-    ));
+    setCustomInfusionSteps(prev => prev.map((step, index) => {
+      if (step.id === id) {
+        const isUntilComplete = index === prev.length - 2 && prev.length > 1;
+        const isFlush = index === prev.length - 1;
+        
+        // For "Until complete" step, only allow rate updates
+        if (isUntilComplete && (field === 'volume' || field === 'duration')) {
+          return step;
+        }
+        
+        // Update the field
+        const updatedStep = { ...step, [field]: value };
+        
+        // Auto-calculate derived fields
+        if (!isUntilComplete && value) {
+          const rate = parseFloat(field === 'rate' ? value : updatedStep.rate) || 0;
+          
+          if (isFlush) {
+            // For flush step, auto-calculate duration from rate and volume
+            if ((field === 'rate' || field === 'volume') && rate > 0 && updatedStep.volume) {
+              const volume = parseFloat(field === 'volume' ? value : updatedStep.volume) || 0;
+              if (volume > 0) {
+                updatedStep.duration = ((volume / rate) * 60).toFixed(2);
+              }
+            }
+          } else {
+            // For regular steps
+            if (field === 'volume' && rate > 0) {
+              // Calculate duration from volume
+              const volume = parseFloat(value) || 0;
+              updatedStep.duration = ((volume / rate) * 60).toFixed(1);
+            } else if (field === 'duration' && rate > 0) {
+              // Calculate volume from duration
+              const duration = parseFloat(value) || 0;
+              updatedStep.volume = ((rate * duration) / 60).toFixed(1);
+            } else if (field === 'rate') {
+              // Recalculate based on what's already filled
+              if (updatedStep.volume && rate > 0) {
+                const volume = parseFloat(updatedStep.volume) || 0;
+                updatedStep.duration = ((volume / rate) * 60).toFixed(1);
+              } else if (updatedStep.duration && rate > 0) {
+                const duration = parseFloat(updatedStep.duration) || 0;
+                updatedStep.volume = ((rate * duration) / 60).toFixed(1);
+              }
+            }
+          }
+        }
+        
+        return updatedStep;
+      }
+      return step;
+    }));
   };
 
   // Validate custom infusion steps
@@ -516,104 +571,117 @@ const RedesignedPumpCalculator = () => {
       return { volumeValid: true, durationValid: true, stepsValid: [] };
     }
 
-    // Check if only 2 steps exist (until infusion complete + flush)
-    if (customInfusionSteps.length === 2) {
-      return {
-        volumeValid: false,
-        durationValid: false,
-        stepsValid: [],
-        stepVolumeTotal: 0,
-        stepDurationTotal: 0,
-        hasRemainderStep: false,
-        hasFlushStep: false,
-        validationMethod: 'none',
-        isAcceptable: false,
-        tooFewSteps: true
-      };
-    }
-
     const totalVolume = parseFloat(inputs.totalInfusionVolume) || 0;
     const totalMinutes = (parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + 
                         (parseInt(inputs.totalInfusionTime.minutes) || 0);
-    const flushVolume = parseFloat(inputs.flushVolume) || 10;
 
-    // Calculate totals from custom steps
     let stepVolumeTotal = 0;
     let stepDurationTotal = 0;
-    let hasRemainderStep = false;
-    let hasFlushStep = false;
     const stepsValidation = [];
 
+    // First pass: Calculate "Until complete" step volume
+    let untilCompleteVolume = 0;
+    if (customInfusionSteps.length > 1) {
+      const otherStepsVolume = customInfusionSteps
+        .filter((_, i) => i !== customInfusionSteps.length - 2)
+        .reduce((sum, s) => sum + (parseFloat(s.volume) || 0), 0);
+      untilCompleteVolume = Math.max(0, totalVolume - otherStepsVolume);
+    }
+
+    // Second pass: Validate each step
     customInfusionSteps.forEach((step, index) => {
       const isLastStep = index === customInfusionSteps.length - 1;
-      const isSecondToLast = index === customInfusionSteps.length - 2;
+      const isUntilComplete = index === customInfusionSteps.length - 2 && customInfusionSteps.length > 1;
       
+      const rate = parseFloat(step.rate) || 0;
       let volume = 0;
       let duration = 0;
-      const rate = parseFloat(step.rate) || 0;
+      let calculatedVolume = 0;
+      let calculatedDuration = 0;
 
-      // Handle different duration types
-      if (isSecondToLast && customInfusionSteps.length > 1) {
-        // Second to last step - use manual volume, auto-calculate duration
-        volume = parseFloat(step.volume) || 0;
-        const otherStepsDuration = customInfusionSteps
-          .filter((s, i) => i !== index)
-          .reduce((sum, s) => sum + (parseFloat(s.duration) || 0), 0);
-        duration = totalMinutes - otherStepsDuration;
-        hasRemainderStep = true;
-      } else if (isLastStep && step.isFlush) {
-        // Last step is flush - use manual volume, calculate duration
-        volume = parseFloat(step.volume) || 0;
+      if (isUntilComplete) {
+        // "Until complete" step - special validation
+        volume = untilCompleteVolume;
         duration = rate > 0 ? (volume / rate) * 60 : 0;
-        hasFlushStep = true;
-      } else {
-        // All other steps - manual volume and duration
+        calculatedVolume = volume;
+        calculatedDuration = duration;
+      } else if (isLastStep) {
+        // Flush step - auto-calculated duration
         volume = parseFloat(step.volume) || 0;
         duration = parseFloat(step.duration) || 0;
+        calculatedVolume = volume;
+        calculatedDuration = rate > 0 && volume > 0 ? (volume / rate) * 60 : duration;
+      } else {
+        // Regular step - strict formula validation
+        volume = parseFloat(step.volume) || 0;
+        duration = parseFloat(step.duration) || 0;
+        
+        // For regular steps, always calculate expected volume from rate and duration
+        calculatedVolume = rate > 0 && duration > 0 ? (rate * duration) / 60 : 0;
+        calculatedDuration = rate > 0 && volume > 0 ? (volume / rate) * 60 : duration;
       }
 
       stepVolumeTotal += volume;
       stepDurationTotal += duration;
 
-      // Validate individual step
+      // Validation for this step
+      let isValid = false;
+      let errorMessage = '';
+      let actualVolumeMatch = true;
+      
+      if (isUntilComplete) {
+        // Until complete step - only needs rate > 0
+        isValid = rate > 0 && volume > 0;
+        errorMessage = !rate ? 'Rate required' : 
+                      !volume ? 'Volume calculated as 0 - check other steps' : '';
+      } else if (isLastStep) {
+        // Flush step - needs rate and volume
+        isValid = rate > 0 && volume > 0;
+        errorMessage = !rate ? 'Rate required' : 
+                      !volume ? 'Volume required' : '';
+      } else {
+        // Regular step - strict validation with formula
+        const expectedVolume = rate > 0 && duration > 0 ? (rate * duration) / 60 : 0;
+        actualVolumeMatch = Math.abs(expectedVolume - volume) < 0.1;
+        
+        isValid = rate > 0 && duration > 0 && volume > 0 && actualVolumeMatch;
+        
+        if (!rate) {
+          errorMessage = 'Rate required';
+        } else if (!duration) {
+          errorMessage = 'Duration required';
+        } else if (!volume) {
+          errorMessage = 'Volume required';
+        } else if (!actualVolumeMatch) {
+          errorMessage = `Volume must equal (Rate × Duration) ÷ 60. Expected: ${expectedVolume.toFixed(1)} mL`;
+        }
+      }
+      
       const stepValid = {
         id: step.id,
         volumeValid: volume > 0,
-        durationValid: duration > 0 || (isSecondToLast && customInfusionSteps.length > 1) || (isLastStep && step.isFlush),
+        durationValid: duration > 0,
         rateValid: rate > 0,
-        rateMatchesVolume: Math.abs((rate * duration / 60) - volume) < 0.1, // Allow small rounding difference
-        calculatedVolume: volume,
-        calculatedDuration: duration
+        volumeMatch: isUntilComplete || isLastStep ? true : actualVolumeMatch,
+        durationMatch: true,
+        isValid,
+        calculatedVolume,
+        calculatedDuration,
+        actualVolume: volume,
+        actualDuration: duration,
+        isUntilComplete,
+        isFlush: isLastStep,
+        isRegular: !isUntilComplete && !isLastStep,
+        errorMessage
       };
       
       stepsValidation.push(stepValid);
     });
 
     // Validate totals
-    const volumeValid = Math.abs(stepVolumeTotal - totalVolume) < 0.1; // Allow small rounding difference
-    const durationValid = Math.abs(stepDurationTotal - totalMinutes) < 1; // Allow 1 minute difference
-
-    // Determine validation method and overall validity
-    let validationMethod = 'none';
-    let isAcceptable = false;
-    
-    if (hasRemainderStep) {
-      // If has remainder step, volume validation is primary
-      validationMethod = 'volume';
-      isAcceptable = volumeValid;
-    } else if (volumeValid && durationValid) {
-      // Both match - best case
-      validationMethod = 'both';
-      isAcceptable = true;
-    } else if (volumeValid) {
-      // Only volume matches
-      validationMethod = 'volume';
-      isAcceptable = true;
-    } else if (durationValid) {
-      // Only duration matches
-      validationMethod = 'duration';
-      isAcceptable = true;
-    }
+    const volumeValid = Math.abs(stepVolumeTotal - totalVolume) < 0.1;
+    const durationValid = Math.abs(stepDurationTotal - totalMinutes) < 1;
+    const isAcceptable = volumeValid && durationValid && stepsValidation.every(step => step.isValid);
 
     return {
       volumeValid,
@@ -621,12 +689,11 @@ const RedesignedPumpCalculator = () => {
       stepsValid: stepsValidation,
       stepVolumeTotal,
       stepDurationTotal,
-      hasRemainderStep,
-      hasFlushStep,
-      validationMethod,
-      isAcceptable
+      isAcceptable,
+      totalVolumeError: !volumeValid ? `Total: ${stepVolumeTotal.toFixed(1)} mL (Expected: ${totalVolume} mL)` : '',
+      totalDurationError: !durationValid ? `Total: ${stepDurationTotal.toFixed(0)} min (Expected: ${totalMinutes} min)` : ''
     };
-  }, [inputs.useCustomSteps, inputs.totalInfusionVolume, inputs.totalInfusionTime, inputs.flushVolume, customInfusionSteps]);
+  }, [inputs.useCustomSteps, inputs.totalInfusionVolume, inputs.totalInfusionTime, customInfusionSteps]);
 
   // Update validation when custom steps change
   useEffect(() => {
@@ -973,10 +1040,16 @@ const RedesignedPumpCalculator = () => {
       parseFloat(inputs.dose) > 0 &&
       inputs.totalInfusionVolume &&
       parseFloat(inputs.totalInfusionVolume) > 0 &&
-      ((parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + (parseInt(inputs.totalInfusionTime.minutes) || 0)) > 0 &&
-      inputs.infusionRate &&
-      parseFloat(inputs.infusionRate) > 0
+      ((parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + (parseInt(inputs.totalInfusionTime.minutes) || 0)) > 0
     );
+  };
+
+  const canCalculateFixed = () => {
+    return canCalculate() && inputs.infusionRate && parseFloat(inputs.infusionRate) > 0;
+  };
+
+  const canCalculateCustom = () => {
+    return canCalculate();
   };
 
   // Validate inputs
@@ -1013,19 +1086,15 @@ const RedesignedPumpCalculator = () => {
     // Validate custom steps if enabled
     if (inputs.useCustomSteps) {
       const validation = validateCustomSteps();
-      if (validation.tooFewSteps) {
-        newErrors.customSteps = 'At least 3 infusion steps are required (minimum 1 standard step + until infusion complete + flush)';
-      } else if (!validation.volumeValid) {
-        newErrors.customSteps = 'Total volume of custom steps must equal total infusion volume';
-      } else if (!validation.durationValid) {
-        newErrors.customSteps = 'Total duration of custom steps must equal total infusion time';
-      } else {
-        // Check if any individual step is invalid
-        const hasInvalidStep = validation.stepsValid.some(step => 
-          !step.volumeValid || !step.durationValid || !step.rateValid || !step.rateMatchesVolume
-        );
-        if (hasInvalidStep) {
-          newErrors.customSteps = 'All custom steps must have valid rate, duration, and volume';
+      if (!validation.isAcceptable) {
+        if (!validation.volumeValid) {
+          newErrors.customSteps = validation.totalVolumeError || 'Total volume of custom steps must equal total infusion volume';
+        } else if (!validation.durationValid) {
+          newErrors.customSteps = validation.totalDurationError || 'Total duration of custom steps must equal total infusion time';
+        } else if (validation.stepsValid.some(step => !step.isValid)) {
+          newErrors.customSteps = 'All custom steps must have valid rate, duration, and volume that match the formula';
+        } else {
+          newErrors.customSteps = 'Custom steps validation failed';
         }
       }
     }
@@ -1162,6 +1231,7 @@ const RedesignedPumpCalculator = () => {
       durationValid: false,
       stepsValid: []
     });
+    setFixedInfusionError('');
   };
 
   // Format number
@@ -1587,16 +1657,7 @@ const RedesignedPumpCalculator = () => {
                 </div>
               </div>
 
-              {/* Custom Infusion Steps Toggle Button */}
-              <div className="dose-item custom-steps-toggle">
-                <button
-                  className={`custom-steps-button ${inputs.useCustomSteps ? 'active' : ''}`}
-                  onClick={() => handleInputChange('useCustomSteps', !inputs.useCustomSteps)}
-                >
-                  <Activity size={18} />
-                  {inputs.useCustomSteps ? 'Custom Infusion Steps Active' : 'Use Custom Infusion Steps'}
-                </button>
-              </div>
+              {/* Removed Custom Infusion Steps Toggle - Now controlled by button */}
             </div>
           </div>
         </div>
@@ -1608,6 +1669,13 @@ const RedesignedPumpCalculator = () => {
             <div className="section-header">
               <Activity size={20} />
               <h3>Custom Infusion Steps</h3>
+              <button 
+                className="close-section-btn"
+                onClick={() => handleInputChange('useCustomSteps', false)}
+                title="Close custom infusion steps"
+              >
+                <X size={20} />
+              </button>
               <div className="custom-steps-validation">
                 {customStepsValidation.volumeValid ? (
                   <div className="validation-indicator valid">
@@ -1637,13 +1705,26 @@ const RedesignedPumpCalculator = () => {
               <div className="custom-steps-container">
                 {customInfusionSteps.map((step, index) => {
                   const stepValidation = customStepsValidation.stepsValid.find(v => v.id === step.id) || {};
-                  const isStepValid = stepValidation.volumeValid && stepValidation.durationValid && 
-                                     stepValidation.rateValid && stepValidation.rateMatchesVolume;
+                  const isValid = stepValidation.isValid;
+                  const isUntilComplete = stepValidation.isUntilComplete;
+                  const isFlush = stepValidation.isFlush;
                   
                   return (
-                    <div key={step.id} className={`custom-step-row ${isStepValid ? 'valid' : ''} ${customStepsValidation.isAcceptable ? 'validation-passed' : ''}`}>
-                      <div className="step-number">{index + 1}</div>
+                    <div key={step.id} className={`custom-step-row ${isValid && customStepsValidation.isAcceptable ? 'valid' : 'invalid'}`}>
+                      <div className="step-number">
+                        {isUntilComplete ? (
+                          <span title="Until infusion is complete">⏱️</span>
+                        ) : (
+                          index + 1
+                        )}
+                      </div>
                       <div className="step-inputs">
+                        {/* Show formula reminder for regular steps */}
+                        {stepValidation.isRegular && (
+                          <div className="step-formula-reminder">
+                            Formula: Volume = (Rate × Duration) ÷ 60
+                          </div>
+                        )}
                         <div className="step-input-group">
                           <label>Rate (mL/hr)</label>
                           <input
@@ -1651,52 +1732,55 @@ const RedesignedPumpCalculator = () => {
                             value={step.rate}
                             onChange={(e) => updateCustomStep(step.id, 'rate', e.target.value)}
                             placeholder="0"
-                            className="supply-input"
+                            className={`supply-input ${!stepValidation.rateValid ? 'error' : ''}`}
                           />
                         </div>
                         <div className="step-input-group">
-                          <label>Duration (min)</label>
-                          {index === customInfusionSteps.length - 2 && customInfusionSteps.length > 1 ? (
-                            // Second to last step - always "until infusion complete"
-                            <div className="until-infusion-complete-label">
-                              Until infusion complete
-                            </div>
-                          ) : index === customInfusionSteps.length - 1 ? (
-                            // Last step - always "Flush"
-                            <div className="flush-label">
-                              Flush
+                          <label>
+                            Duration (min) 
+                            {(isUntilComplete || isFlush) && <Info size={14} title="Automatically calculated based on volume and rate" />}
+                          </label>
+                          {isUntilComplete || isFlush ? (
+                            <div className={`calculated-value-display ${isFlush ? 'flush-calculated' : ''}`} title="Automatically calculated">
+                              {isUntilComplete ? stepValidation.calculatedDuration?.toFixed(1) || '0' : step.duration || '0'}
                             </div>
                           ) : (
-                            // All other steps - allow manual duration input
                             <input
                               type="number"
                               value={step.duration}
                               onChange={(e) => updateCustomStep(step.id, 'duration', e.target.value)}
                               placeholder="0"
-                              className="supply-input"
+                              className={`supply-input ${!stepValidation.durationValid || !stepValidation.durationMatch ? 'error' : ''}`}
                             />
                           )}
                         </div>
                         <div className="step-input-group">
-                          <label>Volume (mL)</label>
-                          {(
+                          <label>
+                            Volume (mL)
+                            {isUntilComplete && <Info size={14} title="Automatically calculated as remaining volume" />}
+                          </label>
+                          {isUntilComplete ? (
+                            <div className="calculated-value-display" title="Automatically calculated">
+                              {stepValidation.calculatedVolume?.toFixed(1) || '0'}
+                            </div>
+                          ) : (
                             <input
                               type="number"
                               value={step.volume}
                               onChange={(e) => updateCustomStep(step.id, 'volume', e.target.value)}
                               placeholder="0"
-                              className="supply-input"
+                              className={`supply-input ${!stepValidation.volumeValid || !stepValidation.volumeMatch ? 'error' : ''}`}
                             />
                           )}
                         </div>
                       </div>
                       <div className="step-actions">
-                        {isStepValid ? (
-                          <div className="step-valid-indicator">
+                        {isValid && customStepsValidation.isAcceptable ? (
+                          <div className="step-valid-indicator" title="Step is valid">
                             <Check size={20} className="valid-icon" />
                           </div>
                         ) : (
-                          <div className="step-invalid-indicator">
+                          <div className="step-invalid-indicator" title={stepValidation.errorMessage || (!customStepsValidation.isAcceptable ? 'Total validation failed' : 'Step is invalid')}>
                             <X size={20} className="invalid-icon" />
                           </div>
                         )}
@@ -1704,10 +1788,17 @@ const RedesignedPumpCalculator = () => {
                           className="remove-step-btn"
                           onClick={() => removeCustomStep(step.id)}
                           disabled={customInfusionSteps.length === 1}
+                          title="Remove step"
                         >
                           <Minus size={16} />
                         </button>
                       </div>
+                      {(!isValid || !customStepsValidation.isAcceptable) && (
+                        <div className="step-error-message">
+                          <AlertCircle size={14} />
+                          <span>{stepValidation.errorMessage || (!customStepsValidation.isAcceptable && isValid ? 'Step is valid but total validation failed' : 'Invalid step')}</span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1724,44 +1815,38 @@ const RedesignedPumpCalculator = () => {
               )}
               
               {/* Validation Results */}
-              {customStepsValidation.isAcceptable ? (
-                <div className="validation-results-section acceptable">
-                  <div className="validation-results-header">
-                    <Check size={20} className="validation-check" />
-                    <h4>Results Acceptable</h4>
+              {customStepsValidation.stepsValid.length > 0 && (
+                customStepsValidation.isAcceptable ? (
+                  <div className="validation-results-section acceptable">
+                    <div className="validation-results-header">
+                      <Check size={20} className="validation-check" />
+                      <h4>Validation Passed</h4>
+                    </div>
+                    <div className="validation-method">
+                      <div>✓ All steps are valid</div>
+                      <div>✓ Total volume: {customStepsValidation.stepVolumeTotal?.toFixed(1)} mL = {inputs.totalInfusionVolume} mL</div>
+                      <div>✓ Total duration: {customStepsValidation.stepDurationTotal?.toFixed(0)} min = {(parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + (parseInt(inputs.totalInfusionTime.minutes) || 0)} min</div>
+                    </div>
                   </div>
-                  <div className="validation-method">
-                    {customStepsValidation.validationMethod === 'both' && (
-                      <span>Validated by: Volume and Duration match</span>
-                    )}
-                    {customStepsValidation.validationMethod === 'volume' && (
-                      <span>Validated by: Volume match ({customStepsValidation.stepVolumeTotal?.toFixed(1)} mL = {inputs.totalInfusionVolume} mL)</span>
-                    )}
-                    {customStepsValidation.validationMethod === 'duration' && (
-                      <span>Validated by: Duration match ({customStepsValidation.stepDurationTotal} min = {(parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + (parseInt(inputs.totalInfusionTime.minutes) || 0)} min)</span>
-                    )}
+                ) : (
+                  <div className="validation-results-section unacceptable">
+                    <div className="validation-results-header">
+                      <X size={20} className="validation-x" />
+                      <h4>Validation Failed</h4>
+                    </div>
+                    <div className="validation-method">
+                      {!customStepsValidation.volumeValid && (
+                        <div>✗ {customStepsValidation.totalVolumeError}</div>
+                      )}
+                      {!customStepsValidation.durationValid && (
+                        <div>✗ {customStepsValidation.totalDurationError}</div>
+                      )}
+                      {customStepsValidation.stepsValid.some(s => !s.isValid) && (
+                        <div>✗ Some steps have errors (see red indicators)</div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ) : (customStepsValidation.stepsValid.length > 0 || customStepsValidation.tooFewSteps) && (
-                <div className="validation-results-section unacceptable">
-                  <div className="validation-results-header">
-                    <X size={20} className="validation-x" />
-                    <h4>Results Unacceptable</h4>
-                  </div>
-                  <div className="validation-method">
-                    {customStepsValidation.tooFewSteps ? (
-                      <span>At least 3 infusion steps are required. Currently only {customInfusionSteps.length} steps defined.</span>
-                    ) : (
-                      <span>
-                        Volume: {customStepsValidation.stepVolumeTotal?.toFixed(1)} mL 
-                        {customStepsValidation.volumeValid ? ' ✓' : ` (Expected: ${inputs.totalInfusionVolume} mL)`}
-                        {' | '}
-                        Duration: {customStepsValidation.stepDurationTotal} min
-                        {customStepsValidation.durationValid ? ' ✓' : ` (Expected: ${(parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + (parseInt(inputs.totalInfusionTime.minutes) || 0)} min)`}
-                      </span>
-                    )}
-                  </div>
-                </div>
+                )
               )}
             </div>
           </div>
@@ -1770,21 +1855,54 @@ const RedesignedPumpCalculator = () => {
 
         {/* Action Buttons */}
         <div className="calculator-section action-section">
-          <div className="action-buttons">
-            <button 
-              className="calculate-btn primary"
-              onClick={calculatePumpSettings}
-              disabled={!canCalculate()}
-            >
-              <Calculator size={16} />
-              Calculate Pump Settings
-            </button>
-            <button 
-              className="reset-btn"
-              onClick={resetCalculator}
-            >
-              Reset All
-            </button>
+          <div className="action-buttons-container">
+            <div className="action-buttons">
+              <button 
+                className={`calculate-btn primary ${!inputs.useCustomSteps ? 'active-mode' : ''}`}
+                onClick={() => {
+                  if (!canCalculateFixed()) {
+                    setFixedInfusionError('Infusion rate field required');
+                    setTimeout(() => setFixedInfusionError(''), 3000);
+                  } else if (!inputs.useCustomSteps) {
+                    setFixedInfusionError('');
+                    calculatePumpSettings();
+                  }
+                }}
+                disabled={inputs.useCustomSteps}
+                title={inputs.useCustomSteps ? 'Disable custom steps to use fixed infusion' : 'Calculate with fixed infusion rate'}
+              >
+                <Calculator size={16} />
+                Calculate Fixed Infusion
+              </button>
+              <button 
+                className={`calculate-btn primary ${inputs.useCustomSteps ? 'active-mode' : ''}`}
+                onClick={() => {
+                  if (!inputs.useCustomSteps) {
+                    handleInputChange('useCustomSteps', true);
+                    setFixedInfusionError('');
+                  } else if (canCalculateCustom() && customStepsValidation.isAcceptable) {
+                    calculatePumpSettings();
+                  }
+                }}
+                disabled={!canCalculateCustom() || (inputs.useCustomSteps && !customStepsValidation.isAcceptable)}
+                title={!inputs.useCustomSteps ? 'Click to open custom infusion steps' : !customStepsValidation.isAcceptable ? 'Custom steps must pass validation' : 'Calculate with custom infusion steps'}
+              >
+                <Activity size={16} />
+                {inputs.useCustomSteps ? 'Calculate Custom Infusion' : 'Setup Custom Infusion'}
+              </button>
+              <button 
+                className="reset-btn"
+                onClick={resetCalculator}
+              >
+                Reset All
+              </button>
+            </div>
+            {fixedInfusionError && (
+              <div className="fixed-infusion-error">
+                <AlertCircle size={16} />
+                <span>{fixedInfusionError}</span>
+              </div>
+            )}
           </div>
         </div>
 

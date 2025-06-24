@@ -1070,6 +1070,57 @@
   opacity: 1;
 }
 
+/* Infusion Guide Styles */
+.infusion-guide-card {
+  margin-bottom: 20px;
+}
+
+.infusion-guide-card .card-header.clickable:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.infusion-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.infusion-type-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.infusion-type-header {
+  padding: 12px 16px;
+  font-weight: 600;
+}
+
+.infusion-type-header h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.infusion-type-content {
+  padding: 16px;
+}
+
+.infusion-type-content h5 {
+  color: #333;
+  margin-top: 0;
+}
+
+.infusion-type-content ul li {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.infusion-type-tip {
+  font-size: 0.85rem;
+  color: #666;
+}
+
 /* Validation Errors */
 .validation-errors {
   margin-top: 1rem;

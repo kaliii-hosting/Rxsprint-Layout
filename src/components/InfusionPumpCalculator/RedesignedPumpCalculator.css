@@ -81,11 +81,37 @@
   letter-spacing: -0.5px;
   text-transform: uppercase;
   text-align: left;
+  flex: 1;
 }
 
 .section-header svg {
   color: var(--primary-color);
   flex-shrink: 0;
+}
+
+/* Close section button */
+.close-section-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.close-section-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.close-section-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Section Content */
@@ -940,6 +966,13 @@
   cursor: not-allowed;
 }
 
+/* Style for disabled buttons that are not active */
+.calculate-btn:disabled:not(.active-mode) {
+  background: var(--button-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-tertiary);
+}
+
 .reset-btn {
   background: transparent;
   border: 1px solid var(--border-color);
@@ -965,6 +998,45 @@
 .action-section .action-buttons {
   justify-content: center;
   margin-top: 0;
+}
+
+/* Action buttons container */
+.action-buttons-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+}
+
+/* Fixed infusion error message */
+.fixed-infusion-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  color: #ef4444;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease;
+}
+
+.fixed-infusion-error svg {
+  flex-shrink: 0;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Results Section */
@@ -1460,11 +1532,35 @@
   border: 1px solid var(--border-color);
   border-radius: 12px;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .custom-step-row.valid {
   border-color: #10b981;
   background: rgba(16, 185, 129, 0.05);
+}
+
+.custom-step-row.invalid {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  border-width: 2px;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2);
+}
+
+.custom-step-row.invalid .step-number {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.supply-input.error {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.supply-input.error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 .custom-step-row:hover {
@@ -1551,11 +1647,46 @@
 }
 
 .step-invalid-indicator {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.2);
+  border: 2px solid #ef4444;
 }
 
 .invalid-icon {
   color: #ef4444;
+  font-weight: 700;
+}
+
+/* Step error message */
+.step-error-message {
+  grid-column: 2 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  color: #ef4444;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.step-error-message svg {
+  flex-shrink: 0;
+}
+
+/* Formula reminder for regular steps */
+.step-formula-reminder {
+  grid-column: 1 / -1;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
 }
 
 .remove-step-btn {
@@ -1783,6 +1914,44 @@
   font-style: italic;
 }
 
+/* Calculated value display for "Until infusion is complete" step */
+.calculated-value-display {
+  padding: 0.625rem 1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--primary-border);
+  border-radius: 8px;
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: center;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Flush calculated duration styling */
+.calculated-value-display.flush-calculated {
+  background: rgba(57, 255, 20, 0.08);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  position: relative;
+}
+
+.calculated-value-display.flush-calculated::after {
+  content: 'AUTO';
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  background: var(--primary-color);
+  color: #000;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
 /* Flush label */
 .flush-label {
   padding: 0.625rem 1rem;
@@ -1798,6 +1967,10 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Removed step label CSS - no longer needed */
+
+/* Removed special flush step styling for consistent design */
 
 /* Additional Parameters Cards */
 .additional-params-cards {

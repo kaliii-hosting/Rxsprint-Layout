@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Calculator, ChevronDown, Check, AlertCircle, Info } from 'lucide-react';
+import { Package, Calculator, ChevronDown, Check, AlertCircle, Info, ChevronUp } from 'lucide-react';
 import { firestore } from '../../config/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import './Supplies.css';
@@ -30,6 +30,7 @@ const Supplies = () => {
   const [calculationLog, setCalculationLog] = useState([]);
   const [checkedRows, setCheckedRows] = useState(new Set());
   const [isCompactView, setIsCompactView] = useState(false);
+  const [showInfusionGuide, setShowInfusionGuide] = useState(false);
 
   // Supply data structure
   const suppliesData = {
@@ -1041,6 +1042,104 @@ const Supplies = () => {
     <div className="supplies-page page-container">
       <div className="supplies-content">
         <div className="supplies-dashboard">
+
+          {/* Infusion Guide Section */}
+          <div className="dashboard-card infusion-guide-card">
+            <div 
+              className="card-header clickable" 
+              onClick={() => setShowInfusionGuide(!showInfusionGuide)}
+              style={{ cursor: 'pointer' }}
+            >
+              <h3>Infusion Type Identification Guide</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Info size={20} />
+                {showInfusionGuide ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </div>
+            {showInfusionGuide && (
+              <div className="card-body">
+                <p style={{ marginBottom: '20px', color: '#666' }}>
+                  This guide helps identify infusion types (PIV, PICC, PORT, CENTRAL) based on supply kits commonly used in infusion prescriptions.
+                </p>
+                
+                <div className="infusion-types-grid">
+                  {/* PIV Section */}
+                  <div className="infusion-type-section">
+                    <div className="infusion-type-header" style={{ backgroundColor: '#e3f2fd', color: '#1976d2' }}>
+                      <h4>PIV (Peripheral IV)</h4>
+                    </div>
+                    <div className="infusion-type-content">
+                      <h5 style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '600' }}>Key Identifiers:</h5>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        <li style={{ marginBottom: '5px' }}>• IV Start Kit (IRC: 37247)</li>
+                        <li style={{ marginBottom: '5px' }}>• Introcan IV Cath 22G or Safety Caths (IRC: 39333, 35348)</li>
+                        <li style={{ marginBottom: '5px' }}>• Clave Extension Set (IRC: 43187)</li>
+                        <li style={{ marginBottom: '5px' }}>• Normal Saline Flush (10mL) (IRC: 33633)</li>
+                      </ul>
+                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                        <strong style={{ fontSize: '0.85rem' }}>➤ Look for:</strong> <span style={{ fontSize: '0.85rem' }}>Introcan catheters, PIV start kit, and normal saline flushes.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PICC Section */}
+                  <div className="infusion-type-section">
+                    <div className="infusion-type-header" style={{ backgroundColor: '#e8f5e9', color: '#388e3c' }}>
+                      <h4>PICC (Peripherally Inserted Central Catheter)</h4>
+                    </div>
+                    <div className="infusion-type-content">
+                      <h5 style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '600' }}>Key Identifiers:</h5>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        <li style={{ marginBottom: '5px' }}>• Dressing Change PICC/Midline Kit (IRC: 48515)</li>
+                        <li style={{ marginBottom: '5px' }}>• Gripper Plus 22G or 20G (IRC: 37752, 33857)</li>
+                        <li style={{ marginBottom: '5px' }}>• Huber Needle (IRC: 38878, 44833)</li>
+                        <li style={{ marginBottom: '5px' }}>• Biopatch (IRC: 39861)</li>
+                      </ul>
+                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                        <strong style={{ fontSize: '0.85rem' }}>➤ Look for:</strong> <span style={{ fontSize: '0.85rem' }}>Gripper Plus, Huber needles, and PICC dressing kit.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PORT Section */}
+                  <div className="infusion-type-section">
+                    <div className="infusion-type-header" style={{ backgroundColor: '#fff3e0', color: '#f57c00' }}>
+                      <h4>PORT</h4>
+                    </div>
+                    <div className="infusion-type-content">
+                      <h5 style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '600' }}>Key Identifiers:</h5>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        <li style={{ marginBottom: '5px' }}>• Gripper Plus (22G/20G) (IRC: 37752, 33857)</li>
+                        <li style={{ marginBottom: '5px' }}>• Huber Needle 22G / 20G SAFEST (IRC: 38878, 44833)</li>
+                        <li style={{ marginBottom: '5px' }}>• Port-style dressing kit</li>
+                      </ul>
+                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                        <strong style={{ fontSize: '0.85rem' }}>➤ Look for:</strong> <span style={{ fontSize: '0.85rem' }}>Gripper Plus + Huber needle combo - classic for implanted ports.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CENTRAL LINE Section */}
+                  <div className="infusion-type-section">
+                    <div className="infusion-type-header" style={{ backgroundColor: '#fce4ec', color: '#c2185b' }}>
+                      <h4>CENTRAL LINE</h4>
+                    </div>
+                    <div className="infusion-type-content">
+                      <h5 style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '600' }}>Key Identifiers:</h5>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        <li style={{ marginBottom: '5px' }}>• Central Line Dressing Kit (IRC: 48513)</li>
+                        <li style={{ marginBottom: '5px' }}>• Heparin Flushes (IRC: 33563, 35927)</li>
+                        <li style={{ marginBottom: '5px' }}>• IV EXT SET W/14" ULT SITE (IRC: 35488)</li>
+                      </ul>
+                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                        <strong style={{ fontSize: '0.85rem' }}>➤ Look for:</strong> <span style={{ fontSize: '0.85rem' }}>Central dressing kit and Heparin flushes, but no Gripper or Huber.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Medication Selector Card */}
           <div className="dashboard-card medication-card">
