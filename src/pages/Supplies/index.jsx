@@ -1172,6 +1172,7 @@ const Supplies = () => {
                         <li style={{ marginBottom: '5px' }}>• Biopatch + Disk 1" Sterile (IRC: 39861)</li>
                         <li style={{ marginBottom: '5px' }}>• Gripper Plus 22G or 20G (IRC: 37752, 33857)</li>
                         <li style={{ marginBottom: '5px' }}>• Huber Needle (IRC: 38878, 44833)</li>
+                        <li style={{ marginBottom: '5px' }}>• Sodium Chloride Posiflush 10ml (IRC: 35290)</li>
                         <li style={{ marginBottom: '5px' }}>• Heparin Flushes</li>
                         <li style={{ marginBottom: '5px' }}>• Extension Sets</li>
                       </ul>
@@ -1231,6 +1232,7 @@ const Supplies = () => {
                         <li style={{ marginBottom: '5px' }}>• Central Line Dressing Kit (IRC: 48513)</li>
                         <li style={{ marginBottom: '5px' }}>• Gripper Plus (22G/20G) (IRC: 37752, 33857)</li>
                         <li style={{ marginBottom: '5px' }}>• Huber Needle 22G / 20G SAFEST (IRC: 38878, 44833)</li>
+                        <li style={{ marginBottom: '5px' }}>• Sodium Chloride Posiflush 10ml (IRC: 35290)</li>
                         <li style={{ marginBottom: '5px' }}>• Heparin Flushes</li>
                         <li style={{ marginBottom: '5px' }}>• Extension Sets</li>
                       </ul>
