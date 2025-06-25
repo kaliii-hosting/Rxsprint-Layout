@@ -31,6 +31,9 @@ const Supplies = () => {
   const [checkedRows, setCheckedRows] = useState(new Set());
   const [isCompactView, setIsCompactView] = useState(false);
   const [showInfusionGuide, setShowInfusionGuide] = useState(false);
+  const [showPIVInfo, setShowPIVInfo] = useState(false);
+  const [showPICInfo, setShowPICInfo] = useState(false);
+  const [showPORTInfo, setShowPORTInfo] = useState(false);
 
   // Supply data structure
   const suppliesData = {
@@ -987,10 +990,9 @@ const Supplies = () => {
             onChange={(e) => setIvSuppliesType(e.target.value)}
             className="supply-dropdown"
           >
-            <option value="PORT SUPPLIES">PORT SUPPLIES</option>
-            <option value="PIV SUPPLIES">PIV SUPPLIES</option>
-            <option value="PIC SUPPLIES">PIC SUPPLIES</option>
-            <option value="CENTRAL SUPPLIES">CENTRAL SUPPLIES</option>
+            <option value="PORT SUPPLIES">PORT</option>
+            <option value="PIV SUPPLIES">PIV</option>
+            <option value="PIC SUPPLIES">PIC</option>
           </select>
           <ChevronDown className="dropdown-icon" size={16} />
         </div>
@@ -1059,7 +1061,7 @@ const Supplies = () => {
             {showInfusionGuide && (
               <div className="card-body">
                 <p style={{ marginBottom: '20px', color: '#666' }}>
-                  This guide helps identify infusion types (PIV, Central Lines) based on supply kits commonly used in infusion prescriptions.
+                  This guide helps identify infusion types (PIV, PIC, PORT) based on supply kits commonly used in infusion prescriptions.
                 </p>
                 
                 <div className="infusion-types-grid">
@@ -1069,6 +1071,44 @@ const Supplies = () => {
                       <h4>PIV (Peripheral IV)</h4>
                     </div>
                     <div className="infusion-type-content">
+                      {/* Information Dropdown */}
+                      <div style={{ marginBottom: '15px' }}>
+                        <div 
+                          onClick={() => setShowPIVInfo(!showPIVInfo)}
+                          style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            padding: '8px 12px',
+                            backgroundColor: '#e3f2fd',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#1976d2' }}>
+                            <Info size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                            Information
+                          </span>
+                          {showPIVInfo ? <ChevronUp size={16} color="#1976d2" /> : <ChevronDown size={16} color="#1976d2" />}
+                        </div>
+                        {showPIVInfo && (
+                          <div style={{ marginTop: '10px', padding: '12px', backgroundColor: '#f5f9ff', borderRadius: '6px', fontSize: '0.85rem', lineHeight: '1.6' }}>
+                            <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#1565c0' }}>🔹 Short-term, simple access</p>
+                            <ul style={{ margin: '0', paddingLeft: '20px', color: '#424242' }}>
+                              <li>Inserted into small peripheral veins, usually in the arm or hand.</li>
+                              <li>Used for short-duration IV fluids, meds, or antibiotics (usually &lt;3–5 days).</li>
+                              <li>Easily placed at bedside by nurses.</li>
+                              <li>Visible externally with a small catheter and taped dressing.</li>
+                              <li>No surgery or imaging needed.</li>
+                            </ul>
+                            <p style={{ margin: '8px 0 0 0', fontStyle: 'italic', color: '#616161' }}>
+                              <strong>Example:</strong> ER fluids, single antibiotic dose, hydration.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
                       <h5 style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '600' }}>Key Identifiers:</h5>
                       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                         <li style={{ marginBottom: '5px' }}>• IV Start Kit (IRC: 37247)</li>
@@ -1082,37 +1122,120 @@ const Supplies = () => {
                     </div>
                   </div>
 
-                  {/* CENTRAL LINE Section */}
+                  {/* PIC Section */}
                   <div className="infusion-type-section">
-                    <div className="infusion-type-header" style={{ backgroundColor: '#fce4ec', color: '#c2185b' }}>
-                      <h4>CENTRAL LINE</h4>
+                    <div className="infusion-type-header" style={{ backgroundColor: '#e8f5e9', color: '#388e3c' }}>
+                      <h4>PIC (PICC - Peripherally Inserted Central Catheter)</h4>
                     </div>
                     <div className="infusion-type-content">
-                      {/* Central Line - PICC Subsection */}
-                      <div style={{ marginBottom: '20px' }}>
-                        <h5 style={{ marginBottom: '10px', fontSize: '0.95rem', fontWeight: '700', color: '#388e3c' }}>Central Line – PICC (Peripherally Inserted Central Catheter)</h5>
-                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                          <li style={{ marginBottom: '5px' }}>• Dressing Change PICC/Midline Kit (IRC: 48515)</li>
-                          <li style={{ marginBottom: '5px' }}>• Gripper Plus 22G or 20G (IRC: 37752, 33857)</li>
-                          <li style={{ marginBottom: '5px' }}>• Huber Needle (IRC: 38878, 44833)</li>
-                          <li style={{ marginBottom: '5px' }}>• Biopatch (IRC: 39861)</li>
-                        </ul>
-                        <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#e8f5e9', borderRadius: '4px' }}>
-                          <strong style={{ fontSize: '0.85rem' }}>➤ Look for:</strong> <span style={{ fontSize: '0.85rem' }}>Gripper Plus, Huber needles, and PICC dressing kit.</span>
+                      {/* Information Dropdown */}
+                      <div style={{ marginBottom: '15px' }}>
+                        <div 
+                          onClick={() => setShowPICInfo(!showPICInfo)}
+                          style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            padding: '8px 12px',
+                            backgroundColor: '#e8f5e9',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#388e3c' }}>
+                            <Info size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                            Information
+                          </span>
+                          {showPICInfo ? <ChevronUp size={16} color="#388e3c" /> : <ChevronDown size={16} color="#388e3c" />}
                         </div>
+                        {showPICInfo && (
+                          <div style={{ marginTop: '10px', padding: '12px', backgroundColor: '#f5fdf5', borderRadius: '6px', fontSize: '0.85rem', lineHeight: '1.6' }}>
+                            <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#2e7d32' }}>🔹 Mid-to-long-term central access</p>
+                            <ul style={{ margin: '0', paddingLeft: '20px', color: '#424242' }}>
+                              <li>Inserted in a peripheral vein but tip rests in a central vein (like the superior vena cava).</li>
+                              <li>Used for longer therapies (weeks to months), like IV antibiotics, TPN, or chemo.</li>
+                              <li>Placed by trained nurses under ultrasound guidance.</li>
+                              <li>Has external tubing, secured with a dressing.</li>
+                              <li>Requires routine flushing and sterile dressing changes.</li>
+                            </ul>
+                            <p style={{ margin: '8px 0 0 0', fontStyle: 'italic', color: '#616161' }}>
+                              <strong>Example:</strong> 6-week home IV antibiotics or outpatient infusion therapy.
+                            </p>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Central Line - Port Subsection */}
-                      <div>
-                        <h5 style={{ marginBottom: '10px', fontSize: '0.95rem', fontWeight: '700', color: '#f57c00' }}>Central Line – Port (Implanted Port)</h5>
-                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                          <li style={{ marginBottom: '5px' }}>• Gripper Plus (22G/20G) (IRC: 37752, 33857)</li>
-                          <li style={{ marginBottom: '5px' }}>• Huber Needle 22G / 20G SAFEST (IRC: 38878, 44833)</li>
-                          <li style={{ marginBottom: '5px' }}>• Port-style dressing kit</li>
-                        </ul>
-                        <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#fff3e0', borderRadius: '4px' }}>
-                          <strong style={{ fontSize: '0.85rem' }}>➤ Look for:</strong> <span style={{ fontSize: '0.85rem' }}>Gripper Plus + Huber needle combo - classic for implanted ports.</span>
+                      <h5 style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '600' }}>Key Identifiers:</h5>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        <li style={{ marginBottom: '5px' }}>• Dressing Change PICC/Midline Kit (IRC: 48515)</li>
+                        <li style={{ marginBottom: '5px' }}>• Biopatch + Disk 1" Sterile (IRC: 39861)</li>
+                        <li style={{ marginBottom: '5px' }}>• Gripper Plus 22G or 20G (IRC: 37752, 33857)</li>
+                        <li style={{ marginBottom: '5px' }}>• Huber Needle (IRC: 38878, 44833)</li>
+                        <li style={{ marginBottom: '5px' }}>• Heparin Flushes</li>
+                        <li style={{ marginBottom: '5px' }}>• Extension Sets</li>
+                      </ul>
+                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#e8f5e9', borderRadius: '4px' }}>
+                        <strong style={{ fontSize: '0.85rem' }}>➤ Key Identifier:</strong> <span style={{ fontSize: '0.85rem' }}>Look for PICC/Midline Dressing Kit and Biopatch - these are unique to PICC lines.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PORT Section */}
+                  <div className="infusion-type-section">
+                    <div className="infusion-type-header" style={{ backgroundColor: '#fff3e0', color: '#f57c00' }}>
+                      <h4>PORT (Implanted Port)</h4>
+                    </div>
+                    <div className="infusion-type-content">
+                      {/* Information Dropdown */}
+                      <div style={{ marginBottom: '15px' }}>
+                        <div 
+                          onClick={() => setShowPORTInfo(!showPORTInfo)}
+                          style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            padding: '8px 12px',
+                            backgroundColor: '#fff3e0',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#f57c00' }}>
+                            <Info size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                            Information
+                          </span>
+                          {showPORTInfo ? <ChevronUp size={16} color="#f57c00" /> : <ChevronDown size={16} color="#f57c00" />}
                         </div>
+                        {showPORTInfo && (
+                          <div style={{ marginTop: '10px', padding: '12px', backgroundColor: '#fffaf5', borderRadius: '6px', fontSize: '0.85rem', lineHeight: '1.6' }}>
+                            <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#e65100' }}>🔹 Long-term, surgically implanted central access</p>
+                            <ul style={{ margin: '0', paddingLeft: '20px', color: '#424242' }}>
+                              <li>Implanted under the skin, usually in the chest.</li>
+                              <li>Catheter connects to a central vein.</li>
+                              <li>Accessed only when needed using a Huber needle.</li>
+                              <li>Used for intermittent but long-term treatment (months to years).</li>
+                              <li>No external parts when not accessed — lower infection risk.</li>
+                              <li>Requires surgical placement and occasional flushing when not in use.</li>
+                            </ul>
+                            <p style={{ margin: '8px 0 0 0', fontStyle: 'italic', color: '#616161' }}>
+                              <strong>Example:</strong> Oncology patients receiving chemo over several months or years.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <h5 style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '600' }}>Key Identifiers:</h5>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        <li style={{ marginBottom: '5px' }}>• Central Line Dressing Kit (IRC: 48513)</li>
+                        <li style={{ marginBottom: '5px' }}>• Gripper Plus (22G/20G) (IRC: 37752, 33857)</li>
+                        <li style={{ marginBottom: '5px' }}>• Huber Needle 22G / 20G SAFEST (IRC: 38878, 44833)</li>
+                        <li style={{ marginBottom: '5px' }}>• Heparin Flushes</li>
+                        <li style={{ marginBottom: '5px' }}>• Extension Sets</li>
+                      </ul>
+                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#fff3e0', borderRadius: '4px' }}>
+                        <strong style={{ fontSize: '0.85rem' }}>➤ Key Identifier:</strong> <span style={{ fontSize: '0.85rem' }}>Look for Central Line Dressing Kit with Gripper Plus + Huber needle combo.</span>
                       </div>
                     </div>
                   </div>
