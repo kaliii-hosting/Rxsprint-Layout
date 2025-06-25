@@ -57,18 +57,65 @@ const NoteGenerator = () => {
 
   // Intervention Note Form State
   const [interventionForm, setInterventionForm] = useState({
-    patientWeight: '',
+    // Basic Information
+    reviewedNotesFor: '',
+    sig: '',
     dose: '',
+    patientWeight: '',
+    orderLastFilled: '',
     numberOfDoses: '',
-    attackDetails: '',
-    frequencySeverity: '',
-    upcomingInterventions: '',
-    pregnancyStatus: '',
-    mdoPregnancyCounseling: '',
-    compliance: '',
+    
+    // IV Access
+    ivAccessIssues: '',
+    
+    // Epipen
+    epipenStatus: '',
+    epipenExpiryDate: '',
+    
+    // Travel
+    hasTravelPlans: false,
+    travelDetails: '',
+    
+    // Hospitalizations
+    hasRecentHospitalization: '',
+    hospitalizationDate: '',
+    
+    // ER Visits
+    hasRecentER: '',
+    
+    // Symptoms
+    hasWorseningSymptoms: '',
+    
+    // Missed Doses
+    hasMissedDoses: '',
+    missedDoseDate: '',
+    
+    // Medication Changes
+    hasMedicationChanges: '',
+    medicationChangesDetails: '',
+    
+    // Allergy Updates
+    hasAllergyChanges: '',
+    allergyChangesDetails: '',
+    
+    // Dosing Schedule
     nextDoseDate: '',
     lastDoseDate: '',
-    rphConsult: ''
+    
+    // Compliance
+    compliance: '',
+    
+    // Infusion Method
+    hasHHN: false,
+    selfInfuses: false,
+    
+    // Pharmacist Interaction
+    pharmacistQuestions: '',
+    pharmacistQuestionsDetails: '',
+    
+    // Shipping
+    okayToShip: false,
+    willNotShipUntil: ''
   });
 
   // Update refill form field
@@ -153,57 +200,133 @@ const NoteGenerator = () => {
   const generateInterventionNote = () => {
     const fields = [];
     
-    fields.push('***REFILL NOTE*** Reviewed notes and order for');
+    // Start with basic information
+    if (interventionForm.reviewedNotesFor) {
+      fields.push(`***INTERVENTION NOTE*** Reviewed notes and order for ${interventionForm.reviewedNotesFor}`);
+    } else {
+      fields.push('***INTERVENTION NOTE*** Reviewed notes and order for');
+    }
     
-    if (interventionForm.patientWeight) {
-      fields.push(`Patient weight is ${interventionForm.patientWeight} kg`);
+    if (interventionForm.sig) {
+      fields.push(`Sig: ${interventionForm.sig}`);
     }
     
     if (interventionForm.dose) {
-      fields.push(`Dose is ${interventionForm.dose}`);
+      fields.push(`Dose is appropriate at ${interventionForm.dose}`);
+    }
+    
+    if (interventionForm.patientWeight) {
+      fields.push(`Patient's weight is ${interventionForm.patientWeight} kg`);
+    }
+    
+    if (interventionForm.orderLastFilled) {
+      fields.push(`Order last filled: ${interventionForm.orderLastFilled}`);
     }
     
     if (interventionForm.numberOfDoses) {
-      fields.push(`Number of doses on hand: ${interventionForm.numberOfDoses}`);
+      fields.push(`Number of doses on hand with patient: ${interventionForm.numberOfDoses}`);
     }
     
-    if (interventionForm.attackDetails) {
-      fields.push(`Attack details: ${interventionForm.attackDetails}`);
+    // IV Access Issues
+    if (interventionForm.ivAccessIssues === 'no-issues') {
+      fields.push('No reports of any IV access issues');
+    } else if (interventionForm.ivAccessIssues === 'has-issues') {
+      fields.push('Patient reported IV access issues');
     }
     
-    if (interventionForm.frequencySeverity) {
-      fields.push(`Frequency and severity of attacks: ${interventionForm.frequencySeverity}`);
+    // Epipen Status
+    if (interventionForm.epipenStatus === 'has-epipen') {
+      fields.push(`Yes, patient has Epipen on hand${interventionForm.epipenExpiryDate ? ` (expires: ${interventionForm.epipenExpiryDate})` : ''}`);
+    } else if (interventionForm.epipenStatus === 'no-epipen') {
+      fields.push('Patient does not have Epipen on hand');
     }
     
-    if (interventionForm.upcomingInterventions) {
-      fields.push(`Upcoming health related interventions: ${interventionForm.upcomingInterventions}`);
+    // Travel Plans
+    if (interventionForm.hasTravelPlans) {
+      fields.push(`Patient has upcoming travel plans${interventionForm.travelDetails ? `: ${interventionForm.travelDetails}` : ''}`);
+    } else {
+      fields.push('Patient does not have upcoming travel plans');
     }
     
-    if (interventionForm.pregnancyStatus) {
-      fields.push(`Pregnancy/Breastfeeding status: ${interventionForm.pregnancyStatus}`);
+    // Recent Hospitalizations
+    if (interventionForm.hasRecentHospitalization === 'yes') {
+      fields.push(`Patient had recent hospitalization${interventionForm.hospitalizationDate ? ` on ${interventionForm.hospitalizationDate}` : ''}`);
+    } else if (interventionForm.hasRecentHospitalization === 'no') {
+      fields.push('Patient has no recent hospitalization');
     }
     
-    if (interventionForm.mdoPregnancyCounseling) {
-      fields.push(`MDO pregnancy counseling: ${interventionForm.mdoPregnancyCounseling}`);
+    // Recent ER Visits
+    if (interventionForm.hasRecentER === 'yes') {
+      fields.push('Patient had recent ER');
+    } else if (interventionForm.hasRecentER === 'no') {
+      fields.push('Patient has no recent ER');
     }
     
-    if (interventionForm.compliance) {
-      fields.push(`Compliance is ${interventionForm.compliance}`);
+    // Symptom Changes
+    if (interventionForm.hasWorseningSymptoms === 'yes') {
+      fields.push('Patient had recent worsening of symptoms');
+    } else if (interventionForm.hasWorseningSymptoms === 'no') {
+      fields.push('Patient has no worsening of symptoms');
     }
     
+    // Missed Doses
+    if (interventionForm.hasMissedDoses === 'yes') {
+      fields.push(`Patient had missed doses${interventionForm.missedDoseDate ? ` on ${interventionForm.missedDoseDate}` : ''}`);
+    } else if (interventionForm.hasMissedDoses === 'no') {
+      fields.push('Patient has no missed doses');
+    }
+    
+    // Medication Changes
+    if (interventionForm.hasMedicationChanges === 'yes') {
+      fields.push(`Patient had recent changes to medications${interventionForm.medicationChangesDetails ? `: ${interventionForm.medicationChangesDetails}` : ''}`);
+    } else if (interventionForm.hasMedicationChanges === 'no') {
+      fields.push('Patient has no recent changes to medications');
+    }
+    
+    // Allergy Changes
+    if (interventionForm.hasAllergyChanges === 'yes') {
+      fields.push(`Patient had recent changes to allergies${interventionForm.allergyChangesDetails ? `: ${interventionForm.allergyChangesDetails}` : ''}`);
+    } else if (interventionForm.hasAllergyChanges === 'no') {
+      fields.push('Patient has no recent changes to allergies');
+    }
+    
+    // Dosing Schedule
     if (interventionForm.nextDoseDate) {
-      fields.push(`Date of next dose: ${interventionForm.nextDoseDate}`);
+      fields.push(`Next dose due on ${interventionForm.nextDoseDate}`);
     }
     
     if (interventionForm.lastDoseDate) {
-      fields.push(`Date of last dose: ${interventionForm.lastDoseDate}`);
+      fields.push(`Last dose was administered on ${interventionForm.lastDoseDate}`);
     }
     
-    if (interventionForm.rphConsult) {
-      fields.push(`RPH consult ${interventionForm.rphConsult}`);
+    // Compliance
+    if (interventionForm.compliance === 'compliant') {
+      fields.push('Patient compliant');
+    } else if (interventionForm.compliance === 'not-compliant') {
+      fields.push('Patient not compliant');
     }
     
-    fields.push('Ok to send on');
+    // Infusion Method
+    const infusionMethods = [];
+    if (interventionForm.hasHHN) infusionMethods.push('Patient has HHN');
+    if (interventionForm.selfInfuses) infusionMethods.push('Patient self-infuses');
+    if (infusionMethods.length > 0) {
+      fields.push(infusionMethods.join(' and '));
+    }
+    
+    // Pharmacist Interaction
+    if (interventionForm.pharmacistQuestions === 'no-questions') {
+      fields.push('Patient had no questions for RPh');
+    } else if (interventionForm.pharmacistQuestions === 'had-questions') {
+      fields.push(`Patient had questions for RPh${interventionForm.pharmacistQuestionsDetails ? `: ${interventionForm.pharmacistQuestionsDetails}` : ''}`);
+    }
+    
+    // Shipping Status
+    if (interventionForm.okayToShip) {
+      fields.push('Okay to ship supplies');
+    } else if (interventionForm.willNotShipUntil) {
+      fields.push(`Will not ship until ${interventionForm.willNotShipUntil}`);
+    }
     
     return fields.join(' . ') + ' .';
   };
@@ -252,18 +375,65 @@ const NoteGenerator = () => {
 
   const resetInterventionForm = () => {
     setInterventionForm({
-      patientWeight: '',
+      // Basic Information
+      reviewedNotesFor: '',
+      sig: '',
       dose: '',
+      patientWeight: '',
+      orderLastFilled: '',
       numberOfDoses: '',
-      attackDetails: '',
-      frequencySeverity: '',
-      upcomingInterventions: '',
-      pregnancyStatus: '',
-      mdoPregnancyCounseling: '',
-      compliance: '',
+      
+      // IV Access
+      ivAccessIssues: '',
+      
+      // Epipen
+      epipenStatus: '',
+      epipenExpiryDate: '',
+      
+      // Travel
+      hasTravelPlans: false,
+      travelDetails: '',
+      
+      // Hospitalizations
+      hasRecentHospitalization: '',
+      hospitalizationDate: '',
+      
+      // ER Visits
+      hasRecentER: '',
+      
+      // Symptoms
+      hasWorseningSymptoms: '',
+      
+      // Missed Doses
+      hasMissedDoses: '',
+      missedDoseDate: '',
+      
+      // Medication Changes
+      hasMedicationChanges: '',
+      medicationChangesDetails: '',
+      
+      // Allergy Updates
+      hasAllergyChanges: '',
+      allergyChangesDetails: '',
+      
+      // Dosing Schedule
       nextDoseDate: '',
       lastDoseDate: '',
-      rphConsult: ''
+      
+      // Compliance
+      compliance: '',
+      
+      // Infusion Method
+      hasHHN: false,
+      selfInfuses: false,
+      
+      // Pharmacist Interaction
+      pharmacistQuestions: '',
+      pharmacistQuestionsDetails: '',
+      
+      // Shipping
+      okayToShip: false,
+      willNotShipUntil: ''
     });
   };
 
@@ -677,27 +847,37 @@ const NoteGenerator = () => {
                 </div>
                 <div className="card-body">
                   <div className="note-form-grid">
-                    {/* Main Section 1: Patient & Clinical Information */}
+                    {/* Main Section 1: Basic Information & Clinical Status */}
                     <div className="main-section">
-                      {/* Patient Core Information */}
+                      {/* Basic Information */}
                       <div className="form-section">
                         <h4 className="section-title">
                           <User size={16} />
-                          Patient Core Information
+                          Basic Information
                         </h4>
                         <div className="input-grid">
                           <div className="input-group">
-                            <label>Patient weight (kg)</label>
+                            <label>Reviewed notes and order for</label>
                             <input
                               type="text"
-                              value={interventionForm.patientWeight}
-                              onChange={(e) => updateInterventionField('patientWeight', e.target.value)}
-                              placeholder="Enter weight in kg"
+                              value={interventionForm.reviewedNotesFor}
+                              onChange={(e) => updateInterventionField('reviewedNotesFor', e.target.value)}
+                              placeholder="Enter medication/order details"
                               className="note-input"
                             />
                           </div>
                           <div className="input-group">
-                            <label>Dose</label>
+                            <label>Sig</label>
+                            <input
+                              type="text"
+                              value={interventionForm.sig}
+                              onChange={(e) => updateInterventionField('sig', e.target.value)}
+                              placeholder="Enter sig"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Dose is appropriate at</label>
                             <input
                               type="text"
                               value={interventionForm.dose}
@@ -707,7 +887,27 @@ const NoteGenerator = () => {
                             />
                           </div>
                           <div className="input-group">
-                            <label>Number of doses on hand</label>
+                            <label>Patient's weight</label>
+                            <input
+                              type="text"
+                              value={interventionForm.patientWeight}
+                              onChange={(e) => updateInterventionField('patientWeight', e.target.value)}
+                              placeholder="Enter weight in kg"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Order last filled</label>
+                            <input
+                              type="text"
+                              value={interventionForm.orderLastFilled}
+                              onChange={(e) => updateInterventionField('orderLastFilled', e.target.value)}
+                              placeholder="Enter date"
+                              className="note-input"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Number of doses on hand with patient</label>
                             <input
                               type="text"
                               value={interventionForm.numberOfDoses}
@@ -727,90 +927,232 @@ const NoteGenerator = () => {
                         </h4>
                         <div className="input-grid">
                           <div className="input-group">
-                            <label>Attack details</label>
-                            <textarea
-                              value={interventionForm.attackDetails}
-                              onChange={(e) => updateInterventionField('attackDetails', e.target.value)}
-                              placeholder="Enter attack details"
-                              className="note-input note-textarea"
-                              rows="2"
-                            />
+                            <label>IV access issues</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={interventionForm.ivAccessIssues}
+                                onChange={(e) => updateInterventionField('ivAccessIssues', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="no-issues">No reports of any IV access issues</option>
+                                <option value="has-issues">Patient reported IV access issues</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
                           </div>
                           <div className="input-group">
-                            <label>Frequency and severity of attacks</label>
-                            <input
-                              type="text"
-                              value={interventionForm.frequencySeverity}
-                              onChange={(e) => updateInterventionField('frequencySeverity', e.target.value)}
-                              placeholder="Describe frequency and severity"
-                              className="note-input"
-                            />
+                            <label>Epipen status</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={interventionForm.epipenStatus}
+                                onChange={(e) => updateInterventionField('epipenStatus', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="has-epipen">Yes, patient has Epipen on hand</option>
+                                <option value="no-epipen">Patient does not have Epipen on hand</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
+                          </div>
+                          {interventionForm.epipenStatus === 'has-epipen' && (
+                            <div className="input-group">
+                              <label>Epipen expiry date</label>
+                              <input
+                                type="date"
+                                value={interventionForm.epipenExpiryDate}
+                                onChange={(e) => updateInterventionField('epipenExpiryDate', e.target.value)}
+                                className="note-input"
+                              />
+                            </div>
+                          )}
+                          <div className="input-group">
+                            <label>Travel plans</label>
+                            <div className="checkbox-group">
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={interventionForm.hasTravelPlans}
+                                  onChange={(e) => updateInterventionField('hasTravelPlans', e.target.checked)}
+                                />
+                                Patient has upcoming travel plans
+                              </label>
+                            </div>
+                          </div>
+                          {interventionForm.hasTravelPlans && (
+                            <div className="input-group">
+                              <label>Travel details</label>
+                              <input
+                                type="text"
+                                value={interventionForm.travelDetails}
+                                onChange={(e) => updateInterventionField('travelDetails', e.target.value)}
+                                placeholder="Enter travel details"
+                                className="note-input"
+                              />
+                            </div>
+                          )}
+                          <div className="input-group">
+                            <label>Recent hospitalizations</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={interventionForm.hasRecentHospitalization}
+                                onChange={(e) => updateInterventionField('hasRecentHospitalization', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="yes">Patient had recent hospitalization</option>
+                                <option value="no">Patient has no recent hospitalization</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
+                          </div>
+                          {interventionForm.hasRecentHospitalization === 'yes' && (
+                            <div className="input-group">
+                              <label>Hospitalization date</label>
+                              <input
+                                type="date"
+                                value={interventionForm.hospitalizationDate}
+                                onChange={(e) => updateInterventionField('hospitalizationDate', e.target.value)}
+                                className="note-input"
+                              />
+                            </div>
+                          )}
+                          <div className="input-group">
+                            <label>Recent ER visits</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={interventionForm.hasRecentER}
+                                onChange={(e) => updateInterventionField('hasRecentER', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="yes">Patient had recent ER</option>
+                                <option value="no">Patient has no recent ER</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
                           </div>
                           <div className="input-group">
-                            <label>Compliance</label>
-                            <input
-                              type="text"
-                              value={interventionForm.compliance}
-                              onChange={(e) => updateInterventionField('compliance', e.target.value)}
-                              placeholder="Enter compliance status"
-                              className="note-input"
-                            />
+                            <label>Symptom changes</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={interventionForm.hasWorseningSymptoms}
+                                onChange={(e) => updateInterventionField('hasWorseningSymptoms', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="yes">Patient had recent worsening of symptoms</option>
+                                <option value="no">Patient has no worsening of symptoms</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
                           </div>
+                          <div className="input-group">
+                            <label>Missed doses</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={interventionForm.hasMissedDoses}
+                                onChange={(e) => updateInterventionField('hasMissedDoses', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="yes">Patient had missed doses</option>
+                                <option value="no">Patient has no missed doses</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
+                          </div>
+                          {interventionForm.hasMissedDoses === 'yes' && (
+                            <div className="input-group">
+                              <label>Missed dose date</label>
+                              <input
+                                type="date"
+                                value={interventionForm.missedDoseDate}
+                                onChange={(e) => updateInterventionField('missedDoseDate', e.target.value)}
+                                className="note-input"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Main Section 2: Health Status & Dosing */}
+                    {/* Main Section 2: Updates & Dosing */}
                     <div className="main-section">
-                      {/* Health Interventions */}
+                      {/* Updates */}
                       <div className="form-section">
                         <h4 className="section-title">
                           <Heart size={16} />
-                          Health Interventions
+                          Medical Updates
                         </h4>
                         <div className="input-grid">
                           <div className="input-group">
-                            <label>Upcoming health related interventions</label>
-                            <textarea
-                              value={interventionForm.upcomingInterventions}
-                              onChange={(e) => updateInterventionField('upcomingInterventions', e.target.value)}
-                              placeholder="List interventions"
-                              className="note-input note-textarea"
-                              rows="2"
-                            />
+                            <label>Medication updates</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={interventionForm.hasMedicationChanges}
+                                onChange={(e) => updateInterventionField('hasMedicationChanges', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="yes">Patient had recent changes to medications</option>
+                                <option value="no">Patient has no recent changes to medications</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
                           </div>
+                          {interventionForm.hasMedicationChanges === 'yes' && (
+                            <div className="input-group">
+                              <label>Medication changes details</label>
+                              <input
+                                type="text"
+                                value={interventionForm.medicationChangesDetails}
+                                onChange={(e) => updateInterventionField('medicationChangesDetails', e.target.value)}
+                                placeholder="Enter details"
+                                className="note-input"
+                              />
+                            </div>
+                          )}
                           <div className="input-group">
-                            <label>Pregnancy/Breastfeeding status</label>
-                            <input
-                              type="text"
-                              value={interventionForm.pregnancyStatus}
-                              onChange={(e) => updateInterventionField('pregnancyStatus', e.target.value)}
-                              placeholder="Enter status"
-                              className="note-input"
-                            />
+                            <label>Allergy updates</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={interventionForm.hasAllergyChanges}
+                                onChange={(e) => updateInterventionField('hasAllergyChanges', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="yes">Patient had recent changes to allergies</option>
+                                <option value="no">Patient has no recent changes to allergies</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
                           </div>
-                          <div className="input-group">
-                            <label>MDO pregnancy counseling</label>
-                            <input
-                              type="text"
-                              value={interventionForm.mdoPregnancyCounseling}
-                              onChange={(e) => updateInterventionField('mdoPregnancyCounseling', e.target.value)}
-                              placeholder="Yes/No"
-                              className="note-input"
-                            />
-                          </div>
+                          {interventionForm.hasAllergyChanges === 'yes' && (
+                            <div className="input-group">
+                              <label>Allergy changes details</label>
+                              <input
+                                type="text"
+                                value={interventionForm.allergyChangesDetails}
+                                onChange={(e) => updateInterventionField('allergyChangesDetails', e.target.value)}
+                                placeholder="Enter details"
+                                className="note-input"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      {/* Dosing Information */}
+                      {/* Dosing & Administration */}
                       <div className="form-section">
                         <h4 className="section-title">
                           <Calendar size={16} />
-                          Dosing Information
+                          Dosing & Administration
                         </h4>
                         <div className="input-grid">
                           <div className="input-group">
-                            <label>Date of next dose</label>
+                            <label>Next dose due on</label>
                             <input
                               type="text"
                               value={interventionForm.nextDoseDate}
@@ -820,7 +1162,7 @@ const NoteGenerator = () => {
                             />
                           </div>
                           <div className="input-group">
-                            <label>Date of last dose</label>
+                            <label>Last dose was administered on</label>
                             <input
                               type="text"
                               value={interventionForm.lastDoseDate}
@@ -830,15 +1172,92 @@ const NoteGenerator = () => {
                             />
                           </div>
                           <div className="input-group">
-                            <label>RPH consult</label>
-                            <input
-                              type="text"
-                              value={interventionForm.rphConsult}
-                              onChange={(e) => updateInterventionField('rphConsult', e.target.value)}
-                              placeholder="Status"
-                              className="note-input"
-                            />
+                            <label>Compliance</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={interventionForm.compliance}
+                                onChange={(e) => updateInterventionField('compliance', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="compliant">Patient compliant</option>
+                                <option value="not-compliant">Patient not compliant</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
                           </div>
+                          <div className="input-group">
+                            <label>Infusion method</label>
+                            <div className="checkbox-group">
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={interventionForm.hasHHN}
+                                  onChange={(e) => updateInterventionField('hasHHN', e.target.checked)}
+                                />
+                                Patient has HHN
+                              </label>
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={interventionForm.selfInfuses}
+                                  onChange={(e) => updateInterventionField('selfInfuses', e.target.checked)}
+                                />
+                                Patient self-infuses
+                              </label>
+                            </div>
+                          </div>
+                          <div className="input-group">
+                            <label>Pharmacist interaction</label>
+                            <div className="custom-dropdown">
+                              <select
+                                value={interventionForm.pharmacistQuestions}
+                                onChange={(e) => updateInterventionField('pharmacistQuestions', e.target.value)}
+                                className="note-dropdown"
+                              >
+                                <option value="">Select...</option>
+                                <option value="no-questions">Patient had no questions for RPh</option>
+                                <option value="had-questions">Patient had questions for RPh</option>
+                              </select>
+                              <ChevronDown className="dropdown-icon" size={16} />
+                            </div>
+                          </div>
+                          {interventionForm.pharmacistQuestions === 'had-questions' && (
+                            <div className="input-group">
+                              <label>Questions details</label>
+                              <input
+                                type="text"
+                                value={interventionForm.pharmacistQuestionsDetails}
+                                onChange={(e) => updateInterventionField('pharmacistQuestionsDetails', e.target.value)}
+                                placeholder="Enter questions"
+                                className="note-input"
+                              />
+                            </div>
+                          )}
+                          <div className="input-group">
+                            <label>Shipping status</label>
+                            <div className="checkbox-group">
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={interventionForm.okayToShip}
+                                  onChange={(e) => updateInterventionField('okayToShip', e.target.checked)}
+                                />
+                                Okay to ship supplies
+                              </label>
+                            </div>
+                          </div>
+                          {!interventionForm.okayToShip && (
+                            <div className="input-group">
+                              <label>Will not ship until</label>
+                              <input
+                                type="date"
+                                value={interventionForm.willNotShipUntil}
+                                onChange={(e) => updateInterventionField('willNotShipUntil', e.target.value)}
+                                className="note-input"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

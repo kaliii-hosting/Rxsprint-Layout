@@ -529,11 +529,23 @@ const RedesignedPumpCalculator = () => {
           const rate = parseFloat(field === 'rate' ? value : updatedStep.rate) || 0;
           
           if (isFlush) {
-            // For flush step, auto-calculate duration from rate and volume
-            if ((field === 'rate' || field === 'volume') && rate > 0 && updatedStep.volume) {
-              const volume = parseFloat(field === 'volume' ? value : updatedStep.volume) || 0;
-              if (volume > 0) {
-                updatedStep.duration = ((volume / rate) * 60).toFixed(2);
+            // For flush step, behave like regular steps
+            if (field === 'volume' && rate > 0) {
+              // Calculate duration from volume
+              const volume = parseFloat(value) || 0;
+              updatedStep.duration = ((volume / rate) * 60).toFixed(1);
+            } else if (field === 'duration' && rate > 0) {
+              // Calculate volume from duration
+              const duration = parseFloat(value) || 0;
+              updatedStep.volume = ((rate * duration) / 60).toFixed(1);
+            } else if (field === 'rate') {
+              // Recalculate based on what's already filled
+              if (updatedStep.volume && rate > 0) {
+                const volume = parseFloat(updatedStep.volume) || 0;
+                updatedStep.duration = ((volume / rate) * 60).toFixed(1);
+              } else if (updatedStep.duration && rate > 0) {
+                const duration = parseFloat(updatedStep.duration) || 0;
+                updatedStep.volume = ((rate * duration) / 60).toFixed(1);
               }
             }
           } else {
@@ -635,10 +647,21 @@ const RedesignedPumpCalculator = () => {
         errorMessage = !rate ? 'Rate required' : 
                       !volume ? 'Volume calculated as 0 - check other steps' : '';
       } else if (isLastStep) {
-        // Flush step - needs rate and volume
-        isValid = rate > 0 && volume > 0;
-        errorMessage = !rate ? 'Rate required' : 
-                      !volume ? 'Volume required' : '';
+        // Flush step - needs rate and volume AND must follow formula
+        const expectedVolume = rate > 0 && duration > 0 ? (rate * duration) / 60 : 0;
+        actualVolumeMatch = Math.abs(expectedVolume - volume) < 0.1;
+        
+        isValid = rate > 0 && volume > 0 && duration > 0 && actualVolumeMatch;
+        
+        if (!rate) {
+          errorMessage = 'Rate required';
+        } else if (!volume) {
+          errorMessage = 'Volume required';
+        } else if (!duration) {
+          errorMessage = 'Duration required';
+        } else if (!actualVolumeMatch) {
+          errorMessage = `Volume must equal (Rate × Duration) ÷ 60. Expected: ${expectedVolume.toFixed(1)} mL`;
+        }
       } else {
         // Regular step - strict validation with formula
         const expectedVolume = rate > 0 && duration > 0 ? (rate * duration) / 60 : 0;
@@ -1719,8 +1742,8 @@ const RedesignedPumpCalculator = () => {
                         )}
                       </div>
                       <div className="step-inputs">
-                        {/* Show formula reminder for regular steps */}
-                        {stepValidation.isRegular && (
+                        {/* Show formula reminder for regular and flush steps */}
+                        {(stepValidation.isRegular || isFlush) && (
                           <div className="step-formula-reminder">
                             Formula: Volume = (Rate × Duration) ÷ 60
                           </div>
@@ -1738,11 +1761,11 @@ const RedesignedPumpCalculator = () => {
                         <div className="step-input-group">
                           <label>
                             Duration (min) 
-                            {(isUntilComplete || isFlush) && <Info size={14} title="Automatically calculated based on volume and rate" />}
+                            {isUntilComplete && <Info size={14} title="Automatically calculated based on volume and rate" />}
                           </label>
-                          {isUntilComplete || isFlush ? (
-                            <div className={`calculated-value-display ${isFlush ? 'flush-calculated' : ''}`} title="Automatically calculated">
-                              {isUntilComplete ? stepValidation.calculatedDuration?.toFixed(1) || '0' : step.duration || '0'}
+                          {isUntilComplete ? (
+                            <div className={`calculated-value-display`} title="Automatically calculated">
+                              {stepValidation.calculatedDuration?.toFixed(1) || '0'}
                             </div>
                           ) : (
                             <input
@@ -1775,12 +1798,12 @@ const RedesignedPumpCalculator = () => {
                         </div>
                       </div>
                       <div className="step-actions">
-                        {isValid && customStepsValidation.isAcceptable ? (
+                        {isValid ? (
                           <div className="step-valid-indicator" title="Step is valid">
                             <Check size={20} className="valid-icon" />
                           </div>
                         ) : (
-                          <div className="step-invalid-indicator" title={stepValidation.errorMessage || (!customStepsValidation.isAcceptable ? 'Total validation failed' : 'Step is invalid')}>
+                          <div className="step-invalid-indicator" title={stepValidation.errorMessage || 'Step is invalid'}>
                             <X size={20} className="invalid-icon" />
                           </div>
                         )}
@@ -1793,10 +1816,10 @@ const RedesignedPumpCalculator = () => {
                           <Minus size={16} />
                         </button>
                       </div>
-                      {(!isValid || !customStepsValidation.isAcceptable) && (
+                      {!isValid && (
                         <div className="step-error-message">
                           <AlertCircle size={14} />
-                          <span>{stepValidation.errorMessage || (!customStepsValidation.isAcceptable && isValid ? 'Step is valid but total validation failed' : 'Invalid step')}</span>
+                          <span>{stepValidation.errorMessage || 'Invalid step'}</span>
                         </div>
                       )}
                     </div>
