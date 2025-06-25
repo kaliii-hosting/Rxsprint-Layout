@@ -1059,7 +1059,7 @@ const Supplies = () => {
             {showInfusionGuide && (
               <div className="card-body">
                 <p style={{ marginBottom: '20px', color: '#666' }}>
-                  This guide helps identify infusion types (PIV, PICC, PORT, CENTRAL) based on supply kits commonly used in infusion prescriptions.
+                  This guide helps identify infusion types (PIV, Central Lines) based on supply kits commonly used in infusion prescriptions.
                 </p>
                 
                 <div className="infusion-types-grid">
@@ -1082,57 +1082,37 @@ const Supplies = () => {
                     </div>
                   </div>
 
-                  {/* PICC Section */}
-                  <div className="infusion-type-section">
-                    <div className="infusion-type-header" style={{ backgroundColor: '#e8f5e9', color: '#388e3c' }}>
-                      <h4>PICC (Peripherally Inserted Central Catheter)</h4>
-                    </div>
-                    <div className="infusion-type-content">
-                      <h5 style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '600' }}>Key Identifiers:</h5>
-                      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                        <li style={{ marginBottom: '5px' }}>• Dressing Change PICC/Midline Kit (IRC: 48515)</li>
-                        <li style={{ marginBottom: '5px' }}>• Gripper Plus 22G or 20G (IRC: 37752, 33857)</li>
-                        <li style={{ marginBottom: '5px' }}>• Huber Needle (IRC: 38878, 44833)</li>
-                        <li style={{ marginBottom: '5px' }}>• Biopatch (IRC: 39861)</li>
-                      </ul>
-                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-                        <strong style={{ fontSize: '0.85rem' }}>➤ Look for:</strong> <span style={{ fontSize: '0.85rem' }}>Gripper Plus, Huber needles, and PICC dressing kit.</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* PORT Section */}
-                  <div className="infusion-type-section">
-                    <div className="infusion-type-header" style={{ backgroundColor: '#fff3e0', color: '#f57c00' }}>
-                      <h4>PORT</h4>
-                    </div>
-                    <div className="infusion-type-content">
-                      <h5 style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '600' }}>Key Identifiers:</h5>
-                      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                        <li style={{ marginBottom: '5px' }}>• Gripper Plus (22G/20G) (IRC: 37752, 33857)</li>
-                        <li style={{ marginBottom: '5px' }}>• Huber Needle 22G / 20G SAFEST (IRC: 38878, 44833)</li>
-                        <li style={{ marginBottom: '5px' }}>• Port-style dressing kit</li>
-                      </ul>
-                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-                        <strong style={{ fontSize: '0.85rem' }}>➤ Look for:</strong> <span style={{ fontSize: '0.85rem' }}>Gripper Plus + Huber needle combo - classic for implanted ports.</span>
-                      </div>
-                    </div>
-                  </div>
-
                   {/* CENTRAL LINE Section */}
                   <div className="infusion-type-section">
                     <div className="infusion-type-header" style={{ backgroundColor: '#fce4ec', color: '#c2185b' }}>
                       <h4>CENTRAL LINE</h4>
                     </div>
                     <div className="infusion-type-content">
-                      <h5 style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '600' }}>Key Identifiers:</h5>
-                      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                        <li style={{ marginBottom: '5px' }}>• Central Line Dressing Kit (IRC: 48513)</li>
-                        <li style={{ marginBottom: '5px' }}>• Heparin Flushes (IRC: 33563, 35927)</li>
-                        <li style={{ marginBottom: '5px' }}>• IV EXT SET W/14" ULT SITE (IRC: 35488)</li>
-                      </ul>
-                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-                        <strong style={{ fontSize: '0.85rem' }}>➤ Look for:</strong> <span style={{ fontSize: '0.85rem' }}>Central dressing kit and Heparin flushes, but no Gripper or Huber.</span>
+                      {/* Central Line - PICC Subsection */}
+                      <div style={{ marginBottom: '20px' }}>
+                        <h5 style={{ marginBottom: '10px', fontSize: '0.95rem', fontWeight: '700', color: '#388e3c' }}>Central Line – PICC (Peripherally Inserted Central Catheter)</h5>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                          <li style={{ marginBottom: '5px' }}>• Dressing Change PICC/Midline Kit (IRC: 48515)</li>
+                          <li style={{ marginBottom: '5px' }}>• Gripper Plus 22G or 20G (IRC: 37752, 33857)</li>
+                          <li style={{ marginBottom: '5px' }}>• Huber Needle (IRC: 38878, 44833)</li>
+                          <li style={{ marginBottom: '5px' }}>• Biopatch (IRC: 39861)</li>
+                        </ul>
+                        <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#e8f5e9', borderRadius: '4px' }}>
+                          <strong style={{ fontSize: '0.85rem' }}>➤ Look for:</strong> <span style={{ fontSize: '0.85rem' }}>Gripper Plus, Huber needles, and PICC dressing kit.</span>
+                        </div>
+                      </div>
+
+                      {/* Central Line - Port Subsection */}
+                      <div>
+                        <h5 style={{ marginBottom: '10px', fontSize: '0.95rem', fontWeight: '700', color: '#f57c00' }}>Central Line – Port (Implanted Port)</h5>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                          <li style={{ marginBottom: '5px' }}>• Gripper Plus (22G/20G) (IRC: 37752, 33857)</li>
+                          <li style={{ marginBottom: '5px' }}>• Huber Needle 22G / 20G SAFEST (IRC: 38878, 44833)</li>
+                          <li style={{ marginBottom: '5px' }}>• Port-style dressing kit</li>
+                        </ul>
+                        <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#fff3e0', borderRadius: '4px' }}>
+                          <strong style={{ fontSize: '0.85rem' }}>➤ Look for:</strong> <span style={{ fontSize: '0.85rem' }}>Gripper Plus + Huber needle combo - classic for implanted ports.</span>
+                        </div>
                       </div>
                     </div>
                   </div>
