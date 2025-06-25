@@ -202,9 +202,9 @@ const NoteGenerator = () => {
     
     // Start with basic information
     if (interventionForm.reviewedNotesFor) {
-      fields.push(`***INTERVENTION NOTE*** Reviewed notes and order for ${interventionForm.reviewedNotesFor}`);
+      fields.push(`Reviewed notes and order for ${interventionForm.reviewedNotesFor}`);
     } else {
-      fields.push('***INTERVENTION NOTE*** Reviewed notes and order for');
+      fields.push('Reviewed notes and order for');
     }
     
     if (interventionForm.sig) {
