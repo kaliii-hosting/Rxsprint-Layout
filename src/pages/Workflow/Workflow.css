@@ -1,1019 +1,1589 @@
 /* Import Satoshi Font to match pump calculator */
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,800,500,400&display=swap');
 
-/* Workflow Modal Styles */
-.workflow-modal-content {
-  background: var(--bg-tertiary);
-  border-radius: 16px;
-  padding: 0;
-  max-width: 1000px;
-  max-height: 90vh;
-  width: 90vw;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.workflow-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 2rem;
-  background: var(--primary-light);
-  border-bottom: 1px solid var(--primary-border);
-}
-
-.workflow-modal-header h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  letter-spacing: -0.5px;
-}
-
-.workflow-modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.workflow-form-section {
-  background: var(--bg-tertiary);
-  border-radius: 12px;
-  margin: 1.5rem 2rem 0;
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-}
-
-.workflow-form-section:last-child {
-  margin-bottom: 1.5rem;
-}
-
-.workflow-input,
-.workflow-textarea,
-.workflow-dropdown {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-family: inherit;
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  transition: all 0.2s ease;
-  resize: vertical;
-}
-
-.workflow-input:focus,
-.workflow-textarea:focus,
-.workflow-dropdown:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px var(--primary-light);
-}
-
-.workflow-input::placeholder,
-.workflow-textarea::placeholder {
-  color: var(--text-secondary);
-}
-
-.custom-dropdown {
-  position: relative;
-}
-
-.custom-dropdown .dropdown-icon {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-secondary);
-  pointer-events: none;
-}
-
-.steps-designer {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem;
-}
-
-.step-designer-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  overflow: hidden;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.step-designer-card:hover {
-  border-color: var(--primary-border);
-}
-
-.step-designer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.step-number {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.step-designer-body {
-  padding: 1rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.step-designer-body .input-group:last-child {
-  grid-column: 1 / -1;
-}
-
-.add-step-btn,
-.remove-step-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.add-step-btn {
-  background: var(--primary-color);
-  color: white;
-}
-
-.add-step-btn:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-}
-
-.remove-step-btn {
-  background: var(--error-light);
-  color: var(--error-color);
-  padding: 0.375rem;
-}
-
-.remove-step-btn:hover {
-  background: var(--error-color);
-  color: white;
-}
-
-.step-connector-preview {
-  display: flex;
-  justify-content: center;
-  padding: 0.5rem;
-  color: var(--text-secondary);
-}
-
-.workflow-modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding: 1.5rem 2rem;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
-}
-
-/* Flowchart Step Styles */
-.steps-flowchart {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-}
-
-.step-flowchart-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.step-flowchart-item {
-  background: var(--bg-tertiary);
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.5rem;
-  width: 100%;
-  max-width: 400px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.step-flowchart-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border-color: var(--primary-border);
-}
-
-.step-flowchart-item.completed {
-  background: var(--success-light);
-  border-color: var(--success-color);
-}
-
-.step-flowchart-item.completed:hover {
-  background: var(--success-color);
-  color: white;
-}
-
-.step-flowchart-item.in-progress {
-  background: var(--warning-light);
-  border-color: var(--warning-color);
-}
-
-.step-flowchart-item.pending {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
-
-.step-status-icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.completed-icon {
-  color: var(--success-color);
-}
-
-.step-flowchart-item.completed .completed-icon {
-  color: white;
-}
-
-.progress-icon {
-  color: var(--warning-color);
-}
-
-.pending-icon {
-  color: var(--text-secondary);
-}
-
-.step-content {
-  flex: 1;
-}
-
-.step-content .step-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.5rem;
-}
-
-.step-content h5 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.step-flowchart-item.completed .step-content h5 {
-  color: white;
-}
-
-.step-duration {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  background: var(--bg-primary);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-}
-
-.step-flowchart-item.completed .step-duration {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-.step-description {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-}
-
-.step-flowchart-item.completed .step-description {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.step-status-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-secondary);
-}
-
-.step-flowchart-item.completed .step-status-label {
-  color: white;
-}
-
-.completion-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: var(--success-color);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.step-connector-line {
-  display: flex;
-  justify-content: center;
-  color: var(--text-secondary);
-  margin: 0.5rem 0;
-}
-
-.step-arrow {
-  opacity: 0.6;
-}
-
+/* Base styles - ensure Satoshi font is used throughout */
 * {
   box-sizing: border-box;
 }
 
-/* Workflow Page Container */
+/* Workflow Page Container - Theme Aware */
 .workflow-page {
   background: var(--bg-secondary);
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  height: 100%;
+  min-height: 100vh;
+  height: auto;
   width: 100%;
+  max-width: 100vw;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-}
-
-/* Workflow Content */
-.workflow-content {
-  flex: 1;
   overflow-y: auto;
-  padding: 0;
+  overflow-x: hidden;
+  position: relative;
+  color: var(--text-primary);
+}
+
+/* Prevent horizontal scroll on mobile */
+@media (max-width: 768px) {
+  .workflow-page {
+    overflow-x: hidden;
+  }
+  
+  .page-container {
+    overflow-x: hidden;
+  }
+}
+
+/* Ensure all text uses Satoshi font */
+.workflow-page * {
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Workflow Timeline Content */
+.workflow-timeline-content {
+  flex: 1;
   width: 100%;
-  margin: 0;
   background: var(--bg-secondary);
+  padding-bottom: 2rem;
 }
 
-/* Scrollbar styling */
-.workflow-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.workflow-content::-webkit-scrollbar-track {
+/* Workflow Header */
+.workflow-header {
   background: var(--primary-light);
-  border-radius: 4px;
+  border-bottom: 2px solid var(--primary-border);
+  padding: 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(10px);
+  width: 100%;
+  overflow-x: hidden;
 }
 
-.workflow-content::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 4px;
-}
-
-.workflow-content::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-hover);
-}
-
-/* Dashboard Layout */
-.workflow-dashboard {
+.workflow-header-content {
   width: 100%;
   margin: 0;
-  padding: clamp(1rem, 2vw, 2rem);
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  grid-template-rows: auto auto;
-  gap: clamp(1rem, 2vw, 1.5rem);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
 }
 
-.workflows-card {
-  grid-row: span 2;
+.workflow-header-title {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 
-/* Dashboard Cards */
-.dashboard-card {
+.workflow-header-title svg {
+  color: var(--primary-color);
+}
+
+.workflow-header-title h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+.workflow-header-title p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Workflow Action Buttons - Similar to Note Generator */
+.workflow-header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.workflow-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.workflow-action-btn.primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.workflow-action-btn.primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--primary-shadow);
+}
+
+.workflow-action-btn.secondary {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.workflow-action-btn.secondary:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: var(--button-bg);
+}
+
+/* Timeline Container */
+.workflow-timeline-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 2rem 3rem 2rem 6rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Timeline Line - Hidden, will use section-specific lines */
+.timeline-line {
+  position: absolute;
+  left: 2.5rem;
+  top: 2rem;
+  bottom: 2rem;
+  width: 3px;
+  background: transparent;
+  z-index: 0;
+}
+
+/* Section-specific timeline lines */
+.timeline-section::before {
+  content: '';
+  position: absolute;
+  left: 2.5rem;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary-color);
+  z-index: 0;
+}
+
+.timeline-section:first-child::before {
+  top: 2rem;
+}
+
+.timeline-section:last-child::before {
+  bottom: 2rem;
+}
+
+/* Orange section timeline */
+.timeline-section:has(.orange-section)::before {
+  background: var(--primary-color);
+}
+
+/* Red section timeline */
+.timeline-section:has(.red-section)::before {
+  background: #ef4444;
+}
+
+/* Blue section timeline */
+.timeline-section:has(.blue-section)::before {
+  background: #3b82f6;
+}
+
+/* Green section timeline */
+.timeline-section:has(.green-section)::before {
+  background: #22c55e;
+}
+
+/* Gray section timeline */
+.timeline-section:has(.gray-section)::before {
+  background: var(--text-secondary);
+}
+
+/* Timeline Section */
+.timeline-section {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  position: relative;
+  padding-left: 5rem;
+}
+
+/* Timeline Node */
+.timeline-node {
+  position: absolute;
+  left: 2.5rem;
+  top: 1.5rem;
+  transform: translateX(-50%);
+  flex-shrink: 0;
+  width: 4rem;
+  height: 4rem;
+  background: #ff5500;
+  border: 3px solid #ff5500;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 2;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255, 85, 0, 0.4);
+}
+
+/* All section nodes have same orange style */
+.orange-section .timeline-node,
+.red-section .timeline-node,
+.blue-section .timeline-node,
+.green-section .timeline-node,
+.gray-section .timeline-node {
+  background: #ff5500;
+  border-color: #ff5500;
+  color: white;
+}
+
+.timeline-node.large {
+  width: 4rem;
+  height: 4rem;
+}
+
+.timeline-node.active,
+.orange-section .timeline-node.active,
+.red-section .timeline-node.active,
+.blue-section .timeline-node.active,
+.green-section .timeline-node.active,
+.gray-section .timeline-node.active {
+  background: #ff5500;
+  color: white;
+  box-shadow: 0 0 0 8px rgba(255, 85, 0, 0.2), 0 4px 12px rgba(255, 85, 0, 0.4);
+}
+
+
+
+.timeline-node:hover {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 0 0 8px rgba(255, 85, 0, 0.3), 0 6px 20px rgba(255, 85, 0, 0.5);
+}
+
+/* Timeline Content */
+.timeline-content {
+  flex: 1;
+  padding-bottom: 2rem;
+  margin-left: 0;
+}
+
+/* Timeline Card */
+.timeline-card {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: 16px;
   overflow: hidden;
   transition: all 0.3s ease;
-  animation: fadeInUp 0.5s ease;
+  animation: fadeInLeft 0.5s ease;
 }
 
-@keyframes fadeInUp {
+@keyframes fadeInLeft {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateX(-20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
 
-.dashboard-card:hover {
+.timeline-card:hover {
   border-color: var(--primary-border);
-  box-shadow: 0 8px 32px var(--primary-light);
+  box-shadow: 0 8px 32px var(--primary-shadow);
 }
 
-/* Card Header */
-.card-header {
+/* Timeline Card Header */
+.timeline-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: clamp(1rem, 2vw, 1.5rem);
+  padding: 1.5rem 2rem;
   background: var(--primary-light);
-  border-bottom: 1px solid var(--primary-border);
-}
-
-.card-header h3 {
-  font-size: clamp(1rem, 2vw, 1.25rem);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  letter-spacing: -0.5px;
-}
-
-.card-header svg {
-  color: var(--primary-color);
-  opacity: 0.8;
-}
-
-.header-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* Card Body */
-.card-body {
-  padding: clamp(1rem, 2vw, 1.5rem);
-}
-
-/* Filter Tabs */
-.filter-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.filter-tab {
-  padding: 0.5rem 1rem;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.filter-tab:hover {
-  background: var(--button-bg);
-  color: var(--text-primary);
-}
-
-.filter-tab.active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: var(--text-primary);
-}
-
-/* Workflows List */
-.workflows-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-height: 500px;
-  overflow-y: auto;
-  margin-bottom: 1.5rem;
-}
-
-.workflows-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.workflows-list::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 3px;
-}
-
-/* Workflow Item */
-.workflow-item {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.workflow-item:hover {
-  background: var(--button-bg);
-  border-color: var(--primary-border);
-  transform: translateX(4px);
-}
-
-.workflow-item.active {
-  background: var(--primary-light);
-  border-color: var(--primary-color);
-}
-
-.workflow-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.75rem;
-}
-
-.workflow-header h4 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 0.25rem 0;
-}
-
-.workflow-header p {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-.workflow-status {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* Workflow Meta */
-.workflow-meta {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.meta-item svg {
-  color: var(--text-tertiary);
-}
-
-/* Progress Bar */
-.workflow-progress {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.progress-bar {
-  flex: 1;
-  height: 6px;
-  background: var(--border-color);
-  border-radius: 3px;
+  border-bottom: 2px solid var(--primary-border);
+  position: relative;
   overflow: hidden;
 }
 
-.progress-fill {
+.timeline-card-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6px;
   height: 100%;
-  background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.progress-text {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  min-width: 35px;
-}
-
-/* Add Workflow Button */
-.add-workflow-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.875rem;
-  background: var(--primary-light);
-  border: 1px solid var(--primary-border);
-  border-radius: 8px;
-  color: var(--primary-color);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.add-workflow-btn:hover {
   background: var(--primary-color);
-  color: var(--text-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--primary-light);
 }
 
-/* Workflow Details */
-.workflow-info {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: var(--bg-tertiary);
-  border-radius: 8px;
+/* Section-specific colors */
+.timeline-card-header.orange-section {
+  background: var(--primary-light);
+  border-bottom-color: var(--primary-border);
 }
 
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+.timeline-card-header.orange-section::before {
+  background: var(--primary-color);
 }
 
-.info-item .label {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.timeline-card-header.red-section {
+  background: rgba(239, 68, 68, 0.1);
+  border-bottom-color: rgba(239, 68, 68, 0.3);
 }
 
-.info-item .value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
+.timeline-card-header.red-section::before {
+  background: #ef4444;
 }
 
-/* Action Buttons */
-.action-btn {
-  width: 32px;
-  height: 32px;
+.timeline-card-header.blue-section {
+  background: rgba(59, 130, 246, 0.1);
+  border-bottom-color: rgba(59, 130, 246, 0.3);
+}
+
+.timeline-card-header.blue-section::before {
+  background: #3b82f6;
+}
+
+.timeline-card-header.green-section {
+  background: rgba(34, 197, 94, 0.1);
+  border-bottom-color: rgba(34, 197, 94, 0.3);
+}
+
+.timeline-card-header.green-section::before {
+  background: #22c55e;
+}
+
+.timeline-card-header.gray-section {
   background: var(--button-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-bottom-color: var(--border-color);
+}
+
+.timeline-card-header.gray-section::before {
+  background: var(--text-secondary);
+}
+
+.timeline-card-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.timeline-card-header.clickable {
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.action-btn:hover {
+.timeline-card-header.clickable:hover {
+  background: var(--primary-light);
+  opacity: 0.9;
+}
+
+/* Timeline Card Body */
+.timeline-card-body {
+  padding: 2rem;
+  background: var(--bg-tertiary);
+}
+
+/* Decision Table Styles */
+.decision-table-container {
+  overflow-x: auto;
+  margin-bottom: 2rem;
+}
+
+.decision-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-primary);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+}
+
+.decision-table th {
+  background: var(--button-bg);
+  color: var(--text-primary);
+  font-weight: 700;
+  text-align: left;
+  padding: 1rem;
+  font-size: 0.813rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.decision-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.938rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  background: var(--bg-primary);
+}
+
+.decision-table tr:last-child td {
+  border-bottom: none;
+}
+
+.decision-table tbody tr:hover td {
+  background: var(--primary-light);
+}
+
+/* Yes/No Cell Styling */
+.yes {
+  color: #39ff14;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(57, 255, 20, 0.5);
+}
+
+.no {
+  color: var(--error-color);
+  font-weight: 600;
+}
+
+/* Pump Table Styles */
+.pump-table-container {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.pump-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-primary);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+}
+
+.pump-table th {
+  background: var(--button-bg);
+  color: var(--text-primary);
+  font-weight: 700;
+  text-align: left;
+  padding: 1rem;
+  font-size: 0.813rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color);
+  width: 30%;
+}
+
+.pump-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.938rem;
+  font-weight: 500;
+  background: var(--bg-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pump-table tr:last-child td {
+  border-bottom: none;
+}
+
+.pump-table tbody tr:hover td {
+  background: var(--primary-light);
+}
+
+/* Email Template Styles - Realistic Email Mockup */
+.email-template {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0;
+}
+
+.email-template.clickable {
+  cursor: pointer;
+}
+
+.email-template.clickable:hover:not(.completed) {
   background: var(--primary-light);
   border-color: var(--primary-border);
-  color: var(--primary-color);
 }
 
-/* Workflow Steps */
-.workflow-steps {
-  margin-bottom: 2rem;
+.email-template.completed {
+  background: #39ff14;
+  border-color: #39ff14;
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
 }
 
-.workflow-steps h4 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 1.5rem 0;
+.email-template.completed .email-header,
+.email-template.completed .email-content,
+.email-template.completed .email-attachments {
+  background: transparent;
 }
 
-.steps-timeline {
-  position: relative;
-  padding-left: 2rem;
+.email-template.completed * {
+  color: #000000 !important;
 }
 
-/* Step Item */
-.step-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.step-item:last-child {
-  margin-bottom: 0;
-}
-
-.step-connector {
-  position: absolute;
-  left: -1.25rem;
-  top: 2rem;
-  bottom: -2rem;
-  width: 2px;
-  background: var(--border-color);
-}
-
-.step-item:last-child .step-connector {
-  display: none;
-}
-
-.step-marker {
-  position: absolute;
-  left: -2rem;
+.email-template .completion-indicator {
+  flex-shrink: 0;
   width: 24px;
   height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 1.25rem 0 0 1.25rem;
 }
 
-/* Status Icons */
-.status-icon {
-  color: var(--text-tertiary);
+.email-template.completed .completion-indicator {
+  background: #000000;
+  border-radius: 50%;
+  color: #39ff14;
 }
 
-.status-icon.completed {
-  color: var(--success-color);
-}
-
-.status-icon.in-progress {
-  color: var(--primary-color);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.status-icon.pending {
-  color: var(--text-tertiary);
-}
-
-.status-icon.failed {
-  color: var(--error-color);
-}
-
-/* Step Content */
-.step-content {
-  flex: 1;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
+.email-template .empty-circle {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
   transition: all 0.2s ease;
+  background: transparent;
 }
 
-.step-item.completed .step-content {
-  opacity: 0.7;
-}
-
-.step-item.in-progress .step-content {
-  border-color: var(--primary-border);
+.email-template:hover .empty-circle {
+  border-color: var(--primary-color);
   background: var(--primary-light);
 }
 
-.step-header {
+/* Email content wrapper */
+.email-template > div:last-child {
+  flex: 1;
+  padding: 0;
+}
+
+.email-header {
+  background: var(--bg-tertiary);
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.email-header-title {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.email-header svg {
+  color: var(--primary-color);
+}
+
+.email-header span {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Email Fields */
+.email-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.email-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.email-field-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 60px;
+}
+
+.email-field-value {
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.email-field-value.email-address {
+  color: var(--info-color);
+  text-decoration: underline;
+}
+
+/* Email Content Body */
+.email-content {
+  padding: 1.5rem;
+  background: var(--bg-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.email-content p {
+  margin: 0.75rem 0;
+}
+
+.email-content p:first-child {
+  margin-top: 0;
+}
+
+.email-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Email Attachments */
+.email-attachments {
+  padding: 0 1.5rem 1.5rem;
+  background: var(--bg-primary);
+}
+
+.email-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  margin-right: 0.5rem;
   margin-bottom: 0.5rem;
 }
 
-.step-header h5 {
+.email-attachment:before {
+  content: '📎';
   font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
 }
 
-.step-duration {
-  font-size: 0.875rem;
-  color: var(--text-tertiary);
-}
-
-.step-status {
-  font-size: 0.875rem;
+.attachment-size {
   color: var(--text-secondary);
-  text-transform: capitalize;
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
 }
 
-.step-arrow {
-  position: absolute;
-  right: -2rem;
-  color: var(--text-tertiary);
+.attention-box {
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
 }
 
-/* Workflow Actions */
-.workflow-actions {
-  display: flex;
-  gap: 1rem;
-}
-
-.workflow-btn {
-  flex: 1;
-  padding: 0.875rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-}
-
-.workflow-btn.primary {
-  background: var(--primary-color);
+.attention-box strong {
   color: var(--text-primary);
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
-.workflow-btn.primary:hover {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--primary-light);
-}
-
-.workflow-btn.secondary {
+/* Special highlight for ATTENTION text */
+.attention-box strong:first-child {
   background: transparent;
+  color: var(--primary-color);
+  padding: 0;
+  border-radius: 0;
+  display: inline-block;
+  box-shadow: none;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Highlight Text - Neon Green */
+.highlight {
+  background: #39ff14;
+  color: #000000;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
+  text-shadow: 0 0 2px rgba(57, 255, 20, 0.8);
+}
+
+/* Mark tag styling for highlighted text */
+mark, .marked {
+  background: #39ff14;
+  color: #000000;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-weight: 600;
+  box-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
+}
+
+/* Underlined text */
+u {
+  text-decoration: underline;
+  text-decoration-color: var(--primary-color);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+/* RPh Section Headers */
+.rph-section {
+  margin: 1.5rem 0;
+}
+
+.rph-header {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.rph-header.red {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.rph-header.blue {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.rph-header.green {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.rph-header.gray {
+  background: var(--button-bg);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
 }
 
-.workflow-btn.secondary:hover {
-  background: var(--button-bg);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-/* Statistics Card */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.stat-item {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
+/* Pump Sheet Header */
+.pump-sheet-header {
+  font-size: 0.938rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   text-align: center;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 10px;
+}
+
+.pump-sheet-header.red {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.pump-sheet-header.blue {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.pump-sheet-header.green {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.pump-sheet-header.gray {
+  background: var(--button-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+/* Checklist Items */
+.checklist-item {
+  padding: 1rem 1.25rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+}
+
+.checklist-item strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.checklist-item ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.checklist-item li {
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.checklist-item em {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+/* Flowchart Styles - Collapsible */
+.flowchart-section {
+  margin-bottom: 2rem;
+  order: -1;
+}
+
+.flowchart-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  border-radius: 12px;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.stat-item:hover {
+.flowchart-toggle:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+}
+
+.flowchart-toggle-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.flowchart-toggle-icon {
+  color: #ff5500;
+}
+
+.flowchart-toggle svg:last-child {
+  transition: transform 0.3s ease;
+}
+
+.flowchart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 2rem;
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  border-radius: 12px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.flowchart-container.collapsed {
+  max-height: 0;
+  padding: 0;
+  margin-top: 0;
+  border-width: 0;
+}
+
+.flowchart-header {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2rem;
+  padding: 0.75rem 2rem;
+  background: var(--primary-color);
+  border-radius: 10px;
+}
+
+.flowchart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.flowchart-box {
+  padding: 1.25rem 2rem;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.938rem;
+  line-height: 1.5;
+  min-width: 280px;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.flowchart-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.flowchart-box.gray {
+  background: var(--button-bg);
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.flowchart-box.orange {
+  background: var(--primary-light);
+  border: 2px solid var(--primary-color);
+  color: var(--text-primary);
+}
+
+.flowchart-box.blue {
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px solid var(--info-color);
+  color: var(--text-primary);
+}
+
+.flowchart-box.green {
+  background: var(--primary-light);
+  border: 2px solid var(--primary-color);
+  color: var(--text-primary);
+}
+
+.flowchart-box.dark-gray {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.flowchart-box.red-text {
+  color: var(--error-color) !important;
+  font-weight: 700;
+}
+
+.flowchart-arrow {
+  color: var(--primary-color);
+  margin: 0.5rem 0;
+}
+
+/* Clickable Items - Similar to Supplies Marked Feature */
+.clickable-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin: 0.5rem 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+}
+
+.clickable-item:hover:not(.completed) {
   background: var(--primary-light);
   border-color: var(--primary-border);
 }
 
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  margin-bottom: 0.25rem;
+.clickable-item.completed {
+  background: #39ff14;
+  border-color: #39ff14;
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
 }
 
-.stat-label {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-/* Quick Actions */
-.quick-actions h4 {
-  font-size: 1rem;
+.clickable-item.completed .item-content {
+  text-decoration: none;
+  color: #000000;
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 1rem 0;
 }
 
-.actions-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+.clickable-item.completed .checklist-item {
+  color: #000000;
+  background: transparent;
+  border: none;
 }
 
-.quick-action-btn {
+.clickable-item.completed .checklist-item strong {
+  color: #000000;
+}
+
+.clickable-item.completed .checklist-item li {
+  color: #000000;
+}
+
+.clickable-item.completed .checklist-item em {
+  color: #000000;
+  opacity: 0.8;
+}
+
+/* Remove mark styling inside completed items */
+.clickable-item.completed mark,
+.clickable-item.completed .marked,
+.clickable-item.completed .highlight {
+  background: transparent;
+  color: #000000;
+  box-shadow: none;
+  padding: 0;
+  font-weight: inherit;
+}
+
+.completion-indicator {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  background: var(--bg-tertiary);
+  justify-content: center;
+  margin-top: 0.125rem;
+}
+
+.clickable-item.completed .completion-indicator {
+  background: #000000;
+  border-radius: 50%;
+  color: #39ff14;
+}
+
+.empty-circle {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.clickable-item:hover .empty-circle {
+  border-color: var(--primary-color);
+  background: var(--primary-light);
+}
+
+.item-content {
+  flex: 1;
+  font-size: 0.938rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Scrollbar styling */
+.workflow-timeline-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.workflow-timeline-content::-webkit-scrollbar-track {
+  background: var(--primary-light);
+  border-radius: 4px;
+}
+
+.workflow-timeline-content::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+.workflow-timeline-content::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
+}
+
+/* Subsection Header Styles - Similar to Flowchart Toggle */
+.subsection-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: var(--button-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  margin: 1rem 0 0.5rem 0;
+  cursor: default;
+  transition: all 0.3s ease;
 }
 
-.quick-action-btn:hover {
-  background: var(--button-bg);
-  border-color: var(--primary-border);
+.subsection-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--text-primary);
-  transform: translateY(-1px);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
 }
 
-/* Responsive Design */
+.subsection-header svg {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+/* RPh Title Styling - More prominent */
+.rph-title {
+  background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+  border: 2px solid var(--primary-color);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0 1rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.rph-title h3 {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.rph-title svg {
+  color: var(--primary-color);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.rph-header,
+.pump-sheet-header {
+  display: none; /* Hide old styles */
+}
+
+/* Static flowchart toggle (for subsection headers) */
+.flowchart-toggle[style*="cursor: default"] {
+  cursor: default !important;
+}
+
+.flowchart-toggle[style*="cursor: default"]:hover {
+  background: var(--primary-light) !important;
+}
+
+.subsection-header:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+}
+
+/* Section-specific subsection colors */
+.red-section .subsection-header:not(.rph-title) {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.red-section .subsection-header:not(.rph-title) svg {
+  color: #ef4444;
+}
+
+.red-section .subsection-header:not(.rph-title):hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+}
+
+.blue-section .subsection-header:not(.rph-title) {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.blue-section .subsection-header:not(.rph-title) svg {
+  color: #3b82f6;
+}
+
+.blue-section .subsection-header:not(.rph-title):hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+}
+
+.green-section .subsection-header:not(.rph-title) {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.green-section .subsection-header:not(.rph-title) svg {
+  color: #22c55e;
+}
+
+.green-section .subsection-header:not(.rph-title):hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: #22c55e;
+}
+
+.gray-section .subsection-header:not(.rph-title) {
+  background: var(--button-bg);
+  border-color: var(--border-color);
+}
+
+.gray-section .subsection-header:not(.rph-title) svg {
+  color: var(--text-secondary);
+}
+
+.gray-section .subsection-header:not(.rph-title):hover {
+  background: var(--button-bg);
+  border-color: var(--text-secondary);
+}
+
+/* Section-specific RPh title colors */
+.red-section .rph-title {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.25));
+  border-color: #ef4444;
+}
+
+.red-section .rph-title h3,
+.red-section .rph-title svg {
+  color: #ef4444;
+}
+
+.blue-section .rph-title {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.25));
+  border-color: #3b82f6;
+}
+
+.blue-section .rph-title h3,
+.blue-section .rph-title svg {
+  color: #3b82f6;
+}
+
+.green-section .rph-title {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.25));
+  border-color: #22c55e;
+}
+
+.green-section .rph-title h3,
+.green-section .rph-title svg {
+  color: #22c55e;
+}
+
+.gray-section .rph-title {
+  background: linear-gradient(135deg, var(--button-bg), var(--border-color));
+  border-color: var(--text-secondary);
+}
+
+.gray-section .rph-title h3,
+.gray-section .rph-title svg {
+  color: var(--text-secondary);
+}
+
+/* Responsive adjustments */
+@media (min-width: 1400px) {
+  .workflow-timeline-container {
+    padding: 2rem 4rem 2rem 8rem;
+  }
+  
+  .timeline-section {
+    padding-left: 6rem;
+  }
+}
+
 @media (max-width: 1024px) {
-  .workflow-dashboard {
-    grid-template-columns: 1fr;
+  .workflow-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
   }
   
-  .workflows-card {
-    grid-row: auto;
+  .workflow-header-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
   
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .workflow-action-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+  }
+  
+  .timeline-line {
+    left: 2.5rem;
+  }
+  
+  .timeline-section::before {
+    left: 2.5rem;
+  }
+  
+  .timeline-node {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  .timeline-node.large {
+    width: 3rem;
+    height: 3rem;
   }
 }
 
 @media (max-width: 768px) {
-  .workflow-page {
+  .workflow-timeline-content {
+    overflow-x: hidden;
     padding: 0;
   }
   
-  .workflow-content {
-    padding: 0;
+  /* Ensure timeline card content doesn't get cut off */
+  .timeline-card {
+    margin: 0.75rem;
+    overflow: visible;
   }
   
-  .workflow-dashboard {
+  .timeline-card-body {
+    padding: 1.5rem 1rem;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+  
+  /* Fix subsection headers on mobile */
+  .subsection-header {
+    padding: 0.875rem 1rem;
+    margin: 1rem 0 0.75rem 0;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+  
+  .subsection-header h3 {
+    font-size: 0.875rem;
+    line-height: 1.3;
+  }
+  
+  .rph-title {
     padding: 1rem;
+    margin: 1.25rem 0 0.875rem 0;
   }
   
-  .filter-tabs {
+  .rph-title h3 {
+    font-size: 1rem;
+  }
+  
+  /* Ensure content sections are fully visible */
+  .rph-section {
+    overflow: visible;
+    margin-bottom: 1.5rem;
+  }
+  
+  .email-template {
+    margin: 1rem 0;
+    overflow-x: auto;
+  }
+  
+  .checklist-item {
+    padding: 0.875rem 1rem;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+  
+  .clickable-item {
+    margin: 0.5rem 0;
+  }
+  
+  .workflow-header {
+    padding: 1.5rem 1rem;
+  }
+  
+  .workflow-header-title h1 {
+    font-size: 1.5rem;
+  }
+  
+  .workflow-header-title p {
+    font-size: 0.875rem;
+  }
+  
+  .workflow-header-actions {
     flex-wrap: wrap;
   }
   
-  .workflow-info {
-    grid-template-columns: 1fr;
+  .workflow-action-btn {
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
   }
   
-  .workflow-meta {
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  .workflow-timeline-container {
+    padding: 2rem 2rem 2rem 4rem;
   }
   
-  .workflow-actions {
-    flex-direction: column;
+  .timeline-card-header h2 {
+    font-size: 1.25rem;
   }
   
-  .actions-list {
-    grid-template-columns: 1fr;
+  .timeline-section {
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-left: 3.5rem;
   }
   
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .timeline-line {
+    left: 1.75rem;
+  }
+  
+  .timeline-section::before {
+    left: 1.75rem;
+  }
+  
+  .timeline-node {
+    width: 3rem;
+    height: 3rem;
+    left: 1.75rem;
+  }
+  
+  .timeline-node svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .timeline-node.large {
+    width: 3rem;
+    height: 3rem;
+  }
+  
+  .timeline-node.large svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .decision-table {
+    font-size: 0.875rem;
+  }
+  
+  .decision-table th,
+  .decision-table td {
+    padding: 0.75rem;
+  }
+  
+  .pump-table {
+    font-size: 0.875rem;
+  }
+  
+  .pump-table th,
+  .pump-table td {
+    padding: 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
-  .card-header {
-    flex-wrap: wrap;
-    gap: 1rem;
+  .workflow-header-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
   
-  .header-actions {
-    width: 100%;
-    justify-content: space-between;
+  .workflow-header-title h1 {
+    font-size: 1.25rem;
   }
   
-  .step-arrow {
+  .workflow-action-btn {
+    padding: 0.625rem 1rem;
+    font-size: 0.813rem;
+  }
+  
+  .workflow-action-btn span {
     display: none;
   }
   
-  .steps-timeline {
-    padding-left: 1.5rem;
+  .workflow-timeline-container {
+    padding: 1.5rem 0.5rem 1.5rem 2.5rem;
+  }
+  
+  .timeline-section {
+    padding-left: 2rem;
+  }
+  
+  .timeline-line {
+    left: 1rem;
+  }
+  
+  .timeline-section::before {
+    left: 1rem;
+  }
+  
+  .timeline-node {
+    width: 2rem;
+    height: 2rem;
+    left: 1rem;
+  }
+  
+  .timeline-node svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .timeline-card {
+    margin: 0.5rem;
+  }
+  
+  .timeline-card-header {
+    padding: 0.875rem 1rem;
+  }
+  
+  .timeline-card-header h2 {
+    font-size: 0.938rem;
+    line-height: 1.2;
+  }
+  
+  .timeline-card-body {
+    padding: 0.875rem 0.75rem;
+  }
+  
+  /* Ensure subsections are readable on small screens */
+  .subsection-header {
+    padding: 0.75rem;
+    margin: 0.875rem 0 0.5rem 0;
+  }
+  
+  .subsection-header h3 {
+    font-size: 0.813rem;
+  }
+  
+  .rph-title {
+    padding: 0.875rem;
+    margin: 1rem 0 0.75rem 0;
+  }
+  
+  .rph-title h3 {
+    font-size: 0.875rem;
+  }
+  
+  /* Prevent horizontal scroll on tables */
+  .decision-table-container,
+  .pump-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .flowchart-container {
+    padding: 0.75rem;
+  }
+  
+  .flowchart-box {
+    min-width: 200px;
+    padding: 0.875rem;
+    font-size: 0.813rem;
+  }
+  
+  /* Ensure checklist items wrap properly */
+  .checklist-item ul {
+    padding-left: 1.25rem;
+  }
+  
+  .checklist-item li {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }

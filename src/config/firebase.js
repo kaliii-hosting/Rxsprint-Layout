@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getStorage } from 'firebase/storage';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getDatabase } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDm1cNS_46XGFYg_Wt6vp3h059zzB1nTfA",
@@ -18,6 +19,7 @@ let app;
 let storage;
 let firestore;
 let database;
+let auth;
 
 try {
   // Check if Firebase app already exists
@@ -54,6 +56,14 @@ try {
     database = null;
   }
   
+  try {
+    auth = getAuth(app);
+    console.log('Firebase Auth initialized');
+  } catch (error) {
+    console.error('Auth initialization error:', error);
+    auth = null;
+  }
+  
   console.log('Firebase services initialization complete');
 } catch (error) {
   console.error('Firebase app initialization error:', error);
@@ -64,6 +74,7 @@ try {
   storage = null;
   firestore = null;
   database = null;
+  auth = null;
 }
 
 // Log the final state
@@ -71,8 +82,15 @@ console.log('Firebase initialization status:', {
   app: !!app,
   storage: !!storage,
   firestore: !!firestore,
-  database: !!database
+  database: !!database,
+  auth: !!auth
 });
 
-export { storage, firestore, database };
+// Export db as an alias for firestore for compatibility
+const db = firestore;
+
+// Named exports
+export { storage, firestore, database, auth, db };
+
+// Default export
 export default app;

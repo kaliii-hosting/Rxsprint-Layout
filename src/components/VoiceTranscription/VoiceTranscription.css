@@ -8,7 +8,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--bg-modal-backdrop);
+  background: var(--text-primary);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -44,8 +44,8 @@
   right: 40px;
   width: 50px;
   height: 50px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  border: 1px solid var(--bg-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -54,12 +54,13 @@
   transition: all 0.3s ease;
   color: var(--text-primary);
   z-index: 10;
+  opacity: 0.9;
 }
 
 .close-button:hover {
-  background: var(--button-hover-bg);
-  border-color: var(--border-color);
+  opacity: 1;
   transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Transcription Content */
@@ -75,7 +76,7 @@
 
 /* Transcription Text */
 .transcription-text {
-  color: var(--text-primary);
+  color: var(--bg-primary);
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 32px;
   font-weight: 700;
@@ -108,7 +109,7 @@
   cursor: pointer;
   position: relative;
   margin: 20px auto;
-  color: var(--bg-primary);
+  color: white;
   transition: all 0.3s ease;
   animation: neonPulse 1.5s ease-in-out infinite;
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.5),
@@ -267,12 +268,13 @@
 }
 
 .status-text {
-  color: var(--text-secondary);
+  color: var(--bg-primary);
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  opacity: 0.8;
 }
 
 /* Responsive Design */

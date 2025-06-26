@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
 import './Calculator.css';
 
 const Calculator = () => {
   // Calculator mode state
-  const [calculatorMode, setCalculatorMode] = useState('standard'); // 'standard' or 'cross'
+  const [calculatorMode, setCalculatorMode] = useState('standard'); // 'standard', 'cross', 'bmi', or 'abw'
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
   // Standard calculator state
   const [display, setDisplay] = useState('0');
@@ -14,6 +16,23 @@ const Calculator = () => {
   // Cross multiplication state
   const [crossValues, setCrossValues] = useState({ A: '', B: '', C: '', D: '' });
   const [activeField, setActiveField] = useState('A');
+
+  // BMI Calculator state
+  const [bmiValues, setBmiValues] = useState({
+    weight: '',
+    height: '',
+    weightUnit: 'kg', // 'kg' or 'lb'
+    heightUnit: 'm'   // 'm' or 'in'
+  });
+  const [bmiResult, setBmiResult] = useState(null);
+
+  // ABW Calculator state
+  const [abwValues, setAbwValues] = useState({
+    gender: 'male', // 'male' or 'female'
+    height: '',     // in inches
+    actualWeight: '' // in kg
+  });
+  const [abwResults, setAbwResults] = useState({ ibw: null, abw: null });
 
   // Format display value
   const formatDisplay = (value) => {
@@ -124,7 +143,7 @@ const Calculator = () => {
   const inputCrossNumber = (num) => {
     if (activeField) {
       const currentValue = crossValues[activeField];
-      if (currentValue.length < 6) { // Limit input length
+      if (currentValue.length < 12) { // Increased limit for more numbers
         setCrossValues(prev => ({
           ...prev,
           [activeField]: prev[activeField] + num
@@ -191,6 +210,92 @@ const Calculator = () => {
       }
     }
   };
+
+  // BMI Calculator functions
+  const calculateBMI = () => {
+    const weight = parseFloat(bmiValues.weight);
+    const height = parseFloat(bmiValues.height);
+    
+    if (!weight || !height || weight <= 0 || height <= 0) {
+      setBmiResult(null);
+      return;
+    }
+    
+    let weightInKg = weight;
+    let heightInM = height;
+    
+    // Convert weight to kg if needed
+    if (bmiValues.weightUnit === 'lb') {
+      weightInKg = weight * 0.453592; // 1 lb = 0.453592 kg
+    }
+    
+    // Convert height to meters if needed
+    if (bmiValues.heightUnit === 'in') {
+      heightInM = height * 0.0254; // 1 inch = 0.0254 meters
+    }
+    
+    const bmi = weightInKg / (heightInM * heightInM);
+    
+    let category = '';
+    if (bmi < 18.5) {
+      category = 'Underweight';
+    } else if (bmi >= 18.5 && bmi < 25) {
+      category = 'Normal weight';
+    } else if (bmi >= 25 && bmi < 30) {
+      category = 'Overweight';
+    } else {
+      category = 'Obese';
+    }
+    
+    setBmiResult({
+      bmi: parseFloat(bmi.toFixed(2)),
+      category: category
+    });
+  };
+
+  // ABW Calculator functions
+  const calculateABW = () => {
+    const height = parseFloat(abwValues.height);
+    const actualWeight = parseFloat(abwValues.actualWeight);
+    
+    if (!height || !actualWeight || height <= 0 || actualWeight <= 0) {
+      setAbwResults({ ibw: null, abw: null });
+      return;
+    }
+    
+    // Calculate IBW using Devine formula
+    let ibw;
+    if (abwValues.gender === 'male') {
+      ibw = 50 + 2.3 * (height - 60);
+    } else {
+      ibw = 45.5 + 2.3 * (height - 60);
+    }
+    
+    // Ensure IBW is not negative
+    if (ibw < 0) ibw = 0;
+    
+    // Calculate ABW
+    const abw = ibw + 0.4 * (actualWeight - ibw);
+    
+    setAbwResults({
+      ibw: parseFloat(ibw.toFixed(2)),
+      abw: parseFloat(abw.toFixed(2))
+    });
+  };
+
+  // Effect to calculate BMI when values change
+  useEffect(() => {
+    if (calculatorMode === 'bmi') {
+      calculateBMI();
+    }
+  }, [bmiValues, calculatorMode]);
+
+  // Effect to calculate ABW when values change
+  useEffect(() => {
+    if (calculatorMode === 'abw') {
+      calculateABW();
+    }
+  }, [abwValues, calculatorMode]);
 
   // Keyboard support
   useEffect(() => {
@@ -283,23 +388,65 @@ const Calculator = () => {
     <div className="calculator-page">
       <div className="calculator-content">
         <div className="calculator-dashboard">
-          <div className="calculator-wrapper">
-            {/* Mode Selector */}
-            <div className="mode-selector">
-              <button
-                className={`mode-btn ${calculatorMode === 'standard' ? 'active' : ''}`}
-                onClick={() => setCalculatorMode('standard')}
+          {/* Mode Selector */}
+          <div className="mode-selector-container">
+              <button 
+                className="mode-selector-toggle"
+                onClick={() => setIsSelectorOpen(!isSelectorOpen)}
               >
-                Standard
+                <span className="mode-label">Calculator Mode:</span>
+                <span className="mode-current">
+                  {calculatorMode === 'standard' && 'STANDARD'}
+                  {calculatorMode === 'cross' && 'CROSS MULTIPLICATION'}
+                  {calculatorMode === 'bmi' && 'BMI'}
+                  {calculatorMode === 'abw' && 'ABW'}
+                </span>
+                <ChevronDown 
+                  size={20} 
+                  className={`dropdown-icon ${isSelectorOpen ? 'open' : ''}`}
+                />
               </button>
-              <button
-                className={`mode-btn ${calculatorMode === 'cross' ? 'active' : ''}`}
-                onClick={() => setCalculatorMode('cross')}
-              >
-                Cross Multiplication
-              </button>
+              <div className={`mode-selector ${isSelectorOpen ? 'open' : ''}`}>
+                <button
+                  className={`mode-btn ${calculatorMode === 'standard' ? 'active' : ''}`}
+                  onClick={() => {
+                    setCalculatorMode('standard');
+                    setIsSelectorOpen(false);
+                  }}
+                >
+                  STANDARD
+                </button>
+                <button
+                  className={`mode-btn ${calculatorMode === 'cross' ? 'active' : ''}`}
+                  onClick={() => {
+                    setCalculatorMode('cross');
+                    setIsSelectorOpen(false);
+                  }}
+                >
+                  CROSS MULTIPLICATION
+                </button>
+                <button
+                  className={`mode-btn ${calculatorMode === 'bmi' ? 'active' : ''}`}
+                  onClick={() => {
+                    setCalculatorMode('bmi');
+                    setIsSelectorOpen(false);
+                  }}
+                >
+                  BMI
+                </button>
+                <button
+                  className={`mode-btn ${calculatorMode === 'abw' ? 'active' : ''}`}
+                  onClick={() => {
+                    setCalculatorMode('abw');
+                    setIsSelectorOpen(false);
+                  }}
+                >
+                  ABW
+                </button>
+              </div>
             </div>
-
+            
+            <div className="calculator-wrapper">
             {/* Standard Calculator */}
             {calculatorMode === 'standard' && (
               <>
@@ -441,6 +588,145 @@ const Calculator = () => {
               <button className="calc-btn equals" onClick={calculateCross}>=</button>
             </div>
           </>
+        )}
+
+        {/* BMI Calculator */}
+        {calculatorMode === 'bmi' && (
+          <div className="special-calculator">
+            <div className="calc-header">
+              <h3>Body Mass Index (BMI) Calculator</h3>
+            </div>
+            
+            <div className="calc-inputs">
+              <div className="input-group">
+                <label>Weight</label>
+                <div className="input-with-toggle">
+                  <input
+                    type="number"
+                    value={bmiValues.weight}
+                    onChange={(e) => setBmiValues(prev => ({ ...prev, weight: e.target.value }))}
+                    placeholder="Enter weight"
+                    className="calc-input"
+                  />
+                  <div className="unit-toggle">
+                    <button 
+                      className={`unit-btn ${bmiValues.weightUnit === 'kg' ? 'active' : ''}`}
+                      onClick={() => setBmiValues(prev => ({ ...prev, weightUnit: 'kg' }))}
+                    >
+                      kg
+                    </button>
+                    <button 
+                      className={`unit-btn ${bmiValues.weightUnit === 'lb' ? 'active' : ''}`}
+                      onClick={() => setBmiValues(prev => ({ ...prev, weightUnit: 'lb' }))}
+                    >
+                      lb
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label>Height</label>
+                <div className="input-with-toggle">
+                  <input
+                    type="number"
+                    value={bmiValues.height}
+                    onChange={(e) => setBmiValues(prev => ({ ...prev, height: e.target.value }))}
+                    placeholder="Enter height"
+                    className="calc-input"
+                  />
+                  <div className="unit-toggle">
+                    <button 
+                      className={`unit-btn ${bmiValues.heightUnit === 'm' ? 'active' : ''}`}
+                      onClick={() => setBmiValues(prev => ({ ...prev, heightUnit: 'm' }))}
+                    >
+                      m
+                    </button>
+                    <button 
+                      className={`unit-btn ${bmiValues.heightUnit === 'in' ? 'active' : ''}`}
+                      onClick={() => setBmiValues(prev => ({ ...prev, heightUnit: 'in' }))}
+                    >
+                      in
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {bmiResult && (
+              <div className="calc-results">
+                <div className="result-card highlight-neon">
+                  <div className="result-label">BMI</div>
+                  <div className="result-value">{bmiResult.bmi}</div>
+                  <div className="result-category">{bmiResult.category}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ABW Calculator */}
+        {calculatorMode === 'abw' && (
+          <div className="special-calculator">
+            <div className="calc-header">
+              <h3>Adjusted Body Weight (ABW) Calculator</h3>
+            </div>
+            
+            <div className="calc-inputs">
+              <div className="input-group">
+                <label>Gender</label>
+                <div className="gender-toggle">
+                  <button 
+                    className={`gender-btn ${abwValues.gender === 'male' ? 'active' : ''}`}
+                    onClick={() => setAbwValues(prev => ({ ...prev, gender: 'male' }))}
+                  >
+                    Male
+                  </button>
+                  <button 
+                    className={`gender-btn ${abwValues.gender === 'female' ? 'active' : ''}`}
+                    onClick={() => setAbwValues(prev => ({ ...prev, gender: 'female' }))}
+                  >
+                    Female
+                  </button>
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label>Height (inches)</label>
+                <input
+                  type="number"
+                  value={abwValues.height}
+                  onChange={(e) => setAbwValues(prev => ({ ...prev, height: e.target.value }))}
+                  placeholder="Enter height in inches"
+                  className="calc-input"
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Actual Body Weight (kg)</label>
+                <input
+                  type="number"
+                  value={abwValues.actualWeight}
+                  onChange={(e) => setAbwValues(prev => ({ ...prev, actualWeight: e.target.value }))}
+                  placeholder="Enter actual weight in kg"
+                  className="calc-input"
+                />
+              </div>
+            </div>
+
+            {abwResults.ibw !== null && abwResults.abw !== null && (
+              <div className="calc-results">
+                <div className="result-card">
+                  <div className="result-label">Ideal Body Weight (IBW)</div>
+                  <div className="result-value">{abwResults.ibw} kg</div>
+                </div>
+                <div className="result-card highlight-neon">
+                  <div className="result-label">Adjusted Body Weight (ABW)</div>
+                  <div className="result-value">{abwResults.abw} kg</div>
+                </div>
+              </div>
+            )}
+          </div>
         )}
           </div>
         </div>

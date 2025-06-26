@@ -9,14 +9,14 @@ import {
   GitBranch,
   FileText,
   Package,
-  Search,
   Mic,
   User,
   Calculator as CalcIcon,
   StickyNote,
   ScanLine,
   Sun,
-  Moon
+  Moon,
+  Bookmark
 } from 'lucide-react';
 import { useCalculator } from '../../contexts/CalculatorContext';
 import { useSearch } from '../../contexts/SearchContext';
@@ -56,7 +56,8 @@ const Layout = ({ children }) => {
     { path: '/pump', icon: CurlinPumpIcon, label: 'Pump' },
     { path: '/supplies', icon: Package, label: 'Supplies' },
     { path: '/notes', icon: StickyNote, label: 'Notes' },
-    { path: '/analyzer', icon: ScanLine, label: 'Analyzer' }
+    { path: '/analyzer', icon: ScanLine, label: 'Analyzer' },
+    { path: '/bookmarks', icon: Bookmark, label: 'Bookmarks' }
   ];
 
   // Handle click outside to close dropdown
@@ -79,8 +80,8 @@ const Layout = ({ children }) => {
   };
 
   // Handle search result click
-  const handleResultClick = (medication) => {
-    navigateToMedication(medication);
+  const handleResultClick = (item) => {
+    navigateToMedication(item);
   };
 
   // Handle keyboard navigation
@@ -144,10 +145,9 @@ const Layout = ({ children }) => {
       <div className="main-container">
         <header className="header">
           <div className="search-container" ref={searchRef}>
-            <Search size={20} className="search-icon" />
             <input
               type="text"
-              placeholder="Type to search medications..."
+              placeholder="Search database"
               className="search-input"
               value={searchQuery}
               onChange={handleSearchChange}
@@ -156,24 +156,44 @@ const Layout = ({ children }) => {
             />
             
             {showDropdown && searchResults.length > 0 && (
-              <div className="search-dropdown" ref={dropdownRef}>
-                {searchResults.map((medication, index) => (
-                  <div
-                    key={medication.id}
-                    className={`search-result-item ${index === selectedIndex ? 'selected' : ''}`}
-                    onClick={() => handleResultClick(medication)}
-                    onMouseEnter={() => setSelectedIndex(index)}
-                  >
-                    <div className="result-main">
-                      <Pill size={16} className="result-icon" />
-                      <span className="result-brand">{medication.brandName}</span>
-                    </div>
-                    {medication.genericName && (
-                      <span className="result-generic">{medication.genericName}</span>
-                    )}
+              <>
+                <div 
+                  className="search-dropdown-backdrop" 
+                  onClick={() => setShowDropdown(false)}
+                />
+                <div className="search-dropdown" ref={dropdownRef}>
+                  <div className="search-dropdown-header">
+                    <h3 className="search-dropdown-title">Search Results</h3>
                   </div>
-                ))}
-              </div>
+                  <div className="search-dropdown-content">
+                    {searchResults.map((item, index) => (
+                      <div
+                        key={item.id}
+                        className={`search-result-item ${index === selectedIndex ? 'selected' : ''}`}
+                        onClick={() => handleResultClick(item)}
+                        onMouseEnter={() => setSelectedIndex(index)}
+                      >
+                        <div className="result-icon">
+                          {item.resultType === 'bookmark' ? '🔖' : '💊'}
+                        </div>
+                        <div className="result-content">
+                          <h4 className="result-title">
+                            {item.resultType === 'bookmark' ? item.title : item.brandName}
+                          </h4>
+                          {item.resultType === 'bookmark' && item.url ? (
+                            <p className="result-subtitle">{item.url}</p>
+                          ) : item.genericName ? (
+                            <p className="result-subtitle">{item.genericName}</p>
+                          ) : null}
+                        </div>
+                        <div className="result-category">
+                          {item.resultType === 'bookmark' ? 'Bookmark' : 'Medication'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
           </div>
           

@@ -137,6 +137,15 @@
   padding: clamp(1rem, 2vw, 1.5rem);
 }
 
+/* Intervention Form Container - Full Width */
+.intervention-form-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 2vw, 2rem);
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
 /* Main Section Container */
 .main-section {
   display: flex;
@@ -155,6 +164,11 @@
 .form-section:hover {
   border-color: var(--primary-border);
   box-shadow: 0 4px 16px var(--primary-light);
+}
+
+/* Compact form sections */
+.intervention-form-container .form-section {
+  padding: clamp(0.875rem, 1.25vw, 1.25rem);
 }
 
 .section-title {
@@ -184,11 +198,22 @@
   width: 100%;
 }
 
+/* Compact Grid for Intervention Form */
+.input-grid.compact-grid {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: clamp(0.75rem, 1vw, 1rem);
+}
+
 .input-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   min-height: 85px; /* Ensure consistent height for alignment */
+}
+
+/* Compact form adjustments */
+.compact-grid .input-group {
+  min-height: auto;
 }
 
 .input-group label {
@@ -201,6 +226,12 @@
   display: flex;
   align-items: flex-end;
   line-height: 1.2;
+}
+
+/* Compact form label adjustments */
+.compact-grid .input-group label {
+  min-height: 1.5em;
+  font-size: clamp(0.7rem, 1.3vw, 0.813rem);
 }
 
 .note-input,
@@ -452,10 +483,24 @@
   padding: clamp(1rem, 2vw, 1.5rem);
 }
 
+/* Conditional field handling in compact grid */
+.compact-grid .input-group:has(+ .input-group) {
+  grid-column: auto;
+}
+
+/* Ensure dropdown fields with conditional inputs span properly */
+.compact-grid > .input-group:has(.custom-dropdown) {
+  grid-column: span 1;
+}
+
 /* Responsive Design */
 @media (max-width: 1400px) {
   .note-form-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .input-grid.compact-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
 }
 

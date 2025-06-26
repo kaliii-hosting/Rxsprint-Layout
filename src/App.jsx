@@ -11,12 +11,13 @@ import Calculator from './pages/Calculator'
 import Medications from './pages/Medications'
 import Calendar from './pages/Calendar'
 import Chat from './pages/Chat'
-import Workflow from './pages/Workflow/WorkflowListView'
+import Workflow from './pages/Workflow'
 import NoteGenerator from './pages/NoteGenerator'
 import Pump from './pages/Pump'
 import Supplies from './pages/Supplies'
 import Notes from './pages/Notes'
 import Analyzer from './pages/Analyzer'
+import BookmarkManager from './pages/BookmarkManager'
 import './App.css'
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
                   <Route path="/supplies" element={<Supplies />} />
                   <Route path="/notes" element={<Notes />} />
                   <Route path="/analyzer" element={<Analyzer />} />
+                  <Route path="/bookmarks" element={<BookmarkManager />} />
                 </Routes>
               </Layout>
             </SearchProvider>

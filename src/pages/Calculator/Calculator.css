@@ -33,7 +33,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(1rem, 2vw, 1.5rem);
+  gap: 0;
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
@@ -47,7 +47,7 @@
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  overflow: visible;
+  overflow: hidden;
   transition: all 0.3s ease;
   animation: fadeInUp 0.5s ease;
 }
@@ -208,31 +208,111 @@
   justify-content: center;
 }
 
-/* Mode Selector Card Header */
-.mode-selector {
+/* Mode Selector Container */
+.mode-selector-container {
+  position: relative;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.mode-selector-toggle {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: clamp(1rem, 2vw, 1.5rem);
-  background: var(--primary-light);
-  border-bottom: 1px solid var(--primary-border);
+  justify-content: space-between;
   gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border-radius: 16px;
+}
+
+.mode-selector-toggle:hover {
+  background: var(--button-bg);
+}
+
+.mode-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.mode-current {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex: 1;
+  text-align: right;
+  margin-right: 0.5rem;
+}
+
+.dropdown-icon {
+  color: var(--text-secondary);
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.dropdown-icon.open {
+  transform: rotate(180deg);
+}
+
+/* Mode Selector Dropdown */
+.mode-selector {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  padding: 0;
+  gap: 0.75rem;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  margin-top: -1px;
+}
+
+.mode-selector.open {
+  max-height: 200px;
+  opacity: 1;
+  padding: 1rem;
 }
 
 .mode-btn {
-  flex: 1;
-  padding: clamp(0.5rem, 1vw, 0.75rem) clamp(1rem, 2vw, 1.5rem);
+  width: 100%;
+  padding: clamp(0.5rem, 1vw, 0.75rem) clamp(0.25rem, 0.5vw, 0.5rem);
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   border-radius: 8px;
-  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  font-size: clamp(0.625rem, 1vw, 0.75rem);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
+  white-space: normal;
+  line-height: 1.2;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .mode-btn:hover {
@@ -279,14 +359,14 @@
 }
 
 .fraction-input {
-  width: clamp(50px, 10vw, 70px);
-  height: clamp(40px, 8vw, 55px);
-  padding: clamp(0.5rem, 1vw, 0.75rem);
+  width: clamp(100px, 20vw, 150px);
+  height: clamp(50px, 10vw, 70px);
+  padding: clamp(0.75rem, 1.5vw, 1rem);
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   border-radius: 8px;
   color: var(--text-primary);
-  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
   font-weight: 600;
   text-align: center;
   outline: none;
@@ -356,8 +436,26 @@
     border-radius: 8px;
   }
   
-  .mode-selector {
-    padding: 1rem;
+  .mode-selector-toggle {
+    padding: 0.875rem 1rem;
+  }
+  
+  .mode-label {
+    font-size: 0.688rem;
+  }
+  
+  .mode-current {
+    font-size: 0.75rem;
+  }
+  
+  .dropdown-icon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .mode-selector.open {
+    padding: 0.75rem;
+    gap: 0.5rem;
   }
   
   .calculator-display {
@@ -388,6 +486,23 @@
   .calc-btn {
     min-height: 45px;
   }
+  
+  .mode-selector-toggle {
+    padding: 0.75rem;
+  }
+  
+  .mode-label {
+    font-size: 0.625rem;
+  }
+  
+  .mode-current {
+    font-size: 0.688rem;
+  }
+  
+  .dropdown-icon {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 /* Desktop height optimization */
@@ -405,6 +520,210 @@
   .calc-btn {
     min-height: 60px;
     max-height: 70px;
+  }
+}
+
+/* Special Calculator Styles (BMI & ABW) */
+.special-calculator {
+  width: 100%;
+  padding: 1.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.calc-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.calc-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calc-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calc-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.calc-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.input-with-toggle {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.unit-toggle,
+.gender-toggle {
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+  height: auto;
+}
+
+.unit-btn,
+.gender-btn {
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 50px;
+}
+
+.unit-btn:hover,
+.gender-btn:hover {
+  background: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.unit-btn.active,
+.gender-btn.active {
+  background: var(--primary-color);
+  color: white;
+  font-weight: 700;
+}
+
+.gender-toggle {
+  width: 100%;
+}
+
+.gender-btn {
+  flex: 1;
+  min-width: auto;
+}
+
+.calc-results {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.result-card {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.result-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-color);
+}
+
+/* Neon Green Highlight for specific cards */
+.result-card.highlight-neon {
+  background: #39ff14;
+  background: linear-gradient(135deg, #39ff14, #32e60d);
+  border: 2px solid #2bc40a;
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.5), inset 0 0 20px rgba(57, 255, 20, 0.2);
+}
+
+.result-card.highlight-neon:hover {
+  box-shadow: 0 0 30px rgba(57, 255, 20, 0.7), 0 8px 25px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #4dff28, #39ff14);
+}
+
+.result-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.result-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0a0a0a;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.result-category {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments for special calculators */
+@media (max-width: 480px) {
+  .special-calculator {
+    padding: 1rem;
+  }
+  
+  .calc-header h3 {
+    font-size: 1rem;
+  }
+  
+  .result-value {
+    font-size: 1.5rem;
+  }
+  
+  .input-with-toggle {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .unit-toggle {
+    flex-shrink: 0;
   }
 }
 

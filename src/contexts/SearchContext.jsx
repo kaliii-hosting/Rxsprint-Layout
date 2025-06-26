@@ -17,13 +17,15 @@ export const SearchProvider = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [medications, setMedications] = useState([]);
+  const [bookmarks, setBookmarks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
 
-  // Load medications on mount
+  // Load medications and bookmarks on mount
   useEffect(() => {
     loadMedications();
+    loadBookmarks();
   }, []);
 
   const loadMedications = async () => {
@@ -60,6 +62,38 @@ export const SearchProvider = ({ children }) => {
     }
   };
 
+  const loadBookmarks = async () => {
+    try {
+      // Check if firestore is initialized
+      if (!firestore) {
+        console.warn('Firestore not initialized yet');
+        return;
+      }
+      
+      const bookmarksRef = collection(firestore, 'bookmarks');
+      const snapshot = await getDocs(bookmarksRef);
+      
+      const bookmarksData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        type: 'bookmark'
+      }));
+      
+      // Sort bookmarks alphabetically by title
+      const sortedBookmarks = bookmarksData.sort((a, b) => {
+        const titleA = (a.title || '').toLowerCase();
+        const titleB = (b.title || '').toLowerCase();
+        return titleA.localeCompare(titleB);
+      });
+      
+      setBookmarks(sortedBookmarks);
+    } catch (error) {
+      console.error('Error loading bookmarks for search:', error);
+      // Don't crash the app if bookmarks can't be loaded
+      setBookmarks([]);
+    }
+  };
+
   // Search function
   const performSearch = (query) => {
     setSearchQuery(query);
@@ -70,9 +104,10 @@ export const SearchProvider = ({ children }) => {
       return;
     }
 
-    // Search medications
     const lowerQuery = query.toLowerCase();
-    const results = medications.filter(med => {
+    
+    // Search medications
+    const medicationResults = medications.filter(med => {
       const brandName = (med.brandName || '').toLowerCase();
       const genericName = (med.genericName || '').toLowerCase();
       const indication = (med.indication || '').toLowerCase();
@@ -80,27 +115,49 @@ export const SearchProvider = ({ children }) => {
       return brandName.includes(lowerQuery) || 
              genericName.includes(lowerQuery) || 
              indication.includes(lowerQuery);
-    }).slice(0, 8); // Limit to 8 results
+    }).map(med => ({ ...med, resultType: 'medication' }));
 
-    setSearchResults(results);
-    setShowDropdown(results.length > 0);
+    // Search bookmarks
+    const bookmarkResults = bookmarks.filter(bookmark => {
+      const title = (bookmark.title || '').toLowerCase();
+      const url = (bookmark.url || '').toLowerCase();
+      
+      return title.includes(lowerQuery) || url.includes(lowerQuery);
+    }).map(bookmark => ({ ...bookmark, resultType: 'bookmark' }));
+
+    // Combine results and limit to 8
+    const combinedResults = [...medicationResults, ...bookmarkResults].slice(0, 8);
+
+    setSearchResults(combinedResults);
+    setShowDropdown(combinedResults.length > 0);
   };
 
-  // Navigate to medication
-  const navigateToMedication = (medication) => {
+  // Navigate to medication or bookmark
+  const navigateToMedication = (item) => {
     try {
       setShowDropdown(false);
       setSearchQuery('');
       setSearchResults([]);
       
-      // Navigate to medications page and open the modal
       if (navigate) {
-        navigate('/medications', { 
-          state: { 
-            selectedMedicationId: medication.id,
-            openModal: true 
-          } 
-        });
+        if (item.resultType === 'bookmark') {
+          // Open bookmark URL
+          if (item.url) {
+            let url = item.url;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+              url = 'https://' + url;
+            }
+            window.open(url, '_blank');
+          }
+        } else {
+          // Navigate to medications page and open the modal
+          navigate('/medications', { 
+            state: { 
+              selectedMedicationId: item.id,
+              openModal: true 
+            } 
+          });
+        }
       }
     } catch (error) {
       console.error('Navigation error:', error);
@@ -124,7 +181,8 @@ export const SearchProvider = ({ children }) => {
       performSearch,
       navigateToMedication,
       clearSearch,
-      loadMedications
+      loadMedications,
+      loadBookmarks
     }}>
       {children}
     </SearchContext.Provider>
