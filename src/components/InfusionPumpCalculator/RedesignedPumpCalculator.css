@@ -2346,3 +2346,454 @@
   border-radius: 4px;
   display: inline-block;
 }
+
+/* Special Dosing Options - Pump Sheet Style */
+.special-dosing-section {
+  margin-top: 1.5rem;
+}
+
+.special-dosing-header {
+  margin-bottom: 1rem;
+}
+
+.special-dosing-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.special-dosing-subtitle {
+  font-size: 0.813rem;
+  color: var(--text-tertiary);
+}
+
+.special-dosing-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.special-dosing-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.special-dosing-card:hover:not(.disabled) {
+  border-color: var(--primary-border);
+  box-shadow: 0 4px 12px var(--primary-shadow);
+  transform: translateY(-2px);
+}
+
+.special-dosing-card.selected {
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 16px var(--primary-shadow);
+}
+
+.special-dosing-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.special-dosing-card.disabled:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border-color);
+}
+
+.card-header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.card-checkbox {
+  padding-top: 0.125rem;
+}
+
+.card-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.special-dosing-card.disabled .card-checkbox input[type="checkbox"] {
+  cursor: not-allowed;
+}
+
+.card-content {
+  flex: 1;
+}
+
+.dosing-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.dosing-value .dose-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.special-dosing-card.selected .dose-number {
+  color: var(--primary-color);
+}
+
+.dosing-value .dose-unit {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.dosing-value .dose-frequency {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  margin-left: 0.25rem;
+}
+
+.dosing-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.dosing-condition {
+  font-size: 0.813rem;
+  color: var(--text-tertiary);
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+
+/* Responsive adjustments for special dosing cards */
+@media (max-width: 768px) {
+  .special-dosing-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .special-dosing-card {
+    padding: 0.875rem;
+  }
+  
+  .dosing-value .dose-number {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .special-dosing-header {
+    margin-bottom: 0.75rem;
+  }
+  
+  .special-dosing-title {
+    font-size: 0.813rem;
+  }
+  
+  .special-dosing-subtitle {
+    font-size: 0.75rem;
+  }
+  
+  .dosing-label {
+    font-size: 0.813rem;
+  }
+}
+
+/* Vials Card with View Options Button */
+.calc-card.vials-card .calc-card-value {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vial-total {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.view-combinations-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.view-combinations-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Vial Combinations Modal */
+.vial-combinations-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.modal-content {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-header {
+  padding: 24px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: #666;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.prescribed-dose-info {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  color: #333;
+}
+
+.combinations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.combination-option {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.combination-option:hover {
+  border-color: #ccc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.combination-option.optimal {
+  border-color: var(--primary-color);
+  background: var(--primary-light);
+}
+
+.combination-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.combination-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.optimal-badge {
+  background: var(--primary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.strategy-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.combination-metrics {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.separator {
+  color: #ccc;
+}
+
+.vial-breakdown {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.vial-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 0.9375rem;
+}
+
+.vial-count {
+  font-weight: 700;
+  color: var(--primary-color);
+  min-width: 24px;
+}
+
+.vial-multiplier {
+  color: #999;
+}
+
+.vial-details {
+  color: #333;
+}
+
+.combination-summary {
+  display: flex;
+  gap: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.summary-item {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.summary-label {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.summary-value {
+  font-weight: 600;
+  color: #333;
+}
+
+.modal-footer-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 12px;
+  background: #f0f4f8;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.modal-footer-info svg {
+  flex-shrink: 0;
+  color: #3b82f6;
+}
+
+/* Light Theme Styles for Calculate Buttons */
+/* Target all primary calculate buttons to ensure white text and icons */
+.calculate-btn.primary {
+  color: white !important;
+}
+
+.calculate-btn.primary svg {
+  color: white !important;
+}
+
+/* Ensure white text on hover as well */
+.calculate-btn.primary:hover:not(:disabled) {
+  color: white !important;
+}
+
+.calculate-btn.primary:hover:not(:disabled) svg {
+  color: white !important;
+}
+
+/* Active mode buttons */
+.calculate-btn.primary.active-mode {
+  color: white !important;
+}
+
+.calculate-btn.primary.active-mode svg {
+  color: white !important;
+}
+
+/* Disabled state should also have white text when primary */
+.calculate-btn.primary:disabled {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.calculate-btn.primary:disabled svg {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
