@@ -14,6 +14,7 @@ import Chat from './pages/Chat'
 import Workflow from './pages/Workflow'
 import NoteGenerator from './pages/NoteGenerator'
 import Pump from './pages/Pump'
+import Shop from './pages/Shop'
 import Supplies from './pages/Supplies'
 import Notes from './pages/Notes'
 import Analyzer from './pages/Analyzer'
@@ -52,6 +53,7 @@ function App() {
                   <Route path="/note-generator" element={<NoteGenerator />} />
                   <Route path="/pump" element={<Pump />} />
                   <Route path="/supplies" element={<Supplies />} />
+                  <Route path="/shop" element={<Shop />} />
                   <Route path="/notes" element={<Notes />} />
                   <Route path="/analyzer" element={<Analyzer />} />
                   <Route path="/bookmarks" element={<BookmarkManager />} />

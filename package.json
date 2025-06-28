@@ -10,8 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "firebase": "^11.9.1",
     "gsap": "^3.13.0",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
+    "liquidfun-wasm": "^7.0.0",
     "lucide-react": "^0.517.0",
     "react": "^19.1.0",
     "react-dnd": "^16.0.1",

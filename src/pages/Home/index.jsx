@@ -189,7 +189,7 @@ const Home = () => {
               <div className="heart-pulse" ref={heartPulseRef}></div>
               <img 
                 ref={logoRef}
-                src="https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii//Rxsprint%20logo.png" 
+                src="https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii//rxsprint%20logo%20IIII.png" 
                 alt="Rxsprint Logo" 
                 className="logo-image"
               />

@@ -9,6 +9,7 @@ import {
   GitBranch,
   FileText,
   Package,
+  ShoppingCart,
   Mic,
   User,
   Calculator as CalcIcon,
@@ -34,8 +35,11 @@ const Layout = ({ children }) => {
   const { 
     searchQuery, 
     searchResults, 
+    searchSuggestions,
     showDropdown, 
+    showSuggestions,
     setShowDropdown,
+    setShowSuggestions,
     performSearch, 
     navigateToMedication,
     clearSearch 
@@ -55,6 +59,7 @@ const Layout = ({ children }) => {
     { path: '/note-generator', icon: FileText, label: 'Note Generator' },
     { path: '/pump', icon: CurlinPumpIcon, label: 'Pump' },
     { path: '/supplies', icon: Package, label: 'Supplies' },
+    { path: '/shop', icon: ShoppingCart, label: 'Shop' },
     { path: '/notes', icon: StickyNote, label: 'Notes' },
     { path: '/analyzer', icon: ScanLine, label: 'Analyzer' },
     { path: '/bookmarks', icon: Bookmark, label: 'Bookmarks' }
@@ -66,12 +71,13 @@ const Layout = ({ children }) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
           searchRef.current && !searchRef.current.contains(event.target)) {
         setShowDropdown(false);
+        setShowSuggestions(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [setShowDropdown]);
+  }, [setShowDropdown, setShowSuggestions]);
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -82,6 +88,12 @@ const Layout = ({ children }) => {
   // Handle search result click
   const handleResultClick = (item) => {
     navigateToMedication(item);
+  };
+
+  // Handle suggestion click
+  const handleSuggestionClick = (suggestion) => {
+    performSearch(suggestion);
+    setShowSuggestions(false);
   };
 
   // Handle keyboard navigation
@@ -117,7 +129,7 @@ const Layout = ({ children }) => {
       <aside className="sidebar">
         <div className="logo">
           <img 
-            src="https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii//Rxsprint%20logo.png" 
+            src="https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii//rxsprint%20logo%20IIII.png" 
             alt="RxSprint Logo" 
             className="logo-img"
           />
@@ -155,7 +167,28 @@ const Layout = ({ children }) => {
               onKeyDown={handleKeyDown}
             />
             
-            {showDropdown && searchResults.length > 0 && (
+            {/* Search Suggestions */}
+            {showSuggestions && searchSuggestions.length > 0 && (
+              <div className="search-suggestions" ref={dropdownRef}>
+                <div className="suggestions-header">
+                  <h3 className="suggestions-title">Suggestions</h3>
+                </div>
+                <div className="suggestions-content">
+                  {searchSuggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      className="suggestion-item"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      <span className="suggestion-text">{suggestion}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Search Results */}
+            {showDropdown && searchResults.length > 0 && !showSuggestions && (
               <>
                 <div 
                   className="search-dropdown-backdrop" 
@@ -174,20 +207,25 @@ const Layout = ({ children }) => {
                         onMouseEnter={() => setSelectedIndex(index)}
                       >
                         <div className="result-icon">
-                          {item.resultType === 'bookmark' ? '🔖' : '💊'}
+                          {item.resultType === 'bookmark' ? '🔖' : 
+                           item.resultType === 'shopProduct' ? '📦' : '💊'}
                         </div>
                         <div className="result-content">
                           <h4 className="result-title">
-                            {item.resultType === 'bookmark' ? item.title : item.brandName}
+                            {item.resultType === 'bookmark' ? item.title : 
+                             item.resultType === 'shopProduct' ? item.name : item.brandName}
                           </h4>
                           {item.resultType === 'bookmark' && item.url ? (
                             <p className="result-subtitle">{item.url}</p>
+                          ) : item.resultType === 'shopProduct' && item.irc_code ? (
+                            <p className="result-subtitle">IRC: {item.irc_code} - {item.category}</p>
                           ) : item.genericName ? (
                             <p className="result-subtitle">{item.genericName}</p>
                           ) : null}
                         </div>
                         <div className="result-category">
-                          {item.resultType === 'bookmark' ? 'Bookmark' : 'Medication'}
+                          {item.resultType === 'bookmark' ? 'Bookmark' : 
+                           item.resultType === 'shopProduct' ? 'Supply' : 'Medication'}
                         </div>
                       </div>
                     ))}
