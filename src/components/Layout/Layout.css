@@ -101,7 +101,7 @@
   justify-content: space-between;
   padding: 0 40px;
   position: relative;
-  z-index: 10000;
+  z-index: 1000;
   gap: 16px;
 }
 
@@ -113,7 +113,7 @@
   display: flex !important;
   visibility: visible !important;
   width: 100%;
-  z-index: 10002;
+  z-index: 1002;
   isolation: isolate;
 }
 
@@ -742,7 +742,7 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
   max-height: 300px;
   overflow: hidden;
-  z-index: 10001;
+  z-index: 1001;
   animation: dropdownSlideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -796,7 +796,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.1);
-  z-index: 10000;
+  z-index: 1000;
   backdrop-filter: blur(2px);
   animation: backdropFadeIn 0.2s ease-out;
 }
@@ -822,7 +822,7 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
   max-height: 500px;
   overflow: hidden;
-  z-index: 10001;
+  z-index: 1001;
   animation: dropdownSlideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 

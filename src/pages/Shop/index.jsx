@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Plus, Minus, ChevronUp, ChevronDown, FileText, Package } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, ChevronUp, ChevronDown, FileText, Package, Trash2 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 // Import combined supplies data
@@ -734,32 +735,34 @@ const Shop = () => {
         )}
       </div>
 
-      {/* Cart Overlay */}
-      <div 
-        className={`cart-overlay ${showCart ? 'active' : ''}`}
-        onClick={() => setShowCart(false)}
-      />
-      
-      {/* Cart Sidebar */}
-      <div className={`cart-sidebar ${showCart ? 'open' : ''}`}>
-        <div className="cart-header">
-          <h2>Shopping Cart</h2>
-          <div className="cart-header-buttons">
-            <button 
-              className="add-custom-btn"
-              onClick={() => setShowCustomProductForm(!showCustomProductForm)}
-              title="Add Custom Product"
-            >
-              <Package size={20} />
-            </button>
-            <button 
-              className="close-cart"
-              onClick={() => setShowCart(false)}
-            >
-              ×
-            </button>
-          </div>
-        </div>
+      {/* Cart Overlay and Sidebar - Rendered via Portal */}
+      {createPortal(
+        <>
+          <div 
+            className={`cart-overlay ${showCart ? 'active' : ''}`}
+            onClick={() => setShowCart(false)}
+          />
+          
+          {/* Cart Sidebar */}
+          <div className={`cart-sidebar ${showCart ? 'open' : ''}`}>
+            <div className="cart-header">
+              <h2>Shopping Cart</h2>
+              <div className="cart-header-buttons">
+                <button 
+                  className="add-custom-btn"
+                  onClick={() => setShowCustomProductForm(!showCustomProductForm)}
+                  title="Add Custom Product"
+                >
+                  <Package size={20} />
+                </button>
+                <button 
+                  className="close-cart"
+                  onClick={() => setShowCart(false)}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
         
         {/* Custom Product Form */}
         {showCustomProductForm && (
@@ -833,34 +836,46 @@ const Shop = () => {
                   <h4>{item.name}</h4>
                   <p className="cart-item-code">IRC: {item.irc_code}</p>
                 </div>
-                <div className="quantity-controls">
+                <div className="cart-item-actions">
+                  <div className="quantity-controls">
+                    <button 
+                      className="quantity-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateQuantity(item.id, item.quantity - 1);
+                      }}
+                    >
+                      <Minus size={16} />
+                    </button>
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        updateQuantity(item.id, parseInt(e.target.value) || 0);
+                      }}
+                      className="quantity-input"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button 
+                      className="quantity-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateQuantity(item.id, item.quantity + 1);
+                      }}
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
                   <button 
-                    className="quantity-btn"
+                    className="remove-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      updateQuantity(item.id, item.quantity - 1);
+                      removeFromCart(item.id);
                     }}
+                    title="Remove item"
                   >
-                    <Minus size={16} />
-                  </button>
-                  <input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      updateQuantity(item.id, parseInt(e.target.value) || 0);
-                    }}
-                    className="quantity-input"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <button 
-                    className="quantity-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      updateQuantity(item.id, item.quantity + 1);
-                    }}
-                  >
-                    <Plus size={16} />
+                    <Trash2 size={18} />
                   </button>
                 </div>
               </div>
@@ -881,10 +896,13 @@ const Shop = () => {
             </div>
           </div>
         )}
-      </div>
+          </div>
+        </>,
+        document.body
+      )}
       
-      {/* Product Modal */}
-      {showProductModal && selectedProduct && (
+      {/* Product Modal - Also rendered via Portal */}
+      {showProductModal && selectedProduct && createPortal(
         <div className="product-modal-overlay" onClick={closeProductModal}>
           <div className="product-modal" onClick={(e) => e.stopPropagation()}>
             <button className="close-modal-btn" onClick={closeProductModal}>
@@ -954,7 +972,8 @@ const Shop = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
