@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Plus, Minus, ChevronUp, ChevronDown, FileText } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, ChevronUp, ChevronDown, FileText, Package } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -19,6 +19,9 @@ const Shop = () => {
   const [showProductModal, setShowProductModal] = useState(false);
   const [modalQuantity, setModalQuantity] = useState(1);
   const [cartButtonAnimating, setCartButtonAnimating] = useState(false);
+  const [showCustomProductForm, setShowCustomProductForm] = useState(false);
+  const [customProductName, setCustomProductName] = useState('');
+  const [customProductQuantity, setCustomProductQuantity] = useState(1);
   const location = useLocation();
   const productRefs = useRef({});
 
@@ -34,6 +37,19 @@ const Shop = () => {
   useEffect(() => {
     localStorage.setItem('rxsprintCart', JSON.stringify(cart));
   }, [cart]);
+
+  // Prevent body scroll when cart is open
+  useEffect(() => {
+    if (showCart) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showCart]);
 
   // Define common supplies that can be used across multiple infusion types
   const commonSuppliesPatterns = [
@@ -238,6 +254,32 @@ const Shop = () => {
     ));
   };
 
+  // Add custom product to cart
+  const addCustomProduct = () => {
+    if (customProductName.trim() && customProductQuantity > 0) {
+      const customProduct = {
+        id: `custom-${Date.now()}`,
+        name: customProductName.trim(),
+        irc_code: 'CUSTOM',
+        description: 'Custom product added by user',
+        purpose: 'User-defined custom product',
+        category: 'CUSTOM',
+        quantity: customProductQuantity,
+        isCustom: true,
+        image_url: null // Will use Package icon
+      };
+      
+      setCart([...cart, customProduct]);
+      setCustomProductName('');
+      setCustomProductQuantity(1);
+      setShowCustomProductForm(false);
+      
+      // Animate cart button
+      setCartButtonAnimating(true);
+      setTimeout(() => setCartButtonAnimating(false), 600);
+    }
+  };
+
   // Open product modal
   const openProductModal = (product) => {
     setSelectedProduct(product);
@@ -262,11 +304,12 @@ const Shop = () => {
 
   // Filter products
   const filteredProducts = (() => {
+    let filtered;
     if (selectedCategory === 'ALL') {
       // For ALL category, show each unique product only once
       // Prefer showing from original category
       const seen = new Set();
-      return products.filter(product => {
+      filtered = products.filter(product => {
         const key = product.irc_code || product.name;
         
         // If we haven't seen this product yet
@@ -296,8 +339,11 @@ const Shop = () => {
       });
     } else {
       // For specific categories, show all products in that category
-      return products.filter(product => product.category === selectedCategory);
+      filtered = products.filter(product => product.category === selectedCategory);
     }
+    
+    // Sort alphabetically by name
+    return filtered.sort((a, b) => a.name.localeCompare(b.name));
   })();
 
   // Get unique categories
@@ -573,24 +619,34 @@ const Shop = () => {
   return (
     <div className="shop-page page-container">
       <div className="shop-header">
-        <h1 className="shop-title">Medical Supplies Shop</h1>
+        <h1 className="shop-title">Shop</h1>
         <div className="header-right">
           <div className="category-filters">
-            {categories.map(category => (
-              <button
-                key={category}
-                className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(category)}
-              >
-                {category === 'PIC' ? 'PICC' : category}
-              </button>
-            ))}
+            {categories.map(category => {
+              const displayName = category === 'PIC' ? 'PICC' : category;
+              const shortName = category === 'ALL' ? 'ALL' : 
+                               category === 'PIC' ? 'PC' : 
+                               category === 'PIV' ? 'IV' : 
+                               category === 'PORT' ? 'PT' : 
+                               category === 'GENERAL' ? 'GN' : category.substring(0, 2);
+              return (
+                <button
+                  key={category}
+                  className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
+                  onClick={() => setSelectedCategory(category)}
+                  title={displayName}
+                  data-short={shortName}
+                >
+                  {displayName}
+                </button>
+              );
+            })}
           </div>
           <button 
             className={`cart-button ${cartButtonAnimating ? 'animate' : ''}`}
             onClick={() => setShowCart(!showCart)}
           >
-            <ShoppingCart size={24} />
+            <ShoppingCart size={16} />
             {cartItemCount > 0 && (
               <span className="cart-badge">{cartItemCount}</span>
             )}
@@ -678,17 +734,75 @@ const Shop = () => {
         )}
       </div>
 
+      {/* Cart Overlay */}
+      <div 
+        className={`cart-overlay ${showCart ? 'active' : ''}`}
+        onClick={() => setShowCart(false)}
+      />
+      
       {/* Cart Sidebar */}
       <div className={`cart-sidebar ${showCart ? 'open' : ''}`}>
         <div className="cart-header">
           <h2>Shopping Cart</h2>
-          <button 
-            className="close-cart"
-            onClick={() => setShowCart(false)}
-          >
-            ×
-          </button>
+          <div className="cart-header-buttons">
+            <button 
+              className="add-custom-btn"
+              onClick={() => setShowCustomProductForm(!showCustomProductForm)}
+              title="Add Custom Product"
+            >
+              <Package size={20} />
+            </button>
+            <button 
+              className="close-cart"
+              onClick={() => setShowCart(false)}
+            >
+              ×
+            </button>
+          </div>
         </div>
+        
+        {/* Custom Product Form */}
+        {showCustomProductForm && (
+          <div className="custom-product-form">
+            <input
+              type="text"
+              placeholder="Product name"
+              value={customProductName}
+              onChange={(e) => setCustomProductName(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && customProductName.trim() && addCustomProduct()}
+              className="custom-product-input"
+              autoFocus
+            />
+            <div className="custom-product-controls">
+              <input
+                type="number"
+                placeholder="Qty"
+                value={customProductQuantity}
+                onChange={(e) => setCustomProductQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="custom-quantity-input"
+                min="1"
+                max="99"
+              />
+              <button 
+                className="add-custom-submit"
+                onClick={addCustomProduct}
+                disabled={!customProductName.trim()}
+              >
+                Add
+              </button>
+              <button 
+                className="cancel-custom"
+                onClick={() => {
+                  setShowCustomProductForm(false);
+                  setCustomProductName('');
+                  setCustomProductQuantity(1);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
         
         <div className="cart-items">
           {cart.length === 0 ? (
@@ -701,13 +815,19 @@ const Shop = () => {
                 onClick={() => toggleHighlight(item.id)}
               >
                 <div className="cart-item-image">
-                  <img 
-                    src={item.image_url || `https://via.placeholder.com/60?text=${encodeURIComponent(item.name.substring(0, 10))}`} 
-                    alt={item.name}
-                    onError={(e) => { 
-                      e.target.src = 'https://via.placeholder.com/60?text=' + encodeURIComponent(item.name.substring(0, 10)); 
-                    }}
-                  />
+                  {item.isCustom ? (
+                    <div className="custom-product-icon">
+                      <Package size={30} />
+                    </div>
+                  ) : (
+                    <img 
+                      src={item.image_url || `https://via.placeholder.com/60?text=${encodeURIComponent(item.name.substring(0, 10))}`} 
+                      alt={item.name}
+                      onError={(e) => { 
+                        e.target.src = 'https://via.placeholder.com/60?text=' + encodeURIComponent(item.name.substring(0, 10)); 
+                      }}
+                    />
+                  )}
                 </div>
                 <div className="cart-item-info">
                   <h4>{item.name}</h4>

@@ -385,7 +385,7 @@ const Calculator = () => {
   }, [display, activeField, previousValue, operation, crossValues, calculatorMode, waitingForNewValue]);
 
   return (
-    <div className="calculator-page">
+    <div className="calculator-page page-container">
       <div className="calculator-content">
         <div className="calculator-dashboard">
           {/* Mode Selector */}

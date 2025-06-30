@@ -114,6 +114,16 @@
   color: var(--primary-color);
 }
 
+/* Template description text */
+.template-description {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+}
+
 /* Note Form Card */
 .note-form-card {
   background: var(--bg-tertiary);
@@ -211,6 +221,11 @@
   min-height: 85px; /* Ensure consistent height for alignment */
 }
 
+/* Ensure all input groups have consistent spacing */
+.intervention-form-container .input-group {
+  margin-bottom: 0.75rem;
+}
+
 /* Compact form adjustments */
 .compact-grid .input-group {
   min-height: auto;
@@ -222,15 +237,18 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  min-height: 2.5em; /* Fixed height for label area */
+  min-height: 2.8em; /* Fixed height for label area */
+  height: 2.8em; /* Ensure consistent height */
   display: flex;
-  align-items: flex-end;
-  line-height: 1.2;
+  align-items: flex-start;
+  line-height: 1.3;
+  padding-bottom: 0.25rem;
 }
 
 /* Compact form label adjustments */
 .compact-grid .input-group label {
-  min-height: 1.5em;
+  min-height: 2.8em;
+  height: 2.8em;
   font-size: clamp(0.7rem, 1.3vw, 0.813rem);
 }
 
@@ -259,6 +277,20 @@
   border-color: var(--input-focus-border);
   background: var(--input-bg);
   box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* Neon green highlighting for filled fields */
+.note-input.filled,
+.note-dropdown.filled {
+  background: #00ff4115;
+  border-color: #00ff41;
+  box-shadow: 0 0 0 2px #00ff4130;
+}
+
+.note-input.filled:focus,
+.note-dropdown.filled:focus {
+  border-color: #00ff41;
+  box-shadow: 0 0 0 3px #00ff4150;
 }
 
 .note-input::placeholder,

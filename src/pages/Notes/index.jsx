@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { firestore as db } from '../../config/firebase';
@@ -27,9 +27,7 @@ const Notes = () => {
     starred: false
   });
   
-  // Delete confirmation state
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteNoteId, setDeleteNoteId] = useState(null);
+  // Delete confirmation state removed - using window.confirm instead
   
   // Mobile menu state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -150,20 +148,19 @@ const Notes = () => {
 
   const handleDelete = () => {
     if (selectedNote) {
-      setDeleteNoteId(selectedNote.id);
-      setShowDeleteConfirm(true);
+      if (window.confirm('Are you sure you want to delete this note?')) {
+        confirmDelete();
+      }
     }
   };
 
   const confirmDelete = async () => {
-    if (!deleteNoteId || !db) return;
+    if (!selectedNote || !db) return;
 
     try {
-      await deleteDoc(doc(db, 'notes', deleteNoteId));
+      await deleteDoc(doc(db, 'notes', selectedNote.id));
       setSelectedNote(null);
       setFormData({ title: '', content: '', starred: false });
-      setShowDeleteConfirm(false);
-      setDeleteNoteId(null);
     } catch (error) {
       console.error('Error deleting note:', error);
       alert('Failed to delete note. Please try again.');
@@ -190,6 +187,112 @@ const Notes = () => {
     } catch (error) {
       console.error('Error updating star status:', error);
     }
+  };
+
+  // Handle paste event for Excel tables
+  const handlePaste = (e) => {
+    e.preventDefault();
+    
+    // Get clipboard data
+    const clipboardData = e.clipboardData || window.clipboardData;
+    const pastedData = clipboardData.getData('text/plain');
+    
+    // Check if it's likely a table (has tabs and newlines)
+    if (pastedData.includes('\t')) {
+      // Convert to HTML table
+      const htmlTable = convertToHTMLTable(pastedData);
+      
+      // Insert at cursor position
+      const textarea = e.target;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      
+      const newContent = text.substring(0, start) + htmlTable + text.substring(end);
+      setFormData({ ...formData, content: newContent });
+    } else {
+      // Regular paste
+      const textarea = e.target;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      
+      const newContent = text.substring(0, start) + pastedData + text.substring(end);
+      setFormData({ ...formData, content: newContent });
+    }
+  };
+  
+  // Convert tab-separated data to HTML table
+  const convertToHTMLTable = (data) => {
+    const rows = data.trim().split('\n');
+    let html = '<table>\n';
+    
+    rows.forEach((row, index) => {
+      const cells = row.split('\t');
+      html += '  <tr>\n';
+      
+      cells.forEach(cell => {
+        const tag = index === 0 ? 'th' : 'td';
+        html += `    <${tag}>${cell.trim()}</${tag}>\n`;
+      });
+      
+      html += '  </tr>\n';
+    });
+    
+    html += '</table>\n';
+    return html;
+  };
+  
+  // Render content with HTML support for tables
+  const renderContent = (content) => {
+    if (!content) return <p className="empty-content">No content</p>;
+    
+    // Check if content contains HTML table
+    if (content.includes('<table>')) {
+      // Split content by tables to handle mixed content
+      const parts = content.split(/(<table>[\s\S]*?<\/table>)/g);
+      
+      return (
+        <div className="note-content-wrapper">
+          {parts.map((part, index) => {
+            if (part.startsWith('<table>')) {
+              // Render table as HTML
+              return (
+                <div 
+                  key={index}
+                  className="table-container"
+                  dangerouslySetInnerHTML={{ __html: part }}
+                />
+              );
+            } else {
+              // Render regular text with line breaks
+              return (
+                <div key={index} className="text-content">
+                  {part.split('\n').map((line, i) => (
+                    <React.Fragment key={i}>
+                      {line}
+                      {i < part.split('\n').length - 1 && <br />}
+                    </React.Fragment>
+                  ))}
+                </div>
+              );
+            }
+          })}
+        </div>
+      );
+    }
+    
+    // Regular content without tables
+    return (
+      <div className="text-content">
+        {content.split('\n').map((line, i) => (
+          <React.Fragment key={i}>
+            {line}
+            {i < content.split('\n').length - 1 && <br />}
+          </React.Fragment>
+        ))}
+      </div>
+    );
   };
 
   // Filter notes based on search term
@@ -222,7 +325,7 @@ const Notes = () => {
   };
 
   return (
-    <div className="notes-page">
+    <div className="notes-page page-container">
       {/* Header */}
       <div className="notes-header">
         <div className="notes-header-content">
@@ -297,9 +400,13 @@ const Notes = () => {
                   </div>
                   <p className="note-preview">
                     {note.content ? 
-                      (note.content.length > 60 ? 
-                        note.content.substring(0, 60) + '...' : 
-                        note.content
+                      ((() => {
+                        // Strip HTML tags for preview
+                        const textContent = note.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                        return textContent.length > 60 ? 
+                          textContent.substring(0, 60) + '...' : 
+                          textContent;
+                      })()
                       ) : 
                       'No content'
                     }
@@ -400,11 +507,12 @@ const Notes = () => {
                     className="note-textarea"
                     value={formData.content}
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    onPaste={handlePaste}
                     placeholder="Start typing your note..."
                   />
                 ) : (
                   <div className="note-content">
-                    {formData.content || <p className="empty-content">No content</p>}
+                    {renderContent(formData.content)}
                   </div>
                 )}
               </div>
@@ -423,26 +531,6 @@ const Notes = () => {
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="modal-overlay">
-          <div className="modal-content delete-modal">
-            <h3>Delete Note</h3>
-            <p>Are you sure you want to delete this note? This action cannot be undone.</p>
-            <div className="modal-actions">
-              <button className="action-btn" onClick={() => {
-                setShowDeleteConfirm(false);
-                setDeleteNoteId(null);
-              }}>
-                Cancel
-              </button>
-              <button className="action-btn danger" onClick={confirmDelete}>
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

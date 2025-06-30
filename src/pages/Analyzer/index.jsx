@@ -904,16 +904,23 @@ const Analyzer = () => {
                                       {deValue || '-'}
                                     </div>
                                     <div className="status-cell">
-                                      <div className={`status-indicator ${matchStatus}`}>
-                                        {matchStatus === 'match' && (
-                                          <Check size={16} className="status-icon" />
-                                        )}
-                                        {matchStatus === 'mismatch' && (
-                                          <XIcon size={16} className="status-icon" />
-                                        )}
-                                        {matchStatus === 'partial' && (
-                                          <AlertCircle size={16} className="status-icon" />
-                                        )}
+                                      <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
+                                        {matchStatus === 'match' ? (
+                                          <>
+                                            <Check size={16} className="status-icon" />
+                                            <span className="status-fallback">✓</span>
+                                          </>
+                                        ) : matchStatus === 'mismatch' ? (
+                                          <>
+                                            <XIcon size={16} className="status-icon" />
+                                            <span className="status-fallback">✗</span>
+                                          </>
+                                        ) : matchStatus === 'partial' ? (
+                                          <>
+                                            <AlertCircle size={16} className="status-icon" />
+                                            <span className="status-fallback">!</span>
+                                          </>
+                                        ) : null}
                                       </div>
                                     </div>
                                   </div>
@@ -954,16 +961,23 @@ const Analyzer = () => {
                                 {deValue || '-'}
                               </div>
                               <div className="status-cell">
-                                <div className={`status-indicator ${matchStatus}`}>
-                                  {matchStatus === 'match' && (
-                                    <Check size={16} className="status-icon" />
-                                  )}
-                                  {matchStatus === 'mismatch' && (
-                                    <XIcon size={16} className="status-icon" />
-                                  )}
-                                  {matchStatus === 'partial' && (
-                                    <AlertCircle size={16} className="status-icon" />
-                                  )}
+                                <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
+                                  {matchStatus === 'match' ? (
+                                    <>
+                                      <Check size={16} className="status-icon" />
+                                      <span className="status-fallback">✓</span>
+                                    </>
+                                  ) : matchStatus === 'mismatch' ? (
+                                    <>
+                                      <XIcon size={16} className="status-icon" />
+                                      <span className="status-fallback">✗</span>
+                                    </>
+                                  ) : matchStatus === 'partial' ? (
+                                    <>
+                                      <AlertCircle size={16} className="status-icon" />
+                                      <span className="status-fallback">!</span>
+                                    </>
+                                  ) : null}
                                 </div>
                               </div>
                             </div>

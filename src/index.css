@@ -159,6 +159,8 @@ a {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
 }
 
 /* Ensure all page content uses available width */
@@ -169,14 +171,495 @@ a {
   box-sizing: border-box;
 }
 
-/* Mobile responsive padding for readability */
+/* Mobile responsive - full viewport coverage */
 @media (max-width: 768px) {
-  .page-container {
-    padding: 1rem;
+  /* Override content padding when page-container is present */
+  .content:has(.page-container) {
+    padding: 0 !important;
+    overflow: hidden;
   }
   
-  /* Override for pages that need full canvas (like Home) */
-  .home-page-wrapper {
+  /* Ensure page-container fills entire viewport on mobile */
+  .page-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0 !important;
     padding: 0 !important;
   }
+}
+
+/* Ensure orange buttons have white text in light theme */
+[data-theme="light"] button[class*="orange"],
+[data-theme="light"] button[style*="#ff5400"],
+[data-theme="light"] button[style*="#ff5500"],
+[data-theme="light"] button[style*="#ff6600"],
+[data-theme="light"] button[style*="#ff7700"],
+[data-theme="light"] button[style*="#ff8800"],
+[data-theme="light"] .filter-btn,
+[data-theme="light"] .filter-btn.active,
+[data-theme="light"] .cart-button,
+[data-theme="light"] .add-to-cart-btn,
+[data-theme="light"] .checkout-btn,
+[data-theme="light"] .modal-add-to-cart-btn,
+[data-theme="light"] .action-btn.primary,
+[data-theme="light"] .submit-btn,
+[data-theme="light"] .confirm-btn,
+[data-theme="light"] .save-btn,
+[data-theme="light"] .create-btn,
+[data-theme="light"] .workflow-action-btn,
+[data-theme="light"] .bookmark-actions button,
+[data-theme="light"] [class*="btn"][style*="background"][style*="#ff"] {
+  color: white !important;
+}
+
+/* Additional selector for buttons with orange gradients */
+[data-theme="light"] button[style*="linear-gradient"][style*="#ff"],
+[data-theme="light"] [class*="btn"][style*="linear-gradient"][style*="#ff"] {
+  color: white !important;
+}
+
+/* Specific selectors for pages with orange buttons */
+[data-theme="light"] .filter-btn.active,
+[data-theme="light"] .view-btn.active,
+[data-theme="light"] .delete-btn,
+[data-theme="light"] .clear-all-btn,
+[data-theme="light"] .confirm-delete-btn,
+[data-theme="light"] .pin-submit,
+[data-theme="light"] button[class*="primary"],
+[data-theme="light"] .primary-btn {
+  color: white !important;
+}
+
+/* Workflow page specific orange buttons */
+[data-theme="light"] .workflow-tabs button,
+[data-theme="light"] .workflow-action-btn {
+  color: white !important;
+}
+
+/* Any element using primary color as background should have white text in light theme */
+[data-theme="light"] [style*="background: var(--primary-color)"],
+[data-theme="light"] [style*="background-color: var(--primary-color)"],
+[data-theme="light"] .calc-btn.operation,
+[data-theme="light"] .calc-btn.equals,
+[data-theme="light"] .mode-btn.active,
+[data-theme="light"] .calculate-btn,
+[data-theme="light"] .reset-btn.primary,
+[data-theme="light"] .save-note-btn,
+[data-theme="light"] .generate-btn,
+[data-theme="light"] .medication-save-btn,
+[data-theme="light"] .add-medication-btn,
+[data-theme="light"] .calendar-add-btn,
+[data-theme="light"] .home-card[style*="background: linear-gradient"] {
+  color: white !important;
+}
+
+/* Ensure all buttons with orange-ish backgrounds get white text */
+[data-theme="light"] button[style*="background"][style*="rgb(255"],
+[data-theme="light"] button[class*="btn"][style*="background"][style*="rgb(255"] {
+  color: white !important;
+}
+
+/* Grey/inactive buttons should have black text in light theme */
+[data-theme="light"] .filter-btn:not(.active) {
+  color: #000000 !important;
+}
+
+[data-theme="light"] .view-btn:not(.active) {
+  color: #000000 !important;
+}
+
+[data-theme="light"] .mode-btn:not(.active) {
+  color: #000000 !important;
+}
+
+/* General rule for grey background buttons */
+[data-theme="light"] button[style*="background: var(--bg-secondary)"]:not(.active),
+[data-theme="light"] button[style*="background-color: var(--bg-secondary)"]:not(.active),
+[data-theme="light"] button[style*="background: #f5f5f5"]:not(.active),
+[data-theme="light"] button[style*="background: rgb(245"]:not(.active),
+[data-theme="light"] button[style*="background: transparent"]:not(.active),
+[data-theme="light"] button[class*="btn"]:not(.active):not([style*="background: #ff"]):not([style*="background-color: #ff"]):not([style*="linear-gradient"]):not([style*="var(--primary-color)"]) {
+  color: #000000 !important;
+}
+
+/* Specific overrides for known grey buttons */
+[data-theme="light"] .bookmark-manager .filter-btn:not(.active),
+[data-theme="light"] .shop-page .filter-btn:not(.active),
+[data-theme="light"] .calculator-page .mode-btn:not(.active),
+[data-theme="light"] .workflow-page .tab-btn:not(.active) {
+  color: #000000 !important;
+}
+
+/* Ensure active orange buttons still have white text */
+[data-theme="light"] .filter-btn.active,
+[data-theme="light"] .view-btn.active,
+[data-theme="light"] .mode-btn.active,
+[data-theme="light"] button.active[style*="#ff"],
+[data-theme="light"] button.active[style*="var(--primary-color)"] {
+  color: white !important;
+}
+
+/* Handle hover states - when grey buttons are hovered and become orange */
+[data-theme="light"] .filter-btn:not(.active):hover,
+[data-theme="light"] .view-btn:not(.active):hover,
+[data-theme="light"] .mode-btn:not(.active):hover,
+[data-theme="light"] button[class*="btn"]:not(.active):hover[style*="background: #ff"],
+[data-theme="light"] button[class*="btn"]:not(.active):hover[style*="var(--primary-color)"] {
+  color: white !important;
+}
+
+/* Specific buttons that should have white text in light theme */
+/* Medications page - Edit and Delete buttons */
+[data-theme="light"] .medication-card .edit-medication,
+[data-theme="light"] .medication-card .delete-medication,
+[data-theme="light"] .medication-actions button,
+[data-theme="light"] .med-edit-btn,
+[data-theme="light"] .med-delete-btn {
+  color: white !important;
+}
+
+/* Calendar page - Add Event button */
+[data-theme="light"] .calendar-add-event,
+[data-theme="light"] .add-event-btn,
+[data-theme="light"] .calendar-header button[class*="add"],
+[data-theme="light"] .event-add-btn {
+  color: white !important;
+}
+
+/* Workflow page - Reset button */
+[data-theme="light"] .workflow-reset-btn,
+[data-theme="light"] .reset-workflow,
+[data-theme="light"] button[class*="reset"][class*="workflow"] {
+  color: white !important;
+}
+
+/* Note Generator page - Copy to Clipboard button */
+[data-theme="light"] .copy-to-clipboard,
+[data-theme="light"] .copy-note-btn,
+[data-theme="light"] .clipboard-btn,
+[data-theme="light"] button[class*="copy"][class*="clip"] {
+  color: white !important;
+}
+
+/* Pump page - Calculate Fixed Infusion and Setup Custom Infusion buttons */
+[data-theme="light"] .calculate-fixed-infusion,
+[data-theme="light"] .setup-custom-infusion,
+[data-theme="light"] .infusion-calc-btn,
+[data-theme="light"] .custom-infusion-btn,
+[data-theme="light"] button[class*="infusion"] {
+  color: white !important;
+}
+
+/* Supplies page - Calculate Supplies button */
+[data-theme="light"] .calculate-supplies-btn,
+[data-theme="light"] .supplies-calc-btn,
+[data-theme="light"] button[class*="calculate"][class*="supplies"] {
+  color: white !important;
+}
+
+/* Notes page - New Note and Create New Note buttons */
+[data-theme="light"] .new-note-btn,
+[data-theme="light"] .create-note-btn,
+[data-theme="light"] .add-note-btn,
+[data-theme="light"] button[class*="new"][class*="note"],
+[data-theme="light"] button[class*="create"][class*="note"] {
+  color: white !important;
+}
+
+/* Bookmarks page - Add Bookmark button */
+[data-theme="light"] .add-bookmark-btn,
+[data-theme="light"] .create-bookmark,
+[data-theme="light"] .bookmark-add-btn,
+[data-theme="light"] button[class*="add"][class*="bookmark"] {
+  color: white !important;
+}
+
+/* Additional comprehensive selectors for all mentioned buttons */
+[data-theme="light"] .prescription-btn,
+[data-theme="light"] .prescription-btn.edit,
+[data-theme="light"] .prescription-btn.delete,
+[data-theme="light"] .action-btn,
+[data-theme="light"] .action-btn.edit,
+[data-theme="light"] .action-btn.delete,
+[data-theme="light"] .reset-btn,
+[data-theme="light"] .copy-btn,
+[data-theme="light"] .clipboard-button,
+[data-theme="light"] .calculate-btn,
+[data-theme="light"] .setup-btn,
+[data-theme="light"] .add-btn,
+[data-theme="light"] .create-btn,
+[data-theme="light"] button[class*="action"],
+[data-theme="light"] button[class*="calculate"],
+[data-theme="light"] button[class*="setup"],
+[data-theme="light"] button[class*="reset"]:not([class*="workflow"]) {
+  color: white !important;
+}
+
+/* Ensure active/selected state also has white text */
+[data-theme="light"] button.active,
+[data-theme="light"] button.selected,
+[data-theme="light"] button[aria-selected="true"],
+[data-theme="light"] button[data-active="true"] {
+  color: white !important;
+}
+
+/* OVERRIDE: Force white text on specific buttons in light theme - HIGHEST PRIORITY */
+[data-theme="light"] .medications-page .prescription-btn.edit,
+[data-theme="light"] .medications-page .prescription-btn.delete,
+[data-theme="light"] .calendar-page button[class*="add"],
+[data-theme="light"] .workflow-page button[class*="reset"],
+[data-theme="light"] .note-generator-page button[class*="copy"],
+[data-theme="light"] .note-generator-page button[class*="clipboard"],
+[data-theme="light"] .pump-calculator-container button[class*="calculate"],
+[data-theme="light"] .pump-calculator-container button[class*="setup"],
+[data-theme="light"] .pump-calculator-container button[class*="infusion"],
+[data-theme="light"] .supplies-page button[class*="calculate"],
+[data-theme="light"] .notes-page button[class*="new"],
+[data-theme="light"] .notes-page button[class*="create"],
+[data-theme="light"] .bookmark-manager button[class*="add"],
+[data-theme="light"] .bookmark-manager button[class*="bookmark"] {
+  color: #ffffff !important;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+/* FINAL OVERRIDE - Using body selector for higher specificity */
+body[data-theme="light"] .prescription-btn.edit,
+body[data-theme="light"] .prescription-btn.delete,
+body[data-theme="light"] .prescription-btn,
+body[data-theme="light"] button.prescription-btn,
+body[data-theme="light"] .medications-container button.edit,
+body[data-theme="light"] .medications-container button.delete {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+/* UNIVERSAL ORANGE BUTTON OVERRIDE FOR LIGHT THEME */
+/* This catches ALL orange buttons by background color */
+body[data-theme="light"] button[style*="background: #ff"],
+body[data-theme="light"] button[style*="background-color: #ff"],
+body[data-theme="light"] button[style*="background:#ff"],
+body[data-theme="light"] button[style*="background-color:#ff"],
+body[data-theme="light"] button[style*="linear-gradient"][style*="#ff"],
+body[data-theme="light"] button[style*="rgb(255"],
+body[data-theme="light"] button[style*="rgba(255"],
+body[data-theme="light"] button[style*="background: var(--primary-color)"],
+body[data-theme="light"] button[style*="background-color: var(--primary-color)"],
+body[data-theme="light"] a[style*="background: #ff"],
+body[data-theme="light"] a[style*="background-color: #ff"],
+body[data-theme="light"] a[style*="linear-gradient"][style*="#ff"],
+body[data-theme="light"] a[style*="background: var(--primary-color)"],
+body[data-theme="light"] div[role="button"][style*="background: #ff"],
+body[data-theme="light"] div[role="button"][style*="background-color: #ff"],
+body[data-theme="light"] div[role="button"][style*="linear-gradient"][style*="#ff"],
+body[data-theme="light"] span[role="button"][style*="background: #ff"],
+body[data-theme="light"] span[role="button"][style*="background-color: #ff"] {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+/* Icons within orange buttons */
+body[data-theme="light"] button[style*="background: #ff"] svg,
+body[data-theme="light"] button[style*="background-color: #ff"] svg,
+body[data-theme="light"] button[style*="linear-gradient"][style*="#ff"] svg,
+body[data-theme="light"] button[style*="background: var(--primary-color)"] svg,
+body[data-theme="light"] a[style*="background: #ff"] svg,
+body[data-theme="light"] a[style*="linear-gradient"][style*="#ff"] svg,
+body[data-theme="light"] div[role="button"][style*="background: #ff"] svg,
+body[data-theme="light"] span[role="button"][style*="background: #ff"] svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* All elements with orange backgrounds via CSS classes */
+body[data-theme="light"] [class*="btn"][style*="background"][style*="#ff"],
+body[data-theme="light"] [class*="button"][style*="background"][style*="#ff"],
+body[data-theme="light"] [class*="btn"][style*="linear-gradient"][style*="#ff"],
+body[data-theme="light"] [class*="button"][style*="linear-gradient"][style*="#ff"] {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+/* Icons in elements with orange backgrounds via CSS classes */
+body[data-theme="light"] [class*="btn"][style*="background"][style*="#ff"] svg,
+body[data-theme="light"] [class*="button"][style*="background"][style*="#ff"] svg,
+body[data-theme="light"] [class*="btn"][style*="linear-gradient"][style*="#ff"] svg,
+body[data-theme="light"] [class*="button"][style*="linear-gradient"][style*="#ff"] svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* Catch buttons with primary color variable */
+body[data-theme="light"] button:not([style*="transparent"]):not([style*="none"]) {
+  &[style*="--primary-color"],
+  &[class*="primary"],
+  &[class*="orange"],
+  &.active[style*="background"],
+  &.selected[style*="background"] {
+    color: white !important;
+    -webkit-text-fill-color: white !important;
+    
+    svg {
+      color: white !important;
+      fill: white !important;
+      stroke: white !important;
+    }
+  }
+}
+
+/* Specific known orange button classes */
+body[data-theme="light"] .filter-btn.active,
+body[data-theme="light"] .cart-button,
+body[data-theme="light"] .add-to-cart-btn,
+body[data-theme="light"] .checkout-btn,
+body[data-theme="light"] .modal-add-to-cart-btn,
+body[data-theme="light"] .action-btn.primary,
+body[data-theme="light"] .submit-btn,
+body[data-theme="light"] .confirm-btn,
+body[data-theme="light"] .save-btn,
+body[data-theme="light"] .create-btn,
+body[data-theme="light"] .workflow-action-btn,
+body[data-theme="light"] .calculate-btn,
+body[data-theme="light"] .prescription-btn,
+body[data-theme="light"] .mode-btn.active,
+body[data-theme="light"] .calc-btn.operation,
+body[data-theme="light"] .calc-btn.equals {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+/* Icons in specific known orange button classes */
+body[data-theme="light"] .filter-btn.active svg,
+body[data-theme="light"] .cart-button svg,
+body[data-theme="light"] .add-to-cart-btn svg,
+body[data-theme="light"] .checkout-btn svg,
+body[data-theme="light"] .modal-add-to-cart-btn svg,
+body[data-theme="light"] .action-btn.primary svg,
+body[data-theme="light"] .submit-btn svg,
+body[data-theme="light"] .confirm-btn svg,
+body[data-theme="light"] .save-btn svg,
+body[data-theme="light"] .create-btn svg,
+body[data-theme="light"] .workflow-action-btn svg,
+body[data-theme="light"] .calculate-btn svg,
+body[data-theme="light"] .prescription-btn svg,
+body[data-theme="light"] .mode-btn.active svg,
+body[data-theme="light"] .calc-btn.operation svg,
+body[data-theme="light"] .calc-btn.equals svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* Force all children of orange buttons to be white */
+body[data-theme="light"] button[style*="background: #ff"] *,
+body[data-theme="light"] button[style*="background-color: #ff"] *,
+body[data-theme="light"] button[style*="linear-gradient"][style*="#ff"] *,
+body[data-theme="light"] button[style*="background: var(--primary-color)"] *,
+body[data-theme="light"] [class*="btn"].active *,
+body[data-theme="light"] [class*="button"].active * {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* ULTIMATE OVERRIDE - Catch buttons with orange backgrounds set via CSS */
+/* Target all possible orange hex values */
+body[data-theme="light"] button {
+  &[style*="#ff5400"],
+  &[style*="#ff5500"],
+  &[style*="#ff6600"],
+  &[style*="#ff7700"],
+  &[style*="#ff8800"],
+  &[style*="#FF5400"],
+  &[style*="#FF5500"],
+  &[style*="#FF6600"],
+  &[style*="#FF7700"],
+  &[style*="#FF8800"] {
+    color: white !important;
+    -webkit-text-fill-color: white !important;
+    
+    * {
+      color: white !important;
+      -webkit-text-fill-color: white !important;
+      fill: white !important;
+      stroke: white !important;
+    }
+  }
+}
+
+/* Global rule for ANY element that might act as a button with orange background */
+body[data-theme="light"] *[onclick][style*="background"],
+body[data-theme="light"] *[role="button"][style*="background"],
+body[data-theme="light"] *[tabindex][style*="background"] {
+  &[style*="#ff"],
+  &[style*="rgb(255"],
+  &[style*="rgba(255"],
+  &[style*="--primary-color"] {
+    color: white !important;
+    -webkit-text-fill-color: white !important;
+    
+    svg, i, span {
+      color: white !important;
+      fill: white !important;
+      stroke: white !important;
+    }
+  }
+}
+
+/* Absolute final fallback - any clickable element with orange-ish background */
+@media screen {
+  body[data-theme="light"] {
+    button:is([style*="#ff5"], [style*="#ff6"], [style*="#ff7"], [style*="#ff8"], [style*="#FF5"], [style*="#FF6"], [style*="#FF7"], [style*="#FF8"]),
+    a:is([style*="#ff5"], [style*="#ff6"], [style*="#ff7"], [style*="#ff8"], [style*="#FF5"], [style*="#FF6"], [style*="#FF7"], [style*="#FF8"]),
+    [role="button"]:is([style*="#ff5"], [style*="#ff6"], [style*="#ff7"], [style*="#ff8"], [style*="#FF5"], [style*="#FF6"], [style*="#FF7"], [style*="#FF8"]) {
+      color: white !important;
+      -webkit-text-fill-color: white !important;
+      
+      svg {
+        color: white !important;
+        fill: white !important;
+        stroke: white !important;
+      }
+    }
+  }
+}
+
+/* SPECIFIC FIX: Notes page Create New Note button */
+body[data-theme="light"] .notes-page .action-btn.primary,
+body[data-theme="light"] .empty-state .action-btn.primary,
+body[data-theme="light"] .notes-content .action-btn.primary {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+body[data-theme="light"] .notes-page .action-btn.primary svg,
+body[data-theme="light"] .empty-state .action-btn.primary svg,
+body[data-theme="light"] .notes-content .action-btn.primary svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* Fix the plus icon alignment and visibility */
+.action-btn.primary svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Ensure the button has proper styling */
+.empty-state .action-btn.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }

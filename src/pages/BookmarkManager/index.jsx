@@ -512,53 +512,56 @@ const BookmarkManager = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={`bookmark-manager ${theme}`}>
+      <div className={`bookmark-manager ${theme} page-container`}>
         {/* Header */}
         <div className="bookmark-header">
-          <div className="bookmark-header-content">
-            <div className="bookmark-header-title">
-              {currentFolder ? (
-                <>
-                  <button className="back-btn" onClick={handleBack}>
-                    <ChevronLeft size={20} />
-                  </button>
-                  <FolderOpen size={32} />
-                  <div>
-                    <h1>{currentFolder.title}</h1>
-                    <p>Manage your bookmarks and folders</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <Globe size={32} />
-                  <div>
-                    <h1>Bookmarks</h1>
-                    <p>Manage your bookmarks and folders</p>
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="bookmark-header-actions">
-              <button 
-                className="bookmark-action-btn secondary"
-                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : viewMode === 'list' ? 'compact' : 'grid')}
+          <h1 className="bookmark-title">
+            {currentFolder ? (
+              <>
+                <button className="back-btn" onClick={handleBack}>
+                  <ChevronLeft size={20} />
+                </button>
+                {currentFolder.title}
+              </>
+            ) : (
+              'Bookmarks Manager'
+            )}
+          </h1>
+          <div className="header-right">
+            <div className="view-filters">
+              <button
+                className={`filter-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Grid View"
               >
-                {viewMode === 'grid' && <Grid3x3 size={18} />}
-                {viewMode === 'list' && <List size={18} />}
-                {viewMode === 'compact' && <Square size={18} />}
-                <span>
-                  {viewMode === 'grid' && 'Grid View'}
-                  {viewMode === 'list' && 'List View'}
-                  {viewMode === 'compact' && 'Compact View'}
-                </span>
+                <Grid3x3 size={14} />
+                <span>Grid</span>
               </button>
-              <button className="bookmark-action-btn secondary" onClick={() => openAddModal('folder')}>
-                <Folder size={18} />
-                <span>Add Folder</span>
+              <button
+                className={`filter-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                <List size={14} />
+                <span>List</span>
               </button>
-              <button className="bookmark-action-btn primary" onClick={() => openAddModal('bookmark')}>
-                <Plus size={18} />
-                <span>Add Bookmark</span>
+              <button
+                className={`filter-btn ${viewMode === 'compact' ? 'active' : ''}`}
+                onClick={() => setViewMode('compact')}
+                title="Compact View"
+              >
+                <Square size={14} />
+                <span>Compact</span>
+              </button>
+            </div>
+            <div className="action-buttons">
+              <button className="action-btn folder-btn" onClick={() => openAddModal('folder')} title="New Folder">
+                <Folder size={14} />
+                <span className="btn-text">New Folder</span>
+              </button>
+              <button className="action-btn bookmark-btn" onClick={() => openAddModal('bookmark')} title="Add Bookmark">
+                <Plus size={14} />
+                <span className="btn-text">Add Bookmark</span>
               </button>
             </div>
           </div>

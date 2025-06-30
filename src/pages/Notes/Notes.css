@@ -390,6 +390,22 @@
   color: var(--text-secondary);
 }
 
+/* Fix Create New Note button in empty state */
+.empty-state .action-btn {
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 160px;
+}
+
+.empty-state .action-btn svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
 .empty-state svg,
 .loading-state svg {
   color: var(--text-tertiary);
@@ -529,6 +545,17 @@
   box-shadow: 0 4px 16px var(--primary-shadow);
 }
 
+/* Ensure white text and icons in light theme */
+[data-theme="light"] .action-btn.primary {
+  color: white !important;
+}
+
+[data-theme="light"] .action-btn.primary svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
 .action-btn.primary:hover {
   background: var(--primary-hover);
   transform: translateY(-3px);
@@ -635,6 +662,85 @@
 .empty-content {
   color: var(--text-tertiary);
   font-style: italic;
+}
+
+/* Note content wrapper for mixed content */
+.note-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Text content styling */
+.text-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Table container and styling */
+.table-container {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-primary);
+  font-size: 0.875rem;
+}
+
+.table-container th,
+.table-container td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border: 1px solid var(--border-color);
+}
+
+.table-container th {
+  background: var(--bg-tertiary);
+  font-weight: 600;
+  color: var(--text-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table-container td {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+.table-container tr:nth-child(even) td {
+  background: var(--bg-secondary);
+}
+
+.table-container tr:hover td {
+  background: var(--primary-light);
+}
+
+/* Dark theme table styling */
+.dark .table-container table {
+  background: var(--bg-secondary);
+}
+
+.dark .table-container th {
+  background: var(--bg-tertiary);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .table-container td {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .table-container tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dark .table-container tr:hover td {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* No Note Selected */

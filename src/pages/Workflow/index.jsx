@@ -160,7 +160,7 @@ const Workflow = () => {
               </button>
               <button className="workflow-action-btn primary" onClick={resetCompletions}>
                 <RefreshCcw size={18} />
-                <span>Reset Progress</span>
+                <span>Reset</span>
               </button>
             </div>
           </div>

@@ -3,18 +3,27 @@
   background: var(--bg-primary);
   width: 100%;
   height: 100%;
-  margin: 0;
-  padding: 0;
+  min-height: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
   position: relative;
   overflow: hidden;
 }
 
+/* Override content padding for home page */
+.content:has(.home-page-wrapper) {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+/* Ensure page-container class doesn't add padding */
+.home-page-wrapper.page-container {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
 .home-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
   width: 100%;
   height: 100%;
   background: var(--bg-primary);
@@ -22,6 +31,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
+  padding: 0;
 }
 
 .animation-wrapper {
@@ -35,6 +46,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
+  padding: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Allow interaction with logo */
+.animation-wrapper .logo-container {
+  pointer-events: auto;
 }
 
 /* Background gradient */
@@ -50,6 +70,7 @@
     transparent 70%);
   animation: pulseGradient 4s ease-in-out infinite;
   transform-origin: center;
+  pointer-events: none;
 }
 
 @keyframes pulseGradient {
@@ -73,6 +94,7 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  overflow: hidden;
 }
 
 .particle {
@@ -233,6 +255,56 @@
     left: -25%;
     width: 150%;
     height: 150%;
+  }
+}
+
+/* Mobile styles to ensure full coverage */
+@media (max-width: 768px) {
+  /* Ensure content area has no padding for home page */
+  .content:has(.home-page-wrapper) {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .home-page-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .home-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .animation-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Ensure particles container covers full area */
+  .particles-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Adjust ECG SVG for mobile */
+  .ecg-svg {
+    width: 150%;
+    min-width: 150%;
   }
 }
 

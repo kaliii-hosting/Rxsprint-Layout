@@ -4,6 +4,7 @@
   background-color: var(--bg-primary);
   color: var(--text-primary);
   overflow: hidden;
+  position: relative;
 }
 
 .sidebar {
@@ -16,6 +17,7 @@
   padding: 20px 0;
   flex-shrink: 0;
   position: relative;
+  z-index: 100;
 }
 
 .logo {
@@ -86,6 +88,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 .header {
@@ -253,6 +257,23 @@
   background-color: var(--bg-primary);
   width: 100%;
   height: 100%;
+  position: relative;
+}
+
+/* Global page container styles for full coverage */
+.page-container {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Remove content padding when page-container is present */
+.content:has(.page-container) {
+  padding: 0 !important;
 }
 
 .content::-webkit-scrollbar {
@@ -367,6 +388,24 @@
   .content {
     padding: 1rem;
   }
+  
+  /* Override padding for pages with page-container */
+  .content:has(.page-container) {
+    padding: 0 !important;
+  }
+  
+  /* Ensure page-container fills viewport on mobile */
+  .page-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -425,6 +464,24 @@
     font-size: 13px;
     padding: 0 12px;
     border-radius: 18px;
+  }
+  
+  /* Override content padding for page-container on very small screens */
+  .content:has(.page-container) {
+    padding: 0 !important;
+  }
+  
+  /* Ensure page-container fills viewport on very small screens */
+  .page-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
 
