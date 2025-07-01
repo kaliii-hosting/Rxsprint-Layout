@@ -1,0 +1,30 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow read/write access to notes folder for all users (development)
+    match /notes/{allPaths=**} {
+      allow read, write: if true;
+    }
+    
+    // Allow read/write access to voice-notes folder
+    match /voice-notes/{allPaths=**} {
+      allow read, write: if true;
+    }
+    
+    // Alternative: More secure rules for production
+    // Uncomment these and comment out the above rules for production use
+    /*
+    // Allow authenticated users to upload/read their own files
+    match /notes/{userId}/{allPaths=**} {
+      allow read: if true;  // Anyone can read
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Public read, authenticated write for voice notes
+    match /voice-notes/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    */
+  }
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star } from 'lucide-react';
+import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { firestore as db } from '../../config/firebase';
+import { firestore as db, storage } from '../../config/firebase';
 import { 
   collection, 
   addDoc, 
@@ -11,6 +11,7 @@ import {
   serverTimestamp, 
   onSnapshot 
 } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import './Notes.css';
 
 const Notes = () => {
@@ -24,8 +25,11 @@ const Notes = () => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    starred: false
+    starred: false,
+    images: []
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   
   // Delete confirmation state removed - using window.confirm instead
   
@@ -84,7 +88,8 @@ const Notes = () => {
     setFormData({
       title: 'New Note',
       content: '',
-      starred: false
+      starred: false,
+      images: []
     });
   };
 
@@ -93,7 +98,8 @@ const Notes = () => {
     setFormData({
       title: note.title || '',
       content: note.content || '',
-      starred: note.starred || false
+      starred: note.starred || false,
+      images: note.images || []
     });
     setIsEditing(false);
     setIsCreating(false);
@@ -115,11 +121,15 @@ const Notes = () => {
     try {
       if (isCreating) {
         const notesRef = collection(db, 'notes');
-        const docRef = await addDoc(notesRef, {
-          ...formData,
+        const noteData = {
+          title: formData.title,
+          content: formData.content,
+          starred: formData.starred,
+          images: formData.images || [],
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
-        });
+        };
+        const docRef = await addDoc(notesRef, noteData);
         
         // Create a temporary note object to display immediately
         const newNote = {
@@ -133,10 +143,14 @@ const Notes = () => {
         setIsCreating(false);
       } else if (selectedNote) {
         const noteRef = doc(db, 'notes', selectedNote.id);
-        await updateDoc(noteRef, {
-          ...formData,
+        const updateData = {
+          title: formData.title,
+          content: formData.content,
+          starred: formData.starred,
+          images: formData.images || [],
           updatedAt: serverTimestamp()
-        });
+        };
+        await updateDoc(noteRef, updateData);
       }
       
       setIsEditing(false);
@@ -160,7 +174,7 @@ const Notes = () => {
     try {
       await deleteDoc(doc(db, 'notes', selectedNote.id));
       setSelectedNote(null);
-      setFormData({ title: '', content: '', starred: false });
+      setFormData({ title: '', content: '', starred: false, images: [] });
     } catch (error) {
       console.error('Error deleting note:', error);
       alert('Failed to delete note. Please try again.');
@@ -189,36 +203,127 @@ const Notes = () => {
     }
   };
 
-  // Handle paste event for Excel tables
-  const handlePaste = (e) => {
-    e.preventDefault();
+  // Handle paste event for Excel tables and images
+  const handlePaste = async (e) => {
+    const items = Array.from(e.clipboardData?.items || []);
+    // Check for any image type including screenshots
+    const imageItem = items.find(item => 
+      item.type.startsWith('image/') || 
+      item.kind === 'file' && item.type.match(/^image\//)
+    );
     
-    // Get clipboard data
-    const clipboardData = e.clipboardData || window.clipboardData;
-    const pastedData = clipboardData.getData('text/plain');
-    
-    // Check if it's likely a table (has tabs and newlines)
-    if (pastedData.includes('\t')) {
-      // Convert to HTML table
-      const htmlTable = convertToHTMLTable(pastedData);
-      
-      // Insert at cursor position
-      const textarea = e.target;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const text = textarea.value;
-      
-      const newContent = text.substring(0, start) + htmlTable + text.substring(end);
-      setFormData({ ...formData, content: newContent });
+    if (imageItem) {
+      e.preventDefault();
+      const blob = imageItem.getAsFile();
+      if (blob) {
+        // Handle screenshots specifically
+        const isScreenshot = !blob.name || blob.name === 'image.png' || 
+                           blob.name.includes('screenshot') || 
+                           blob.name.includes('Screenshot');
+        await uploadImage(blob, isScreenshot);
+      }
     } else {
-      // Regular paste
-      const textarea = e.target;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const text = textarea.value;
+      // Handle text/table paste
+      e.preventDefault();
       
-      const newContent = text.substring(0, start) + pastedData + text.substring(end);
-      setFormData({ ...formData, content: newContent });
+      // Get clipboard data
+      const clipboardData = e.clipboardData || window.clipboardData;
+      const pastedData = clipboardData.getData('text/plain');
+      
+      // Check if it's likely a table (has tabs and newlines)
+      if (pastedData.includes('\t')) {
+        // Convert to HTML table
+        const htmlTable = convertToHTMLTable(pastedData);
+        
+        // Insert at cursor position
+        const textarea = e.target;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        
+        const newContent = text.substring(0, start) + htmlTable + text.substring(end);
+        setFormData({ ...formData, content: newContent });
+      } else {
+        // Regular paste
+        const textarea = e.target;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        
+        const newContent = text.substring(0, start) + pastedData + text.substring(end);
+        setFormData({ ...formData, content: newContent });
+      }
+    }
+  };
+  
+  // Upload image to Firebase Storage
+  const uploadImage = async (file, isScreenshot = false) => {
+    if (!storage) {
+      alert('Storage service not available');
+      return;
+    }
+    
+    setUploadingImage(true);
+    try {
+      // Create a unique filename
+      const timestamp = Date.now();
+      const fileExtension = file.type.split('/')[1] || 'png';
+      const baseName = isScreenshot ? 'screenshot' : (file.name?.split('.')[0] || 'image');
+      const fileName = `notes/${timestamp}_${baseName}.${fileExtension}`;
+      
+      // Set metadata for better organization
+      const metadata = {
+        contentType: file.type || 'image/png',
+        customMetadata: {
+          uploadedAt: new Date().toISOString(),
+          isScreenshot: isScreenshot.toString()
+        }
+      };
+      
+      // Upload to Firebase Storage with metadata
+      const storageRef = ref(storage, fileName);
+      const snapshot = await uploadBytes(storageRef, file, metadata);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      // Add image URL to the content with better formatting
+      const altText = isScreenshot ? 'Screenshot' : 'Pasted image';
+      const imageMarkup = `\n\n<img src="${downloadURL}" alt="${altText}" style="max-width: 100%; height: auto; display: block; margin: 10px auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />\n\n`;
+      
+      // Insert at cursor position or at the end
+      const textarea = document.querySelector('.note-textarea');
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = formData.content || '';
+        const newContent = text.substring(0, start) + imageMarkup + text.substring(end);
+        setFormData(prev => ({ ...prev, content: newContent }));
+        
+        // Move cursor after the inserted image
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd = start + imageMarkup.length;
+          textarea.focus();
+        }, 10);
+      } else {
+        // If not in edit mode, just append
+        setFormData(prev => ({ ...prev, content: (prev.content || '') + imageMarkup }));
+      }
+      
+      // Also store image URL in images array for reference
+      const newImages = [...(formData.images || []), downloadURL];
+      setFormData(prev => ({ ...prev, images: newImages }));
+      
+      // Auto-save after image upload if editing existing note
+      if (!isCreating && selectedNote) {
+        setTimeout(() => {
+          handleSave();
+        }, 500);
+      }
+      
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert(`Failed to upload ${isScreenshot ? 'screenshot' : 'image'}: ${error.message}`);
+    } finally {
+      setUploadingImage(false);
     }
   };
   
@@ -243,24 +348,24 @@ const Notes = () => {
     return html;
   };
   
-  // Render content with HTML support for tables
+  // Render content with HTML support for tables and images
   const renderContent = (content) => {
     if (!content) return <p className="empty-content">No content</p>;
     
-    // Check if content contains HTML table
-    if (content.includes('<table>')) {
-      // Split content by tables to handle mixed content
-      const parts = content.split(/(<table>[\s\S]*?<\/table>)/g);
+    // Check if content contains HTML (tables or images)
+    if (content.includes('<table>') || content.includes('<img')) {
+      // Split content by HTML elements to handle mixed content
+      const parts = content.split(/(<table>[\s\S]*?<\/table>|<img[^>]*>)/g);
       
       return (
         <div className="note-content-wrapper">
           {parts.map((part, index) => {
-            if (part.startsWith('<table>')) {
-              // Render table as HTML
+            if (part.startsWith('<table>') || part.startsWith('<img')) {
+              // Render HTML elements
               return (
                 <div 
                   key={index}
-                  className="table-container"
+                  className={part.startsWith('<table>') ? 'table-container' : 'image-container'}
                   dangerouslySetInnerHTML={{ __html: part }}
                 />
               );
@@ -282,7 +387,7 @@ const Notes = () => {
       );
     }
     
-    // Regular content without tables
+    // Regular content without HTML
     return (
       <div className="text-content">
         {content.split('\n').map((line, i) => (
@@ -301,6 +406,43 @@ const Notes = () => {
                          (note.content?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     return matchesSearch;
   }) : [];
+
+  // Handle drag and drop
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.items) {
+      for (let i = 0; i < e.dataTransfer.items.length; i++) {
+        if (e.dataTransfer.items[i].kind === 'file' && 
+            e.dataTransfer.items[i].type.match(/^image\//)) {
+          setIsDragging(true);
+          break;
+        }
+      }
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type.match(/^image\//)) {
+          await uploadImage(file);
+        }
+      }
+    }
+  };
 
   const formatDate = (date) => {
     if (!date) return '';
@@ -451,12 +593,13 @@ const Notes = () => {
                           setIsCreating(false);
                           if (isCreating) {
                             setSelectedNote(null);
-                            setFormData({ title: '', content: '', starred: false });
+                            setFormData({ title: '', content: '', starred: false, images: [] });
                           } else {
                             setFormData({
                               title: selectedNote?.title || '',
                               content: selectedNote?.content || '',
-                              starred: selectedNote?.starred || false
+                              starred: selectedNote?.starred || false,
+                              images: selectedNote?.images || []
                             });
                           }
                         }}>
@@ -501,15 +644,32 @@ const Notes = () => {
                 </div>
               )}
               
-              <div className="note-editor">
+              <div 
+                className={`note-editor ${isDragging ? 'dragging' : ''}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
                 {isEditing || isCreating ? (
-                  <textarea
-                    className="note-textarea"
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    onPaste={handlePaste}
-                    placeholder="Start typing your note..."
-                  />
+                  <>
+                    <textarea
+                      className="note-textarea"
+                      value={formData.content}
+                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                      onPaste={handlePaste}
+                      placeholder="Start typing your note, paste a screenshot, or drop an image..."
+                    />
+                    {uploadingImage && (
+                      <div className="upload-indicator">
+                        <div className="spinner" />
+                        <span>Uploading image...</span>
+                      </div>
+                    )}
+                    <div className="paste-hint">
+                      <ImageIcon size={16} />
+                      <span>Paste screenshots (Ctrl+V/Cmd+V) or drag & drop images</span>
+                    </div>
+                  </>
                 ) : (
                   <div className="note-content">
                     {renderContent(formData.content)}

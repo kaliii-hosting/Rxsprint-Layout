@@ -1267,3 +1267,91 @@
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
 }
+
+/* Image support styles */
+.image-container {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.image-container img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Upload indicator */
+.upload-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--primary-light);
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.upload-indicator .spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Paste hint */
+.paste-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.813rem;
+  opacity: 0.8;
+}
+
+/* Drag and drop styles */
+.note-editor.dragging {
+  position: relative;
+}
+
+.note-editor.dragging::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(var(--primary-light-rgb), 0.1);
+  border: 2px dashed var(--primary-light);
+  border-radius: 8px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.note-editor.dragging::after {
+  content: 'Drop image here';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-light);
+  z-index: 2;
+  pointer-events: none;
+}
