@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
-import { Upload, X, ScanLine, Check, X as XIcon, AlertCircle, RotateCcw, FileText, ChevronDown, Package, GitCompare, TrendingUp, TrendingDown, ImageIcon } from 'lucide-react';
+import { Upload, X, ScanLine, Check, X as XIcon, AlertCircle, RotateCcw, FileText, ChevronDown, Package, GitCompare, TrendingUp, TrendingDown, ImageIcon, Plus } from 'lucide-react';
 import './Analyzer.css';
 
 const Analyzer = () => {
@@ -20,20 +20,28 @@ const Analyzer = () => {
   const [selectedSupplyFile, setSelectedSupplyFile] = useState(null);
   const [supplyPreviewUrl, setSupplyPreviewUrl] = useState(null);
   
-  // New states for supplies comparison
-  const [previousSupplyFile, setPreviousSupplyFile] = useState(null);
-  const [currentSupplyFile, setCurrentSupplyFile] = useState(null);
-  const [previousSupplyPreview, setPreviousSupplyPreview] = useState(null);
-  const [currentSupplyPreview, setCurrentSupplyPreview] = useState(null);
+  // New states for supplies comparison - now supporting multiple files
+  const [previousSupplyFiles, setPreviousSupplyFiles] = useState([]);
+  const [currentSupplyFiles, setCurrentSupplyFiles] = useState([]);
+  const [previousSupplyPreviews, setPreviousSupplyPreviews] = useState([]);
+  const [currentSupplyPreviews, setCurrentSupplyPreviews] = useState([]);
   const [isAnalyzingSupplies, setIsAnalyzingSupplies] = useState(false);
   const [suppliesComparisonResults, setSuppliesComparisonResults] = useState(null);
   const [suppliesError, setSuppliesError] = useState(null);
   const [isPasteFocused, setIsPasteFocused] = useState({ previous: false, current: false });
+  const [activeFilter, setActiveFilter] = useState(null); // null, 'all', 'matched', 'changed', 'new', or 'missing'
+  
+  // Legacy single file states for backward compatibility
+  const previousSupplyFile = previousSupplyFiles[0] || null;
+  const currentSupplyFile = currentSupplyFiles[0] || null;
 
   const fileInputRef = useRef(null);
   const resetTimeoutRef = useRef(null);
   const previousSupplyDivRef = useRef(null);
   const currentSupplyDivRef = useRef(null);
+  const supplyFileInputRef = useRef(null);
+  const previousSupplyInputRef = useRef(null);
+  const currentSupplyInputRef = useRef(null);
 
   // Field configuration matching the screenshot layout
   const fieldSections = [
@@ -539,7 +547,7 @@ const Analyzer = () => {
     reader.readAsDataURL(file);
   };
 
-  // Handle paste event for supplies upload
+  // Handle paste event for supplies upload - now supports multiple files
   const handleSupplyPaste = async (e, type) => {
     const items = Array.from(e.clipboardData?.items || []);
     const imageItem = items.find(item => 
@@ -556,14 +564,19 @@ const Analyzer = () => {
           type: blob.type || 'image/png' 
         });
         
-        if (type === 'previous') {
-          setPreviousSupplyFile(file);
-          createPreview(file, setPreviousSupplyPreview);
-        } else if (type === 'current') {
-          setCurrentSupplyFile(file);
-          createPreview(file, setCurrentSupplyPreview);
-        }
-        setSuppliesError(null);
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (type === 'previous') {
+            setPreviousSupplyFiles([...previousSupplyFiles, file]);
+            setPreviousSupplyPreviews([...previousSupplyPreviews, e.target.result]);
+          } else if (type === 'current') {
+            setCurrentSupplyFiles([...currentSupplyFiles, file]);
+            setCurrentSupplyPreviews([...currentSupplyPreviews, e.target.result]);
+          }
+          setSuppliesError(null);
+        };
+        reader.readAsDataURL(file);
       }
     }
   };
@@ -584,19 +597,33 @@ const Analyzer = () => {
     }
   };
   
-  const removeSupplyFile = (type) => {
+  const removeSupplyFile = (type, index = null) => {
     if (type === 'previous') {
-      setPreviousSupplyFile(null);
-      setPreviousSupplyPreview(null);
+      if (index !== null) {
+        // Remove specific file
+        setPreviousSupplyFiles(previousSupplyFiles.filter((_, i) => i !== index));
+        setPreviousSupplyPreviews(previousSupplyPreviews.filter((_, i) => i !== index));
+      } else {
+        // Remove all previous files
+        setPreviousSupplyFiles([]);
+        setPreviousSupplyPreviews([]);
+      }
     } else if (type === 'current') {
-      setCurrentSupplyFile(null);
-      setCurrentSupplyPreview(null);
+      if (index !== null) {
+        // Remove specific file
+        setCurrentSupplyFiles(currentSupplyFiles.filter((_, i) => i !== index));
+        setCurrentSupplyPreviews(currentSupplyPreviews.filter((_, i) => i !== index));
+      } else {
+        // Remove all current files
+        setCurrentSupplyFiles([]);
+        setCurrentSupplyPreviews([]);
+      }
     } else {
       // Remove all
-      setPreviousSupplyFile(null);
-      setCurrentSupplyFile(null);
-      setPreviousSupplyPreview(null);
-      setCurrentSupplyPreview(null);
+      setPreviousSupplyFiles([]);
+      setCurrentSupplyFiles([]);
+      setPreviousSupplyPreviews([]);
+      setCurrentSupplyPreviews([]);
       setSuppliesComparisonResults(null);
       setSuppliesError(null);
     }
@@ -604,17 +631,21 @@ const Analyzer = () => {
   
   const resetSuppliesAnalyzer = () => {
     // Clear all supplies-related state
-    setPreviousSupplyFile(null);
-    setCurrentSupplyFile(null);
-    setPreviousSupplyPreview(null);
-    setCurrentSupplyPreview(null);
+    setPreviousSupplyFiles([]);
+    setCurrentSupplyFiles([]);
+    setPreviousSupplyPreviews([]);
+    setCurrentSupplyPreviews([]);
     setSuppliesComparisonResults(null);
     setSuppliesError(null);
     setIsAnalyzingSupplies(false);
+    setActiveFilter(null); // Reset filter
     
     // Reset paste focus states
     setIsPasteFocused({ previous: false, current: false });
   };
+  
+  // Alias for handleResetSupplies (used in the results section)
+  const handleResetSupplies = resetSuppliesAnalyzer;
   
   const handleReset = () => {
     // Prevent multiple rapid resets
@@ -858,63 +889,77 @@ const Analyzer = () => {
     };
   };
 
-  // Supplies Analysis Functions
+  // Supplies Analysis Functions - now supports multiple files
   const analyzeSupplies = async () => {
-    if (!previousSupplyFile || !currentSupplyFile) {
-      setSuppliesError('Please upload both previous and current order screenshots');
+    if (previousSupplyFiles.length === 0 || currentSupplyFiles.length === 0) {
+      setSuppliesError('Please upload at least one screenshot for both previous and current orders');
       return;
     }
     
     console.log('Starting supplies analysis...');
-    console.log('Previous file:', previousSupplyFile.name, previousSupplyFile.size);
-    console.log('Current file:', currentSupplyFile.name, currentSupplyFile.size);
+    console.log('Previous files:', previousSupplyFiles.length);
+    console.log('Current files:', currentSupplyFiles.length);
     
     setIsAnalyzingSupplies(true);
     setSuppliesError(null);
     setSuppliesComparisonResults(null);
     
-    const suppliesEndpoint = 'https://supplies-analyzer-custom.cognitiveservices.azure.com/';
-    const suppliesApiKey = '8ddcbe0ec4c84b97ae4582dca553b69e';
-    // Try custom model first, fallback to prebuilt if needed
-    let modelId = 'Table-Format-Paid'; // Using custom trained model
-    const fallbackModelId = 'prebuilt-layout';
-    const apiVersion = '2023-07-31';
+    const suppliesEndpoint = 'https://supplies-analyzer-custom2.cognitiveservices.azure.com/';
+    const suppliesApiKey = '03f80f22ae65405b9aac9bbed2048244';
+    // Using Lion-Heart custom trained model only
+    const modelId = 'Lion-Heart';
+    const apiVersion = '2023-07-31'; // Using stable API version
     
     try {
-      // Analyze both documents
-      console.log('Analyzing previous order document...');
-      let previousData;
-      try {
-        previousData = await analyzeSupplyDocument(previousSupplyFile, suppliesEndpoint, suppliesApiKey, modelId, apiVersion);
-      } catch (error) {
-        if (error.message.includes('404') && modelId !== fallbackModelId) {
-          console.warn('Custom model not found, trying prebuilt-layout model...');
-          modelId = fallbackModelId;
-          previousData = await analyzeSupplyDocument(previousSupplyFile, suppliesEndpoint, suppliesApiKey, modelId, apiVersion);
-        } else {
-          throw error;
-        }
+      // Analyze all previous order documents
+      console.log('=== STARTING SUPPLIES ANALYSIS ===');
+      console.log(`Step 1: Analyzing ${previousSupplyFiles.length} previous order document(s)...`);
+      
+      let allPreviousData = [];
+      for (let i = 0; i < previousSupplyFiles.length; i++) {
+        console.log(`Analyzing previous file ${i + 1}/${previousSupplyFiles.length}: ${previousSupplyFiles[i].name}`);
+        const data = await analyzeSupplyDocument(previousSupplyFiles[i], suppliesEndpoint, suppliesApiKey, modelId, apiVersion);
+        allPreviousData = [...allPreviousData, ...data];
       }
-      console.log('Previous order data extracted:', previousData.length, 'items');
+      
+      console.log('Step 1 Complete: Previous order data extracted:', allPreviousData.length, 'items total');
       
       // Debug log the extracted data
       console.log('\n=== EXTRACTED PREVIOUS ORDERS ===');
-      previousData.forEach((order, idx) => {
+      allPreviousData.forEach((order, idx) => {
         console.log(`${idx + 1}. RX: ${order.rxNumber}, Med: "${order.medication}", Prescriber: "${order.prescriber}", Qty: "${order.quantity}", Days: "${order.daySupply}"`);
       });
       
-      console.log('Analyzing current order document...');
-      const currentData = await analyzeSupplyDocument(currentSupplyFile, suppliesEndpoint, suppliesApiKey, modelId, apiVersion);
-      console.log('Current order data extracted:', currentData.length, 'items');
+      console.log(`\nStep 2: Analyzing ${currentSupplyFiles.length} current order document(s)...`);
+      
+      let allCurrentData = [];
+      for (let i = 0; i < currentSupplyFiles.length; i++) {
+        console.log(`Analyzing current file ${i + 1}/${currentSupplyFiles.length}: ${currentSupplyFiles[i].name}`);
+        const data = await analyzeSupplyDocument(currentSupplyFiles[i], suppliesEndpoint, suppliesApiKey, modelId, apiVersion);
+        allCurrentData = [...allCurrentData, ...data];
+      }
+      
+      console.log('Step 2 Complete: Current order data extracted:', allCurrentData.length, 'items total');
       
       // Debug log the extracted data
       console.log('\n=== EXTRACTED CURRENT ORDERS ===');
-      currentData.forEach((order, idx) => {
+      allCurrentData.forEach((order, idx) => {
         console.log(`${idx + 1}. RX: ${order.rxNumber}, Med: "${order.medication}", Prescriber: "${order.prescriber}", Qty: "${order.quantity}", Days: "${order.daySupply}"`);
       });
       
+      // Additional debug: Check for duplicate values in extracted data
+      console.log('\n=== CHECKING FOR DUPLICATE VALUES IN EXTRACTED DATA ===');
+      [...allPreviousData, ...allCurrentData].forEach((order, idx) => {
+        const duplicateFields = [];
+        if (order.quantity && order.quantity.match(/(\d+)\s+\1/)) duplicateFields.push(`quantity: "${order.quantity}"`);
+        if (order.daySupply && order.daySupply.match(/(\d+)\s+\1/)) duplicateFields.push(`daySupply: "${order.daySupply}"`);
+        if (duplicateFields.length > 0) {
+          console.log(`Order ${idx}: ${order.medication} has duplicate values:`, duplicateFields.join(', '));
+        }
+      });
+      
       // Extract tables and compare
-      const comparison = compareSupplyTables(previousData, currentData);
+      const comparison = compareSupplyTables(allPreviousData, allCurrentData);
       console.log('Comparison results:', {
         previousCount: comparison.previousOrders.length,
         currentCount: comparison.currentOrders.length,
@@ -932,6 +977,15 @@ const Analyzer = () => {
         console.log('Sample current order data:', comparison.currentOrders[0]);
       }
       
+      // Check if no data was extracted
+      if (allPreviousData.length === 0 && allCurrentData.length === 0) {
+        console.error('No orders were extracted from any document');
+        console.log('Debug: Check if Lion-Heart model is returning data in a different format');
+        setSuppliesError('Unable to extract order data from the uploaded screenshots. The Lion-Heart model may need to be retrained or the data format may be different.');
+        setIsAnalyzingSupplies(false);
+        return;
+      }
+      
       setSuppliesComparisonResults(comparison);
       
     } catch (err) {
@@ -947,68 +1001,171 @@ const Analyzer = () => {
     const cleanEndpoint = endpoint.endsWith('/') ? endpoint : endpoint + '/';
     const analyzeUrl = `${cleanEndpoint}formrecognizer/documentModels/${modelId}:analyze?api-version=${apiVersion}`;
     
-    console.log('Analyzing document with URL:', analyzeUrl);
-    console.log('Endpoint:', cleanEndpoint);
-    console.log('Model ID:', modelId);
-    console.log('API Version:', apiVersion);
-    console.log('API Key (first 10 chars):', apiKey.substring(0, 10) + '...');
+    console.log('=== Starting Document Analysis ===');
+    console.log('Analyzing document with model:', modelId);
+    console.log('Full Azure URL:', analyzeUrl);
+    console.log('File name:', file.name);
+    console.log('File size:', file.size, 'bytes');
     console.log('File type:', file.type);
-    console.log('File size:', file.size);
     
-    const response = await fetch(analyzeUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': file.type || 'application/octet-stream',
-        'Ocp-Apim-Subscription-Key': apiKey
-      },
-      body: file
-    });
+    // Add timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for initial request
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Azure API error response:', errorText);
-      console.error('Response status:', response.status);
-      console.error('Response headers:', response.headers);
-      throw new Error(`Azure API error: ${response.status} - ${errorText}`);
+    try {
+      const response = await fetch(analyzeUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+          'Ocp-Apim-Subscription-Key': apiKey
+        },
+        body: file,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      console.log('Initial request completed, status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Azure API error response:', errorText);
+        console.error('Response status:', response.status);
+        
+        if (response.status === 404) {
+          throw new Error(`Model '${modelId}' not found. Please ensure the model exists in your Azure Document Intelligence resource.`);
+        } else {
+          throw new Error(`Azure API error: ${response.status} - ${errorText}`);
+        }
+      }
+      
+      const operationLocation = response.headers.get('operation-location');
+    
+    if (!operationLocation) {
+      throw new Error('No operation location returned from Azure');
     }
     
-    const operationLocation = response.headers.get('operation-location');
+    console.log('Operation location:', operationLocation);
     
     // Poll for results
     let result;
     let attempts = 0;
     const maxAttempts = 30;
     
-    do {
-      await new Promise(r => setTimeout(r, 2000));
-      const resultResponse = await fetch(operationLocation, {
-        headers: { 'Ocp-Apim-Subscription-Key': apiKey }
-      });
-      result = await resultResponse.json();
-      attempts++;
-    } while ((result.status === 'running' || result.status === 'notStarted') && attempts < maxAttempts);
+    console.log('Starting to poll for results...');
+    
+    try {
+      do {
+        await new Promise(r => setTimeout(r, 2000));
+        console.log(`Polling attempt ${attempts + 1}/${maxAttempts}...`);
+        
+        const resultResponse = await fetch(operationLocation, {
+          headers: { 'Ocp-Apim-Subscription-Key': apiKey }
+        });
+        
+        if (!resultResponse.ok) {
+          const errorText = await resultResponse.text();
+          console.error('Polling error:', errorText);
+          throw new Error(`Failed to get analysis results: ${resultResponse.status}`);
+        }
+        
+        result = await resultResponse.json();
+        console.log('Current status:', result.status);
+        attempts++;
+      } while ((result.status === 'running' || result.status === 'notStarted') && attempts < maxAttempts);
+    } catch (pollError) {
+      console.error('Error during polling:', pollError);
+      throw new Error(`Polling failed: ${pollError.message}`);
+    }
+    
+    if (attempts >= maxAttempts) {
+      throw new Error('Document analysis timed out after 60 seconds');
+    }
     
     if (result.status !== 'succeeded') {
-      throw new Error('Document analysis failed');
+      console.error('Analysis failed with status:', result.status);
+      if (result.analyzeResult?.errors) {
+        console.error('Errors:', result.analyzeResult.errors);
+      }
+      throw new Error(`Document analysis failed with status: ${result.status}`);
+    }
+    
+    console.log('Azure Document Intelligence Result:', {
+      hasDocuments: !!(result.analyzeResult.documents && result.analyzeResult.documents.length > 0),
+      documentCount: result.analyzeResult.documents?.length || 0,
+      hasTables: !!(result.analyzeResult.tables && result.analyzeResult.tables.length > 0),
+      tableCount: result.analyzeResult.tables?.length || 0,
+      modelId: modelId,
+      analyzeResultKeys: Object.keys(result.analyzeResult || {})
+    });
+    
+    // Debug: Check for other possible data locations
+    if (result.analyzeResult) {
+      console.log('AnalyzeResult structure:', {
+        hasPages: !!result.analyzeResult.pages,
+        pageCount: result.analyzeResult.pages?.length || 0,
+        hasKeyValuePairs: !!result.analyzeResult.keyValuePairs,
+        hasEntities: !!result.analyzeResult.entities,
+        hasStyles: !!result.analyzeResult.styles
+      });
+    }
+    
+    // Debug: Log the full structure for investigation
+    if (result.analyzeResult.documents && result.analyzeResult.documents.length > 0) {
+      console.log('Document fields structure:', JSON.stringify(result.analyzeResult.documents[0].fields, null, 2));
+    }
+    if (result.analyzeResult.tables && result.analyzeResult.tables.length > 0) {
+      console.log('First table info:', {
+        rowCount: result.analyzeResult.tables[0].rowCount,
+        columnCount: result.analyzeResult.tables[0].columnCount,
+        cellCount: result.analyzeResult.tables[0].cells?.length
+      });
     }
     
     // Check if we have custom model results (documents with fields) or table results
-    if (result.analyzeResult.documents && result.analyzeResult.documents.length > 0) {
+    if (result.analyzeResult.documents && result.analyzeResult.documents.length > 0 && 
+        result.analyzeResult.documents[0].fields && 
+        Object.keys(result.analyzeResult.documents[0].fields).length > 0) {
       // Custom model with extracted fields
+      console.log('Using custom model field extraction');
       return extractSupplyFieldData(result.analyzeResult.documents[0].fields);
-    } else if (result.analyzeResult.tables) {
+    } else if (result.analyzeResult.tables && result.analyzeResult.tables.length > 0) {
       // Fallback to table extraction if no custom fields
+      console.log('Using table extraction (no custom fields found or Lion-Heart returns tables)');
       return extractSupplyTableData(result.analyzeResult);
-    } else {
-      console.warn('No documents or tables found in analyze result');
+    } else if (result.analyzeResult.keyValuePairs && result.analyzeResult.keyValuePairs.length > 0) {
+      // Check if Lion-Heart returns key-value pairs
+      console.log('Found key-value pairs, count:', result.analyzeResult.keyValuePairs.length);
+      console.log('Sample key-value pair:', result.analyzeResult.keyValuePairs[0]);
+      // For now, return empty array but log the structure
       return [];
+    } else {
+      console.warn('No documents, tables, or key-value pairs found in analyze result');
+      console.log('Full analyze result keys:', Object.keys(result.analyzeResult));
+      // Log a sample of the structure without stringifying the whole thing
+      if (result.analyzeResult.pages) {
+        console.log('Pages found:', result.analyzeResult.pages.length);
+      }
+      return [];
+    }
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        console.error('Request timed out after 30 seconds');
+        throw new Error('Request to Azure timed out. Please try again.');
+      }
+      throw error;
     }
   };
   
   // Extract supply data from custom model fields
   const extractSupplyFieldData = (fields) => {
-    console.log('Extracting supply data from custom model fields:', fields);
-    console.log('Field names available:', Object.keys(fields || {}));
+    console.log('Raw fields structure:', JSON.stringify(fields, null, 2));
+    console.log('Available fields:', Object.keys(fields));
+    
+    if (!fields || Object.keys(fields).length === 0) {
+      console.warn('No fields found in document');
+      return [];
+    }
     
     const orders = [];
     
@@ -1032,151 +1189,146 @@ const Analyzer = () => {
       return field.content || field.value || field.valueString || '';
     };
     
-    // Check if fields contain array of orders or individual order fields
-    // Option 1: Fields might be structured as order_1_rxNumber, order_2_rxNumber, etc.
-    let orderIndex = 1;
-    while (fields[`order_${orderIndex}_rxNumber`] || fields[`rxNumber_${orderIndex}`] || fields[`rx_${orderIndex}`]) {
-      const order = {
-        rxNumber: '',
-        org: '',
-        medication: '',
-        prescriber: '',
-        strength: '',
-        dosageForm: '',
-        quantity: '',
-        daySupply: ''
-      };
-      
-      // Try different field naming patterns your custom model might use
-      const patterns = [
-        {
-          rxNumber: [`order_${orderIndex}_rxNumber`, `rxNumber_${orderIndex}`, `rx_${orderIndex}`, `rxNumber${orderIndex}`],
-          org: [`order_${orderIndex}_org`, `org_${orderIndex}`, `organization_${orderIndex}`, `org${orderIndex}`],
-          medication: [`order_${orderIndex}_medication`, `medication_${orderIndex}`, `drug_${orderIndex}`, `medication${orderIndex}`],
-          prescriber: [`order_${orderIndex}_prescriber`, `prescriber_${orderIndex}`, `doctor_${orderIndex}`, `prescriber${orderIndex}`],
-          strength: [`order_${orderIndex}_strength`, `strength_${orderIndex}`, `strength${orderIndex}`],
-          dosageForm: [`order_${orderIndex}_dosageForm`, `dosageForm_${orderIndex}`, `form_${orderIndex}`, `dosageForm${orderIndex}`],
-          quantity: [`order_${orderIndex}_quantity`, `quantity_${orderIndex}`, `qty_${orderIndex}`, `quantity${orderIndex}`],
-          daySupply: [`order_${orderIndex}_daySupply`, `daySupply_${orderIndex}`, `days_${orderIndex}`, `daySupply${orderIndex}`]
-        }
-      ];
-      
-      // Extract values trying different patterns
-      for (const [fieldName, fieldPatterns] of Object.entries(patterns[0])) {
-        for (const pattern of fieldPatterns) {
-          if (fields[pattern]) {
-            order[fieldName] = getFieldValue(fields[pattern]).trim();
-            break;
-          }
-        }
-      }
-      
-      // Only add order if it has at least an RX number or medication
-      if (order.rxNumber || order.medication) {
-        orders.push(order);
-      } else {
-        break; // No more orders found
-      }
-      
-      orderIndex++;
-    }
+    // Your model likely returns a table/array field - check for common field names
+    const possibleTableFields = ['table', 'orders', 'items', 'data', 'results'];
     
-    // Option 2: Fields might be structured as arrays or single fields
-    if (orders.length === 0) {
-      // Check for array fields like rxNumbers, medications, etc.
-      const rxNumbers = fields.rxNumbers ? getFieldValue(fields.rxNumbers).split(/[,\n]/) : [];
-      const medications = fields.medications ? getFieldValue(fields.medications).split(/[,\n]/) : [];
-      const prescribers = fields.prescribers ? getFieldValue(fields.prescribers).split(/[,\n]/) : [];
-      const quantities = fields.quantities ? getFieldValue(fields.quantities).split(/[,\n]/) : [];
-      const daySupplies = fields.daySupplies ? getFieldValue(fields.daySupplies).split(/[,\n]/) : [];
-      
-      // Create orders from arrays
-      const maxLength = Math.max(rxNumbers.length, medications.length);
-      for (let i = 0; i < maxLength; i++) {
-        const order = {
-          rxNumber: (rxNumbers[i] || '').trim(),
-          org: getFieldValue(fields.org || fields.organization || ''),
-          medication: (medications[i] || '').trim(),
-          prescriber: (prescribers[i] || '').trim(),
-          strength: getFieldValue(fields.strength || ''),
-          dosageForm: getFieldValue(fields.dosageForm || fields.form || ''),
-          quantity: (quantities[i] || '').trim(),
-          daySupply: (daySupplies[i] || '').trim()
-        };
+    // First check the common table field names
+    for (const fieldName of possibleTableFields) {
+      if (fields[fieldName] && fields[fieldName].type === 'array') {
+        console.log(`Found table field: ${fieldName}`);
         
-        if (order.rxNumber || order.medication) {
-          orders.push(order);
-        }
-      }
-    }
-    
-    // Option 3: Check if there's a table field containing all orders
-    if (orders.length === 0 && fields.ordersTable) {
-      console.log('Found ordersTable field, extracting rows...');
-      const tableField = fields.ordersTable;
-      
-      if (tableField.type === 'array' && tableField.valueArray) {
-        // Each row in the table
-        tableField.valueArray.forEach((row, index) => {
+        fields[fieldName].valueArray.forEach((row, idx) => {
           if (row.type === 'object' && row.valueObject) {
+            const rowData = row.valueObject;
+            console.log(`Row ${idx} data keys:`, Object.keys(rowData));
+            
             const order = {
-              rxNumber: getFieldValue(row.valueObject.rxNumber || row.valueObject.rx || ''),
-              org: getFieldValue(row.valueObject.org || row.valueObject.organization || ''),
-              medication: getFieldValue(row.valueObject.medication || row.valueObject.drug || ''),
-              prescriber: getFieldValue(row.valueObject.prescriber || row.valueObject.doctor || ''),
-              strength: getFieldValue(row.valueObject.strength || ''),
-              dosageForm: getFieldValue(row.valueObject.dosageForm || row.valueObject.form || ''),
-              quantity: getFieldValue(row.valueObject.quantity || row.valueObject.qty || ''),
-              daySupply: getFieldValue(row.valueObject.daySupply || row.valueObject.days || '')
+              // Try different possible field names for each field
+              rxNumber: getFieldValue(rowData['Rx Number']) || 
+                       getFieldValue(rowData['RxNumber']) || 
+                       getFieldValue(rowData['rx_number']) || 
+                       getFieldValue(rowData['RX']) || '',
+              org: getFieldValue(rowData['Org']) || 
+                   getFieldValue(rowData['Organization']) || 
+                   getFieldValue(rowData['org']) || '',
+              medication: getFieldValue(rowData['Medication']) || 
+                         getFieldValue(rowData['Drug']) || 
+                         getFieldValue(rowData['medication']) || '',
+              prescriber: getFieldValue(rowData['MD Last Name']) || 
+                         getFieldValue(rowData['Prescriber']) || 
+                         getFieldValue(rowData['Doctor']) || 
+                         getFieldValue(rowData['MD']) || '',
+              strength: getFieldValue(rowData['Strength']) || 
+                       getFieldValue(rowData['strength']) || '',
+              dosageForm: getFieldValue(rowData['Dosage Form']) || 
+                         getFieldValue(rowData['DosageForm']) || 
+                         getFieldValue(rowData['Form']) || '',
+              quantity: getFieldValue(rowData['Quantity Dispensed']) || 
+                       getFieldValue(rowData['Quantity']) || 
+                       getFieldValue(rowData['Qty']) || 
+                       getFieldValue(rowData['quantity']) || '',
+              daySupply: getFieldValue(rowData['Day Supply']) || 
+                        getFieldValue(rowData['Days']) || 
+                        getFieldValue(rowData['DaySupply']) || 
+                        getFieldValue(rowData['days']) || ''
             };
             
+            console.log('Extracted order:', order);
             if (order.rxNumber || order.medication) {
               orders.push(order);
             }
           }
         });
+        
+        if (orders.length > 0) {
+          break; // Found the table, stop looking
+        }
       }
     }
     
-    // Option 4: Check for generic order fields
+    // If no common table field found, check all fields for arrays
     if (orders.length === 0) {
-      // Log all available fields to help debug
-      console.log('Available fields in custom model:', Object.keys(fields));
-      console.log('Sample field structure:', fields[Object.keys(fields)[0]]);
+      console.log('No common table field found, checking all fields...');
+      const fieldKeys = Object.keys(fields);
       
-      // Try to extract at least one order from generic fields
-      const order = {
-        rxNumber: getFieldValue(fields.rxNumber || fields.rx || fields.prescriptionNumber || ''),
-        org: getFieldValue(fields.org || fields.organization || ''),
-        medication: getFieldValue(fields.medication || fields.drug || fields.medicationName || ''),
-        prescriber: getFieldValue(fields.prescriber || fields.doctor || fields.prescriberName || ''),
-        strength: getFieldValue(fields.strength || fields.medicationStrength || ''),
-        dosageForm: getFieldValue(fields.dosageForm || fields.form || ''),
-        quantity: getFieldValue(fields.quantity || fields.qty || fields.quantityDispensed || ''),
-        daySupply: getFieldValue(fields.daySupply || fields.days || fields.daysSupply || '')
-      };
-      
-      if (order.rxNumber || order.medication) {
-        orders.push(order);
+      for (const key of fieldKeys) {
+        const field = fields[key];
+        
+        // If this field contains an array of table rows
+        if (field.type === 'array' && field.valueArray && field.valueArray.length > 0) {
+          console.log(`Found array field: ${key}`);
+          
+          field.valueArray.forEach((row, idx) => {
+            if (row.type === 'object' && row.valueObject) {
+              const rowData = row.valueObject;
+              console.log(`Row ${idx} data keys:`, Object.keys(rowData));
+              
+              const order = {
+                // Try different possible field names for each field
+                rxNumber: getFieldValue(rowData['Rx Number']) || 
+                         getFieldValue(rowData['RxNumber']) || 
+                         getFieldValue(rowData['rx_number']) || 
+                         getFieldValue(rowData['RX']) || '',
+                org: getFieldValue(rowData['Org']) || 
+                     getFieldValue(rowData['Organization']) || 
+                     getFieldValue(rowData['org']) || '',
+                medication: getFieldValue(rowData['Medication']) || 
+                           getFieldValue(rowData['Drug']) || 
+                           getFieldValue(rowData['medication']) || '',
+                prescriber: getFieldValue(rowData['MD Last Name']) || 
+                           getFieldValue(rowData['Prescriber']) || 
+                           getFieldValue(rowData['Doctor']) || 
+                           getFieldValue(rowData['MD']) || '',
+                strength: getFieldValue(rowData['Strength']) || 
+                         getFieldValue(rowData['strength']) || '',
+                dosageForm: getFieldValue(rowData['Dosage Form']) || 
+                           getFieldValue(rowData['DosageForm']) || 
+                           getFieldValue(rowData['Form']) || '',
+                quantity: getFieldValue(rowData['Quantity Dispensed']) || 
+                         getFieldValue(rowData['Quantity']) || 
+                         getFieldValue(rowData['Qty']) || 
+                         getFieldValue(rowData['quantity']) || '',
+                daySupply: getFieldValue(rowData['Day Supply']) || 
+                          getFieldValue(rowData['Days']) || 
+                          getFieldValue(rowData['DaySupply']) || 
+                          getFieldValue(rowData['days']) || ''
+              };
+              
+              console.log('Extracted order:', order);
+              if (order.rxNumber || order.medication) {
+                orders.push(order);
+              }
+            }
+          });
+          
+          if (orders.length > 0) {
+            break; // Found data, stop looking
+          }
+        }
       }
     }
     
-    console.log(`Extracted ${orders.length} orders from custom model fields`);
-    if (orders.length > 0) {
-      console.log('Sample order:', orders[0]);
-    }
-    
+    console.log(`Extracted ${orders.length} orders`);
     return orders;
   };
   
   const extractSupplyTableData = (analyzeResult) => {
-    console.log('Starting table extraction from analyzeResult:', analyzeResult);
+    console.log('Starting table extraction from analyzeResult');
+    console.log('Number of tables found:', analyzeResult.tables?.length || 0);
+    
+    // Debug: Log the structure to understand what Lion-Heart returns
+    console.log('AnalyzeResult keys:', Object.keys(analyzeResult));
+    if (analyzeResult.content) {
+      console.log('Content preview:', analyzeResult.content.substring(0, 200));
+    }
     
     const tables = analyzeResult.tables || [];
     const allOrders = [];
     
     if (tables.length === 0) {
       console.warn('No tables found in analyze result');
+      // Log what else is available in analyzeResult
+      console.log('Available properties in analyzeResult:', Object.keys(analyzeResult));
       return allOrders;
     }
     
@@ -1194,8 +1346,11 @@ const Analyzer = () => {
     // Helper function to extract numeric values
     const extractNumeric = (value) => {
       if (!value) return '';
-      const match = value.match(/\d+(?:\.\d+)?/);
-      return match ? match[0] : '';
+      // First try to extract just numbers
+      const match = value.toString().match(/\d+(?:\.\d+)?/);
+      if (match) return match[0];
+      // If no numbers found, return the original value (it might be text like "N/A")
+      return value.toString().trim();
     };
     
     // Process each table
@@ -1206,6 +1361,12 @@ const Analyzer = () => {
       }
       
       console.log(`Processing table ${tableIndex + 1} with ${table.cells.length} cells`);
+      
+      // Debug: Show first few cells raw data
+      console.log('First 10 cells raw data:');
+      table.cells.slice(0, 10).forEach((cell, idx) => {
+        console.log(`Cell ${idx}: row=${cell.rowIndex}, col=${cell.columnIndex}, content="${cell.content?.substring(0, 50)}..."`)
+      });
       
       try {
         // Step 1: Build complete cell matrix
@@ -1233,16 +1394,42 @@ const Analyzer = () => {
               const targetCol = col + c;
               
               if (targetRow <= maxRow && targetCol <= maxCol) {
-                if (cellMatrix[targetRow][targetCol]) {
-                  // Append content if cell already has data
-                  cellMatrix[targetRow][targetCol] += ' ' + content;
-                } else {
+                // Only set the cell value if it's empty to avoid duplicates
+                // This prevents the "28 28" duplication issue
+                if (!cellMatrix[targetRow][targetCol]) {
                   cellMatrix[targetRow][targetCol] = content;
                 }
               }
             }
           }
         });
+        
+        // Debug: Log first few rows of the matrix
+        console.log('First 5 rows of cell matrix:');
+        for (let i = 0; i <= Math.min(4, maxRow); i++) {
+          console.log(`Row ${i}:`, cellMatrix[i].map((cell, idx) => `[${idx}]: "${cell || '[empty]'}"`).join(' | '));
+        }
+        
+        // Enhanced debug: Check for duplicate values in cells
+        console.log('\nChecking for duplicate values in cells:');
+        for (let row = 0; row <= Math.min(10, maxRow); row++) {
+          for (let col = 0; col <= maxCol; col++) {
+            const cellValue = cellMatrix[row][col];
+            if (cellValue && cellValue.match(/(\d+)\s+\1/)) {
+              console.log(`WARNING: Duplicate value found at [${row}][${col}]: "${cellValue}"`);
+            }
+          }
+        }
+        
+        // Debug: Log all non-empty cells
+        console.log('\nAll non-empty cells in table:');
+        for (let row = 0; row <= Math.min(10, maxRow); row++) {
+          for (let col = 0; col <= maxCol; col++) {
+            if (cellMatrix[row][col]) {
+              console.log(`Cell[${row}][${col}]: "${cellMatrix[row][col]}"`);
+            }
+          }
+        }
         
         // Step 2: Identify column headers
         const columnHeaders = {};
@@ -1259,19 +1446,70 @@ const Analyzer = () => {
             .trim();
         };
         
+        // Helper to detect if a header contains multiple columns
+        const splitCombinedHeaders = (header) => {
+          const normalized = normalizeHeaderForMatching(header);
+          
+          // Common patterns where multiple headers are combined
+          if (normalized.includes('strength') && normalized.includes('dosage') && normalized.includes('form')) {
+            return ['strength', 'dosage form', 'quantity', 'days'];
+          }
+          if (normalized.includes('md') && normalized.includes('last') && normalized.includes('name')) {
+            return ['prescriber', 'strength', 'dosage form'];
+          }
+          if (normalized.includes('quantity') && normalized.includes('dispensed')) {
+            return ['quantity'];
+          }
+          
+          // Check for simple "qty" or "days" headers
+          if (normalized === 'qty') return ['quantity'];
+          if (normalized === 'days' || normalized === 'days supply') return ['daySupply'];
+          
+          // Default: return as single header
+          return [normalized];
+        };
+        
+        // Track which columns have been assigned
+        const assignedColumns = new Set();
+        
         for (let col = 0; col <= maxCol; col++) {
           if (cellMatrix[0][col]) {
             const headerText = cleanContent(cellMatrix[0][col]).toLowerCase();
-            columnHeaders[col] = headerText;
             
-            // Try to match normalized header
-            const normalizedHeader = normalizeHeaderForMatching(headerText);
-            const standardField = fieldMap[normalizedHeader];
+            // Check if this is a combined header
+            const splitHeaders = splitCombinedHeaders(headerText);
             
-            if (standardField) {
-              headerToFieldMap[col] = standardField;
+            if (splitHeaders.length > 1) {
+              // This is a combined header, assign headers to subsequent columns
+              console.log(`Splitting combined header at col ${col}: "${headerText}" into:`, splitHeaders);
+              
+              splitHeaders.forEach((subHeader, idx) => {
+                const targetCol = col + idx;
+                if (targetCol <= maxCol && !assignedColumns.has(targetCol)) {
+                  columnHeaders[targetCol] = subHeader;
+                  assignedColumns.add(targetCol);
+                  
+                  // Map to field
+                  const standardField = fieldMap[subHeader];
+                  if (standardField) {
+                    headerToFieldMap[targetCol] = standardField;
+                  }
+                }
+              });
             } else {
-              console.warn(`No mapping found for header: "${headerText}" (normalized: "${normalizedHeader}")`);
+              // Single header
+              const normalizedHeader = normalizeHeaderForMatching(headerText);
+              columnHeaders[col] = normalizedHeader;
+              assignedColumns.add(col);
+              
+              // Try to match normalized header
+              const standardField = fieldMap[normalizedHeader];
+              
+              if (standardField) {
+                headerToFieldMap[col] = standardField;
+              } else {
+                console.warn(`No mapping found for header: "${headerText}" (normalized: "${normalizedHeader}")`);
+              }
             }
           }
         }
@@ -1279,15 +1517,40 @@ const Analyzer = () => {
         console.log('Detected headers:', columnHeaders);
         console.log('Header to field mapping:', headerToFieldMap);
         
-        // Create position-based fallback mapping
-        const positionFallbackMap = {
-          0: 'rxNumber',    // First column is usually RX number
-          1: 'medication',  // Second column is usually medication
-          2: 'prescriber',  // Third might be prescriber
-          3: 'strength',    // Fourth might be strength
-          4: 'dosageForm',  // Fifth might be dosage form
-          5: 'quantity',    // Sixth might be quantity
-          6: 'daySupply'    // Seventh might be day supply
+        // Debug: Check if quantity and daySupply are mapped
+        let qtyColumn = -1;
+        let daysColumn = -1;
+        Object.entries(headerToFieldMap).forEach(([col, field]) => {
+          if (field === 'quantity') qtyColumn = parseInt(col);
+          if (field === 'daySupply') daysColumn = parseInt(col);
+        });
+        console.log(`Quantity column: ${qtyColumn}, Days Supply column: ${daysColumn}`);
+        
+        // Create position-based fallback mapping matching Azure format
+        // Check if we have headers to determine the table structure
+        const hasRxNumberColumn = cellMatrix[0][0] && (
+          cellMatrix[0][0].toLowerCase().includes('rx') || 
+          cellMatrix[0][0].toLowerCase().includes('number')
+        );
+        
+        const positionFallbackMap = hasRxNumberColumn ? {
+          // Format with RX Number and Org columns
+          0: 'rxNumber',    // First column: Rx Number
+          1: 'org',         // Second column: Org
+          2: 'medication',  // Third column: Medication
+          3: 'prescriber',  // Fourth column: MD Last Name
+          4: 'strength',    // Fifth column: Strength
+          5: 'dosageForm',  // Sixth column: Dosage Form
+          6: 'quantity',    // Seventh column: Quantity Dispensed
+          7: 'daySupply'    // Eighth column: Day Supply
+        } : {
+          // Format without RX Number and Org columns
+          0: 'medication',  // First column: Medication
+          1: 'prescriber',  // Second column: MD Last Name
+          2: 'strength',    // Third column: Strength
+          3: 'dosageForm',  // Fourth column: Dosage Form
+          4: 'quantity',    // Fifth column: Quantity Dispensed
+          5: 'daySupply'    // Sixth column: Day Supply
         };
         
         // Step 3: Process data rows
@@ -1314,19 +1577,50 @@ const Analyzer = () => {
           // Check if this row starts with an RX number
           const firstCell = cleanContent(cellMatrix[row][0]);
           
-          // Enhanced RX number extraction using regex
-          const rxNumberMatch = firstCell.match(/^[A-Z]?(\d{6,})/);
-          const looksLikeRxNumber = rxNumberMatch !== null;
+          // Debug first few rows - show all cells
+          if (row <= 5) {
+            console.log(`\nRow ${row} analysis:`);
+            console.log(`  First cell: "${firstCell}"`);
+            const rowData = [];
+            for (let c = 0; c <= Math.min(7, maxCol); c++) {
+              if (cellMatrix[row][c]) {
+                rowData.push(`[${c}]: "${cellMatrix[row][c]}"`);
+              }
+            }
+            console.log(`  All cells:`, rowData.join(' | '));
+          }
           
-          if (looksLikeRxNumber) {
+          // Enhanced row detection - check if this is a data row
+          // If we have RX numbers, use RX number detection
+          // Otherwise, check if the first cell contains medication text
+          let isDataRow = false;
+          
+          if (hasRxNumberColumn) {
+            // Original RX number detection
+            const rxNumberMatch = firstCell.match(/^([A-Z]?\d{4,})/);
+            const looksLikeRxNumber = rxNumberMatch !== null || /^\d{4,}$/.test(firstCell.trim());
+            isDataRow = looksLikeRxNumber;
+          } else {
+            // For tables without RX numbers, check if first cell has medication text
+            // and is not empty or just punctuation
+            isDataRow = firstCell.length > 2 && 
+                       !firstCell.match(/^[\s\-_]+$/) &&
+                       row > 0; // Skip header row
+          }
+          
+          if (row <= 5) {
+            console.log(`  Row Detection: isDataRow=${isDataRow}, hasRxNumberColumn=${hasRxNumberColumn}`);
+          }
+          
+          if (isDataRow) {
             // Save previous order if it has at least a medication
             if (currentOrder && currentOrder.medication) {
               orders.push(currentOrder);
             }
             
-            // Start new order with extracted RX number
+            // Start new order
             currentOrder = {
-              rxNumber: rxNumberMatch[1], // Extract just the numeric part
+              rxNumber: '',
               org: '',
               medication: '',
               prescriber: '',
@@ -1336,14 +1630,21 @@ const Analyzer = () => {
               daySupply: ''
             };
             
+            // If we have RX number column, extract it
+            if (hasRxNumberColumn) {
+              const rxNumberMatch = firstCell.match(/^([A-Z]?\d{4,})/);
+              currentOrder.rxNumber = rxNumberMatch ? rxNumberMatch[1] : firstCell.trim();
+            }
+            
             // Process all columns for this row
-            for (let col = 1; col <= maxCol; col++) {
+            const startCol = hasRxNumberColumn ? 1 : 0;
+            for (let col = startCol; col <= maxCol; col++) {
               const header = columnHeaders[col];
               const value = cleanContent(cellMatrix[row][col]);
               
               if (value) { // Check if there's a value even if no header matched
                 const fieldMap = getFieldMap();
-                const standardField = fieldMap[header];
+                const standardField = fieldMap[header] || headerToFieldMap[col];
                 
                 // Debug logging
                 if (tableIndex === 0 && orders.length < 3) { // Log first few orders of first table
@@ -1354,16 +1655,32 @@ const Analyzer = () => {
                   // Apply specific processing for numeric fields
                   if (standardField === 'quantity' || standardField === 'daySupply') {
                     const numericValue = extractNumeric(value);
-                    currentOrder[standardField] = numericValue;
-                    if (tableIndex === 0 && orders.length < 3) {
-                      console.log(`  Extracted numeric: "${numericValue}" for ${standardField}`);
+                    // Only set if field is empty to avoid duplicates
+                    if (!currentOrder[standardField]) {
+                      currentOrder[standardField] = numericValue;
+                      if (tableIndex === 0 && orders.length < 3) {
+                        console.log(`  Extracted ${standardField}: "${value}" -> "${numericValue}"`);
+                      }
                     }
                   } else {
-                    currentOrder[standardField] = value;
+                    // Only set if field is empty to avoid duplicates
+                    if (!currentOrder[standardField]) {
+                      currentOrder[standardField] = value;
+                    }
                   }
-                } else if (!header && col <= 8) {
-                  // If no header matched, try to infer field by column position
-                  console.warn(`No header match for col ${col}, value="${value}" - attempting position-based mapping`);
+                } else if (!standardField) {
+                  // If no header matched, use position-based fallback
+                  const fallbackField = positionFallbackMap[col];
+                  if (fallbackField && fallbackField !== 'rxNumber' && !currentOrder[fallbackField]) {
+                    if (tableIndex === 0 && orders.length < 3) {
+                      console.log(`  Using position fallback for col ${col}: "${value}" -> ${fallbackField}`);
+                    }
+                    if (fallbackField === 'quantity' || fallbackField === 'daySupply') {
+                      currentOrder[fallbackField] = extractNumeric(value);
+                    } else {
+                      currentOrder[fallbackField] = value;
+                    }
+                  }
                 }
               }
             }
@@ -1385,7 +1702,11 @@ const Analyzer = () => {
                 } else if (standardField && !currentOrder[standardField]) {
                   // Fill empty fields only
                   if (standardField === 'quantity' || standardField === 'daySupply') {
-                    currentOrder[standardField] = extractNumeric(value);
+                    const newValue = extractNumeric(value);
+                    // Only update if the field is truly empty and not "0"
+                    if (!currentOrder[standardField] || currentOrder[standardField] === '') {
+                      currentOrder[standardField] = newValue;
+                    }
                   } else {
                     currentOrder[standardField] = value;
                   }
@@ -1396,7 +1717,8 @@ const Analyzer = () => {
         }
         
         // Don't forget the last order (only if it has medication)
-        if (currentOrder && currentOrder.medication) {
+        // Save the last order if it exists and has data
+        if (currentOrder && (currentOrder.rxNumber || currentOrder.medication)) {
           orders.push(currentOrder);
         }
         
@@ -1427,6 +1749,8 @@ const Analyzer = () => {
               qty: order.quantity || 'MISSING',
               days: order.daySupply || 'MISSING'
             });
+            // Debug: Show all fields
+            console.log(`  All fields for order ${idx + 1}:`, order);
           }
         });
         
@@ -1434,6 +1758,56 @@ const Analyzer = () => {
         if (orders.length > 0) {
           console.log('Sample order:', orders[0]);
         }
+        
+        // Fallback: If no orders extracted, try a simpler row-by-row approach
+        if (orders.length === 0 && maxRow > 0) {
+          console.log('\\nNo orders found with RX detection. Trying fallback extraction...');
+          
+          // Process each row after header
+          for (let row = 1; row <= maxRow; row++) {
+            const rowData = cellMatrix[row];
+            
+            // Skip empty rows
+            if (!rowData || rowData.every(cell => !cell || cell.trim() === '')) {
+              continue;
+            }
+            
+            // Create order from row data - matching the table structure
+            const order = hasRxNumberColumn ? {
+              rxNumber: cleanContent(rowData[0] || ''),
+              org: cleanContent(rowData[1] || ''),
+              medication: cleanContent(rowData[2] || ''),
+              prescriber: cleanContent(rowData[3] || ''),
+              strength: cleanContent(rowData[4] || ''),
+              dosageForm: cleanContent(rowData[5] || ''),
+              quantity: extractNumeric(cleanContent(rowData[6] || '')),
+              daySupply: extractNumeric(cleanContent(rowData[7] || ''))
+            } : {
+              rxNumber: '',
+              org: '',
+              medication: cleanContent(rowData[0] || ''),
+              prescriber: cleanContent(rowData[1] || ''),
+              strength: cleanContent(rowData[2] || ''),
+              dosageForm: cleanContent(rowData[3] || ''),
+              quantity: extractNumeric(cleanContent(rowData[4] || '')),
+              daySupply: extractNumeric(cleanContent(rowData[5] || ''))
+            };
+            
+            // Debug the row data
+            if (tableIndex === 0 && orders.length < 3) {
+              console.log(`Fallback row ${row} data:`, rowData.map((v, i) => `[${i}]="${v}"`).join(', '));
+            }
+            
+            // Only add if there's meaningful data
+            if (order.rxNumber || order.medication) {
+              console.log(`Fallback extracted order from row ${row}:`, order);
+              orders.push(order);
+            }
+          }
+          
+          console.log(`Fallback extraction found ${orders.length} orders`);
+        }
+        
         allOrders.push(...orders);
         
       } catch (error) {
@@ -1441,13 +1815,29 @@ const Analyzer = () => {
       }
     });
     
-    // Remove duplicates based on RX number
+    // Generate RX numbers for orders without them
+    let rxCounter = 1000;
+    let generatedCount = 0;
+    allOrders.forEach((order, index) => {
+      if (!order.rxNumber || order.rxNumber.trim() === '') {
+        // Generate a unique RX number
+        order.rxNumber = `RX${String(rxCounter + index).padStart(4, '0')}`;
+        generatedCount++;
+      }
+    });
+    
+    console.log(`Generated ${generatedCount} RX numbers for orders without them`);
+    
+    // Remove duplicates based on medication + strength combination
     const uniqueOrders = [];
-    const seenRxNumbers = new Set();
+    const seenKeys = new Set();
     
     allOrders.forEach(order => {
-      if (order.rxNumber && !seenRxNumbers.has(order.rxNumber)) {
-        seenRxNumbers.add(order.rxNumber);
+      // Create a unique key based on medication and strength
+      const orderKey = `${order.medication}|${order.strength}`.toLowerCase();
+      
+      if (!seenKeys.has(orderKey)) {
+        seenKeys.add(orderKey);
         uniqueOrders.push(order);
       }
     });
@@ -1487,18 +1877,18 @@ const Analyzer = () => {
       'drug': 'medication',
       'med': 'medication',
       'medicine': 'medication',
+      'med last name': 'medication',  // Handle combined headers
       'product': 'medication',
       'item': 'medication',
       'prescriber': 'prescriber',
-      'md last name': 'prescriber',
-      'doctor': 'prescriber',
+      'md last name': 'prescriber',   // Handle MD/prescriber variants
       'md': 'prescriber',
+      'doctor': 'prescriber',
       'physician': 'prescriber',
       'strength': 'strength',
       'str': 'strength',
       'dosage form': 'dosageForm',
       'form': 'dosageForm',
-      'dosage form': 'dosageForm',
       'dose form': 'dosageForm',
       'quantity dispensed': 'quantity',
       'quantity': 'quantity',
@@ -1508,6 +1898,8 @@ const Analyzer = () => {
       'dispensed': 'quantity',
       'disp': 'quantity',
       'amount': 'quantity',
+      'qty disp': 'quantity',
+      'disp quantity': 'quantity',
       'day supply': 'daySupply',
       'days': 'daySupply',
       'days supply': 'daySupply',
@@ -1515,7 +1907,9 @@ const Analyzer = () => {
       'ds': 'daySupply',
       'day': 'daySupply',
       'days supp': 'daySupply',
-      'daysupply': 'daySupply'
+      'daysupply': 'daySupply',
+      'day sup': 'daySupply',
+      'sup': 'daySupply'
     };
     
     // Create a normalized mapping
@@ -1524,10 +1918,50 @@ const Analyzer = () => {
       normalizedMappings[normalizeHeader(key)] = value;
     });
     
+    // Add exact matches for common abbreviations
+    normalizedMappings['qty'] = 'quantity';
+    normalizedMappings['days'] = 'daySupply';
+    
     return normalizedMappings;
   };
   
   const compareSupplyTables = (previousOrders, currentOrders) => {
+    console.log('=== SUPPLIES ANALYZER UPDATED VERSION 4.2 - FIXED ===');
+    console.log('Previous orders:', previousOrders.length, 'Current orders:', currentOrders.length);
+    
+    // Debug: Show first few orders from each table with ALL fields
+    console.log('\nSample Previous Orders:');
+    previousOrders.slice(0, 3).forEach((order, idx) => {
+      console.log(`  ${idx}:`, {
+        medication: order.medication,
+        rxNumber: order.rxNumber,
+        prescriber: order.prescriber,
+        quantity: order.quantity,
+        daySupply: order.daySupply,
+        strength: order.strength
+      });
+      // Check for duplicate values
+      if (order.daySupply && order.daySupply.includes(' ')) {
+        console.warn(`  WARNING: Day Supply contains duplicate value: "${order.daySupply}"`);
+      }
+    });
+    
+    console.log('\nSample Current Orders:');
+    currentOrders.slice(0, 3).forEach((order, idx) => {
+      console.log(`  ${idx}:`, {
+        medication: order.medication,
+        rxNumber: order.rxNumber,
+        prescriber: order.prescriber,
+        quantity: order.quantity,
+        daySupply: order.daySupply,
+        strength: order.strength
+      });
+      // Check for duplicate values
+      if (order.daySupply && order.daySupply.includes(' ')) {
+        console.warn(`  WARNING: Day Supply contains duplicate value: "${order.daySupply}"`);
+      }
+    });
+    
     // Helper function to normalize any value for comparison
     const normalizeValue = (value) => {
       if (value === null || value === undefined) return '';
@@ -1535,12 +1969,13 @@ const Analyzer = () => {
       // Convert to string and aggressively clean
       let str = String(value)
         .trim()
+        .toLowerCase()  // Add case-insensitive comparison
         .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
         .replace(/^\s+|\s+$/g, '') // Remove all leading/trailing whitespace
         .replace(/[\r\n\t]/g, ''); // Remove tabs, newlines
         
       // Handle common OCR artifacts
-      if (str === '-' || str === '--' || str === 'N/A' || str === 'n/a') return '';
+      if (str === '-' || str === '--' || str === 'n/a' || str === 'na' || str === 'none') return '';
       
       return str;
     };
@@ -1556,10 +1991,7 @@ const Analyzer = () => {
       // One empty and one not = no match
       if ((norm1 === '' && norm2 !== '') || (norm1 !== '' && norm2 === '')) return false;
       
-      // Direct string comparison after normalization
-      if (norm1 === norm2) return true;
-      
-      // Try case-insensitive comparison
+      // Direct string comparison after normalization (case insensitive)
       if (norm1.toLowerCase() === norm2.toLowerCase()) return true;
       
       // Try numeric comparison
@@ -1614,38 +2046,68 @@ const Analyzer = () => {
       }
     };
     
-    // Enhanced medication normalization for better matching
+    // Simplified medication normalization for better matching
     const normalizeMedication = (med) => {
       if (!med) return '';
       
+      // Basic normalization - keep it simple to avoid breaking matches
       let normalized = med
         .toLowerCase()
         .trim()
-        // Remove extra spaces
+        // Normalize whitespace
         .replace(/\s+/g, ' ')
-        // Normalize common abbreviations
-        .replace(/\bndl\b/gi, 'needle')
-        .replace(/\bl\/l\b/gi, 'l/l')
-        .replace(/\bml\b/gi, 'ml')
-        // Normalize special characters
-        .replace(/°/g, '*')
-        .replace(/'/g, "'")
-        .replace(/"/g, '"')
+        // Remove invisible characters and zero-width spaces
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        // Normalize common punctuation
+        .replace(/['']/g, "'")
         .replace(/[""]/g, '"')
-        // Remove parentheses content for matching
-        .replace(/\([^)]*\)/g, '')
-        // Normalize punctuation and spacing around punctuation
-        .replace(/\s*([\/\-\*])\s*/g, '$1')
-        .replace(/\s*x\s*/gi, 'x')
-        // Final cleanup
+        // Keep the rest mostly intact
         .trim();
         
       return normalized;
     };
     
-    // Create a unique key for each order based on medication only
+    // Calculate similarity between two strings (0-1, where 1 is identical)
+    const calculateSimilarity = (str1, str2) => {
+      if (!str1 || !str2) return 0;
+      if (str1 === str2) return 1;
+      
+      const longer = str1.length > str2.length ? str1 : str2;
+      const shorter = str1.length > str2.length ? str2 : str1;
+      
+      if (longer.length === 0) return 1.0;
+      
+      const editDistance = levenshteinDistance(longer, shorter);
+      return (longer.length - editDistance) / longer.length;
+    };
+    
+    // Check if medications are similar enough to be considered a match
+    const medicationsMatch = (med1, med2, threshold = 0.70) => {  // Lower threshold for better matching
+      const norm1 = normalizeMedication(med1);
+      const norm2 = normalizeMedication(med2);
+      
+      // Exact match after normalization
+      if (norm1 === norm2) return true;
+      
+      // Check if one contains the other (for cases like "NEEDLE 18G X 1 HYPO" vs "NEEDLE 18G X 1HYPO")
+      if (norm1.includes(norm2) || norm2.includes(norm1)) return true;
+      
+      // Fuzzy match with similarity threshold
+      const similarity = calculateSimilarity(norm1, norm2);
+      
+      console.log(`Comparing medications:
+        Med1: "${med1}" -> "${norm1}"
+        Med2: "${med2}" -> "${norm2}"
+        Similarity: ${similarity.toFixed(3)}`);
+      
+      return similarity >= threshold;
+    };
+    
+    // Create a unique key for each order based on medication and strength
     const createOrderKey = (order) => {
-      return normalizeMedication(order.medication);
+      const medKey = normalizeMedication(order.medication);
+      const strengthKey = order.strength ? order.strength.toLowerCase().trim() : '';
+      return strengthKey ? `${medKey}|${strengthKey}` : medKey;
     };
     
     // Helper function to normalize RX numbers for matching
@@ -1681,47 +2143,99 @@ const Analyzer = () => {
       currentByMedication.get(key).push(order);
     });
     
+    // Debug: Show medication map keys
+    console.log('\nMedication Map Keys:');
+    Array.from(currentByMedication.keys()).slice(0, 5).forEach(key => {
+      console.log(`  "${key}" -> ${currentByMedication.get(key).length} orders`);
+    });
+    
+    // Debug: Log all keys in the map
+    console.log('\nCurrent orders medication map keys:');
+    currentByMedication.forEach((orders, key) => {
+      console.log(`  Key: "${key}" -> ${orders.length} order(s)`);
+    });
+    
     // Track which current orders have been matched
     const matchedCurrentRxNumbers = new Set();
+    const matchedCurrentIndices = new Set(); // Track by index when RX numbers are not available
     
     // Process each previous order
-    sortedPreviousOrders.forEach(prevOrder => {
+    sortedPreviousOrders.forEach((prevOrder, prevIndex) => {
       let foundMatch = false;
       
-      // First, try to match by exact RX number
-      if (prevOrder.rxNumber && currentByRxNumber.has(prevOrder.rxNumber)) {
-        const currentOrder = currentByRxNumber.get(prevOrder.rxNumber);
+      // First, try to match by medication name and strength
+      const prevKey = createOrderKey(prevOrder);
+      let matchingCurrentOrders = currentByMedication.get(prevKey) || [];
+      
+      console.log(`\nLooking for matches for previous order ${prevIndex}:`, {
+        medication: prevOrder.medication,
+        normalizedMed: normalizeMedication(prevOrder.medication),
+        strength: prevOrder.strength,
+        key: prevKey,
+        foundInMap: matchingCurrentOrders.length
+      });
+      
+      // If no exact match with strength, try fuzzy matching
+      if (matchingCurrentOrders.length === 0) {
+        console.log(`No exact match, trying fuzzy medication matching for: "${prevOrder.medication}"`);
         
-        if (!matchedCurrentRxNumbers.has(currentOrder.rxNumber)) {
-          // Found exact RX number match - this is definitely the same prescription
-          const medicationMatch = normalizeMedication(currentOrder.medication) === normalizeMedication(prevOrder.medication);
+        // Search through all current orders for medication match using fuzzy logic
+        matchingCurrentOrders = [];
+        for (const currentOrder of sortedCurrentOrders) {
+          // Skip if already matched
+          const currentIndex = sortedCurrentOrders.indexOf(currentOrder);
+          if (currentOrder.rxNumber && matchedCurrentRxNumbers.has(currentOrder.rxNumber)) continue;
+          if (!currentOrder.rxNumber && matchedCurrentIndices.has(currentIndex)) continue;
           
-          if (medicationMatch) {
-            // Medication matches - consider it the same order
-            results.matching.push({
-              ...currentOrder,
-              previousOrder: prevOrder,
-              status: 'matched'
-            });
-            results.summary.matching++;
-          } else {
-            // RX number matches but medication changed
-            results.changed.push({
-              ...currentOrder,
-              previousOrder: prevOrder,
-              status: 'changed',
-              changes: {
-                medication: !medicationMatch,
-                quantity: !valuesMatch(currentOrder.quantity, prevOrder.quantity),
-                daySupply: !valuesMatch(currentOrder.daySupply, prevOrder.daySupply)
-              }
-            });
-            results.summary.changed++;
+          // Check medication similarity
+          if (medicationsMatch(prevOrder.medication, currentOrder.medication)) {
+            // Bonus points if prescriber also matches
+            const prescriberMatch = valuesMatch(prevOrder.prescriber, currentOrder.prescriber);
+            if (prescriberMatch) {
+              console.log(`  Found match with same prescriber: "${currentOrder.medication}"`);
+            }
+            matchingCurrentOrders.push(currentOrder);
           }
-          
-          matchedCurrentRxNumbers.add(currentOrder.rxNumber);
-          foundMatch = true;
         }
+        console.log(`Found ${matchingCurrentOrders.length} matches by fuzzy medication matching`);
+      }
+      
+      // Look for matching current order
+      for (const currentOrder of matchingCurrentOrders) {
+        // Skip if already matched
+        const currentIndex = sortedCurrentOrders.indexOf(currentOrder);
+        if (currentOrder.rxNumber && matchedCurrentRxNumbers.has(currentOrder.rxNumber)) continue;
+        if (!currentOrder.rxNumber && matchedCurrentIndices.has(currentIndex)) continue;
+        
+        // Compare prescriber, quantity and day supply for better matching
+        const prescriberMatch = valuesMatch(currentOrder.prescriber, prevOrder.prescriber);
+        const quantityMatch = valuesMatch(currentOrder.quantity, prevOrder.quantity);
+        const daySupplyMatch = valuesMatch(currentOrder.daySupply, prevOrder.daySupply);
+        
+        console.log(`\nComparing orders:
+  Previous: "${prevOrder.medication}" (normalized: "${normalizeMedication(prevOrder.medication)}")
+            RX#${prevOrder.rxNumber} - Prescriber: "${prevOrder.prescriber}"
+            Strength: "${prevOrder.strength}", Qty: "${prevOrder.quantity}", Days: "${prevOrder.daySupply}"
+  Current:  "${currentOrder.medication}" (normalized: "${normalizeMedication(currentOrder.medication)}")
+            RX#${currentOrder.rxNumber} - Prescriber: "${currentOrder.prescriber}"
+            Strength: "${currentOrder.strength}", Qty: "${currentOrder.quantity}", Days: "${currentOrder.daySupply}"
+  Matches - Prescriber: ${prescriberMatch}, Qty: ${quantityMatch}, Days: ${daySupplyMatch}
+  MATCHED: YES`);
+        
+        // If medication and strength match, mark as matched (user wants green highlight for matching meds)
+        results.matching.push({
+          ...currentOrder,
+          previousOrder: prevOrder,
+          status: 'matched'
+        });
+        results.summary.matching++;
+        
+        if (currentOrder.rxNumber) {
+          matchedCurrentRxNumbers.add(currentOrder.rxNumber);
+        }
+        matchedCurrentIndices.add(currentIndex);
+        foundMatch = true;
+        break;
       }
       
       // If no exact match, try normalized RX number matching
@@ -1732,7 +2246,8 @@ const Analyzer = () => {
         for (const currentOrder of possibleMatches) {
           if (matchedCurrentRxNumbers.has(currentOrder.rxNumber)) continue;
           
-          const medicationMatch = normalizeMedication(currentOrder.medication) === normalizeMedication(prevOrder.medication);
+          const medicationMatch = normalizeMedication(currentOrder.medication) === normalizeMedication(prevOrder.medication) &&
+                                valuesMatch(currentOrder.strength, prevOrder.strength);
           
           if (medicationMatch) {
             console.log(`\nNormalized RX Match Found:
@@ -1753,42 +2268,6 @@ const Analyzer = () => {
         }
       }
       
-      // If no RX number match found, try matching by medication name
-      if (!foundMatch) {
-        const prevKey = createOrderKey(prevOrder);
-        const matchingCurrentOrders = currentByMedication.get(prevKey) || [];
-        
-        // Look for matching current order
-        for (const currentOrder of matchingCurrentOrders) {
-          if (matchedCurrentRxNumbers.has(currentOrder.rxNumber)) continue;
-          
-          // Compare quantity and day supply
-          const quantityMatch = valuesMatch(currentOrder.quantity, prevOrder.quantity);
-          const daySupplyMatch = valuesMatch(currentOrder.daySupply, prevOrder.daySupply);
-        
-        console.log(`\nComparing orders:
-  Previous: "${prevOrder.medication}" (normalized: "${normalizeMedication(prevOrder.medication)}")
-            RX#${prevOrder.rxNumber} - Prescriber: "${prevOrder.prescriber}"
-            Qty: "${prevOrder.quantity}" (normalized: "${normalizeValue(prevOrder.quantity)}")
-            Days: "${prevOrder.daySupply}" (normalized: "${normalizeValue(prevOrder.daySupply)}")
-  Current:  "${currentOrder.medication}" (normalized: "${normalizeMedication(currentOrder.medication)}")
-            RX#${currentOrder.rxNumber} - Prescriber: "${currentOrder.prescriber}"
-            Qty: "${currentOrder.quantity}" (normalized: "${normalizeValue(currentOrder.quantity)}")
-            Days: "${currentOrder.daySupply}" (normalized: "${normalizeValue(currentOrder.daySupply)}")
-  Qty Match: ${quantityMatch}, Days Match: ${daySupplyMatch}`);
-        
-        // Medication name matches - mark as matching regardless of qty/days
-        results.matching.push({
-          ...currentOrder,
-          previousOrder: prevOrder,
-          status: 'matched'
-        });
-        results.summary.matching++;
-        matchedCurrentRxNumbers.add(currentOrder.rxNumber);
-        foundMatch = true;
-        break;
-      }
-      }
       
       // If no match found in current orders, it's missing
       if (!foundMatch) {
@@ -1802,8 +2281,12 @@ const Analyzer = () => {
     });
     
     // Check for new orders (current orders not matched to any previous)
-    sortedCurrentOrders.forEach(currentOrder => {
-      if (!matchedCurrentRxNumbers.has(currentOrder.rxNumber)) {
+    sortedCurrentOrders.forEach((currentOrder, index) => {
+      const isMatched = currentOrder.rxNumber ? 
+        matchedCurrentRxNumbers.has(currentOrder.rxNumber) : 
+        matchedCurrentIndices.has(index);
+      
+      if (!isMatched) {
         results.new.push({
           ...currentOrder,
           status: 'new'
@@ -1822,6 +2305,22 @@ const Analyzer = () => {
       missing: results.summary.missing
     });
     
+    console.log('\nMatching orders:', results.matching.map(m => ({
+      medication: m.medication,
+      rxNumber: m.rxNumber,
+      previousRx: m.previousOrder?.rxNumber
+    })));
+    
+    console.log('\nMissing orders:', results.missing.map(m => ({
+      medication: m.medication,
+      rxNumber: m.rxNumber
+    })));
+    
+    console.log('\nNew orders:', results.new.map(m => ({
+      medication: m.medication,
+      rxNumber: m.rxNumber
+    })));
+    
     return results;
   };
 
@@ -1836,14 +2335,14 @@ const Analyzer = () => {
               onClick={() => setActiveSection('prescription')}
             >
               <FileText size={16} />
-              Upload Prescription
+              Analyze Prescription
             </button>
             <button 
               className={`toggle-btn ${activeSection === 'supplies' ? 'active' : ''}`}
               onClick={() => setActiveSection('supplies')}
             >
               <Package size={16} />
-              Upload Supplies Order
+              Analyze Supplies
             </button>
           </div>
 
@@ -1852,7 +2351,7 @@ const Analyzer = () => {
             <>
               <div className="dashboard-card upload-card">
                 <div className="card-header">
-                  <h3>Upload Prescription</h3>
+                  <h3>Analyze Prescription</h3>
                   <FileText size={20} />
                 </div>
                 <div className="card-body">
@@ -1886,19 +2385,15 @@ const Analyzer = () => {
                 </div>
               </div>
 
-              {/* Action Buttons for Prescription */}
-              <div className="action-buttons">
-                <button className="analyzer-action-btn reset" onClick={handleReset} disabled={!selectedFile || isAnalyzing}>
-                  <RotateCcw size={16} />
-                  Reset All
-                </button>
+              {/* Analyze Button */}
+              <div style={{ marginTop: '10px' }}>
                 <button 
-                  className="analyzer-action-btn primary"
+                  className={`toggle-btn full-width ${isAnalyzing ? 'active' : ''}`}
                   onClick={() => analyzeDocument()}
                   disabled={!selectedFile || isAnalyzing}
                 >
                   <ScanLine size={16} />
-                  {isAnalyzing ? 'Analyzing...' : 'Analyze Document'}
+                  {isAnalyzing ? 'Analyzing...' : 'Analyze Prescription'}
                 </button>
               </div>
             </>
@@ -1909,7 +2404,7 @@ const Analyzer = () => {
             <>
               <div className="dashboard-card upload-card supplies-card">
                 <div className="card-header">
-                  <h3>Upload Supplies Order</h3>
+                  <h3>Analyze Supplies</h3>
                   <GitCompare size={20} />
                 </div>
                 <div className="card-body supplies-body">
@@ -1917,7 +2412,7 @@ const Analyzer = () => {
                     {/* Previous Order Upload */}
                     <div className="supply-upload-section">
                       <h4 className="supply-upload-label">Previous Order</h4>
-                      {!previousSupplyFile ? (
+                      {previousSupplyFiles.length === 0 ? (
                         <div 
                           ref={previousSupplyDivRef}
                           className={`paste-area small ${isPasteFocused.previous ? 'paste-ready' : ''}`}
@@ -1927,18 +2422,80 @@ const Analyzer = () => {
                           tabIndex={0}
                           title="Click here then paste screenshot (Ctrl+V)"
                         >
+                          <input
+                            type="file"
+                            id="previous-upload-input"
+                            accept="image/*"
+                            multiple
+                            style={{ display: 'none' }}
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files);
+                              files.forEach(file => {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  setPreviousSupplyFiles([...previousSupplyFiles, file]);
+                                  setPreviousSupplyPreviews([...previousSupplyPreviews, event.target.result]);
+                                };
+                                reader.readAsDataURL(file);
+                              });
+                              e.target.value = '';
+                            }}
+                          />
+                          <button
+                            className="paste-area-upload-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              document.getElementById('previous-upload-input').click();
+                            }}
+                            title="Upload files"
+                          >
+                            <Upload size={16} />
+                          </button>
                           <ImageIcon size={32} className="paste-icon" />
                           <p className="paste-text small">Click Here</p>
                           <p className="paste-hint small">Then paste screenshot (Ctrl+V)</p>
-                          <div className="paste-badge">
-                            <span>📋 Paste Only</span>
-                          </div>
                         </div>
                       ) : (
-                        <div className="file-preview small">
-                          <img src={previousSupplyPreview} alt="Previous Supply" />
-                          <button className="remove-file small" onClick={() => removeSupplyFile('previous')}>
-                            <X size={16} />
+                        <div className="supply-files-list">
+                          {previousSupplyFiles.map((file, index) => (
+                            <div key={index} className="supply-upload-confirmation">
+                              <div className="confirmation-content">
+                                <Check size={20} className="confirmation-check" />
+                                <span className="confirmation-text">Screenshot {index + 1}</span>
+                              </div>
+                              <button className="remove-file-btn" onClick={() => removeSupplyFile('previous', index)}>
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ))}
+                          <button 
+                            className="add-more-btn"
+                            onClick={(e) => {
+                              // Add visual feedback
+                              e.target.classList.add('paste-ready');
+                              
+                              // Create a temporary paste area
+                              const tempDiv = document.createElement('div');
+                              tempDiv.contentEditable = true;
+                              tempDiv.style.position = 'absolute';
+                              tempDiv.style.left = '-9999px';
+                              tempDiv.addEventListener('paste', (e) => {
+                                handleSupplyPaste(e, 'previous');
+                                // Remove visual feedback after paste
+                                document.querySelector('.add-more-btn.paste-ready')?.classList.remove('paste-ready');
+                              });
+                              document.body.appendChild(tempDiv);
+                              tempDiv.focus();
+                              
+                              // Clean up after timeout
+                              setTimeout(() => {
+                                document.body.removeChild(tempDiv);
+                                e.target.classList.remove('paste-ready');
+                              }, 3000);
+                            }}
+                          >
+                            <Plus size={16} />
+                            Add More Screenshots
                           </button>
                         </div>
                       )}
@@ -1947,7 +2504,7 @@ const Analyzer = () => {
                     {/* Current Order Upload */}
                     <div className="supply-upload-section">
                       <h4 className="supply-upload-label">Current Order</h4>
-                      {!currentSupplyFile ? (
+                      {currentSupplyFiles.length === 0 ? (
                         <div 
                           ref={currentSupplyDivRef}
                           className={`paste-area small ${isPasteFocused.current ? 'paste-ready' : ''}`}
@@ -1957,18 +2514,80 @@ const Analyzer = () => {
                           tabIndex={0}
                           title="Click here then paste screenshot (Ctrl+V)"
                         >
+                          <input
+                            type="file"
+                            id="current-upload-input"
+                            accept="image/*"
+                            multiple
+                            style={{ display: 'none' }}
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files);
+                              files.forEach(file => {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  setCurrentSupplyFiles([...currentSupplyFiles, file]);
+                                  setCurrentSupplyPreviews([...currentSupplyPreviews, event.target.result]);
+                                };
+                                reader.readAsDataURL(file);
+                              });
+                              e.target.value = '';
+                            }}
+                          />
+                          <button
+                            className="paste-area-upload-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              document.getElementById('current-upload-input').click();
+                            }}
+                            title="Upload files"
+                          >
+                            <Upload size={16} />
+                          </button>
                           <ImageIcon size={32} className="paste-icon" />
                           <p className="paste-text small">Click Here</p>
                           <p className="paste-hint small">Then paste screenshot (Ctrl+V)</p>
-                          <div className="paste-badge">
-                            <span>📋 Paste Only</span>
-                          </div>
                         </div>
                       ) : (
-                        <div className="file-preview small">
-                          <img src={currentSupplyPreview} alt="Current Supply" />
-                          <button className="remove-file small" onClick={() => removeSupplyFile('current')}>
-                            <X size={16} />
+                        <div className="supply-files-list">
+                          {currentSupplyFiles.map((file, index) => (
+                            <div key={index} className="supply-upload-confirmation">
+                              <div className="confirmation-content">
+                                <Check size={20} className="confirmation-check" />
+                                <span className="confirmation-text">Screenshot {index + 1}</span>
+                              </div>
+                              <button className="remove-file-btn" onClick={() => removeSupplyFile('current', index)}>
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ))}
+                          <button 
+                            className="add-more-btn"
+                            onClick={(e) => {
+                              // Add visual feedback
+                              e.target.classList.add('paste-ready');
+                              
+                              // Create a temporary paste area
+                              const tempDiv = document.createElement('div');
+                              tempDiv.contentEditable = true;
+                              tempDiv.style.position = 'absolute';
+                              tempDiv.style.left = '-9999px';
+                              tempDiv.addEventListener('paste', (e) => {
+                                handleSupplyPaste(e, 'current');
+                                // Remove visual feedback after paste
+                                document.querySelector('.add-more-btn.paste-ready')?.classList.remove('paste-ready');
+                              });
+                              document.body.appendChild(tempDiv);
+                              tempDiv.focus();
+                              
+                              // Clean up after timeout
+                              setTimeout(() => {
+                                document.body.removeChild(tempDiv);
+                                e.target.classList.remove('paste-ready');
+                              }, 3000);
+                            }}
+                          >
+                            <Plus size={16} />
+                            Add More Screenshots
                           </button>
                         </div>
                       )}
@@ -1982,21 +2601,11 @@ const Analyzer = () => {
                     </div>
                   )}
                   
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                  <div style={{ marginTop: '10px' }}>
                     <button 
-                      className="analyzer-action-btn reset"
-                      onClick={resetSuppliesAnalyzer}
-                      disabled={!previousSupplyFile && !currentSupplyFile && !suppliesComparisonResults}
-                      style={{ flex: 1 }}
-                    >
-                      <RotateCcw size={16} />
-                      Reset
-                    </button>
-                    <button 
-                      className={`analyzer-action-btn primary ${isAnalyzingSupplies ? 'analyzing' : ''}`}
+                      className={`toggle-btn full-width ${isAnalyzingSupplies ? 'active' : ''}`}
                       onClick={analyzeSupplies}
                       disabled={!previousSupplyFile || !currentSupplyFile || isAnalyzingSupplies}
-                      style={{ flex: 2 }}
                     >
                       <GitCompare size={16} />
                       {isAnalyzingSupplies ? 'Analyzing...' : 'Compare Orders'}
@@ -2034,14 +2643,13 @@ const Analyzer = () => {
 
           {/* Results */}
           {(analysisResults || allAnalysisResults.length > 0) && !isAnalyzing && (
-            <div className="results-dashboard">
-              <div className="results-header">
-                <h2>Analysis Results</h2>
-                {allAnalysisResults.length > 0 && (
-                  <span className="results-count">
-                    {allAnalysisResults.length} files analyzed
-                  </span>
-                )}
+            <div className="supplies-results-section">
+              <div className="supplies-results-header">
+                <h2>Prescription Analysis Results</h2>
+                <button className="toggle-btn reset-style" onClick={handleReset}>
+                  <X size={16} />
+                  Reset
+                </button>
               </div>
 
               {/* Alerts */}
@@ -2092,126 +2700,261 @@ const Analyzer = () => {
                         </div>
                       )}
                       
-                      <div className="table-wrapper">
-                        <table className="analysis-table">
-                          <thead>
-                            <tr>
-                              <th>Field</th>
-                              <th>Prescribed</th>
-                              <th>Data Entered</th>
-                              <th>Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {fieldSections.map((section, sectionIndex) => (
-                              <React.Fragment key={sectionIndex}>
-                                <tr className="section-header-row">
-                                  <td colSpan="4">{section.title}</td>
+                      <h3 className="file-result-title">{fileResult.fileName}</h3>
+                      <div className="supplies-tables-container">
+                        {/* Prescribed Table */}
+                        <div className="supply-table-section">
+                          <h3 className="supply-table-title">
+                            <FileText size={20} />
+                            Prescribed
+                          </h3>
+                          <div className="table-wrapper">
+                            <table className="analysis-table">
+                              <thead>
+                                <tr>
+                                  <th>Field</th>
+                                  <th>Value</th>
+                                  <th>Status</th>
                                 </tr>
-                                {section.fields.map((field, fieldIndex) => {
-                                  const rxValue = fileResult.results[field.rxKey] || '';
-                                  const deValue = fileResult.results[field.deKey] || '';
-                                  const matchStatus = getMatchStatus(field.label, rxValue, deValue, fileResult.results, fileResult.results);
-                                  
-                                  return (
-                                    <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`}>
-                                      <td className="field-label">{field.label}</td>
-                                      <td className={`field-value ${!rxValue ? 'empty' : ''}`}>
-                                        {rxValue || '-'}
-                                      </td>
-                                      <td className={`field-value ${!deValue ? 'empty' : ''}`}>
-                                        {deValue || '-'}
-                                      </td>
-                                      <td className="status-cell">
-                                        <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
-                                          {matchStatus === 'match' ? (
-                                            <>
-                                              <Check size={16} className="status-icon" />
-                                              <span className="status-fallback">✓</span>
-                                            </>
-                                          ) : matchStatus === 'mismatch' ? (
-                                            <>
-                                              <XIcon size={16} className="status-icon" />
-                                              <span className="status-fallback">✗</span>
-                                            </>
-                                          ) : matchStatus === 'partial' ? (
-                                            <>
-                                              <AlertCircle size={16} className="status-icon" />
-                                              <span className="status-fallback">!</span>
-                                            </>
-                                          ) : null}
-                                        </div>
-                                      </td>
+                              </thead>
+                              <tbody>
+                                {fieldSections.map((section, sectionIndex) => (
+                                  <React.Fragment key={sectionIndex}>
+                                    <tr className="section-header-row">
+                                      <td colSpan="3">{section.title}</td>
                                     </tr>
-                                  );
-                                })}
-                              </React.Fragment>
-                            ))}
-                          </tbody>
-                        </table>
+                                    {section.fields.map((field, fieldIndex) => {
+                                      const rxValue = fileResult.results[field.rxKey] || '';
+                                      const deValue = fileResult.results[field.deKey] || '';
+                                      const matchStatus = getMatchStatus(field.label, rxValue, deValue, fileResult.results, fileResult.results);
+                                      
+                                      return (
+                                        <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`}>
+                                          <td className="field-label">{field.label}</td>
+                                          <td className={`field-value ${!rxValue ? 'empty' : ''}`}>
+                                            {rxValue || '-'}
+                                          </td>
+                                          <td className="status-cell">
+                                            <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
+                                              {matchStatus === 'match' ? (
+                                                <>
+                                                  <Check size={16} className="status-icon" />
+                                                  <span className="status-fallback">✓</span>
+                                                </>
+                                              ) : matchStatus === 'mismatch' ? (
+                                                <>
+                                                  <XIcon size={16} className="status-icon" />
+                                                  <span className="status-fallback">✗</span>
+                                                </>
+                                              ) : matchStatus === 'partial' ? (
+                                                <>
+                                                  <AlertCircle size={16} className="status-icon" />
+                                                  <span className="status-fallback">!</span>
+                                                </>
+                                              ) : null}
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </React.Fragment>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        
+                        {/* Data Entered Table */}
+                        <div className="supply-table-section">
+                          <h3 className="supply-table-title">
+                            <FileText size={20} />
+                            Data Entered
+                          </h3>
+                          <div className="table-wrapper">
+                            <table className="analysis-table">
+                              <thead>
+                                <tr>
+                                  <th>Field</th>
+                                  <th>Value</th>
+                                  <th>Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {fieldSections.map((section, sectionIndex) => (
+                                  <React.Fragment key={sectionIndex}>
+                                    <tr className="section-header-row">
+                                      <td colSpan="3">{section.title}</td>
+                                    </tr>
+                                    {section.fields.map((field, fieldIndex) => {
+                                      const rxValue = fileResult.results[field.rxKey] || '';
+                                      const deValue = fileResult.results[field.deKey] || '';
+                                      const matchStatus = getMatchStatus(field.label, rxValue, deValue, fileResult.results, fileResult.results);
+                                      
+                                      return (
+                                        <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`}>
+                                          <td className="field-label">{field.label}</td>
+                                          <td className={`field-value ${!deValue ? 'empty' : ''}`}>
+                                            {deValue || '-'}
+                                          </td>
+                                          <td className="status-cell">
+                                            <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
+                                              {matchStatus === 'match' ? (
+                                                <>
+                                                  <Check size={16} className="status-icon" />
+                                                  <span className="status-fallback">✓</span>
+                                                </>
+                                              ) : matchStatus === 'mismatch' ? (
+                                                <>
+                                                  <XIcon size={16} className="status-icon" />
+                                                  <span className="status-fallback">✗</span>
+                                                </>
+                                              ) : matchStatus === 'partial' ? (
+                                                <>
+                                                  <AlertCircle size={16} className="status-icon" />
+                                                  <span className="status-fallback">!</span>
+                                                </>
+                                              ) : null}
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </React.Fragment>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                // Single file results
-                <div className="table-wrapper">
-                  <table className="analysis-table">
-                    <thead>
-                      <tr>
-                        <th>Field</th>
-                        <th>Prescribed</th>
-                        <th>Data Entered</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {fieldSections.map((section, sectionIndex) => (
-                        <React.Fragment key={sectionIndex}>
-                          <tr className="section-header-row">
-                            <td colSpan="4">{section.title}</td>
+                // Single file results - Side by Side Tables
+                <div className="supplies-tables-container">
+                  {/* Prescribed Table */}
+                  <div className="supply-table-section">
+                    <h3 className="supply-table-title">
+                      <FileText size={20} />
+                      Prescribed
+                    </h3>
+                    <div className="table-wrapper">
+                      <table className="analysis-table">
+                        <thead>
+                          <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                            <th>Status</th>
                           </tr>
-                          {section.fields.map((field, fieldIndex) => {
-                            const rxValue = analysisResults[field.rxKey] || '';
-                            const deValue = analysisResults[field.deKey] || '';
-                            const matchStatus = getMatchStatus(field.label, rxValue, deValue, analysisResults, analysisResults);
-                            
-                            return (
-                              <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`}>
-                                <td className="field-label">{field.label}</td>
-                                <td className={`field-value ${!rxValue ? 'empty' : ''}`}>
-                                  {rxValue || '-'}
-                                </td>
-                                <td className={`field-value ${!deValue ? 'empty' : ''}`}>
-                                  {deValue || '-'}
-                                </td>
-                                <td className="status-cell">
-                                  <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
-                                    {matchStatus === 'match' ? (
-                                      <>
-                                        <Check size={16} className="status-icon" />
-                                        <span className="status-fallback">✓</span>
-                                      </>
-                                    ) : matchStatus === 'mismatch' ? (
-                                      <>
-                                        <XIcon size={16} className="status-icon" />
-                                        <span className="status-fallback">✗</span>
-                                      </>
-                                    ) : matchStatus === 'partial' ? (
-                                      <>
-                                        <AlertCircle size={16} className="status-icon" />
-                                        <span className="status-fallback">!</span>
-                                      </>
-                                    ) : null}
-                                  </div>
-                                </td>
+                        </thead>
+                        <tbody>
+                          {fieldSections.map((section, sectionIndex) => (
+                            <React.Fragment key={sectionIndex}>
+                              <tr className="section-header-row">
+                                <td colSpan="3">{section.title}</td>
                               </tr>
-                            );
-                          })}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
+                              {section.fields.map((field, fieldIndex) => {
+                                const rxValue = analysisResults[field.rxKey] || '';
+                                const deValue = analysisResults[field.deKey] || '';
+                                const matchStatus = getMatchStatus(field.label, rxValue, deValue, analysisResults, analysisResults);
+                                
+                                return (
+                                  <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`}>
+                                    <td className="field-label">{field.label}</td>
+                                    <td className={`field-value ${!rxValue ? 'empty' : ''}`}>
+                                      {rxValue || '-'}
+                                    </td>
+                                    <td className="status-cell">
+                                      <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
+                                        {matchStatus === 'match' ? (
+                                          <>
+                                            <Check size={16} className="status-icon" />
+                                            <span className="status-fallback">✓</span>
+                                          </>
+                                        ) : matchStatus === 'mismatch' ? (
+                                          <>
+                                            <XIcon size={16} className="status-icon" />
+                                            <span className="status-fallback">✗</span>
+                                          </>
+                                        ) : matchStatus === 'partial' ? (
+                                          <>
+                                            <AlertCircle size={16} className="status-icon" />
+                                            <span className="status-fallback">!</span>
+                                          </>
+                                        ) : null}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  
+                  {/* Data Entered Table */}
+                  <div className="supply-table-section">
+                    <h3 className="supply-table-title">
+                      <FileText size={20} />
+                      Data Entered
+                    </h3>
+                    <div className="table-wrapper">
+                      <table className="analysis-table">
+                        <thead>
+                          <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {fieldSections.map((section, sectionIndex) => (
+                            <React.Fragment key={sectionIndex}>
+                              <tr className="section-header-row">
+                                <td colSpan="3">{section.title}</td>
+                              </tr>
+                              {section.fields.map((field, fieldIndex) => {
+                                const rxValue = analysisResults[field.rxKey] || '';
+                                const deValue = analysisResults[field.deKey] || '';
+                                const matchStatus = getMatchStatus(field.label, rxValue, deValue, analysisResults, analysisResults);
+                                
+                                return (
+                                  <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`}>
+                                    <td className="field-label">{field.label}</td>
+                                    <td className={`field-value ${!deValue ? 'empty' : ''}`}>
+                                      {deValue || '-'}
+                                    </td>
+                                    <td className="status-cell">
+                                      <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
+                                        {matchStatus === 'match' ? (
+                                          <>
+                                            <Check size={16} className="status-icon" />
+                                            <span className="status-fallback">✓</span>
+                                          </>
+                                        ) : matchStatus === 'mismatch' ? (
+                                          <>
+                                            <XIcon size={16} className="status-icon" />
+                                            <span className="status-fallback">✗</span>
+                                          </>
+                                        ) : matchStatus === 'partial' ? (
+                                          <>
+                                            <AlertCircle size={16} className="status-icon" />
+                                            <span className="status-fallback">!</span>
+                                          </>
+                                        ) : null}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -2222,6 +2965,86 @@ const Analyzer = () => {
             <div className="supplies-results-section">
               <div className="supplies-results-header">
                 <h2>Supply Order Comparison</h2>
+                <button className="toggle-btn reset-style" onClick={handleResetSupplies}>
+                  <X size={16} />
+                  Reset
+                </button>
+              </div>
+              
+              {/* Summary Cards Above Tables */}
+              <div className="supplies-summary-section">
+                <h3 className="summary-title">Summary Report</h3>
+                <div className="supplies-summary-cards">
+                  <div 
+                    className={`summary-card total ${activeFilter === 'all' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter(activeFilter === 'all' ? null : 'all')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="summary-icon">
+                      <Package size={24} />
+                    </div>
+                    <div className="summary-content">
+                      <p className="summary-number">{suppliesComparisonResults.summary.totalCurrent}</p>
+                      <h4>All Orders</h4>
+                    </div>
+                  </div>
+                  
+                  <div 
+                    className={`summary-card matching ${activeFilter === 'matched' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter(activeFilter === 'matched' ? null : 'matched')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="summary-icon">
+                      <Check size={24} />
+                    </div>
+                    <div className="summary-content">
+                      <p className="summary-number">{suppliesComparisonResults.summary.matching}</p>
+                      <h4>Matched</h4>
+                    </div>
+                  </div>
+                  
+                  <div 
+                    className={`summary-card changed ${activeFilter === 'changed' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter(activeFilter === 'changed' ? null : 'changed')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="summary-icon">
+                      <AlertCircle size={24} />
+                    </div>
+                    <div className="summary-content">
+                      <p className="summary-number">{suppliesComparisonResults.summary.changed || 0}</p>
+                      <h4>Changed</h4>
+                    </div>
+                  </div>
+                  
+                  <div 
+                    className={`summary-card new ${activeFilter === 'new' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter(activeFilter === 'new' ? null : 'new')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="summary-icon">
+                      <Plus size={24} />
+                    </div>
+                    <div className="summary-content">
+                      <p className="summary-number">{suppliesComparisonResults.summary.new}</p>
+                      <h4>New</h4>
+                    </div>
+                  </div>
+                  
+                  <div 
+                    className={`summary-card missing ${activeFilter === 'missing' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter(activeFilter === 'missing' ? null : 'missing')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="summary-icon">
+                      <X size={24} />
+                    </div>
+                    <div className="summary-content">
+                      <p className="summary-number">{suppliesComparisonResults.summary.missing}</p>
+                      <h4>Missing</h4>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               {/* Side by Side Tables */}
@@ -2237,20 +3060,55 @@ const Analyzer = () => {
                       <thead>
                         <tr>
                           <th>Status</th>
-                          <th>Rx #</th>
+                          <th>Rx Number</th>
+                          <th>Org</th>
                           <th>Medication</th>
+                          <th>MD Last Name</th>
                           <th>Strength</th>
-                          <th>Form</th>
-                          <th>Qty</th>
-                          <th>Days</th>
+                          <th>Dosage Form</th>
+                          <th>Quantity Dispensed</th>
+                          <th>Day Supply</th>
                         </tr>
                       </thead>
                       <tbody>
                         {suppliesComparisonResults.previousOrders && suppliesComparisonResults.previousOrders.length > 0 ? (
-                          suppliesComparisonResults.previousOrders.map((order, idx) => {
-                            const missingOrder = suppliesComparisonResults.missing.find(m => m.rxNumber === order.rxNumber);
-                            const matchingOrder = suppliesComparisonResults.matching.find(m => m.previousOrder?.rxNumber === order.rxNumber);
-                            const changedOrder = suppliesComparisonResults.changed.find(c => c.previousOrder?.rxNumber === order.rxNumber);
+                          suppliesComparisonResults.previousOrders.filter((order) => {
+                            if (!activeFilter || activeFilter === 'all') return true;
+                            
+                            // Find status by checking all arrays
+                            const missingOrder = suppliesComparisonResults.missing.find(m => 
+                              m.rxNumber === order.rxNumber || m === order
+                            );
+                            const matchingOrder = suppliesComparisonResults.matching.find(m => 
+                              m.previousOrder?.rxNumber === order.rxNumber || 
+                              m.previousOrder === order ||
+                              (m.previousOrder?.medication === order.medication && m.previousOrder?.strength === order.strength)
+                            );
+                            const changedOrder = suppliesComparisonResults.changed.find(c => 
+                              c.previousOrder?.rxNumber === order.rxNumber || 
+                              c.previousOrder === order ||
+                              (c.previousOrder?.medication === order.medication && c.previousOrder?.strength === order.strength)
+                            );
+                            
+                            if (activeFilter === 'missing' && missingOrder) return true;
+                            if (activeFilter === 'matched' && matchingOrder) return true;
+                            if (activeFilter === 'changed' && changedOrder) return true;
+                            return false;
+                          }).map((order, idx) => {
+                            // Find status by checking all arrays - match by RX number or by same object reference
+                            const missingOrder = suppliesComparisonResults.missing.find(m => 
+                              m.rxNumber === order.rxNumber || m === order
+                            );
+                            const matchingOrder = suppliesComparisonResults.matching.find(m => 
+                              m.previousOrder?.rxNumber === order.rxNumber || 
+                              m.previousOrder === order ||
+                              (m.previousOrder?.medication === order.medication && m.previousOrder?.strength === order.strength)
+                            );
+                            const changedOrder = suppliesComparisonResults.changed.find(c => 
+                              c.previousOrder?.rxNumber === order.rxNumber || 
+                              c.previousOrder === order ||
+                              (c.previousOrder?.medication === order.medication && c.previousOrder?.strength === order.strength)
+                            );
                             
                             let rowClass = '';
                             let statusBadge = null;
@@ -2270,17 +3128,19 @@ const Analyzer = () => {
                               <tr key={idx} className={rowClass}>
                                 <td>{statusBadge}</td>
                                 <td>{order.rxNumber || '-'}</td>
+                                <td>{order.org || '-'}</td>
                                 <td>{order.medication || '-'}</td>
+                                <td>{order.prescriber || '-'}</td>
                                 <td>{order.strength || '-'}</td>
                                 <td>{order.dosageForm || '-'}</td>
-                                <td>{order.quantity || '-'}</td>
-                                <td>{order.daySupply || '-'}</td>
+                                <td>{String(order.quantity || '-')}</td>
+                                <td>{String(order.daySupply || '-')}</td>
                               </tr>
                             );
                           })
                         ) : (
                           <tr>
-                            <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                            <td colSpan="9" className="no-data-message" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
                               No orders found in previous order screenshot
                             </td>
                           </tr>
@@ -2301,20 +3161,55 @@ const Analyzer = () => {
                       <thead>
                         <tr>
                           <th>Status</th>
-                          <th>Rx #</th>
+                          <th>Rx Number</th>
+                          <th>Org</th>
                           <th>Medication</th>
+                          <th>MD Last Name</th>
                           <th>Strength</th>
-                          <th>Form</th>
-                          <th>Qty</th>
-                          <th>Days</th>
+                          <th>Dosage Form</th>
+                          <th>Quantity Dispensed</th>
+                          <th>Day Supply</th>
                         </tr>
                       </thead>
                       <tbody>
                         {suppliesComparisonResults.currentOrders && suppliesComparisonResults.currentOrders.length > 0 ? (
-                          suppliesComparisonResults.currentOrders.map((order, idx) => {
-                            const newOrder = suppliesComparisonResults.new.find(n => n.rxNumber === order.rxNumber);
-                            const matchingOrder = suppliesComparisonResults.matching.find(m => m.rxNumber === order.rxNumber);
-                            const changedOrder = suppliesComparisonResults.changed.find(c => c.rxNumber === order.rxNumber);
+                          suppliesComparisonResults.currentOrders.filter((order) => {
+                            if (!activeFilter || activeFilter === 'all') return true;
+                            
+                            // Find status by checking all arrays
+                            const newOrder = suppliesComparisonResults.new.find(n => 
+                              n.rxNumber === order.rxNumber || n === order
+                            );
+                            const matchingOrder = suppliesComparisonResults.matching.find(m => 
+                              m.rxNumber === order.rxNumber || 
+                              m === order ||
+                              (m.medication === order.medication && m.strength === order.strength)
+                            );
+                            const changedOrder = suppliesComparisonResults.changed.find(c => 
+                              c.rxNumber === order.rxNumber || 
+                              c === order ||
+                              (c.medication === order.medication && c.strength === order.strength)
+                            );
+                            
+                            if (activeFilter === 'new' && newOrder) return true;
+                            if (activeFilter === 'matched' && matchingOrder) return true;
+                            if (activeFilter === 'changed' && changedOrder) return true;
+                            return false;
+                          }).map((order, idx) => {
+                            // Find status by checking all arrays - match by RX number or by same object reference
+                            const newOrder = suppliesComparisonResults.new.find(n => 
+                              n.rxNumber === order.rxNumber || n === order
+                            );
+                            const matchingOrder = suppliesComparisonResults.matching.find(m => 
+                              m.rxNumber === order.rxNumber || 
+                              m === order ||
+                              (m.medication === order.medication && m.strength === order.strength)
+                            );
+                            const changedOrder = suppliesComparisonResults.changed.find(c => 
+                              c.rxNumber === order.rxNumber || 
+                              c === order ||
+                              (c.medication === order.medication && c.strength === order.strength)
+                            );
                             
                             let rowClass = '';
                             let statusBadge = null;
@@ -2379,79 +3274,25 @@ const Analyzer = () => {
                               <tr key={idx} className={rowClass}>
                                 <td>{statusBadge}</td>
                                 <td>{order.rxNumber || '-'}</td>
+                                <td>{order.org || '-'}</td>
                                 <td>{order.medication || '-'}</td>
+                                <td>{order.prescriber || '-'}</td>
                                 <td>{order.strength || '-'}</td>
                                 <td>{order.dosageForm || '-'}</td>
-                                <td>{quantityDisplay}</td>
-                                <td>{daySupplyDisplay}</td>
+                                <td>{React.isValidElement(quantityDisplay) ? quantityDisplay : String(quantityDisplay || '-')}</td>
+                                <td>{React.isValidElement(daySupplyDisplay) ? daySupplyDisplay : String(daySupplyDisplay || '-')}</td>
                               </tr>
                             );
                           })
                         ) : (
                           <tr>
-                            <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                            <td colSpan="9" className="no-data-message" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
                               No orders found in current order screenshot
                             </td>
                           </tr>
                         )}
                       </tbody>
                     </table>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Summary Cards Below Tables */}
-              <div className="supplies-summary-section">
-                <h3 className="summary-title">Summary Report</h3>
-                <div className="supplies-summary-cards">
-                  <div className="summary-card total">
-                    <div className="summary-icon">
-                      <Package size={20} />
-                    </div>
-                    <div className="summary-content">
-                      <h4>Total Current Orders</h4>
-                      <p className="summary-number">{suppliesComparisonResults.summary.totalCurrent}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-card matching">
-                    <div className="summary-icon">
-                      <Check size={20} />
-                    </div>
-                    <div className="summary-content">
-                      <h4>✔️ Matched</h4>
-                      <p className="summary-number">{suppliesComparisonResults.summary.matching}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-card changed">
-                    <div className="summary-icon">
-                      <RotateCcw size={20} />
-                    </div>
-                    <div className="summary-content">
-                      <h4>🔄 Changed</h4>
-                      <p className="summary-number">{suppliesComparisonResults.summary.changed || 0}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-card new">
-                    <div className="summary-icon">
-                      <TrendingUp size={20} />
-                    </div>
-                    <div className="summary-content">
-                      <h4>🆕 New</h4>
-                      <p className="summary-number">{suppliesComparisonResults.summary.new}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-card missing">
-                    <div className="summary-icon">
-                      <X size={20} />
-                    </div>
-                    <div className="summary-content">
-                      <h4>❌ Missing</h4>
-                      <p className="summary-number">{suppliesComparisonResults.summary.missing}</p>
-                    </div>
                   </div>
                 </div>
               </div>
