@@ -111,7 +111,6 @@ const DraggableItem = ({ item, index, moveItem, onOpen, viewMode, onContextMenu,
           </div>
           <div className="item-details">
             <h4>{item.title}</h4>
-            {item.type === 'bookmark' && <p>{item.url}</p>}
           </div>
         </div>
       </div>
@@ -156,7 +155,9 @@ const BookmarkManager = () => {
   const [bookmarks, setBookmarks] = useState([]);
   const [folders, setFolders] = useState([]);
   const [currentFolder, setCurrentFolder] = useState(null);
-  const [viewMode, setViewMode] = useState('grid'); // grid, list, compact
+  // Check if mobile device on initial load
+  const isMobile = window.innerWidth <= 768;
+  const [viewMode, setViewMode] = useState(isMobile ? 'compact' : 'grid'); // grid, list, compact
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -181,6 +182,20 @@ const BookmarkManager = () => {
     color: defaultColors[0],
     folderId: null
   });
+
+  // Handle window resize to maintain mobile view mode
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobileNow = window.innerWidth <= 768;
+      // Only auto-switch to compact on mobile if currently in grid mode
+      if (isMobileNow && viewMode === 'grid') {
+        setViewMode('compact');
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [viewMode]);
 
   // Firebase listeners
   useEffect(() => {
@@ -513,58 +528,43 @@ const BookmarkManager = () => {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className={`bookmark-manager ${theme} page-container`}>
-        {/* Header */}
-        <div className="bookmark-header">
-          <h1 className="bookmark-title">
-            {currentFolder ? (
-              <>
-                <button className="back-btn" onClick={handleBack}>
-                  <ChevronLeft size={20} />
-                </button>
-                {currentFolder.title}
-              </>
-            ) : (
-              'Bookmarks Manager'
-            )}
-          </h1>
-          <div className="header-right">
-            <div className="view-filters">
-              <button
-                className={`filter-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                onClick={() => setViewMode('grid')}
-                title="Grid View"
-              >
-                <Grid3x3 size={14} />
-                <span>Grid</span>
-              </button>
-              <button
-                className={`filter-btn ${viewMode === 'list' ? 'active' : ''}`}
-                onClick={() => setViewMode('list')}
-                title="List View"
-              >
-                <List size={14} />
-                <span>List</span>
-              </button>
-              <button
-                className={`filter-btn ${viewMode === 'compact' ? 'active' : ''}`}
-                onClick={() => setViewMode('compact')}
-                title="Compact View"
-              >
-                <Square size={14} />
-                <span>Compact</span>
-              </button>
-            </div>
-            <div className="action-buttons">
-              <button className="action-btn folder-btn" onClick={() => openAddModal('folder')} title="New Folder">
-                <Folder size={14} />
-                <span className="btn-text">New Folder</span>
-              </button>
-              <button className="action-btn bookmark-btn" onClick={() => openAddModal('bookmark')} title="Add Bookmark">
-                <Plus size={14} />
-                <span className="btn-text">Add Bookmark</span>
-              </button>
-            </div>
-          </div>
+        {/* Toggle Banner - Analyzer Style */}
+        <div className="section-toggle-banner">
+          {currentFolder && (
+            <button className="toggle-btn" onClick={handleBack}>
+              <ChevronLeft size={16} />
+              <span>Back</span>
+            </button>
+          )}
+          <button
+            className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+            onClick={() => setViewMode('grid')}
+          >
+            <Grid3x3 size={16} />
+            <span>Grid</span>
+          </button>
+          <button
+            className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+          >
+            <List size={16} />
+            <span>List</span>
+          </button>
+          <button
+            className={`toggle-btn ${viewMode === 'compact' ? 'active' : ''}`}
+            onClick={() => setViewMode('compact')}
+          >
+            <Square size={16} />
+            <span>Compact</span>
+          </button>
+          <button className="toggle-btn" onClick={() => openAddModal('folder')}>
+            <Folder size={16} />
+            <span>New Folder</span>
+          </button>
+          <button className="toggle-btn" onClick={() => openAddModal('bookmark')}>
+            <Plus size={16} />
+            <span>Add Bookmark</span>
+          </button>
         </div>
 
         {/* Content */}

@@ -17,6 +17,198 @@
   position: relative;
 }
 
+/* Toggle Banner - Shop Style */
+.section-toggle-banner {
+  /* Mobile-first base styles - Force horizontal layout */
+  display: flex;
+  flex-direction: row !important;
+  gap: 0.375rem;
+  padding: 0.625rem;
+  background: var(--card-background);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin: 0.75rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  min-height: 56px; /* Standard mobile header height */
+  max-height: 56px; /* Prevent vertical expansion */
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.section-toggle-banner::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tablet and desktop styles */
+@media (min-width: 768px) {
+  .section-toggle-banner {
+    gap: 0.5rem;
+    padding: 1rem;
+    margin: 1.5rem;
+    border-radius: 16px;
+    flex-wrap: nowrap !important; /* Keep horizontal on desktop too */
+    overflow-x: visible;
+    min-height: auto;
+    max-height: auto;
+  }
+}
+
+.toggle-btn {
+  /* Mobile-first base styles */
+  position: relative;
+  background: var(--secondary-background);
+  color: #666666;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 44px; /* iOS recommended touch target */
+  width: 44px;
+  height: 44px; /* iOS recommended touch target */
+  aspect-ratio: 1;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Tablet and desktop styles */
+@media (min-width: 768px) {
+  .toggle-btn {
+    padding: 0.5rem 1.5rem;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    min-width: 120px;
+    width: auto;
+    height: 40px;
+    aspect-ratio: auto;
+    border-radius: 12px;
+  }
+  
+  .toggle-btn span {
+    display: inline !important;
+  }
+}
+
+.toggle-btn:hover {
+  background: #ff5400;
+  border-color: #ff5400;
+  color: white !important;
+  transform: translateY(-1px);
+}
+
+/* Ensure white text in light theme for hover state */
+[data-theme="light"] .toggle-btn:hover {
+  color: white !important;
+}
+
+.toggle-btn:active {
+  transform: scale(0.97);
+}
+
+.toggle-btn.active {
+  background: #ff5400;
+  color: white !important;
+  border-color: #ff5400;
+  box-shadow: 0 4px 12px rgba(255, 84, 0, 0.3);
+}
+
+/* Ensure white text in light theme for active state */
+[data-theme="light"] .toggle-btn.active {
+  color: white !important;
+}
+
+.toggle-btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Mobile: Hide text, show only icons */
+.toggle-btn span {
+  display: none;
+}
+
+/* Show abbreviations on mobile */
+.mobile-abbr {
+  display: inline !important;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Hide desktop elements on mobile */
+.desktop-icon,
+.desktop-text {
+  display: none;
+}
+
+/* Desktop: Show icons and text, hide abbreviations */
+@media (min-width: 768px) {
+  .medications-page .mobile-abbr {
+    display: none !important;
+  }
+  
+  .medications-page .desktop-icon,
+  .medications-page .desktop-text {
+    display: inline-flex;
+  }
+}
+
+/* Enhanced mobile touch feedback */
+@media (hover: none) and (pointer: coarse) {
+  .toggle-btn:active {
+    background: #ff5400;
+    border-color: #ff5400;
+    color: white !important;
+  }
+}
+
+/* Ensure white text in light theme for mobile active state */
+[data-theme="light"] .toggle-btn:active {
+  color: white !important;
+}
+
+/* Fine-tuning for very small devices */
+@media (max-width: 360px) {
+  .section-toggle-banner {
+    margin: 0.5rem;
+    padding: 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .toggle-btn {
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .toggle-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
 /* When modal is shown directly in medications-page */
 .medications-page > .modal-prescription-profile {
   flex: 1;
@@ -201,9 +393,13 @@
 
 /* Results Count */
 .results-count {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  margin-left: auto;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  background: var(--bg-secondary);
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
 }
 
 /* Medications Container */

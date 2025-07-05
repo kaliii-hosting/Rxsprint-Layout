@@ -619,40 +619,35 @@ const Shop = () => {
 
   return (
     <div className="shop-page page-container">
-      <div className="shop-header">
-        <h1 className="shop-title">Shop</h1>
-        <div className="header-right">
-          <div className="category-filters">
-            {categories.map(category => {
-              const displayName = category === 'PIC' ? 'PICC' : category;
-              const shortName = category === 'ALL' ? 'ALL' : 
-                               category === 'PIC' ? 'PC' : 
-                               category === 'PIV' ? 'IV' : 
-                               category === 'PORT' ? 'PT' : 
-                               category === 'GENERAL' ? 'GN' : category.substring(0, 2);
-              return (
-                <button
-                  key={category}
-                  className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
-                  onClick={() => setSelectedCategory(category)}
-                  title={displayName}
-                  data-short={shortName}
-                >
-                  {displayName}
-                </button>
-              );
-            })}
-          </div>
-          <button 
-            className={`cart-button ${cartButtonAnimating ? 'animate' : ''}`}
-            onClick={() => setShowCart(!showCart)}
-          >
-            <ShoppingCart size={16} />
-            {cartItemCount > 0 && (
-              <span className="cart-badge">{cartItemCount}</span>
-            )}
-          </button>
-        </div>
+      {/* Toggle Banner - Analyzer Style */}
+      <div className="section-toggle-banner">
+        {categories.map(category => {
+          const displayName = category === 'PIC' ? 'PICC' : category;
+          const abbreviation = category === 'ALL' ? 'ALL' : 
+                             category === 'PIC' ? 'PC' : 
+                             category === 'PIV' ? 'IV' : 
+                             category === 'PORT' ? 'PT' : 
+                             category === 'ADDITIONAL' ? 'ADD' : category.substring(0, 3);
+          return (
+            <button
+              key={category}
+              className={`toggle-btn ${selectedCategory === category ? 'active' : ''}`}
+              onClick={() => setSelectedCategory(category)}
+            >
+              <span className="mobile-abbr">{abbreviation}</span>
+              <Package size={16} className="desktop-icon" />
+              <span className="desktop-text">{displayName}</span>
+            </button>
+          );
+        })}
+        <button 
+          className={`toggle-btn cart-toggle ${showCart ? 'active' : ''} ${cartButtonAnimating ? 'animate' : ''}`}
+          onClick={() => setShowCart(!showCart)}
+        >
+          <span className="mobile-abbr">CART</span>
+          <ShoppingCart size={16} className="desktop-icon" />
+          <span className="desktop-text">Cart {cartItemCount > 0 && `(${cartItemCount})`}</span>
+        </button>
       </div>
 
       <div className="shop-content">

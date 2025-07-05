@@ -18,6 +18,7 @@ import Supplies from './pages/Supplies'
 import Notes from './pages/Notes'
 import Analyzer from './pages/Analyzer'
 import BookmarkManager from './pages/BookmarkManager'
+import GPT from './pages/GPT'
 import './App.css'
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
                   <Route path="/notes" element={<Notes />} />
                   <Route path="/analyzer" element={<Analyzer />} />
                   <Route path="/bookmarks" element={<BookmarkManager />} />
+                  <Route path="/gpt" element={<GPT />} />
                 </Routes>
               </Layout>
             </SearchProvider>

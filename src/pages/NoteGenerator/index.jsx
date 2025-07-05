@@ -16,7 +16,10 @@ import {
   Home,
   Clock,
   Package,
-  ChevronDown
+  ChevronDown,
+  Edit,
+  Save,
+  X
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import './NoteGenerator.css';
@@ -26,6 +29,9 @@ const NoteGenerator = () => {
   const [copiedNote, setCopiedNote] = useState(null);
   const formRefs = useRef({});
   const [filledFields, setFilledFields] = useState(new Set());
+  const [isEditingNote, setIsEditingNote] = useState(false);
+  const [editedNote, setEditedNote] = useState('');
+  const noteTextareaRef = useRef(null);
   
   // Intervention Note Form State - Rearranged fields in requested order
   const [interventionForm, setInterventionForm] = useState({
@@ -308,6 +314,35 @@ const NoteGenerator = () => {
     }
   };
 
+  // Handle edit mode
+  const handleEditNote = () => {
+    const currentNote = isEditingNote ? editedNote : generateInterventionNote();
+    setEditedNote(currentNote);
+    setIsEditingNote(true);
+    setTimeout(() => {
+      if (noteTextareaRef.current) {
+        noteTextareaRef.current.focus();
+        noteTextareaRef.current.setSelectionRange(currentNote.length, currentNote.length);
+      }
+    }, 100);
+  };
+
+  // Save edited note
+  const handleSaveEdit = () => {
+    setIsEditingNote(false);
+  };
+
+  // Cancel edit
+  const handleCancelEdit = () => {
+    setIsEditingNote(false);
+    setEditedNote(generateInterventionNote());
+  };
+
+  // Get the current note text
+  const getCurrentNoteText = () => {
+    return isEditingNote ? editedNote : generateInterventionNote();
+  };
+
   // Reset form
   const resetInterventionForm = () => {
     setInterventionForm({
@@ -347,6 +382,8 @@ const NoteGenerator = () => {
       shippingDetails: ''
     });
     setFilledFields(new Set());
+    setIsEditingNote(false);
+    setEditedNote('');
   };
 
   return (
@@ -929,27 +966,64 @@ const NoteGenerator = () => {
               </div>
             </div>
             <div className="card-body">
-              <div 
-                className="generated-note-output"
-                onClick={() => copyToClipboard(generateInterventionNote())}
-              >
-                <p>{generateInterventionNote()}</p>
-                {copiedNote && (
-                  <div className="copied-indicator">
-                    <Check size={16} />
-                    Copied to clipboard!
+              {isEditingNote ? (
+                <div className="note-edit-container">
+                  <textarea
+                    ref={noteTextareaRef}
+                    className="note-edit-textarea"
+                    value={editedNote}
+                    onChange={(e) => setEditedNote(e.target.value)}
+                    placeholder="Edit your note here..."
+                  />
+                  <div className="edit-actions">
+                    <button 
+                      className="edit-action-btn cancel"
+                      onClick={handleCancelEdit}
+                    >
+                      <X size={16} />
+                      Cancel
+                    </button>
+                    <button 
+                      className="edit-action-btn save"
+                      onClick={handleSaveEdit}
+                    >
+                      <Save size={16} />
+                      Save Changes
+                    </button>
                   </div>
-                )}
-              </div>
-              <div className="note-actions">
-                <button 
-                  className="copy-note-btn primary"
-                  onClick={() => copyToClipboard(generateInterventionNote())}
-                >
-                  <Copy size={16} />
-                  Copy Note to Clipboard
-                </button>
-              </div>
+                </div>
+              ) : (
+                <>
+                  <div 
+                    className="generated-note-output"
+                    onClick={() => copyToClipboard(getCurrentNoteText())}
+                  >
+                    <p>{getCurrentNoteText()}</p>
+                    {copiedNote && (
+                      <div className="copied-indicator">
+                        <Check size={16} />
+                        Copied to clipboard!
+                      </div>
+                    )}
+                  </div>
+                  <div className="note-actions">
+                    <button 
+                      className="edit-note-btn"
+                      onClick={handleEditNote}
+                    >
+                      <Edit size={16} />
+                      Edit Note
+                    </button>
+                    <button 
+                      className="copy-note-btn primary"
+                      onClick={() => copyToClipboard(getCurrentNoteText())}
+                    >
+                      <Copy size={16} />
+                      Copy Note to Clipboard
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

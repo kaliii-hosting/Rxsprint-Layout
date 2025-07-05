@@ -7,7 +7,157 @@
   --bg-tertiary-rgb: 241, 245, 249;
 }
 
-/* Bookmark Manager Container - Matching Shop Page */
+/* Toggle Banner - Mobile-First Professional Design */
+.section-toggle-banner {
+  /* Mobile-first base styles - Force horizontal layout */
+  display: flex;
+  flex-direction: row !important;
+  gap: 0.375rem;
+  padding: 0.625rem;
+  background: var(--card-background);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin: 0.75rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  min-height: 56px; /* Standard mobile header height */
+  max-height: 56px; /* Prevent vertical expansion */
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.section-toggle-banner::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tablet and desktop styles */
+@media (min-width: 768px) {
+  .section-toggle-banner {
+    gap: 0.5rem;
+    padding: 1rem;
+    margin: 1.5rem;
+    border-radius: 16px;
+    flex-wrap: nowrap !important; /* Keep horizontal on desktop too */
+    overflow-x: visible;
+    min-height: auto;
+    max-height: auto;
+  }
+}
+
+.toggle-btn {
+  /* Mobile-first base styles */
+  position: relative;
+  background: var(--secondary-background);
+  color: #666666;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 44px; /* iOS recommended touch target */
+  width: 44px;
+  height: 44px; /* iOS recommended touch target */
+  aspect-ratio: 1;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Tablet and desktop styles */
+@media (min-width: 768px) {
+  .toggle-btn {
+    padding: 0.5rem 1.5rem;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    min-width: 120px;
+    width: auto;
+    height: 40px;
+    aspect-ratio: auto;
+    border-radius: 12px;
+  }
+  
+  .toggle-btn span {
+    display: inline !important;
+  }
+}
+
+.toggle-btn:hover {
+  background: #ff5400;
+  border-color: #ff5400;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.toggle-btn:active {
+  transform: scale(0.97);
+}
+
+.toggle-btn.active {
+  background: #ff5400;
+  color: white;
+  border-color: #ff5400;
+  box-shadow: 0 4px 12px rgba(255, 84, 0, 0.3);
+}
+
+.toggle-btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.toggle-btn span {
+  display: none;
+}
+
+/* Enhanced mobile touch feedback */
+@media (hover: none) and (pointer: coarse) {
+  .toggle-btn:active {
+    background: #ff5400;
+    border-color: #ff5400;
+    color: white;
+  }
+}
+
+/* Fine-tuning for very small devices */
+@media (max-width: 360px) {
+  .section-toggle-banner {
+    margin: 0.5rem;
+    padding: 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .toggle-btn {
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .toggle-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Bookmark Manager Container - Full Width Layout */
 .bookmark-manager {
   background: var(--bg-secondary);
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -19,6 +169,14 @@
   flex-direction: column;
   position: relative;
   color: var(--text-primary);
+}
+
+/* Override page-container defaults for full width */
+.bookmark-manager.page-container {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .bookmark-manager * {
@@ -218,71 +376,167 @@
 }
 
 
-/* Mobile content area adjustments */
+/* Enhanced Mobile Responsive Styles */
 @media (max-width: 768px) {
+  /* Content area optimization */
   .bookmark-content {
     padding: 1rem;
   }
   
+  /* Grid view - responsive columns on tablets */
   .items-grid {
-    gap: 1rem;
+    gap: 0.75rem;
   }
   
   .items-grid.grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
   
   .items-grid.compact {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  /* Bookmark items mobile optimization */
+  .bookmark-item.grid-view {
+    padding: 1.5rem 0.75rem;
+    border-radius: 16px;
+  }
+  
+  .bookmark-item.grid-view .item-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .item-title {
+    font-size: 0.875rem;
+  }
+  
+  /* List view adjustments */
+  .bookmark-item.list-view {
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .list-view .item-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .item-details h4 {
+    font-size: 0.875rem;
+  }
+  
+  .item-details p {
+    font-size: 0.75rem;
   }
 }
 
+/* Small mobile devices */
 @media (max-width: 480px) {
   .bookmark-content {
     padding: 0.75rem;
   }
   
+  /* Grid view - responsive columns on small phones */
   .items-grid.grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
   }
   
+  /* Compact view - responsive columns on small phones */
   .items-grid.compact {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.375rem;
+  }
+  
+  /* Smaller bookmark items */
+  .bookmark-item.grid-view {
+    padding: 1.25rem 0.5rem;
+    border-radius: 12px;
+  }
+  
+  .bookmark-item.grid-view.compact {
+    padding: 1rem 0.25rem;
+  }
+  
+  .bookmark-item.grid-view .item-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .bookmark-item.grid-view.compact .item-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .item-title {
+    font-size: 0.813rem;
+    -webkit-line-clamp: 2;
+  }
+  
+  .bookmark-item.grid-view.compact .item-title {
+    font-size: 0.75rem;
+    -webkit-line-clamp: 1;
+  }
+  
+  .item-subtitle {
+    display: none; /* Hide URL on small screens for cleaner look */
   }
 }
 
-/* Content Area - Matching Shop Page */
+/* Very small mobile devices */
+@media (max-width: 360px) {
+  .bookmark-content {
+    padding: 0.5rem;
+  }
+  
+  .items-grid.grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.375rem;
+  }
+  
+  .items-grid.compact {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 0.25rem;
+  }
+  
+  .bookmark-item.grid-view {
+    padding: 1rem 0.25rem;
+  }
+}
+
+/* Content Area - Full Width */
 .bookmark-content {
   flex: 1;
-  padding: 2rem;
+  padding: 1.5rem;
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--bg-secondary);
   position: relative;
   -webkit-overflow-scrolling: touch;
   z-index: 1;
-  max-width: 1400px;
-  margin: 0 auto;
   width: 100%;
+  margin-top: 0; /* Remove top margin */
 }
 
 /* Grid Layout (Stream Deck Style) */
 .items-grid {
   display: grid;
-  gap: 1.5rem;
+  gap: 1rem;
   animation: fadeIn 0.3s ease;
   position: relative;
   z-index: 1;
+  width: 100%;
 }
 
 .items-grid.grid {
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 }
 
 .items-grid.compact {
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.75rem;
 }
 
 .items-grid.list {
@@ -386,25 +640,44 @@
   max-width: 100%;
 }
 
-/* Bookmark Items - List View */
+/* Bookmark Items - List View - Rectangle Cards */
 .bookmark-item.list-view {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.75rem;
-  background: var(--bg-tertiary);
-  border: 2px solid var(--border-color);
-  border-radius: 14px;
+  padding: 1.5rem 2rem;
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin-bottom: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
 }
 
 .bookmark-item.list-view:hover {
   background: var(--button-hover-bg);
   border-color: var(--primary-color);
-  transform: translateX(4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Add colored left border for visual appeal */
+.bookmark-item.list-view::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: currentColor;
+  transition: width 0.3s ease;
+}
+
+.bookmark-item.list-view:hover::before {
+  width: 6px;
 }
 
 .bookmark-item.list-view.dragging {
@@ -431,11 +704,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: var(--bg-secondary);
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .item-details {
@@ -445,12 +719,13 @@
 
 .item-details h4 {
   margin: 0;
-  font-size: 0.938rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: -0.025em;
 }
 
 .item-details p {
@@ -554,10 +829,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 100000; /* Extremely high to ensure above everything */
   padding: 2rem;
   animation: fadeIn 0.2s ease;
   backdrop-filter: blur(8px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-content {
@@ -569,6 +846,110 @@
   animation: slideUp 0.3s ease;
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
   overflow: hidden;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 100001; /* Ensure content is above overlay */
+}
+
+/* Mobile modal adjustments */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+    justify-content: center;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+  }
+  
+  .modal-content {
+    max-width: 100%;
+    width: 100%;
+    max-height: 85vh;
+    margin: 0;
+    border-radius: 24px 24px 0 0;
+    animation: slideUpMobile 0.3s ease;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  
+  @keyframes slideUpMobile {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0;
+  }
+  
+  .modal-content {
+    max-height: 90vh;
+    height: auto;
+    border-radius: 16px 16px 0 0;
+    margin-bottom: 0;
+  }
+  
+  .modal-header {
+    padding: 1.25rem;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .modal-body {
+    padding: 1.25rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .form-group label {
+    font-size: 0.813rem;
+  }
+  
+  .form-group input {
+    padding: 0.875rem 1rem;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  .color-picker {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .color-option {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .modal-footer {
+    padding: 1.25rem;
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+  
+  .cancel-btn,
+  .save-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    flex: 1;
+  }
 }
 
 @keyframes slideUp {
@@ -621,6 +1002,9 @@
 
 .modal-body {
   padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
 }
 
 .form-group {
@@ -1108,6 +1492,188 @@
 [data-theme="light"] .save-btn:hover:not(:disabled) {
   background: #e64a00;
   border-color: #e64a00;
+}
+
+/* Enhanced Mobile Modal Styles */
+@media (max-width: 768px) {
+  .modal-header {
+    padding: 1.5rem;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    font-size: 0.813rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-group input {
+    padding: 1rem 1.25rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .color-picker {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+  
+  .color-option {
+    width: 100%;
+    height: 44px; /* iOS touch target */
+  }
+  
+  .modal-footer {
+    padding: 1.25rem 1.5rem;
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+  
+  .cancel-btn,
+  .save-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header {
+    padding: 1.25rem 1rem;
+    position: relative;
+  }
+  
+  /* Add drag indicator on mobile */
+  .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.125rem;
+  }
+  
+  .close-btn {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .modal-body {
+    padding: 1.25rem 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .form-group input {
+    padding: 0.875rem 1rem;
+  }
+  
+  .color-picker {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.375rem;
+    padding: 0.5rem;
+  }
+  
+  .color-option {
+    height: 40px;
+  }
+  
+  .modal-footer {
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+  
+  .cancel-btn,
+  .save-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.813rem;
+  }
+}
+
+/* Touch-friendly enhancements */
+@media (hover: none) and (pointer: coarse) {
+  .bookmark-item {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  .bookmark-item:active {
+    transform: scale(0.98);
+  }
+  
+  .color-option {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .color-option:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Prevent iOS zoom on input focus */
+@supports (-webkit-touch-callout: none) {
+  .form-group input {
+    font-size: 16px !important;
+  }
+}
+
+/* Empty state mobile optimization */
+@media (max-width: 768px) {
+  .empty-state {
+    padding: 3rem 2rem;
+  }
+  
+  .empty-state svg {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.25rem;
+  }
+  
+  .empty-state p {
+    font-size: 0.875rem;
+  }
+  
+  .add-first-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+  
+  .empty-state svg {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.125rem;
+  }
 }
 
 /* Dark theme modal styles */

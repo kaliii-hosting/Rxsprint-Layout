@@ -264,6 +264,20 @@ a {
   color: white !important;
 }
 
+/* Specific fix for Analyzer page buttons */
+[data-theme="light"] .analyzer-page .toggle-btn.full-width,
+[data-theme="dark"] .analyzer-page .toggle-btn.full-width,
+.analyzer-page button.toggle-btn.full-width {
+  color: white !important;
+}
+
+/* Ensure text inside analyzer buttons is white */
+.analyzer-page .toggle-btn.full-width *,
+.analyzer-page button.toggle-btn.full-width * {
+  color: white !important;
+  fill: white !important;
+}
+
 /* Grey/inactive buttons should have black text in light theme */
 [data-theme="light"] .filter-btn:not(.active) {
   color: #000000 !important;
