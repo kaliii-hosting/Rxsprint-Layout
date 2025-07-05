@@ -28,11 +28,10 @@ const GPT = () => {
   // GitHub Models endpoint
   const ENDPOINT = "https://models.inference.ai.azure.com";
   const MODEL = "gpt-4o";
-=======
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
->>>>>>> d97450f (Stage30)
+
 
   // Use environment variable for GitHub token
   const token = import.meta.env.VITE_GITHUB_TOKEN;
