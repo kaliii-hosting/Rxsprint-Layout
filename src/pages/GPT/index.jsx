@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Bot, Send, User } from 'lucide-react';
 import './GPT.css';
 
