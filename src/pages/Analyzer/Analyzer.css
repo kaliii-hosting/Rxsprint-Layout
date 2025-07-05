@@ -261,7 +261,7 @@
 .toggle-btn {
   position: relative;
   background: var(--secondary-background);
-  color: var(--text-primary);
+  color: #666666;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 0.5rem 1.5rem;
@@ -299,13 +299,23 @@
   flex-shrink: 0;
 }
 
-/* Full width toggle button - Compare Orders */
+/* Full width toggle button - Compare Orders and Analyze Prescription */
 .toggle-btn.full-width {
   width: 100%;
   margin-top: 1rem;
   background: #ff5400 !important;
   color: white !important;
   border-color: #ff5400 !important;
+}
+
+/* Extra specificity to ensure white text */
+.analyzer-page .toggle-btn.full-width {
+  color: white !important;
+}
+
+/* Target the button text directly */
+button.toggle-btn.full-width {
+  color: white !important;
 }
 
 /* Force white text in light theme for Compare Orders button */
@@ -315,6 +325,18 @@
 
 [data-theme="light"] .toggle-btn.full-width * {
   color: white !important;
+}
+
+/* Ensure text is white in all themes */
+.toggle-btn.full-width {
+  color: white !important;
+}
+
+.toggle-btn.full-width span,
+.toggle-btn.full-width svg,
+.toggle-btn.full-width * {
+  color: white !important;
+  fill: white !important;
 }
 
 .toggle-btn.full-width:hover {
@@ -2213,4 +2235,71 @@
 .supplies-scanning .scan-progress {
   width: 300px;
   max-width: 80vw;
+}
+
+/* CRITICAL FIX: Force white text on orange buttons with maximum specificity */
+.analyzer-page button.toggle-btn.full-width,
+.analyzer-page .dashboard-card button.toggle-btn.full-width,
+.analyzer-page .toggle-btn.full-width,
+.analyzer-page button.toggle-btn.full-width:not(:disabled),
+[data-theme="light"] .analyzer-page button.toggle-btn.full-width,
+[data-theme="dark"] .analyzer-page button.toggle-btn.full-width,
+button.toggle-btn.full-width {
+  color: #ffffff !important;
+  color: white !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Override any CSS variable inheritance */
+.toggle-btn.full-width {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Ensure all text inside these buttons is white */
+.analyzer-page button.toggle-btn.full-width *,
+.analyzer-page button.toggle-btn.full-width span,
+.analyzer-page button.toggle-btn.full-width svg,
+.toggle-btn.full-width *,
+.toggle-btn.full-width span,
+.toggle-btn.full-width svg {
+  color: #ffffff !important;
+  color: white !important;
+  -webkit-text-fill-color: #ffffff !important;
+  fill: #ffffff !important;
+  fill: white !important;
+}
+
+/* Override any inherited text color */
+.analyzer-page .toggle-btn.full-width:hover,
+.analyzer-page .toggle-btn.full-width:focus,
+.analyzer-page .toggle-btn.full-width:active,
+.analyzer-page .toggle-btn.full-width.active {
+  color: #ffffff !important;
+  color: white !important;
+}
+
+/* Disabled state should also have white text */
+.analyzer-page button.toggle-btn.full-width:disabled {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* ULTIMATE FIX - Override everything with maximum specificity */
+body .analyzer-page button.toggle-btn.full-width,
+body .analyzer-page .toggle-btn.full-width,
+body button.toggle-btn.full-width,
+html body .analyzer-page button.toggle-btn.full-width,
+html body [data-theme="light"] .analyzer-page button.toggle-btn.full-width,
+html body [data-theme="dark"] .analyzer-page button.toggle-btn.full-width,
+#root .analyzer-page button.toggle-btn.full-width {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+/* Force all child elements to be white */
+body .analyzer-page button.toggle-btn.full-width *,
+#root .analyzer-page button.toggle-btn.full-width * {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  fill: white !important;
 }

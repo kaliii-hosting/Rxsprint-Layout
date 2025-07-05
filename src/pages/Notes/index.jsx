@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { firestore as db, storage } from '../../config/firebase';
@@ -30,6 +31,7 @@ const Notes = () => {
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [showAllNotesPopup, setShowAllNotesPopup] = useState(true); // Auto-open by default
   
   // Delete confirmation state removed - using window.confirm instead
   
@@ -469,103 +471,25 @@ const Notes = () => {
   return (
     <div className="notes-page page-container">
       {/* Header */}
-      <div className="notes-header">
-        <div className="notes-header-content">
-          <div className="notes-header-title">
-            <FileText size={32} />
-            <div>
-              <h1>Notes</h1>
-              <p>Create and manage your notes</p>
-            </div>
-          </div>
-          <div className="notes-header-actions">
-            <button className="notes-action-btn secondary" onClick={() => setSearchTerm('')}>
-              <Search size={18} />
-              <span>Clear Search</span>
-            </button>
-            <button className="notes-action-btn primary" onClick={handleCreateNote}>
-              <Plus size={18} />
-              <span>New Note</span>
-            </button>
-          </div>
-        </div>
+      {/* Toggle Banner - Analyzer Style */}
+      <div className="section-toggle-banner">
+        <button 
+          className={`toggle-btn ${showAllNotesPopup ? 'active' : ''}`}
+          onClick={() => setShowAllNotesPopup(true)}
+        >
+          <FileText size={16} />
+          <span>All Notes</span>
+        </button>
+        <button 
+          className={`toggle-btn ${isCreating ? 'active' : ''}`}
+          onClick={handleCreateNote}
+        >
+          <Plus size={16} />
+          <span>New Note</span>
+        </button>
       </div>
 
       <div className="notes-layout">
-        {/* Mobile backdrop */}
-        <div 
-          className={`mobile-backdrop ${isMobileMenuOpen ? 'show' : ''}`}
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-        
-        {/* Sidebar with notes list */}
-        <div className={`notes-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
-          <div className="sidebar-header">
-            <h2>My Notes</h2>
-            <button className="new-note-btn" onClick={handleCreateNote} title="Create new note">
-              <Plus size={20} />
-            </button>
-          </div>
-          
-          <div className="sidebar-search">
-            <Search size={18} />
-            <input
-              type="text"
-              placeholder="Search notes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-          </div>
-          
-          <div className="notes-list">
-            {loading ? (
-              <div className="loading-state">
-                <div className="spinner" />
-                <p>Loading notes...</p>
-              </div>
-            ) : filteredNotes.length > 0 ? (
-              filteredNotes.map(note => (
-                <div
-                  key={note.id}
-                  className={`note-item ${selectedNote?.id === note.id ? 'active' : ''}`}
-                  onClick={() => handleSelectNote(note)}
-                >
-                  <div className="note-item-header">
-                    <h3>{note.title || 'Untitled'}</h3>
-                    <button
-                      className={`star-btn ${note.starred ? 'starred' : ''}`}
-                      onClick={(e) => toggleStar(note, e)}
-                    >
-                      <Star size={16} fill={note.starred ? 'currentColor' : 'none'} />
-                    </button>
-                  </div>
-                  <p className="note-preview">
-                    {note.content ? 
-                      ((() => {
-                        // Strip HTML tags for preview
-                        const textContent = note.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-                        return textContent.length > 60 ? 
-                          textContent.substring(0, 60) + '...' : 
-                          textContent;
-                      })()
-                      ) : 
-                      'No content'
-                    }
-                  </p>
-                  <span className="note-date">{formatDate(note.updatedAt)}</span>
-                </div>
-              ))
-            ) : (
-              <div className="empty-state">
-                <FileText size={48} />
-                <h3>No notes found</h3>
-                <p>{searchTerm ? 'Try a different search term' : 'Create your first note'}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Main content area */}
         <div className="notes-content">
           {selectedNote || isCreating ? (
@@ -690,6 +614,110 @@ const Notes = () => {
           )}
         </div>
       </div>
+
+      {/* Full-screen notes popup - Rendered via Portal */}
+      {showAllNotesPopup && ReactDOM.createPortal(
+        <div className="notes-popup-overlay" onClick={() => setShowAllNotesPopup(false)}>
+          <div className="notes-popup-content" onClick={(e) => e.stopPropagation()}>
+            {/* Include the header with toggle buttons */}
+            <div className="popup-page-header">
+              <div className="section-toggle-banner">
+                <button 
+                  className="toggle-btn active"
+                  onClick={() => {/* Already on All Notes */}}
+                >
+                  <FileText size={16} />
+                  <span>All Notes</span>
+                </button>
+                <button 
+                  className="toggle-btn"
+                  onClick={() => {
+                    handleCreateNote();
+                    setShowAllNotesPopup(false);
+                  }}
+                >
+                  <Plus size={16} />
+                  <span>New Note</span>
+                </button>
+                <button 
+                  className="close-popup-btn" 
+                  onClick={() => setShowAllNotesPopup(false)}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            
+            <div className="popup-search">
+              <Search size={20} />
+              <input
+                type="text"
+                placeholder="Search notes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="popup-search-input"
+              />
+            </div>
+            
+            <div className="popup-notes-list">
+              {loading ? (
+                <div className="loading-state">
+                  <div className="spinner" />
+                  <p>Loading notes...</p>
+                </div>
+              ) : filteredNotes.length > 0 ? (
+                <div className="notes-grid">
+                  {filteredNotes.map(note => (
+                    <div
+                      key={note.id}
+                      className="popup-note-card"
+                      onClick={() => {
+                        handleSelectNote(note);
+                        setShowAllNotesPopup(false);
+                      }}
+                    >
+                      <div className="note-card-header">
+                        <h3>{note.title || 'Untitled'}</h3>
+                        {note.starred && <Star size={16} fill="currentColor" className="starred-icon" />}
+                      </div>
+                      <p className="note-card-content">
+                        {note.content ? 
+                          ((() => {
+                            const textContent = note.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                            return textContent.length > 150 ? 
+                              textContent.substring(0, 150) + '...' : 
+                              textContent;
+                          })()) : 
+                          'No content'
+                        }
+                      </p>
+                      <div className="note-card-footer">
+                        <span className="note-card-date">
+                          <Clock size={14} />
+                          {formatDate(note.updatedAt)}
+                        </span>
+                        {note.images && note.images.length > 0 && (
+                          <span className="note-card-images">
+                            <ImageIcon size={14} />
+                            {note.images.length}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <FileText size={48} />
+                  <h3>No notes found</h3>
+                  <p>{searchTerm ? 'Try a different search term' : 'Create your first note'}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
     </div>
   );

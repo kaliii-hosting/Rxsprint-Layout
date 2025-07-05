@@ -49,6 +49,7 @@ const Medications = () => {
   const [showSterileSolutions, setShowSterileSolutions] = useState(false);
   const [showLyophilizedPowders, setShowLyophilizedPowders] = useState(false);
   const [showCapsules, setShowCapsules] = useState(false);
+  const [showSolutions, setShowSolutions] = useState(false);
   
   const location = useLocation();
   const { loadMedications: reloadSearchData } = useSearch();
@@ -853,42 +854,50 @@ const Medications = () => {
         />
       ) : (
         <>
+          {/* Filter Banner - Shop Style */}
+          <div className="section-toggle-banner">
+            <button
+              className={`toggle-btn ${showSterileSolutions ? 'active' : ''}`}
+              onClick={() => setShowSterileSolutions(!showSterileSolutions)}
+            >
+              <span className="mobile-abbr">SS</span>
+              <Pill size={16} className="desktop-icon" />
+              <span className="desktop-text">Sterile Solutions</span>
+            </button>
+            <button
+              className={`toggle-btn ${showLyophilizedPowders ? 'active' : ''}`}
+              onClick={() => setShowLyophilizedPowders(!showLyophilizedPowders)}
+            >
+              <span className="mobile-abbr">LP</span>
+              <Pill size={16} className="desktop-icon" />
+              <span className="desktop-text">Lyophilized Powders</span>
+            </button>
+            <button
+              className={`toggle-btn ${showCapsules ? 'active' : ''}`}
+              onClick={() => setShowCapsules(!showCapsules)}
+            >
+              <span className="mobile-abbr">CAP</span>
+              <Pill size={16} className="desktop-icon" />
+              <span className="desktop-text">Capsules</span>
+            </button>
+            <button
+              className={`toggle-btn ${showSolutions ? 'active' : ''}`}
+              onClick={() => setShowSolutions(!showSolutions)}
+            >
+              <span className="mobile-abbr">SOL</span>
+              <Pill size={16} className="desktop-icon" />
+              <span className="desktop-text">Solutions</span>
+            </button>
+          </div>
           
           <div className="medications-content">
             <div className="medications-dashboard">
               <div className="dashboard-card">
                 <div className="card-header">
                   <h3>Medication Database</h3>
-                  <Pill size={24} />
+                  <div className="results-count">{displayMedications.length} Results</div>
                 </div>
                 <div className="card-body">
-                  <div className="filter-options">
-                    <label className="filter-checkbox">
-                      <input 
-                        type="checkbox" 
-                        checked={showSterileSolutions}
-                        onChange={(e) => setShowSterileSolutions(e.target.checked)}
-                      />
-                      <span>Show Sterile Solutions</span>
-                    </label>
-                    <label className="filter-checkbox">
-                      <input 
-                        type="checkbox" 
-                        checked={showLyophilizedPowders}
-                        onChange={(e) => setShowLyophilizedPowders(e.target.checked)}
-                      />
-                      <span>Show Lyophilized Powders</span>
-                    </label>
-                    <label className="filter-checkbox">
-                      <input 
-                        type="checkbox" 
-                        checked={showCapsules}
-                        onChange={(e) => setShowCapsules(e.target.checked)}
-                      />
-                      <span>Show Capsules</span>
-                    </label>
-                    <div className="results-count">{displayMedications.length} Results</div>
-                  </div>
                   
                   <div className="medications-container">
         {loading ? (

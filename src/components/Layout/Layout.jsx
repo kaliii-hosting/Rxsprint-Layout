@@ -16,7 +16,10 @@ import {
   ScanLine,
   Sun,
   Moon,
-  Bookmark
+  Bookmark,
+  Bot,
+  Zap,
+  Settings
 } from 'lucide-react';
 import { useCalculator } from '../../contexts/CalculatorContext';
 import { useSearch } from '../../contexts/SearchContext';
@@ -54,13 +57,14 @@ const Layout = ({ children }) => {
     { path: '/medications', icon: Pill, label: 'Medications' },
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
     { path: '/workflow', icon: GitBranch, label: 'Workflow' },
-    { path: '/note-generator', icon: FileText, label: 'Note Generator' },
+    { path: '/note-generator', icon: Zap, label: 'Note Generator' },
     { path: '/pump', icon: CurlinPumpIcon, label: 'Pump' },
     { path: '/supplies', icon: Package, label: 'Supplies' },
     { path: '/shop', icon: ShoppingCart, label: 'Shop' },
     { path: '/notes', icon: StickyNote, label: 'Notes' },
     { path: '/analyzer', icon: ScanLine, label: 'Analyzer' },
-    { path: '/bookmarks', icon: Bookmark, label: 'Bookmarks' }
+    { path: '/bookmarks', icon: Bookmark, label: 'Bookmarks' },
+    { path: '/gpt', icon: Bot, label: 'GPT' }
   ];
 
   // Handle click outside to close dropdown

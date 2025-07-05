@@ -2391,8 +2391,9 @@ const Analyzer = () => {
                   className={`toggle-btn full-width ${isAnalyzing ? 'active' : ''}`}
                   onClick={() => analyzeDocument()}
                   disabled={!selectedFile || isAnalyzing}
+                  style={{ color: 'white', WebkitTextFillColor: 'white' }}
                 >
-                  <ScanLine size={16} />
+                  <ScanLine size={16} style={{ color: 'white', WebkitTextFillColor: 'white' }} />
                   {isAnalyzing ? 'Analyzing...' : 'Analyze Prescription'}
                 </button>
               </div>
@@ -2606,8 +2607,9 @@ const Analyzer = () => {
                       className={`toggle-btn full-width ${isAnalyzingSupplies ? 'active' : ''}`}
                       onClick={analyzeSupplies}
                       disabled={!previousSupplyFile || !currentSupplyFile || isAnalyzingSupplies}
+                      style={{ color: 'white', WebkitTextFillColor: 'white' }}
                     >
-                      <GitCompare size={16} />
+                      <GitCompare size={16} style={{ color: 'white', WebkitTextFillColor: 'white' }} />
                       {isAnalyzingSupplies ? 'Analyzing...' : 'Compare Orders'}
                     </button>
                   </div>

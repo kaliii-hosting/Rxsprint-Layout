@@ -1,0 +1,965 @@
+/* Import Satoshi Font to match analyzer page */
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,800,500,400&display=swap');
+
+/* Base styles - ensure Satoshi font is used throughout */
+* {
+  box-sizing: border-box;
+}
+
+/* GPT Page Container */
+.gpt-page {
+  background: var(--bg-secondary);
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+}
+
+/* Dashboard Card Styles */
+.dashboard-card {
+  background: var(--card-background);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Toggle Banner - Mobile-First Professional Design */
+.section-toggle-banner {
+  /* Mobile-first base styles - Force horizontal layout */
+  display: flex;
+  flex-direction: row !important;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--card-background);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin: 0.75rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  position: relative;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  min-height: 60px; /* Slightly taller for text */
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.section-toggle-banner::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tablet and desktop styles */
+@media (min-width: 768px) {
+  .section-toggle-banner {
+    gap: 0.5rem;
+    padding: 1rem;
+    margin: 1.5rem;
+    border-radius: 16px;
+    flex-wrap: nowrap !important; /* Keep horizontal on desktop too */
+    overflow-x: visible;
+    min-height: auto;
+    max-height: auto;
+  }
+}
+
+.toggle-btn {
+  /* Mobile-first base styles */
+  position: relative;
+  background: var(--secondary-background);
+  color: #666666;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: auto;
+  width: auto;
+  height: 44px; /* iOS recommended touch target */
+  aspect-ratio: auto;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Tablet and desktop styles */
+@media (min-width: 768px) {
+  .toggle-btn {
+    padding: 0.5rem 1.5rem;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    min-width: 120px;
+    width: auto;
+    height: 40px;
+    aspect-ratio: auto;
+    border-radius: 12px;
+  }
+  
+  .toggle-btn span {
+    display: inline !important;
+  }
+}
+
+.toggle-btn:hover {
+  background: #ff5400;
+  border-color: #ff5400;
+  color: white !important;
+  transform: translateY(-1px);
+}
+
+/* Ensure white text in light theme for hover state */
+[data-theme="light"] .toggle-btn:hover {
+  color: white !important;
+}
+
+.toggle-btn:active {
+  transform: scale(0.97);
+}
+
+.toggle-btn.active {
+  background: #ff5400;
+  color: white !important;
+  border-color: #ff5400;
+  box-shadow: 0 4px 12px rgba(255, 84, 0, 0.3);
+}
+
+/* Ensure white text in light theme for active buttons */
+[data-theme="light"] .toggle-btn.active {
+  color: white !important;
+}
+
+.toggle-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Mobile: Show text */
+.toggle-btn span {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Enhanced mobile touch feedback */
+@media (hover: none) and (pointer: coarse) {
+  .toggle-btn:active {
+    background: #ff5400;
+    border-color: #ff5400;
+    color: white !important;
+  }
+}
+
+/* Ensure white text in light theme for mobile active state */
+[data-theme="light"] .toggle-btn:active {
+  color: white !important;
+}
+
+/* Fine-tuning for very small devices */
+@media (max-width: 360px) {
+  .section-toggle-banner {
+    margin: 0.5rem;
+    padding: 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .toggle-btn {
+    min-width: auto;
+    width: auto;
+    height: 40px;
+    padding: 0.375rem 0.625rem;
+    font-size: 0.7rem;
+  }
+
+  .toggle-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .toggle-btn span {
+    font-size: 0.7rem;
+  }
+  
+  .medication-table {
+    font-size: 0.7rem;
+    min-width: 320px;
+  }
+  
+  .medication-table th,
+  .medication-table td {
+    padding: 0.375rem;
+  }
+  
+  .medication-table th {
+    min-width: 70px;
+    width: 20%;
+    font-size: 0.65rem;
+  }
+  
+  .medication-table td {
+    min-width: 100px;
+    width: 80%;
+    font-size: 0.7rem;
+  }
+  
+  .gpt-content {
+    padding: 0.375rem;
+    padding-bottom: 2rem;
+  }
+  
+  .dashboard-card {
+    border-radius: 8px;
+  }
+  
+  .card-header h3 {
+    font-size: 0.9375rem;
+  }
+  
+  .severity-info h4 {
+    font-size: 0.875rem;
+  }
+  
+  .detail-header h5 {
+    font-size: 0.75rem;
+  }
+}
+
+/* Content Area */
+.gpt-content {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding-bottom: 4rem; /* Extra padding at bottom for mobile */
+}
+
+.section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Form Styles */
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.search-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 1rem;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.form-input.with-icon {
+  padding-left: 3rem;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #ff5400;
+  box-shadow: 0 0 0 3px rgba(255, 84, 0, 0.1);
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.clear-input-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.clear-input-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Button Styles */
+.primary-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: #ff5400;
+  color: white !important;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background: #ff6600;
+  transform: translateY(-1px);
+  color: white !important;
+}
+
+/* Ensure white text in light theme for primary buttons */
+[data-theme="light"] .primary-btn {
+  color: white !important;
+}
+
+.primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondary-btn {
+  padding: 0.875rem 1.5rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.secondary-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: #ff5400;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.text-btn:hover {
+  text-decoration: underline;
+}
+
+/* Loading animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Search Results */
+.search-results {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  width: 100%;
+  overflow: hidden;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.results-header h4 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.results-content {
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow: visible;
+  width: 100%;
+}
+
+/* Medication Table Styles */
+.medication-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+/* Table Container for horizontal scroll */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1rem 0;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+/* Ensure table doesn't break layout */
+.medication-table {
+  min-width: 600px; /* Minimum width for readability */
+  table-layout: fixed;
+}
+
+.medication-table th,
+.medication-table td {
+  border: 1px solid var(--border-color);
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.medication-table th {
+  width: 30%;
+  min-width: 120px;
+  font-weight: 700;
+  background: var(--bg-tertiary);
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.medication-table td {
+  width: 70%;
+  min-width: 200px;
+}
+
+.medication-table th {
+  background: var(--bg-tertiary);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.medication-table td {
+  background: var(--card-background);
+  color: var(--text-secondary);
+}
+
+.medication-table tr:hover td {
+  background: var(--bg-secondary);
+}
+
+/* Error Response */
+.error-response {
+  color: #ef4444;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+}
+
+/* Drug Interactions Form */
+.interaction-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.input-group {
+  position: relative;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Alert Styles */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+  font-weight: 500;
+}
+
+.alert-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+/* Interaction Results */
+.interaction-result {
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.severity-card {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  width: 100%;
+  overflow: hidden;
+}
+
+.severity-card.safe {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.severity-card.caution {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.severity-card.contraindicated {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.severity-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.severity-icon {
+  flex-shrink: 0;
+}
+
+.severity-info h4 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.drug-pair {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.interaction-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.detail-section {
+  padding-left: 1rem;
+  border-left: 3px solid var(--border-color);
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.detail-header h5 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.detail-section p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Disclaimer Card */
+.disclaimer-card {
+  margin-top: 1.5rem;
+}
+
+.disclaimer-content {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+}
+
+.disclaimer-icon {
+  color: #f59e0b;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.disclaimer-title {
+  font-weight: 600;
+  color: #f59e0b;
+  margin: 0 0 0.25rem 0;
+  font-size: 0.875rem;
+}
+
+.disclaimer-text {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+
+/* Responsive Design - Tablet */
+@media (max-width: 768px) {
+  .gpt-content {
+    padding: 1rem;
+    padding-bottom: 3rem;
+  }
+
+  .card-header {
+    padding: 1rem;
+    font-size: 1.125rem;
+  }
+
+  .card-header h3 {
+    font-size: 1.125rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .search-container {
+    gap: 0.75rem;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .severity-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .search-results {
+    padding: 0.75rem;
+    margin-top: 1rem;
+  }
+  
+  .medication-table {
+    font-size: 0.8125rem;
+    min-width: 500px;
+  }
+  
+  .medication-table th {
+    min-width: 100px;
+    padding: 0.625rem;
+    font-size: 0.75rem;
+  }
+  
+  .medication-table td {
+    min-width: 150px;
+    padding: 0.625rem;
+  }
+
+  .severity-card {
+    padding: 0.875rem;
+  }
+
+  .detail-section {
+    padding-left: 0.75rem;
+  }
+
+  .disclaimer-card .card-body {
+    padding: 0.75rem;
+  }
+}
+
+/* Responsive Design - Mobile */
+@media (max-width: 480px) {
+  .gpt-content {
+    padding: 0.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .dashboard-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-header {
+    padding: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .card-header h3 {
+    font-size: 1rem;
+  }
+
+  .card-body {
+    padding: 0.75rem;
+  }
+
+  .form-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 0.75rem;
+  }
+
+  .form-input.with-icon {
+    padding-left: 2.5rem;
+  }
+
+  .input-icon {
+    left: 0.75rem;
+    width: 18px;
+    height: 18px;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    font-size: 0.875rem;
+    padding: 0.875rem;
+  }
+
+  .search-results {
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .results-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .results-header h4 {
+    font-size: 1rem;
+  }
+  
+  .medication-table {
+    font-size: 0.75rem;
+    min-width: 400px;
+  }
+  
+  .medication-table th {
+    min-width: 80px;
+    padding: 0.5rem;
+    font-size: 0.7rem;
+    width: 25%;
+  }
+  
+  .medication-table td {
+    min-width: 120px;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    width: 75%;
+  }
+
+  .table-container {
+    margin: 0.5rem 0;
+    border-radius: 8px;
+  }
+
+  .severity-card {
+    padding: 0.75rem;
+  }
+
+  .severity-header {
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .severity-info h4 {
+    font-size: 1rem;
+  }
+
+  .drug-pair {
+    font-size: 0.75rem;
+  }
+
+  .detail-section {
+    padding-left: 0.625rem;
+    border-left-width: 2px;
+  }
+
+  .detail-header h5 {
+    font-size: 0.875rem;
+  }
+
+  .detail-section p {
+    font-size: 0.8125rem;
+  }
+
+  .disclaimer-card .card-body {
+    padding: 0.625rem;
+  }
+
+  .disclaimer-content {
+    gap: 0.75rem;
+  }
+
+  .disclaimer-text {
+    font-size: 0.75rem;
+  }
+
+  .form-label {
+    font-size: 0.8125rem;
+  }
+
+  .alert {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .response-text th {
+    background: var(--bg-tertiary);
+  }
+}
+
+/* Fix for iOS Safari scrolling issues */
+@supports (-webkit-touch-callout: none) {
+  .gpt-page {
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+

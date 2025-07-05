@@ -39,17 +39,18 @@
   width: 100%;
   align-items: center;
   flex: 1;
-  overflow-y: auto;
+  overflow-y: hidden; /* Prevent scrolling */
   overflow-x: hidden;
   padding: 10px 0;
-  gap: 8px;
-  justify-content: flex-start;
+  gap: 0; /* Remove gap to use justify-content spacing */
+  justify-content: space-between; /* Evenly distribute items */
 }
 
 .nav-item {
   width: 50px;
   height: 50px;
-  min-height: 50px;
+  min-height: 40px; /* Reduced min-height for better fit */
+  max-height: 50px; /* Max height to prevent items getting too large */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,7 +59,7 @@
   transition: all 0.3s ease;
   text-decoration: none;
   position: relative;
-  flex-shrink: 0;
+  flex: 0 0 auto; /* Prevent growing/shrinking */
 }
 
 .nav-item:hover {
@@ -336,11 +337,16 @@
   .logo-img {
     width: 45px;
   }
+  
+  .nav {
+    padding: 8px 0;
+  }
 
   .nav-item {
     width: 45px;
     height: 45px;
-    min-height: 45px;
+    min-height: 35px;
+    max-height: 45px;
   }
 
   .nav-item svg {
@@ -415,7 +421,7 @@
   }
 
   .logo {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
   }
 
   .logo-img {
@@ -429,7 +435,8 @@
   .nav-item {
     width: 40px;
     height: 40px;
-    min-height: 40px;
+    min-height: 30px;
+    max-height: 40px;
     border-radius: 10px;
   }
 
@@ -509,10 +516,11 @@
   }
 }
 
-/* Desktop - prevent nav scrolling */
+/* Desktop - adjust nav for larger screens */
 @media (min-width: 769px) {
   .nav {
-    overflow-y: visible;
+    overflow-y: hidden; /* Keep hidden to force even distribution */
+    justify-content: space-evenly; /* Better distribution on desktop */
   }
 }
 
@@ -531,14 +539,14 @@
   }
   
   .nav {
-    gap: 6px;
     padding: 8px 0;
   }
   
   .nav-item {
     width: 45px;
     height: 45px;
-    min-height: 45px;
+    min-height: 35px;
+    max-height: 45px;
   }
   
   .nav-item svg {
@@ -561,14 +569,14 @@
   }
   
   .nav {
-    gap: 5px;
     padding: 6px 0;
   }
   
   .nav-item {
     width: 42px;
     height: 42px;
-    min-height: 42px;
+    min-height: 32px;
+    max-height: 42px;
   }
   
   .nav-item svg {
@@ -595,14 +603,14 @@
   }
   
   .nav {
-    gap: 4px;
     padding: 5px 0;
   }
   
   .nav-item {
     width: 38px;
     height: 38px;
-    min-height: 38px;
+    min-height: 28px;
+    max-height: 38px;
   }
   
   .nav-item svg {
@@ -630,14 +638,14 @@
   }
   
   .nav {
-    gap: 3px;
     padding: 4px 0;
   }
   
   .nav-item {
     width: 34px;
     height: 34px;
-    min-height: 34px;
+    min-height: 26px;
+    max-height: 34px;
   }
   
   .nav-item svg {
@@ -655,16 +663,26 @@
 @media (max-width: 360px) {
   .sidebar {
     width: 50px;
+    padding: 8px 0;
+  }
+  
+  .logo {
+    margin-bottom: 8px;
   }
 
   .logo-img {
     width: 35px;
   }
+  
+  .nav {
+    padding: 4px 0;
+  }
 
   .nav-item {
     width: 36px;
     height: 36px;
-    min-height: 36px;
+    min-height: 28px;
+    max-height: 36px;
   }
 
   .nav-item svg {
@@ -715,19 +733,14 @@
   }
 }
 
-/* Ensure sidebar scrollbar is minimal on mobile */
-@media (max-width: 768px) {
-  .nav::-webkit-scrollbar {
-    width: 2px;
-  }
+/* Ensure sidebar scrollbar is hidden since we don't allow scrolling */
+.nav::-webkit-scrollbar {
+  display: none;
+}
 
-  .nav::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .nav::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-  }
+/* Hide scrollbar for Firefox */
+.nav {
+  scrollbar-width: none;
 }
 
 /* Search Suggestions Styles */
