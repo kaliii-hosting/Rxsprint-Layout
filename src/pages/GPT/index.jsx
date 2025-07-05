@@ -3,7 +3,6 @@ import { Bot, Send, User } from 'lucide-react';
 import './GPT.css';
 
 const GPT = () => {
-<<<<<<< HEAD
   // Toggle state
   const [activeSection, setActiveSection] = useState('drug-search'); // 'drug-search' or 'drug-interactions'
   
