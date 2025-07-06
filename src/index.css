@@ -81,6 +81,139 @@
   --info-color: #3b82f6;
 }
 
+/* Global Light Theme Fix: Force white text on all neon orange buttons */
+[data-theme="light"] button[style*="background: #ff5400"],
+[data-theme="light"] button[style*="background-color: #ff5400"],
+[data-theme="light"] .btn[style*="background: #ff5400"],
+[data-theme="light"] .button[style*="background: #ff5400"],
+[data-theme="light"] button[class*="orange"],
+[data-theme="light"] button[class*="primary"],
+[data-theme="light"] .btn[class*="orange"],
+[data-theme="light"] .btn[class*="primary"],
+[data-theme="light"] .button[class*="orange"],
+[data-theme="light"] .button[class*="primary"],
+[data-theme="light"] .search-button,
+[data-theme="light"] .check-interaction-btn,
+[data-theme="light"] .continent-btn,
+[data-theme="light"] .toggle-btn.active,
+[data-theme="light"] .toggle-btn:hover,
+[data-theme="light"] .action-button,
+[data-theme="light"] .action-btn.primary,
+[data-theme="light"] .submit-button,
+[data-theme="light"] .submit-btn,
+[data-theme="light"] .save-button,
+[data-theme="light"] .save-btn,
+[data-theme="light"] .add-button,
+[data-theme="light"] .create-button,
+[data-theme="light"] .create-btn,
+[data-theme="light"] .confirm-button,
+[data-theme="light"] .confirm-btn,
+[data-theme="light"] .filter-btn.active,
+[data-theme="light"] .cart-button,
+[data-theme="light"] .add-to-cart-btn,
+[data-theme="light"] .checkout-btn,
+[data-theme="light"] .modal-add-to-cart-btn,
+[data-theme="light"] .bookmark-btn,
+[data-theme="light"] .add-first-btn,
+[data-theme="light"] .workflow-action-btn,
+[data-theme="light"] .calculate-btn,
+[data-theme="light"] .prescription-btn,
+[data-theme="light"] .prescription-btn.edit,
+[data-theme="light"] .mode-btn.active,
+[data-theme="light"] .calc-btn.operation,
+[data-theme="light"] .calc-btn.equals,
+[data-theme="light"] .analyzer-action-btn,
+[data-theme="light"] .analyzer-action-btn.primary {
+  color: white !important;
+  --text-primary: white !important;
+  --text-secondary: white !important;
+  --text-tertiary: white !important;
+}
+
+/* Force white text on hover states for orange buttons in light theme */
+[data-theme="light"] button[style*="background: #ff5400"]:hover,
+[data-theme="light"] button[style*="background-color: #ff5400"]:hover,
+[data-theme="light"] .search-button:hover,
+[data-theme="light"] .check-interaction-btn:hover,
+[data-theme="light"] .continent-btn:hover,
+[data-theme="light"] .toggle-btn.active:hover,
+[data-theme="light"] .toggle-btn:hover,
+[data-theme="light"] .action-button:hover,
+[data-theme="light"] .action-btn.primary:hover,
+[data-theme="light"] .submit-button:hover,
+[data-theme="light"] .submit-btn:hover,
+[data-theme="light"] .save-button:hover,
+[data-theme="light"] .save-btn:hover,
+[data-theme="light"] .add-button:hover,
+[data-theme="light"] .create-button:hover,
+[data-theme="light"] .create-btn:hover,
+[data-theme="light"] .confirm-button:hover,
+[data-theme="light"] .confirm-btn:hover,
+[data-theme="light"] .filter-btn.active:hover,
+[data-theme="light"] .cart-button:hover,
+[data-theme="light"] .add-to-cart-btn:hover,
+[data-theme="light"] .checkout-btn:hover,
+[data-theme="light"] .modal-add-to-cart-btn:hover,
+[data-theme="light"] .bookmark-btn:hover,
+[data-theme="light"] .add-first-btn:hover,
+[data-theme="light"] .workflow-action-btn:hover,
+[data-theme="light"] .calculate-btn:hover,
+[data-theme="light"] .prescription-btn:hover,
+[data-theme="light"] .prescription-btn.edit:hover,
+[data-theme="light"] .mode-btn.active:hover,
+[data-theme="light"] .calc-btn.operation:hover,
+[data-theme="light"] .calc-btn.equals:hover,
+[data-theme="light"] .analyzer-action-btn:hover,
+[data-theme="light"] .analyzer-action-btn.primary:hover {
+  color: white !important;
+  --text-primary: white !important;
+  --text-secondary: white !important;
+  --text-tertiary: white !important;
+}
+
+/* Force white text on active states for orange buttons in light theme */
+[data-theme="light"] .search-button:active,
+[data-theme="light"] .check-interaction-btn:active,
+[data-theme="light"] .continent-btn:active,
+[data-theme="light"] .toggle-btn.active:active,
+[data-theme="light"] .action-button:active,
+[data-theme="light"] .action-btn.primary:active,
+[data-theme="light"] .submit-button:active,
+[data-theme="light"] .save-button:active,
+[data-theme="light"] .add-button:active,
+[data-theme="light"] .create-button:active,
+[data-theme="light"] .confirm-button:active,
+[data-theme="light"] .filter-btn.active:active,
+[data-theme="light"] .cart-button:active,
+[data-theme="light"] .add-to-cart-btn:active,
+[data-theme="light"] .checkout-btn:active,
+[data-theme="light"] .calc-btn.operation:active,
+[data-theme="light"] .calc-btn.equals:active {
+  color: white !important;
+  --text-primary: white !important;
+  --text-secondary: white !important;
+  --text-tertiary: white !important;
+}
+
+/* Comprehensive selector for any button with orange background */
+[data-theme="light"] *[style*="background: #ff5"],
+[data-theme="light"] *[style*="background-color: #ff5"],
+[data-theme="light"] *[style*="background: rgb(255, 84, 0)"],
+[data-theme="light"] *[style*="background-color: rgb(255, 84, 0)"],
+[data-theme="light"] button[style*="#ff5400"],
+[data-theme="light"] .btn[style*="#ff5400"],
+[data-theme="light"] input[type="submit"][style*="#ff5400"],
+[data-theme="light"] input[type="button"][style*="#ff5400"] {
+  color: white !important;
+  --text-primary: white !important;
+}
+
+/* Additional fallback for any element with primary color background */
+[data-theme="light"] *[style*="var(--primary-color)"] {
+  color: white !important;
+  --text-primary: white !important;
+}
+
 /* Default to light theme */
 :root {
   color-scheme: light;

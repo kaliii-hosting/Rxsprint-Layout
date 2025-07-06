@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { firestore as db, storage } from '../../config/firebase';
 import { 
@@ -17,6 +18,7 @@ import './Notes.css';
 
 const Notes = () => {
   const { theme } = useTheme();
+  const location = useLocation();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -82,6 +84,18 @@ const Notes = () => {
       setNotes([]);
     }
   }, []);
+
+  // Handle navigation state to auto-select note when coming from homepage map
+  useEffect(() => {
+    const selectedNoteId = location.state?.selectedNoteId;
+    if (selectedNoteId && notes.length > 0) {
+      const noteToSelect = notes.find(note => note.id === selectedNoteId);
+      if (noteToSelect) {
+        handleSelectNote(noteToSelect);
+        setShowAllNotesPopup(false); // Close the popup since we're selecting a specific note
+      }
+    }
+  }, [notes, location.state]);
 
   const handleCreateNote = () => {
     setIsCreating(true);
