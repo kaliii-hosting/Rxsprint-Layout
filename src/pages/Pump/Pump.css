@@ -18,3 +18,40 @@
   height: auto;
   padding: 0;
 }
+
+/* Mobile responsive adjustments for proper scrolling */
+@media (max-width: 768px) {
+  .pump-page {
+    height: auto; /* Allow content to determine height */
+    min-height: 100vh;
+    min-height: 100dvh; /* Use dynamic viewport height on mobile */
+    overflow-y: scroll; /* Force scrolling */
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    padding: 0;
+    margin: 0;
+    position: relative;
+  }
+  
+  .pump-page.page-container {
+    height: auto; /* Allow content to determine height */
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-height: none; /* Remove any max height restrictions */
+    overflow-y: scroll; /* Force scrolling */
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    padding: 0;
+    margin: 0;
+    position: relative;
+  }
+
+  /* Ensure pump calculator content is scrollable */
+  .pump-calculator-container,
+  .calculator-dashboard,
+  .pump-content {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+}
