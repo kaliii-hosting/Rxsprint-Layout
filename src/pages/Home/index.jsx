@@ -261,6 +261,7 @@ const Home = () => {
 
     let themeObserver;
     let handleResize;
+    let recalculateMinZoom;
 
     const loadLeafletAssets = async () => {
       // Load Leaflet CSS
@@ -301,18 +302,51 @@ const Home = () => {
         // Check if mobile
         const isMobile = window.innerWidth <= 768;
         
+        // Calculate the aspect ratio of the viewport
+        const viewportHeight = mapRef.current.clientHeight;
+        const viewportWidth = mapRef.current.clientWidth;
+        const aspectRatio = viewportWidth / viewportHeight;
+        
+        // Calculate minimum zoom to prevent dead spaces
+        // Leaflet uses Web Mercator projection where the world is square at zoom 0 (256x256 px)
+        // But we limit latitude to ±85° which makes the visible world roughly 256x226 px at zoom 0
+        let minZoomLevel;
+        
+        // Calculate pixels per degree at zoom level 0
+        const degreesLongitude = 360;
+        const degreesLatitude = 170; // ±85 degrees
+        const baseWorldWidth = 256;
+        const baseWorldHeight = (256 * degreesLatitude) / degreesLongitude; // ~226 px
+        
+        // Calculate zoom needed to fill viewport width
+        const zoomToFitWidth = Math.log2(viewportWidth / baseWorldWidth);
+        
+        // Calculate zoom needed to fill viewport height  
+        const zoomToFitHeight = Math.log2(viewportHeight / baseWorldHeight);
+        
+        // Use the larger zoom to ensure no dead space
+        minZoomLevel = Math.max(zoomToFitWidth, zoomToFitHeight);
+        
+        // Round up to ensure complete coverage and add small buffer
+        minZoomLevel = Math.ceil(minZoomLevel * 10) / 10 + 0.2;
+        
         // Initialize the map with mobile-friendly settings
         const map = window.L.map(mapRef.current, {
-          center: [20.0, 0.0], // Center of world
-          zoom: isMobile ? 1.5 : 2, // Better initial zoom for mobile
+          center: [0, 0], // Center of world (Equator and Prime Meridian)
+          zoom: minZoomLevel, // Start at minimum zoom to fill viewport
           zoomControl: true,
-          minZoom: isMobile ? 1.5 : 1, // Prevent too much zoom-out on mobile
+          minZoom: minZoomLevel, // Dynamic min zoom based on aspect ratio
           maxZoom: 18,
           attributionControl: false,
           maxBoundsViscosity: 1.0,
-          worldCopyJump: true,
-          // Set max bounds to prevent too much panning
-          maxBounds: [[-90, -180], [90, 180]]
+          worldCopyJump: false, // Disable to prevent duplicate worlds
+          // Set max bounds to prevent panning beyond world limits
+          maxBounds: [[-90, -180], [90, 180]],
+          // Prevent wrapping
+          noWrap: true,
+          // Ensure the map fills the container
+          zoomSnap: 0.1,
+          zoomDelta: 0.1
         });
         
         mapInstanceRef.current = map;
@@ -325,21 +359,14 @@ const Home = () => {
         
         window.L.tileLayer(tileUrl, {
           subdomains: 'abcd',
-          maxZoom: 20
+          maxZoom: 20,
+          noWrap: true, // Prevent tile wrapping
+          bounds: [[-90, -180], [90, 180]] // Limit tile loading to one world
         }).addTo(map);
 
         // Store map instance for page markers
         window.pageMarkersMap = map;
         window.pageMarkersNavigate = navigate;
-
-        // Add a circle around home
-        window.L.circle([29.5523, -95.1356], {
-          color: '#2196F3',
-          fillColor: '#2196F3',
-          fillOpacity: 0.1,
-          radius: 2000,
-          weight: 1
-        }).addTo(map);
 
         // Handle window resize
         handleResize = () => {
@@ -364,7 +391,9 @@ const Home = () => {
               
               window.L.tileLayer(newTileUrl, {
                 subdomains: 'abcd',
-                maxZoom: 20
+                maxZoom: 20,
+                noWrap: true,
+                bounds: [[-90, -180], [90, 180]]
               }).addTo(map);
             }
           });
@@ -389,20 +418,40 @@ const Home = () => {
             }
           });
           
-          // Prevent dead spaces on mobile by ensuring minimum zoom
-          if (isMobile && zoom < 1.5) {
-            map.setZoom(1.5, { animate: false });
+          // Ensure minimum zoom to prevent dead spaces
+          if (zoom < minZoomLevel) {
+            map.setZoom(minZoomLevel, { animate: false });
           }
         });
         
-        // Also handle zoom start to prevent zoom-out beyond limits
-        map.on('zoomstart', () => {
-          const currentZoom = map.getZoom();
-          if (isMobile && currentZoom <= 1.5) {
-            // Prevent zoom out if already at minimum
-            map.off('zoomend');
+        // Handle window resize to recalculate min zoom
+        recalculateMinZoom = () => {
+          if (!mapRef.current) return;
+          
+          const newViewportHeight = mapRef.current.clientHeight;
+          const newViewportWidth = mapRef.current.clientWidth;
+          const newAspectRatio = newViewportWidth / newViewportHeight;
+          
+          // Use same calculation as initialization
+          const degreesLongitude = 360;
+          const degreesLatitude = 170; // ±85 degrees
+          const baseWorldWidth = 256;
+          const baseWorldHeight = (256 * degreesLatitude) / degreesLongitude;
+          
+          const zoomToFitWidth = Math.log2(newViewportWidth / baseWorldWidth);
+          const zoomToFitHeight = Math.log2(newViewportHeight / baseWorldHeight);
+          
+          let newMinZoomLevel = Math.max(zoomToFitWidth, zoomToFitHeight);
+          newMinZoomLevel = Math.ceil(newMinZoomLevel * 10) / 10 + 0.2;
+          
+          map.setMinZoom(newMinZoomLevel);
+          if (map.getZoom() < newMinZoomLevel) {
+            map.setZoom(newMinZoomLevel, { animate: false });
           }
-        });
+        };
+        
+        // Add resize handler
+        window.addEventListener('resize', recalculateMinZoom);
 
         // Add continent view buttons for mobile
         if (isMobile) {
@@ -482,21 +531,9 @@ const Home = () => {
                   map.setView([30.0, 90.0], 2.5, { animate: true });
                   break;
                 case 'world':
-                  // Calculate appropriate zoom to fill mobile viewport without dead spaces
-                  const viewportHeight = window.innerHeight;
-                  const viewportWidth = window.innerWidth;
-                  const aspectRatio = viewportWidth / viewportHeight;
-                  
-                  // Ensure minimum zoom to prevent dead spaces on mobile
-                  let worldZoom;
-                  if (window.innerWidth <= 768) {
-                    // Mobile: never go below 1.5 to prevent dead spaces
-                    worldZoom = Math.max(1.5, aspectRatio < 1 ? 1.7 : 1.5);
-                  } else {
-                    // Desktop: can use lower zoom
-                    worldZoom = aspectRatio < 1 ? 1.5 : 1;
-                  }
-                  map.setView([0.0, 0.0], worldZoom, { animate: true });
+                  // Use the minimum zoom level calculated based on viewport
+                  const currentMinZoom = map.getMinZoom();
+                  map.setView([0, 0], currentMinZoom, { animate: true });
                   break;
               }
             }
@@ -505,6 +542,15 @@ const Home = () => {
           // Append to the map container (parent of the map)
           mapRef.current.parentElement.appendChild(continentContainer);
         }
+        
+        // Ensure map fills viewport and is centered after initialization
+        setTimeout(() => {
+          if (map && mapRef.current) {
+            map.invalidateSize();
+            // Center the map on coordinates 0,0
+            map.setView([0, 0], minZoomLevel, { animate: false });
+          }
+        }, 100);
         
         // Set map as ready
         setMapReady(true);
@@ -530,6 +576,9 @@ const Home = () => {
       }
       if (handleResize) {
         window.removeEventListener('resize', handleResize);
+      }
+      if (recalculateMinZoom) {
+        window.removeEventListener('resize', recalculateMinZoom);
       }
       if (themeObserver) {
         themeObserver.disconnect();
@@ -557,7 +606,7 @@ const Home = () => {
     locations.forEach((location, index) => {
       const Icon = location.icon;
       const iconHtml = ReactDOMServer.renderToStaticMarkup(
-        <Icon size={10} />
+        <Icon size={15} />
       );
 
       const markerHtml = `
@@ -574,9 +623,9 @@ const Home = () => {
       const customIcon = window.L.divIcon({
         className: 'custom-marker-wrapper',
         html: markerHtml,
-        iconSize: [31, 39],
-        iconAnchor: [16, 31],
-        popupAnchor: [0, -31]
+        iconSize: [36, 45],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
       });
 
       // Check if there's a custom position for this page
@@ -812,7 +861,7 @@ const Home = () => {
       const markerHtml = `
         <div class="location-marker location-marker-small">
           <div class="marker-icon-wrapper">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="2" y1="12" x2="22" y2="12"></line>
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
@@ -827,9 +876,9 @@ const Home = () => {
       const customIcon = window.L.divIcon({
         className: 'custom-marker-wrapper',
         html: markerHtml,
-        iconSize: [31, 39],
-        iconAnchor: [16, 31],
-        popupAnchor: [0, -31]
+        iconSize: [36, 45],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
       });
 
       const marker = window.L.marker([lat, lng], { 
@@ -901,7 +950,7 @@ const Home = () => {
       const markerHtml = `
         <div class="location-marker location-marker-small">
           <div class="marker-icon-wrapper">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
               <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -918,9 +967,9 @@ const Home = () => {
       const customIcon = window.L.divIcon({
         className: 'custom-marker-wrapper',
         html: markerHtml,
-        iconSize: [31, 39],
-        iconAnchor: [16, 31],
-        popupAnchor: [0, -31]
+        iconSize: [36, 45],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
       });
 
       const marker = window.L.marker([lat, lng], { 

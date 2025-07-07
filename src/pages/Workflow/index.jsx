@@ -41,7 +41,7 @@ const Workflow = () => {
   const [completedItems, setCompletedItems] = useState(new Set());
   const [completedCards, setCompletedCards] = useState(new Set());
   const [expandedSections, setExpandedSections] = useState({
-    scenarioOverview: true,
+    scenarioOverview: false,
     newRxNoChanges: false,
     sigDoseChanges: false,
     infusionChanges: false,
