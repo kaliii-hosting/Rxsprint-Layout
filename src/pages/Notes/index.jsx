@@ -14,6 +14,7 @@ import {
   onSnapshot 
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
 import './Notes.css';
 
 const Notes = () => {
@@ -219,64 +220,11 @@ const Notes = () => {
     }
   };
 
-  // Handle paste event for Excel tables and images
-  const handlePaste = async (e) => {
-    const items = Array.from(e.clipboardData?.items || []);
-    // Check for any image type including screenshots
-    const imageItem = items.find(item => 
-      item.type.startsWith('image/') || 
-      item.kind === 'file' && item.type.match(/^image\//)
-    );
-    
-    if (imageItem) {
-      e.preventDefault();
-      const blob = imageItem.getAsFile();
-      if (blob) {
-        // Handle screenshots specifically
-        const isScreenshot = !blob.name || blob.name === 'image.png' || 
-                           blob.name.includes('screenshot') || 
-                           blob.name.includes('Screenshot');
-        await uploadImage(blob, isScreenshot);
-      }
-    } else {
-      // Handle text/table paste
-      e.preventDefault();
-      
-      // Get clipboard data
-      const clipboardData = e.clipboardData || window.clipboardData;
-      const pastedData = clipboardData.getData('text/plain');
-      
-      // Check if it's likely a table (has tabs and newlines)
-      if (pastedData.includes('\t')) {
-        // Convert to HTML table
-        const htmlTable = convertToHTMLTable(pastedData);
-        
-        // Insert at cursor position
-        const textarea = e.target;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const text = textarea.value;
-        
-        const newContent = text.substring(0, start) + htmlTable + text.substring(end);
-        setFormData({ ...formData, content: newContent });
-      } else {
-        // Regular paste
-        const textarea = e.target;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const text = textarea.value;
-        
-        const newContent = text.substring(0, start) + pastedData + text.substring(end);
-        setFormData({ ...formData, content: newContent });
-      }
-    }
-  };
-  
   // Upload image to Firebase Storage
   const uploadImage = async (file, isScreenshot = false) => {
     if (!storage) {
       alert('Storage service not available');
-      return;
+      return null;
     }
     
     setUploadingImage(true);
@@ -301,29 +249,6 @@ const Notes = () => {
       const snapshot = await uploadBytes(storageRef, file, metadata);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
-      // Add image URL to the content with better formatting
-      const altText = isScreenshot ? 'Screenshot' : 'Pasted image';
-      const imageMarkup = `\n\n<img src="${downloadURL}" alt="${altText}" style="max-width: 100%; height: auto; display: block; margin: 10px auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />\n\n`;
-      
-      // Insert at cursor position or at the end
-      const textarea = document.querySelector('.note-textarea');
-      if (textarea) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const text = formData.content || '';
-        const newContent = text.substring(0, start) + imageMarkup + text.substring(end);
-        setFormData(prev => ({ ...prev, content: newContent }));
-        
-        // Move cursor after the inserted image
-        setTimeout(() => {
-          textarea.selectionStart = textarea.selectionEnd = start + imageMarkup.length;
-          textarea.focus();
-        }, 10);
-      } else {
-        // If not in edit mode, just append
-        setFormData(prev => ({ ...prev, content: (prev.content || '') + imageMarkup }));
-      }
-      
       // Also store image URL in images array for reference
       const newImages = [...(formData.images || []), downloadURL];
       setFormData(prev => ({ ...prev, images: newImages }));
@@ -335,84 +260,27 @@ const Notes = () => {
         }, 500);
       }
       
+      return downloadURL;
+      
     } catch (error) {
       console.error('Error uploading image:', error);
       alert(`Failed to upload ${isScreenshot ? 'screenshot' : 'image'}: ${error.message}`);
+      return null;
     } finally {
       setUploadingImage(false);
     }
   };
   
-  // Convert tab-separated data to HTML table
-  const convertToHTMLTable = (data) => {
-    const rows = data.trim().split('\n');
-    let html = '<table>\n';
-    
-    rows.forEach((row, index) => {
-      const cells = row.split('\t');
-      html += '  <tr>\n';
-      
-      cells.forEach(cell => {
-        const tag = index === 0 ? 'th' : 'td';
-        html += `    <${tag}>${cell.trim()}</${tag}>\n`;
-      });
-      
-      html += '  </tr>\n';
-    });
-    
-    html += '</table>\n';
-    return html;
-  };
-  
-  // Render content with HTML support for tables and images
+  // Render content with HTML support
   const renderContent = (content) => {
     if (!content) return <p className="empty-content">No content</p>;
     
-    // Check if content contains HTML (tables or images)
-    if (content.includes('<table>') || content.includes('<img')) {
-      // Split content by HTML elements to handle mixed content
-      const parts = content.split(/(<table>[\s\S]*?<\/table>|<img[^>]*>)/g);
-      
-      return (
-        <div className="note-content-wrapper">
-          {parts.map((part, index) => {
-            if (part.startsWith('<table>') || part.startsWith('<img')) {
-              // Render HTML elements
-              return (
-                <div 
-                  key={index}
-                  className={part.startsWith('<table>') ? 'table-container' : 'image-container'}
-                  dangerouslySetInnerHTML={{ __html: part }}
-                />
-              );
-            } else {
-              // Render regular text with line breaks
-              return (
-                <div key={index} className="text-content">
-                  {part.split('\n').map((line, i) => (
-                    <React.Fragment key={i}>
-                      {line}
-                      {i < part.split('\n').length - 1 && <br />}
-                    </React.Fragment>
-                  ))}
-                </div>
-              );
-            }
-          })}
-        </div>
-      );
-    }
-    
-    // Regular content without HTML
+    // For rich text HTML content, render it directly
     return (
-      <div className="text-content">
-        {content.split('\n').map((line, i) => (
-          <React.Fragment key={i}>
-            {line}
-            {i < content.split('\n').length - 1 && <br />}
-          </React.Fragment>
-        ))}
-      </div>
+      <div 
+        className="note-content-wrapper"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
     );
   };
 
@@ -482,25 +350,117 @@ const Notes = () => {
     }
   };
 
+
   return (
     <div className="notes-page page-container">
       {/* Header */}
-      {/* Toggle Banner - Analyzer Style */}
-      <div className="section-toggle-banner">
-        <button 
-          className={`toggle-btn ${showAllNotesPopup ? 'active' : ''}`}
-          onClick={() => setShowAllNotesPopup(true)}
-        >
-          <FileText size={16} />
-          <span>All Notes</span>
-        </button>
-        <button 
-          className={`toggle-btn ${isCreating ? 'active' : ''}`}
-          onClick={handleCreateNote}
-        >
-          <Plus size={16} />
-          <span>New Note</span>
-        </button>
+      {/* Dynamic Header - Shows toggle buttons or note info */}
+      <div className="notes-dynamic-header">
+        {(selectedNote || isCreating) ? (
+          /* Note Header - Compact Version */
+          <div className="note-header-compact">
+            <div className="note-header-left">
+              <button 
+                className="back-to-notes-btn"
+                onClick={() => {
+                  setSelectedNote(null);
+                  setIsCreating(false);
+                  setIsEditing(false);
+                  setFormData({ title: '', content: '', starred: false, images: [] });
+                  setShowAllNotesPopup(true);
+                }}
+                title="Back to All Notes"
+              >
+                <FileText size={18} />
+              </button>
+              {isEditing || isCreating ? (
+                <input
+                  type="text"
+                  className="note-title-input-compact"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Note title..."
+                  autoFocus
+                />
+              ) : (
+                <div className="note-title-display">
+                  <h1>{formData.title || 'Untitled'}</h1>
+                  {selectedNote && (
+                    <span className="note-meta-inline">
+                      <Clock size={12} />
+                      {formatDate(selectedNote.updatedAt)}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div className="note-header-actions">
+              {isEditing || isCreating ? (
+                <>
+                  <button className="action-btn-compact" onClick={() => {
+                    setIsEditing(false);
+                    setIsCreating(false);
+                    if (isCreating) {
+                      setSelectedNote(null);
+                      setFormData({ title: '', content: '', starred: false, images: [] });
+                      setShowAllNotesPopup(true);
+                    } else {
+                      setFormData({
+                        title: selectedNote?.title || '',
+                        content: selectedNote?.content || '',
+                        starred: selectedNote?.starred || false,
+                        images: selectedNote?.images || []
+                      });
+                    }
+                  }}>
+                    <X size={16} />
+                    <span>Cancel</span>
+                  </button>
+                  <button className="action-btn-compact primary" onClick={handleSave}>
+                    <Save size={16} />
+                    <span>Save</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className={`star-btn-compact ${formData.starred ? 'starred' : ''}`}
+                    onClick={(e) => selectedNote && toggleStar(selectedNote, e)}
+                    title={formData.starred ? 'Remove star' : 'Add star'}
+                  >
+                    <Star size={18} fill={formData.starred ? 'currentColor' : 'none'} />
+                  </button>
+                  <button className="action-btn-compact" onClick={() => setIsEditing(true)}>
+                    <FileText size={16} />
+                    <span>Edit</span>
+                  </button>
+                  <button className="action-btn-compact danger" onClick={() => handleDelete()}>
+                    <Trash2 size={16} />
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* Toggle Banner - When no note is selected */
+          <div className="section-toggle-banner">
+            <button 
+              className={`toggle-btn ${showAllNotesPopup ? 'active' : ''}`}
+              onClick={() => setShowAllNotesPopup(true)}
+            >
+              <FileText size={16} />
+              <span>All Notes</span>
+            </button>
+            <button 
+              className={`toggle-btn ${isCreating ? 'active' : ''}`}
+              onClick={handleCreateNote}
+            >
+              <Plus size={16} />
+              <span>New Note</span>
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="notes-layout">
@@ -508,80 +468,6 @@ const Notes = () => {
         <div className="notes-content">
           {selectedNote || isCreating ? (
             <>
-              <div className="content-header">
-                <div className="content-header-wrapper">
-                  {isEditing || isCreating ? (
-                    <input
-                      type="text"
-                      className="note-title-input"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Note title..."
-                      autoFocus
-                    />
-                  ) : (
-                    <h1>{formData.title || 'Untitled'}</h1>
-                  )}
-                  
-                  <div className="content-actions">
-                    {isEditing || isCreating ? (
-                      <>
-                        <button className="action-btn" onClick={() => {
-                          setIsEditing(false);
-                          setIsCreating(false);
-                          if (isCreating) {
-                            setSelectedNote(null);
-                            setFormData({ title: '', content: '', starred: false, images: [] });
-                          } else {
-                            setFormData({
-                              title: selectedNote?.title || '',
-                              content: selectedNote?.content || '',
-                              starred: selectedNote?.starred || false,
-                              images: selectedNote?.images || []
-                            });
-                          }
-                        }}>
-                          <X size={18} />
-                          Cancel
-                        </button>
-                        <button className="action-btn primary" onClick={handleSave}>
-                          <Save size={18} />
-                          Save
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          className={`star-btn large ${formData.starred ? 'starred' : ''}`}
-                          onClick={(e) => selectedNote && toggleStar(selectedNote, e)}
-                        >
-                          <Star size={20} fill={formData.starred ? 'currentColor' : 'none'} />
-                        </button>
-                        <button className="action-btn" onClick={() => setIsEditing(true)}>
-                          Edit
-                        </button>
-                        <button className="action-btn danger" onClick={() => handleDelete()}>
-                          <Trash2 size={18} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              {!isCreating && selectedNote && (
-                <div className="note-meta">
-                  <span className="meta-item">
-                    <Calendar size={14} />
-                    Created {selectedNote.createdAt?.toLocaleDateString()}
-                  </span>
-                  <span className="meta-item">
-                    <Clock size={14} />
-                    Updated {formatDate(selectedNote.updatedAt)}
-                  </span>
-                </div>
-              )}
-              
               <div 
                 className={`note-editor ${isDragging ? 'dragging' : ''}`}
                 onDragOver={handleDragOver}
@@ -590,12 +476,11 @@ const Notes = () => {
               >
                 {isEditing || isCreating ? (
                   <>
-                    <textarea
-                      className="note-textarea"
+                    <RichTextEditor
                       value={formData.content}
-                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                      onPaste={handlePaste}
-                      placeholder="Start typing your note, paste a screenshot, or drop an image..."
+                      onChange={(content) => setFormData({ ...formData, content })}
+                      placeholder="Start typing your note..."
+                      onImageUpload={uploadImage}
                     />
                     {uploadingImage && (
                       <div className="upload-indicator">
@@ -603,10 +488,6 @@ const Notes = () => {
                         <span>Uploading image...</span>
                       </div>
                     )}
-                    <div className="paste-hint">
-                      <ImageIcon size={16} />
-                      <span>Paste screenshots (Ctrl+V/Cmd+V) or drag & drop images</span>
-                    </div>
                   </>
                 ) : (
                   <div className="note-content">
@@ -616,14 +497,86 @@ const Notes = () => {
               </div>
             </>
           ) : (
-            <div className="no-note-selected">
-              <FileText size={64} />
-              <h2>Select a note to view</h2>
-              <p>Choose a note from the sidebar or create a new one</p>
-              <button className="action-btn primary" onClick={handleCreateNote}>
-                <Plus size={18} />
-                Create New Note
-              </button>
+            <div className="notes-main-list">
+              <div className="notes-list-header">
+                <h2>All Notes</h2>
+                <span className="notes-count">{filteredNotes.length} notes</span>
+              </div>
+              
+              <div className="notes-search-bar">
+                <Search size={20} className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search notes..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="notes-search-input"
+                />
+              </div>
+              
+              {loading ? (
+                <div className="loading-state">
+                  <div className="spinner" />
+                  <p>Loading notes...</p>
+                </div>
+              ) : filteredNotes.length > 0 ? (
+                <div className="notes-main-grid">
+                  {filteredNotes.map(note => (
+                    <div
+                      key={note.id}
+                      className="main-note-card"
+                      onClick={() => handleSelectNote(note)}
+                    >
+                      <div className="main-note-header">
+                        <h3>{note.title || 'Untitled'}</h3>
+                        <div className="main-note-actions">
+                          {note.starred && (
+                            <Star size={16} fill="currentColor" className="starred-icon" />
+                          )}
+                          <button
+                            className="star-btn-card"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleStar(note, e);
+                            }}
+                            title={note.starred ? 'Remove star' : 'Add star'}
+                          >
+                            <Star 
+                              size={14} 
+                              fill={note.starred ? 'currentColor' : 'none'} 
+                              className={note.starred ? 'starred' : ''}
+                            />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="main-note-footer">
+                        <span className="main-note-date">
+                          <Clock size={14} />
+                          {formatDate(note.updatedAt)}
+                        </span>
+                        {note.images && note.images.length > 0 && (
+                          <span className="main-note-images">
+                            <ImageIcon size={14} />
+                            {note.images.length}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-notes-state">
+                  <FileText size={48} />
+                  <h3>No notes found</h3>
+                  <p>{searchTerm ? 'Try a different search term' : 'Create your first note to get started'}</p>
+                  {!searchTerm && (
+                    <button className="action-btn primary" onClick={handleCreateNote}>
+                      <Plus size={18} />
+                      Create New Note
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -653,13 +606,24 @@ const Notes = () => {
                   <Plus size={16} />
                   <span>New Note</span>
                 </button>
-                <button 
-                  className="close-popup-btn" 
-                  onClick={() => setShowAllNotesPopup(false)}
-                >
-                  <X size={20} />
-                </button>
               </div>
+              <button 
+                className="close-popup-btn" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Close button clicked'); // Debug log
+                  setShowAllNotesPopup(false);
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                type="button"
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
             </div>
             
             <div className="popup-search">
@@ -680,38 +644,45 @@ const Notes = () => {
                   <p>Loading notes...</p>
                 </div>
               ) : filteredNotes.length > 0 ? (
-                <div className="notes-grid">
+                <div className="notes-main-grid">
                   {filteredNotes.map(note => (
                     <div
                       key={note.id}
-                      className="popup-note-card"
+                      className="main-note-card"
                       onClick={() => {
                         handleSelectNote(note);
                         setShowAllNotesPopup(false);
                       }}
                     >
-                      <div className="note-card-header">
+                      <div className="main-note-header">
                         <h3>{note.title || 'Untitled'}</h3>
-                        {note.starred && <Star size={16} fill="currentColor" className="starred-icon" />}
+                        <div className="main-note-actions">
+                          {note.starred && (
+                            <Star size={16} fill="currentColor" className="starred-icon" />
+                          )}
+                          <button
+                            className="star-btn-card"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleStar(note, e);
+                            }}
+                            title={note.starred ? 'Remove star' : 'Add star'}
+                          >
+                            <Star 
+                              size={14} 
+                              fill={note.starred ? 'currentColor' : 'none'} 
+                              className={note.starred ? 'starred' : ''}
+                            />
+                          </button>
+                        </div>
                       </div>
-                      <p className="note-card-content">
-                        {note.content ? 
-                          ((() => {
-                            const textContent = note.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-                            return textContent.length > 150 ? 
-                              textContent.substring(0, 150) + '...' : 
-                              textContent;
-                          })()) : 
-                          'No content'
-                        }
-                      </p>
-                      <div className="note-card-footer">
-                        <span className="note-card-date">
+                      <div className="main-note-footer">
+                        <span className="main-note-date">
                           <Clock size={14} />
                           {formatDate(note.updatedAt)}
                         </span>
                         {note.images && note.images.length > 0 && (
-                          <span className="note-card-images">
+                          <span className="main-note-images">
                             <ImageIcon size={14} />
                             {note.images.length}
                           </span>

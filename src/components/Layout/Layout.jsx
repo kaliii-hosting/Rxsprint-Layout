@@ -24,6 +24,7 @@ import {
 import { useCalculator } from '../../contexts/CalculatorContext';
 import { useSearch } from '../../contexts/SearchContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import VoiceTranscription from '../VoiceTranscription/VoiceTranscription';
 import CurlinPumpIcon from '../icons/CurlinPumpIcon';
 import './Layout.css';
@@ -32,6 +33,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const { toggleCalculatorMode } = useCalculator();
   const { theme, toggleTheme } = useTheme();
+  const { lock } = useAuth();
   const [showVoiceTranscription, setShowVoiceTranscription] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { 
@@ -63,7 +65,7 @@ const Layout = ({ children }) => {
     { path: '/shop', icon: ShoppingCart, label: 'Shop' },
     { path: '/notes', icon: StickyNote, label: 'Notes' },
     { path: '/analyzer', icon: ScanLine, label: 'Analyzer' },
-    { path: '/bookmarks', icon: Bookmark, label: 'Bookmarks' },
+    { path: '/bookmark-manager', icon: Bookmark, label: 'Bookmarks' },
     { path: '/gpt', icon: Bot, label: 'GPT' }
   ];
 
@@ -129,7 +131,7 @@ const Layout = ({ children }) => {
   return (
     <div className="layout">
       <aside className="sidebar">
-        <div className="logo">
+        <div className="logo" onClick={lock} style={{ cursor: 'pointer' }} title="Lock App">
           <img 
             src="https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii//rxsprint%20logo%20IIII.png" 
             alt="RxSprint Logo" 
