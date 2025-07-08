@@ -73,11 +73,11 @@ body {
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden;
   background: rgba(0, 0, 0, 0.6);
   border-radius: 0;
   border: none;
-  padding: clamp(2rem, 5vw, 3rem);
+  padding: 0;
   z-index: 100;
   display: flex;
   align-items: center;
@@ -87,6 +87,8 @@ body {
 .pin-lock-wrapper {
   width: 100%;
   max-width: 320px;
+  height: 100%;
+  max-height: 600px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -94,6 +96,7 @@ body {
   position: relative;
   z-index: 110;
   margin: 0 auto;
+  padding: 20px;
 }
 
 .pin-lock-container {
@@ -103,7 +106,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(2rem, 5vw, 2.5rem);
+  gap: 2rem;
+  padding: 0;
 }
 
 /* Shake Animation */
@@ -124,7 +128,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(1.5rem, 4vw, 2rem);
+  gap: 1.5rem;
   width: 100%;
 }
 
@@ -134,12 +138,12 @@ body {
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-bottom: clamp(0.5rem, 2vw, 1rem);
+  margin-bottom: 0.5rem;
 }
 
 .pin-logo-image {
   width: auto;
-  height: clamp(60px, 12vw, 80px);
+  height: 70px;
   max-width: 240px;
   filter: none;
   animation: none;
@@ -152,7 +156,7 @@ body {
 }
 
 .pin-title {
-  font-size: clamp(18px, 4vw, 20px);
+  font-size: 20px;
   font-weight: 300;
   color: #fff;
   margin: 0;
@@ -174,13 +178,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: clamp(18px, 4vw, 24px);
+  gap: 22px;
 }
 
 /* Simple iOS PIN Dot */
 .pin-dot {
-  width: clamp(12px, 2.5vw, 13px);
-  height: clamp(12px, 2.5vw, 13px);
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.35);
   background: transparent;
@@ -267,9 +271,10 @@ body {
 .pin-pad-numbers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: clamp(12px, 3vw, 17px);
+  gap: 15px;
   width: 100%;
   margin: 0 auto;
+  justify-items: center;
 }
 
 /* Simple iOS PIN Button */
@@ -278,8 +283,8 @@ body {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  width: clamp(60px, 15vw, 75px);
-  height: clamp(60px, 15vw, 75px);
+  width: 75px;
+  height: 75px;
   cursor: pointer;
   transition: all 0.1s ease;
   display: flex;
@@ -298,7 +303,7 @@ body {
 }
 
 .pin-button-number {
-  font-size: clamp(24px, 6vw, 30px);
+  font-size: 30px;
   font-weight: 100;
   color: #fff;
   line-height: 1;
@@ -361,16 +366,58 @@ body {
   }
 }
 
-/* Full Screen Mobile Responsiveness */
+/* Mobile Responsiveness */
 @media (max-width: 480px) {
-  .pin-lock-container-bg {
-    padding: clamp(1.5rem, 4vw, 2rem);
+  .pin-lock-wrapper {
+    padding: 15px;
+  }
+  
+  .pin-lock-container {
+    gap: 1.5rem;
+  }
+  
+  .pin-logo-image {
+    height: 60px;
+  }
+  
+  .pin-title {
+    font-size: 18px;
+  }
+  
+  .pin-button {
+    width: 65px;
+    height: 65px;
+  }
+  
+  .pin-button-number {
+    font-size: 26px;
+  }
+  
+  .pin-pad-numbers {
+    gap: 12px;
+  }
+  
+  .pin-dots {
+    gap: 18px;
   }
 }
 
 @media (max-width: 375px) {
-  .pin-lock-container-bg {
-    padding: clamp(1rem, 3vw, 1.5rem);
+  .pin-lock-wrapper {
+    padding: 10px;
+  }
+  
+  .pin-logo-image {
+    height: 55px;
+  }
+  
+  .pin-button {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .pin-button-number {
+    font-size: 24px;
   }
   
   .pin-pad {
@@ -380,38 +427,94 @@ body {
 
 /* Small devices */
 @media (max-width: 320px) {
-  .pin-lock-container-bg {
-    padding: clamp(0.75rem, 2vw, 1rem);
+  .pin-lock-container {
+    gap: 1.2rem;
+  }
+  
+  .pin-logo-image {
+    height: 50px;
+  }
+  
+  .pin-title {
+    font-size: 16px;
+  }
+  
+  .pin-button {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .pin-button-number {
+    font-size: 22px;
+  }
+  
+  .pin-button-letters {
+    font-size: 9px;
   }
   
   .pin-pad {
     max-width: 240px;
+  }
+  
+  .pin-pad-numbers {
+    gap: 10px;
+  }
+  
+  .pin-dots {
+    gap: 15px;
+  }
+  
+  .pin-dot {
+    width: 11px;
+    height: 11px;
   }
 }
 
 /* Landscape orientation */
 @media (max-height: 600px) and (orientation: landscape) {
-  .pin-lock-container-bg {
-    padding: clamp(0.5rem, 2vh, 1rem) clamp(1rem, 3vw, 2rem);
+  .pin-lock-wrapper {
+    max-height: 100vh;
+    padding: 10px;
   }
   
   .pin-lock-container {
-    gap: clamp(1rem, 3vh, 1.5rem);
+    gap: 1rem;
+  }
+  
+  .pin-header {
+    gap: 0.8rem;
+  }
+  
+  .pin-logo-image {
+    height: 50px;
+  }
+  
+  .pin-title {
+    font-size: 16px;
+  }
+  
+  .pin-button {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .pin-button-number {
+    font-size: 22px;
   }
   
   .pin-pad {
     max-width: 240px;
   }
+  
+  .pin-pad-numbers {
+    gap: 10px;
+  }
 }
 
-/* Large screens and high DPI displays */
-@media (min-width: 1440px) {
-  .pin-lock-container-bg {
-    max-width: 520px;
-  }
-  
+/* Large screens */
+@media (min-width: 768px) {
   .pin-lock-wrapper {
-    max-width: 360px;
+    max-width: 380px;
   }
   
   .pin-pad {
@@ -419,24 +522,58 @@ body {
   }
 }
 
-/* Very large screens */
-@media (min-width: 1920px) {
-  .pin-lock-container-bg {
-    max-width: 560px;
+/* Desktop screens */
+@media (min-width: 1024px) {
+  .pin-lock-wrapper {
+    max-width: 420px;
   }
   
-  .pin-lock-wrapper {
-    max-width: 400px;
+  .pin-logo-image {
+    height: 80px;
+  }
+  
+  .pin-title {
+    font-size: 22px;
+  }
+  
+  .pin-button {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .pin-button-number {
+    font-size: 32px;
   }
   
   .pin-pad {
-    max-width: 360px;
+    max-width: 340px;
+  }
+  
+  .pin-pad-numbers {
+    gap: 18px;
   }
 }
 
-/* Support for browser zoom */
-@media (min-resolution: 120dpi) {
-  .pin-lock-container-bg {
-    transform: translate(-50%, -50%) scale(1);
+/* Large desktop screens */
+@media (min-width: 1440px) {
+  .pin-lock-wrapper {
+    max-width: 480px;
+  }
+  
+  .pin-button {
+    width: 85px;
+    height: 85px;
+  }
+  
+  .pin-button-number {
+    font-size: 34px;
+  }
+  
+  .pin-pad {
+    max-width: 380px;
+  }
+  
+  .pin-pad-numbers {
+    gap: 20px;
   }
 }

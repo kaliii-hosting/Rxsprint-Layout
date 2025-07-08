@@ -21,7 +21,7 @@ import './RedesignedPumpCalculator.css';
 import pumpDatabase from '../../pages/Pump/pump-database.json';
 
 // Dose Safety Indicator Component
-const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, selectedSpecialDosing, onSpecialDosingChange, patientWeight, actualDose, actualDoseUnit }) => {
+const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, selectedSpecialDosing, onSpecialDosingChange, patientWeight, actualDose, actualDoseUnit, correctDose }) => {
   const handleSpecialDosingClick = (option) => {
     if (selectedSpecialDosing?.id === option.id) {
       onSpecialDosingChange(null);
@@ -49,8 +49,9 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
               </>
             ) : standardDose?.range ? (
               <>
-                <div className="dose-threshold">&lt; {standardDose.range.min}</div>
-                <div className="dose-unit">{standardDose.unit}</div>
+                <div className="dose-main-value">
+                  &lt; {parseFloat(standardDose.range.min)} {standardDose.unit}
+                </div>
               </>
             ) : (
               <>
@@ -61,7 +62,7 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
           </div>
         </div>
 
-        {/* Correct Dose Card */}
+        {/* Correct Dose Card - ALWAYS SHOWS DATABASE DOSE */}
         <div className={`dose-safety-card correct-dose ${doseSafety.classification === 'correct' ? 'active' : ''}`}>
           <div className="dose-card-header">
             <span className="dose-card-title">CORRECT DOSE</span>
@@ -70,20 +71,32 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
             )}
           </div>
           <div className="dose-card-content">
-            {doseSafety.classification === 'correct' && actualDose && actualDoseUnit ? (
+            {/* ALWAYS show the database dose, never the user input */}
+            {correctDose ? (
               <>
-                <div className="dose-main-value">{actualDose} {actualDoseUnit}</div>
-                <div className="dose-sub-text">Current dose</div>
+                <div className="dose-main-value">
+                  {parseFloat(correctDose.dose)} {correctDose.unit}
+                </div>
+                {correctDose.totalDose && (
+                  <div className="dose-sub-text">
+                    Total: {Math.round(parseFloat(correctDose.totalDose))} {correctDose.totalUnit}
+                  </div>
+                )}
+                {correctDose.note && (
+                  <div className="dose-sub-text">{correctDose.note}</div>
+                )}
               </>
             ) : standardDose ? (
               <>
-                <div className="dose-threshold">{standardDose.value}</div>
-                <div className="dose-unit">{standardDose.unit}</div>
+                <div className="dose-main-value">
+                  {parseFloat(standardDose.value)} {standardDose.unit}
+                </div>
+                <div className="dose-sub-text">Standard dose</div>
               </>
             ) : (
               <>
-                <div className="dose-threshold">80-120%</div>
-                <div className="dose-sub-text">of standard</div>
+                <div className="dose-threshold">No dose data</div>
+                <div className="dose-sub-text">Select medication</div>
               </>
             )}
           </div>
@@ -105,8 +118,9 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
               </>
             ) : standardDose?.range ? (
               <>
-                <div className="dose-threshold">&gt; {standardDose.range.max}</div>
-                <div className="dose-unit">{standardDose.unit}</div>
+                <div className="dose-main-value">
+                  &gt; {parseFloat(standardDose.range.max)} {standardDose.unit}
+                </div>
               </>
             ) : (
               <>
@@ -148,35 +162,39 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
               }
               
               return (
-                <div 
+                <button
                   key={option.id} 
-                  className={`special-dosing-card ${selectedSpecialDosing?.id === option.id ? 'selected' : ''} ${!isApplicable ? 'disabled' : ''}`}
+                  className={`special-dosing-button ${selectedSpecialDosing?.id === option.id ? 'selected' : ''} ${!isApplicable ? 'disabled' : ''}`}
                   onClick={() => isApplicable && handleSpecialDosingClick(option)}
+                  disabled={!isApplicable}
+                  type="button"
                   title={!isApplicable ? `Not applicable: ${option.condition}` : ''}
                 >
-                  <div className="card-header">
-                    <div className="card-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={selectedSpecialDosing?.id === option.id}
-                        onChange={() => isApplicable && handleSpecialDosingClick(option)}
-                        disabled={!isApplicable}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-                    <div className="card-content">
+                  <div className="dosing-button-content">
+                    <div className="dosing-button-left">
                       <div className="dosing-value">
                         <span className="dose-number">{option.value}</span>
                         <span className="dose-unit">{option.unit}</span>
                         <span className="dose-frequency">{option.frequency}</span>
                       </div>
-                      <div className="dosing-label">{option.label}</div>
-                      {option.condition && (
-                        <div className="dosing-condition">{option.condition}</div>
-                      )}
+                      <div className="dosing-details">
+                        <div className="dosing-label">{option.label}</div>
+                        {option.condition && (
+                          <div className="dosing-condition">{option.condition}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="dosing-button-right">
+                      <div className="selection-indicator">
+                        {selectedSpecialDosing?.id === option.id ? (
+                          <Check size={20} />
+                        ) : (
+                          <div className="empty-circle" />
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -305,8 +323,13 @@ const RedesignedPumpCalculator = () => {
 
   // Calculate dose safety classification
   const getDoseSafety = useCallback(() => {
-    if (!inputs.dose || !selectedMedicationData || !selectedMedicationData.standardDose) {
+    if (!selectedMedicationData || !selectedMedicationData.standardDose) {
       return { classification: 'unknown', ratio: 0, color: '#6c757d' };
+    }
+
+    // If no dose is entered, default to showing correct dose info
+    if (!inputs.dose) {
+      return { classification: 'correct', ratio: 1, color: '#155724' };
     }
 
     const prescribedDose = parseFloat(inputs.dose);
@@ -590,12 +613,12 @@ const RedesignedPumpCalculator = () => {
 
   // Calculate correct dose based on patient weight and medication standard dose
   const calculateCorrectDose = useCallback(() => {
-    if (!selectedMedicationData || !inputs.patientWeight) return null;
+    if (!selectedMedicationData) return null;
     
-    const weight = parseFloat(inputs.patientWeight);
+    const weight = parseFloat(inputs.patientWeight) || 0;
     const medicationDosing = selectedMedicationData.standardDose;
     
-    if (!medicationDosing) return null;
+    if (!medicationDosing || !medicationDosing.value) return null;
     
     // For pediatric patients with special dosing
     if (medicationDosing.pediatricDose && weight < 30) {
@@ -618,13 +641,16 @@ const RedesignedPumpCalculator = () => {
     // Standard dose calculation
     const standardDose = medicationDosing.value;
     if (medicationDosing.unit.includes('/kg')) {
+      // For weight-based dosing, always show the per kg dose
+      // Only calculate total if weight is provided
       return {
         dose: standardDose,
         unit: medicationDosing.unit,
-        totalDose: standardDose * weight,
-        totalUnit: medicationDosing.unit.replace('/kg', '')
+        totalDose: weight > 0 ? (standardDose * weight) : null,
+        totalUnit: weight > 0 ? medicationDosing.unit.replace('/kg', '') : null
       };
     } else {
+      // For fixed dosing, just show the dose
       return {
         dose: standardDose,
         unit: medicationDosing.unit
@@ -1521,6 +1547,10 @@ const RedesignedPumpCalculator = () => {
                         (parseInt(inputs.totalInfusionTime.minutes) || 0);
     if (totalMinutes <= 0) {
       newErrors.totalInfusionTime = 'Please enter a valid infusion time';
+    } else if (totalMinutes > 1440) { // More than 24 hours
+      newErrors.totalInfusionTime = 'Infusion time cannot exceed 24 hours';
+    } else if (parseInt(inputs.totalInfusionTime.minutes) > 59) {
+      newErrors.totalInfusionTime = 'Minutes cannot exceed 59';
     }
 
     // Validate infusion rate is mandatory
@@ -1796,112 +1826,151 @@ const RedesignedPumpCalculator = () => {
           </div>
           <div className="section-content">
             <div className="dose-grid">
-              {/* Dose input row - prescribed and correct dose side by side */}
-              <div className="dose-input-row">
-                {/* Prescribed Dose */}
-                <div className="dose-card">
-                  <label className="section-label">Prescribed Dose</label>
-                  <div className="dose-input-group">
-                    <input
-                      type="number"
-                      value={inputs.dose}
-                      onChange={(e) => handleInputChange('dose', e.target.value)}
-                      placeholder="Enter dose"
-                      className={`supply-input ${errors.dose ? 'error' : ''}`}
-                      step="0.01"
-                    />
-                    <div className="custom-dropdown dose-unit-dropdown">
-                      <select
-                        value={inputs.doseUnit}
-                        onChange={(e) => handleInputChange('doseUnit', e.target.value)}
-                        className="supply-dropdown"
-                      >
-                        {availableDoseUnits.map(unit => (
-                          <option key={unit} value={unit}>{unit}</option>
-                        ))}
-                      </select>
-                      <ChevronDown size={20} className="dropdown-icon" />
+              {/* All dose fields in one row - professional design matching infusion parameters */}
+              <div className="dose-fields-row">
+                {/* Prescribed Dose - Professional Design */}
+                <div className="dose-card prescribed-dose-card">
+                  <label className="section-label">
+                    <Pill size={16} />
+                    Prescribed Dose
+                  </label>
+                  <div className="professional-dose-input">
+                    <div className="dose-input-container">
+                      <div className="dose-input-field">
+                        <input
+                          type="number"
+                          value={inputs.dose}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || (parseFloat(value) >= 0 && parseFloat(value) <= 99999)) {
+                              handleInputChange('dose', value);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === '') {
+                              handleInputChange('dose', '');
+                            }
+                          }}
+                          placeholder="0"
+                          className={`dose-value-input ${errors.dose ? 'error' : ''}`}
+                          min="0"
+                          max="99999"
+                          step="0.1"
+                        />
+                        <div className="dose-unit-selector">
+                          <select
+                            value={inputs.doseUnit}
+                            onChange={(e) => handleInputChange('doseUnit', e.target.value)}
+                            className="dose-unit-dropdown"
+                          >
+                            {availableDoseUnits.map(unit => (
+                              <option key={unit} value={unit}>{unit}</option>
+                            ))}
+                          </select>
+                          <ChevronDown size={16} className="unit-dropdown-icon" />
+                        </div>
+                      </div>
+                    </div>
+                    {/* Dose display preview */}
+                    <div className="dose-display-preview">
+                      <Pill size={14} className="preview-icon" />
+                      <span className="preview-value">
+                        {inputs.dose ? `${inputs.dose} ${inputs.doseUnit}` : 'Not set'}
+                      </span>
                     </div>
                   </div>
                   {errors.dose && <span className="error-text">{errors.dose}</span>}
                 </div>
 
-                {/* Correct Dose Display */}
-                <div className="dose-card correct-dose-display">
-                  <label className="section-label">Correct Dose for Patient</label>
-                  <div className="correct-dose-info">
-                    {selectedMedicationData && inputs.patientWeight ? (
-                      (() => {
-                        const correctDose = calculateCorrectDose();
-                        if (!correctDose) return <span className="no-data">N/A</span>;
-                        
-                        return (
-                          <>
-                            <div className="correct-dose-value">
-                              <span className="dose-number">{correctDose.dose}</span>
-                              <span className="dose-unit">{correctDose.unit}</span>
-                            </div>
-                            {correctDose.totalDose && (
-                              <div className="total-dose-value">
-                                <span className="total-label">Total:</span>
-                                <span className="total-number">{formatNumber(correctDose.totalDose)}</span>
-                                <span className="total-unit">{correctDose.totalUnit}</span>
-                              </div>
-                            )}
-                            {correctDose.note && (
-                              <span className="dose-note">{correctDose.note}</span>
-                            )}
-                          </>
-                        );
-                      })()
-                    ) : (
-                      <span className="no-data">Select medication and enter patient weight</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Dose Frequency and Days Supply Row */}
-              <div className="dose-frequency-row">
-                {/* Dose Frequency */}
-                <div className="dose-card">
-                  <label className="section-label">Dose Frequency</label>
-                  <div className="dose-input-group">
-                    <input
-                      type="number"
-                      value={inputs.doseFrequency}
-                      onChange={(e) => handleInputChange('doseFrequency', e.target.value)}
-                      placeholder="Enter frequency"
-                      className={`supply-input ${errors.doseFrequency ? 'error' : ''}`}
-                      step="1"
-                      min="1"
-                    />
-                    <span className="input-suffix">days</span>
+                {/* Dose Frequency - Professional Design */}
+                <div className="dose-card dose-frequency-card">
+                  <label className="section-label">
+                    <Clock size={16} />
+                    Dose Frequency
+                  </label>
+                  <div className="professional-frequency-input">
+                    <div className="frequency-input-container">
+                      <div className="frequency-input-field">
+                        <input
+                          type="number"
+                          value={inputs.doseFrequency}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 999)) {
+                              handleInputChange('doseFrequency', value);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === '') {
+                              handleInputChange('doseFrequency', '');
+                            }
+                          }}
+                          placeholder="0"
+                          className={`frequency-value-input ${errors.doseFrequency ? 'error' : ''}`}
+                          min="0"
+                          max="999"
+                          step="1"
+                        />
+                        <span className="frequency-unit">DAYS</span>
+                      </div>
+                    </div>
+                    {/* Frequency display preview */}
+                    <div className="frequency-display-preview">
+                      <Clock size={14} className="preview-icon" />
+                      <span className="preview-value">
+                        {inputs.doseFrequency ? `Every ${inputs.doseFrequency} day${inputs.doseFrequency === '1' ? '' : 's'}` : 'Not specified'}
+                      </span>
+                    </div>
                   </div>
                   {errors.doseFrequency && <span className="error-text">{errors.doseFrequency}</span>}
                 </div>
 
-                {/* Days Supply */}
-                <div className="dose-card">
-                  <label className="section-label">Days Supply</label>
-                  <div className="dose-input-group">
-                    <input
-                      type="number"
-                      value={inputs.daysSupply}
-                      onChange={(e) => handleInputChange('daysSupply', e.target.value)}
-                      placeholder="Enter days"
-                      className={`supply-input ${errors.daysSupply ? 'error' : ''}`}
-                      step="1"
-                      min="1"
-                    />
-                    <span className="input-suffix">days</span>
+                {/* Days Supply - Professional Design */}
+                <div className="dose-card days-supply-card">
+                  <label className="section-label">
+                    <Package size={16} />
+                    Days Supply
+                  </label>
+                  <div className="professional-days-input">
+                    <div className="days-input-container">
+                      <div className="days-input-field">
+                        <input
+                          type="number"
+                          value={inputs.daysSupply}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 999)) {
+                              handleInputChange('daysSupply', value);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === '') {
+                              handleInputChange('daysSupply', '');
+                            }
+                          }}
+                          placeholder="0"
+                          className={`days-value-input ${errors.daysSupply ? 'error' : ''}`}
+                          min="0"
+                          max="999"
+                          step="1"
+                        />
+                        <span className="days-unit">DAYS</span>
+                      </div>
+                    </div>
+                    {/* Days supply display preview */}
+                    <div className="days-display-preview">
+                      <Package size={14} className="preview-icon" />
+                      <span className="preview-value">
+                        {inputs.daysSupply ? `${inputs.daysSupply} day${inputs.daysSupply === '1' ? '' : 's'} supply` : 'Not specified'}
+                      </span>
+                    </div>
                   </div>
                   {errors.daysSupply && <span className="error-text">{errors.daysSupply}</span>}
                 </div>
               </div>
 
               {/* Dose Safety Indicator */}
-              {selectedMedicationData && inputs.dose && (
+              {selectedMedicationData && (
                 <div className="dose-item dose-safety-section">
                   <label className="section-label">Dose Safety</label>
                   <DoseSafetyIndicator 
@@ -1916,70 +1985,167 @@ const RedesignedPumpCalculator = () => {
                       ((parseFloat(inputs.dose) || 0) / (parseFloat(inputs.patientWeight) || 1)).toFixed(2)
                     }
                     actualDoseUnit={inputs.doseUnit.includes('/kg') ? 'mg/kg' : 'mg/kg'}
+                    correctDose={calculateCorrectDose()}
                   />
                 </div>
               )}
 
               {/* Infusion Parameters Cards */}
               <div className="infusion-params-cards">
-                {/* Total Infusion Time */}
-                <div className="dose-card">
+                {/* Total Infusion Time - Professional Design */}
+                <div className="dose-card time-input-card">
                   <label className="section-label">
                     <Clock size={16} />
                     Total Infusion Time
                   </label>
-                  <div className="time-input-row">
-                    <div className="time-input-group">
-                      <input
-                        type="number"
-                        value={inputs.totalInfusionTime.hours}
-                        onChange={(e) => handleTimeChange('hours', e.target.value)}
-                        placeholder="0"
-                        className={`supply-input ${errors.totalInfusionTime ? 'error' : ''}`}
-                        min="0"
-                        max="24"
-                      />
-                      <span className="time-label">hours</span>
+                  <div className="professional-time-input">
+                    <div className="time-input-container">
+                      <div className="time-input-field">
+                        <input
+                          type="number"
+                          value={inputs.totalInfusionTime.hours}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 99)) {
+                              handleTimeChange('hours', value);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === '') {
+                              handleTimeChange('hours', '0');
+                            }
+                          }}
+                          placeholder="00"
+                          className={`time-value-input ${errors.totalInfusionTime ? 'error' : ''}`}
+                          min="0"
+                          max="99"
+                          maxLength="2"
+                        />
+                        <span className="time-unit">HR</span>
+                      </div>
+                      <div className="time-separator">
+                        <span className="separator-dot"></span>
+                        <span className="separator-dot"></span>
+                      </div>
+                      <div className="time-input-field">
+                        <input
+                          type="number"
+                          value={inputs.totalInfusionTime.minutes}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 59)) {
+                              handleTimeChange('minutes', value);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === '') {
+                              handleTimeChange('minutes', '0');
+                            }
+                          }}
+                          placeholder="00"
+                          className={`time-value-input ${errors.totalInfusionTime ? 'error' : ''}`}
+                          min="0"
+                          max="59"
+                          maxLength="2"
+                        />
+                        <span className="time-unit">MIN</span>
+                      </div>
                     </div>
-                    <div className="time-input-group">
-                      <input
-                        type="number"
-                        value={inputs.totalInfusionTime.minutes}
-                        onChange={(e) => handleTimeChange('minutes', e.target.value)}
-                        placeholder="0"
-                        className={`supply-input ${errors.totalInfusionTime ? 'error' : ''}`}
-                        min="0"
-                        max="59"
-                      />
-                      <span className="time-label">minutes</span>
+                    {/* Time display preview */}
+                    <div className="time-display-preview">
+                      <span className="preview-label">Total:</span>
+                      <span className="preview-value">
+                        {(parseInt(inputs.totalInfusionTime.hours) || 0).toString().padStart(2, '0')}:
+                        {(parseInt(inputs.totalInfusionTime.minutes) || 0).toString().padStart(2, '0')}
+                      </span>
                     </div>
                   </div>
                   {errors.totalInfusionTime && <span className="error-text">{errors.totalInfusionTime}</span>}
                 </div>
 
-                {/* Total Infusion Volume */}
-                <div className="dose-card">
-                  <label className="section-label">Total Infusion Volume (mL)</label>
-                  <input
-                    type="number"
-                    value={inputs.totalInfusionVolume}
-                    onChange={(e) => handleInputChange('totalInfusionVolume', e.target.value)}
-                    placeholder="Enter volume"
-                    className={`supply-input ${errors.totalInfusionVolume ? 'error' : ''}`}
-                  />
+                {/* Total Infusion Volume - Professional Design */}
+                <div className="dose-card volume-input-card">
+                  <label className="section-label">
+                    <Droplets size={16} />
+                    Total Infusion Volume
+                  </label>
+                  <div className="professional-volume-input">
+                    <div className="volume-input-container">
+                      <div className="volume-input-field">
+                        <input
+                          type="number"
+                          value={inputs.totalInfusionVolume}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || (parseFloat(value) >= 0 && parseFloat(value) <= 9999)) {
+                              handleInputChange('totalInfusionVolume', value);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === '') {
+                              handleInputChange('totalInfusionVolume', '');
+                            }
+                          }}
+                          placeholder="0"
+                          className={`volume-value-input ${errors.totalInfusionVolume ? 'error' : ''}`}
+                          min="0"
+                          max="9999"
+                          step="0.1"
+                        />
+                        <span className="volume-unit">mL</span>
+                      </div>
+                    </div>
+                    {/* Volume display with icon */}
+                    <div className="volume-display-preview">
+                      <Droplets size={14} className="preview-icon" />
+                      <span className="preview-value">
+                        {inputs.totalInfusionVolume || '0'} mL
+                      </span>
+                    </div>
+                  </div>
                   {errors.totalInfusionVolume && <span className="error-text">{errors.totalInfusionVolume}</span>}
                 </div>
 
-                {/* Infusion Rate (Mandatory) */}
-                <div className="dose-card">
-                  <label className="section-label">Infusion Rate (mL/hr) *</label>
-                  <input
-                    type="number"
-                    value={inputs.infusionRate}
-                    onChange={(e) => handleInputChange('infusionRate', e.target.value)}
-                    placeholder="Enter rate"
-                    className={`supply-input ${errors.infusionRate ? 'error' : ''}`}
-                  />
+                {/* Infusion Rate - Professional Design */}
+                <div className="dose-card rate-input-card">
+                  <label className="section-label">
+                    <Activity size={16} />
+                    Infusion Rate <span className="required-asterisk">*</span>
+                  </label>
+                  <div className="professional-rate-input">
+                    <div className="rate-input-container">
+                      <div className="rate-input-field">
+                        <input
+                          type="number"
+                          value={inputs.infusionRate}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || (parseFloat(value) >= 0 && parseFloat(value) <= 999)) {
+                              handleInputChange('infusionRate', value);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === '') {
+                              handleInputChange('infusionRate', '');
+                            }
+                          }}
+                          placeholder="0"
+                          className={`rate-value-input ${errors.infusionRate ? 'error' : ''}`}
+                          min="0"
+                          max="999"
+                          step="0.1"
+                        />
+                        <span className="rate-unit">mL/hr</span>
+                      </div>
+                    </div>
+                    {/* Rate display with calculation hint */}
+                    <div className="rate-display-preview">
+                      <Activity size={14} className="preview-icon" />
+                      <span className="preview-value">
+                        {inputs.infusionRate ? `${inputs.infusionRate} mL/hr` : 'Not set'}
+                      </span>
+                    </div>
+                  </div>
                   {errors.infusionRate && <span className="error-text">{errors.infusionRate}</span>}
                 </div>
               </div>
@@ -2017,7 +2183,7 @@ const RedesignedPumpCalculator = () => {
                                 onClick={() => setShowVialCombinations(true)}
                                 type="button"
                               >
-                                View all options
+                                View details
                               </button>
                             )}
                           </>
@@ -2549,7 +2715,7 @@ const RedesignedPumpCalculator = () => {
               <div className="modal-header">
                 <h3>
                   <Package size={20} />
-                  Vial Combination Options
+                  Recommended Vial Combination
                 </h3>
                 <button 
                   className="modal-close"
@@ -2575,10 +2741,10 @@ const RedesignedPumpCalculator = () => {
                       </div>
                       
                       <div className="combinations-list">
-                        {allCombinations.map((combo, index) => (
+                        {allCombinations.filter(combo => combo.isOptimal).map((combo, index) => (
                           <div 
                             key={index} 
-                            className={`combination-option ${combo.isOptimal ? 'optimal' : ''}`}
+                            className="combination-option optimal"
                           >
                             <div className="combination-header">
                               <div className="combination-title">
@@ -2621,7 +2787,7 @@ const RedesignedPumpCalculator = () => {
                       
                       <div className="modal-footer-info">
                         <Info size={16} />
-                        <span>The recommended option minimizes drug waste while using the fewest vials.</span>
+                        <span>This combination minimizes drug waste while using the fewest vials.</span>
                       </div>
                     </>
                   );
