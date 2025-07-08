@@ -27,6 +27,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import VoiceTranscription from '../VoiceTranscription/VoiceTranscription';
 import CurlinPumpIcon from '../icons/CurlinPumpIcon';
+import PumpSimulator from '../PumpSimulator/PumpSimulator';
 import './Layout.css';
 
 const Layout = ({ children }) => {
@@ -36,6 +37,7 @@ const Layout = ({ children }) => {
   const { lock } = useAuth();
   const [showVoiceTranscription, setShowVoiceTranscription] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showPumpSimulator, setShowPumpSimulator] = useState(false);
   const { 
     searchQuery, 
     searchResults, 
@@ -240,9 +242,13 @@ const Layout = ({ children }) => {
           </div>
           
           <div className="header-actions">
-            {location.pathname === '/calculator' && (
-              <button className="icon-button" title="Toggle Calculator Mode" onClick={toggleCalculatorMode}>
-                <CalcIcon size={20} />
+            {location.pathname === '/pump' && (
+              <button 
+                className="icon-button" 
+                title="Curling Pump"
+                onClick={() => setShowPumpSimulator(true)}
+              >
+                <CurlinPumpIcon size={20} />
               </button>
             )}
             <button 
@@ -271,6 +277,12 @@ const Layout = ({ children }) => {
       <VoiceTranscription 
         isOpen={showVoiceTranscription}
         onClose={() => setShowVoiceTranscription(false)}
+      />
+      
+      {/* Pump Simulator Modal */}
+      <PumpSimulator
+        isOpen={showPumpSimulator}
+        onClose={() => setShowPumpSimulator(false)}
       />
     </div>
   );
