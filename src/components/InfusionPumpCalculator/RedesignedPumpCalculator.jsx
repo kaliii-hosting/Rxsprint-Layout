@@ -21,7 +21,7 @@ import './RedesignedPumpCalculator.css';
 import pumpDatabase from '../../pages/Pump/pump-database.json';
 
 // Dose Safety Indicator Component
-const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, selectedSpecialDosing, onSpecialDosingChange, patientWeight }) => {
+const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, selectedSpecialDosing, onSpecialDosingChange, patientWeight, actualDose, actualDoseUnit }) => {
   const handleSpecialDosingClick = (option) => {
     if (selectedSpecialDosing?.id === option.id) {
       onSpecialDosingChange(null);
@@ -32,37 +32,91 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
 
   return (
     <div className="dose-safety-indicator">
-      <div className="dose-safety-title">DOSE SAFETY</div>
-      <div className="dose-safety-bar">
-        <div className={`dose-zone low-dose ${doseSafety.classification === 'low' ? 'active' : ''}`}>
-          <span className="zone-label">LOW DOSE</span>
+      <div className="dose-safety-cards">
+        {/* Low Dose Card */}
+        <div className={`dose-safety-card low-dose ${doseSafety.classification === 'low' ? 'active' : ''}`}>
+          <div className="dose-card-header">
+            <span className="dose-card-title">LOW DOSE</span>
+            {doseSafety.classification === 'low' && (
+              <span className="active-indicator">●</span>
+            )}
+          </div>
+          <div className="dose-card-content">
+            {doseSafety.classification === 'low' && actualDose && actualDoseUnit ? (
+              <>
+                <div className="dose-main-value">{actualDose} {actualDoseUnit}</div>
+                <div className="dose-sub-text">Current dose</div>
+              </>
+            ) : standardDose?.range ? (
+              <>
+                <div className="dose-threshold">&lt; {standardDose.range.min}</div>
+                <div className="dose-unit">{standardDose.unit}</div>
+              </>
+            ) : (
+              <>
+                <div className="dose-threshold">&lt; 80%</div>
+                <div className="dose-sub-text">of standard</div>
+              </>
+            )}
+          </div>
         </div>
-        <div className={`dose-zone correct-dose ${doseSafety.classification === 'correct' ? 'active' : ''}`}>
-          <span className="zone-label">CORRECT DOSE</span>
+
+        {/* Correct Dose Card */}
+        <div className={`dose-safety-card correct-dose ${doseSafety.classification === 'correct' ? 'active' : ''}`}>
+          <div className="dose-card-header">
+            <span className="dose-card-title">CORRECT DOSE</span>
+            {doseSafety.classification === 'correct' && (
+              <span className="active-indicator">●</span>
+            )}
+          </div>
+          <div className="dose-card-content">
+            {doseSafety.classification === 'correct' && actualDose && actualDoseUnit ? (
+              <>
+                <div className="dose-main-value">{actualDose} {actualDoseUnit}</div>
+                <div className="dose-sub-text">Current dose</div>
+              </>
+            ) : standardDose ? (
+              <>
+                <div className="dose-threshold">{standardDose.value}</div>
+                <div className="dose-unit">{standardDose.unit}</div>
+              </>
+            ) : (
+              <>
+                <div className="dose-threshold">80-120%</div>
+                <div className="dose-sub-text">of standard</div>
+              </>
+            )}
+          </div>
         </div>
-        <div className={`dose-zone high-dose ${doseSafety.classification === 'high' ? 'active' : ''}`}>
-          <span className="zone-label">HIGH DOSE</span>
+
+        {/* High Dose Card */}
+        <div className={`dose-safety-card high-dose ${doseSafety.classification === 'high' ? 'active' : ''}`}>
+          <div className="dose-card-header">
+            <span className="dose-card-title">HIGH DOSE</span>
+            {doseSafety.classification === 'high' && (
+              <span className="active-indicator">●</span>
+            )}
+          </div>
+          <div className="dose-card-content">
+            {doseSafety.classification === 'high' && actualDose && actualDoseUnit ? (
+              <>
+                <div className="dose-main-value">{actualDose} {actualDoseUnit}</div>
+                <div className="dose-sub-text">Current dose</div>
+              </>
+            ) : standardDose?.range ? (
+              <>
+                <div className="dose-threshold">&gt; {standardDose.range.max}</div>
+                <div className="dose-unit">{standardDose.unit}</div>
+              </>
+            ) : (
+              <>
+                <div className="dose-threshold">&gt; 120%</div>
+                <div className="dose-sub-text">of standard</div>
+              </>
+            )}
+          </div>
         </div>
       </div>
-      {doseSafety.classification !== 'unknown' && (
-        <div className="dose-safety-info">
-          <div className="dose-info-row">
-            <span className="dose-percentage">{doseSafety.percentage}% of standard</span>
-            <span className="standard-dose">
-              Standard: {standardDose?.value || 'N/A'} {standardDose?.unit || ''}
-              {standardDose?.range && (
-                <span className="dose-range"> (Range: {standardDose.range.min}-{standardDose.range.max})</span>
-              )}
-            </span>
-          </div>
-          {doseSafety.label && doseSafety.label !== doseSafety.classification.toUpperCase() + ' DOSE' && (
-            <div className="dose-status-label">{doseSafety.label}</div>
-          )}
-          {doseSafety.rangeInfo && (
-            <div className="dose-range-info">{doseSafety.rangeInfo}</div>
-          )}
-        </div>
-      )}
       
       {/* Special Dosing Options */}
       {specialDosingOptions.length > 0 && doseSafety.classification !== 'unknown' && (
@@ -138,6 +192,8 @@ const RedesignedPumpCalculator = () => {
     patientWeight: '',
     dose: '',
     doseUnit: 'mg/kg',
+    doseFrequency: '', // New field - how often dose is administered in days
+    daysSupply: '', // New field - total days of treatment
     totalInfusionVolume: '',
     primeVolume: '10',
     flushVolume: '10',
@@ -918,12 +974,23 @@ const RedesignedPumpCalculator = () => {
 
     const weight = parseFloat(inputs.patientWeight);
     const dose = parseFloat(inputs.dose);
+    const doseFrequency = parseFloat(inputs.doseFrequency);
+    const daysSupply = parseFloat(inputs.daysSupply);
     
-    let totalDose;
+    let singleDose;
     if (inputs.doseUnit === 'mg/kg' || inputs.doseUnit === 'units/kg') {
-      totalDose = dose * weight;
+      singleDose = dose * weight;
     } else {
-      totalDose = dose;
+      singleDose = dose;
+    }
+
+    // Calculate total dose needed
+    let totalDose = singleDose;
+    
+    // If both dose frequency and days supply are provided, calculate total for the treatment period
+    if (doseFrequency > 0 && daysSupply > 0) {
+      const numberOfDoses = Math.ceil(daysSupply / doseFrequency);
+      totalDose = singleDose * numberOfDoses;
     }
 
     const vialSizes = selectedMedicationData.vialSizes;
@@ -1061,6 +1128,56 @@ const RedesignedPumpCalculator = () => {
       // Then by total vials
       return a.totalVials - b.totalVials;
     });
+  }, [selectedMedicationData, inputs.dose, inputs.patientWeight, inputs.doseUnit, inputs.doseFrequency, inputs.daysSupply]);
+
+  // Calculate vial combination for a single dose (ignoring dose frequency and days supply)
+  const calculateSingleDoseVialCombination = useCallback(() => {
+    if (!selectedMedicationData || !inputs.dose || !inputs.patientWeight) return null;
+
+    const weight = parseFloat(inputs.patientWeight);
+    const dose = parseFloat(inputs.dose);
+    
+    let singleDose;
+    if (inputs.doseUnit === 'mg/kg' || inputs.doseUnit === 'units/kg') {
+      singleDose = dose * weight;
+    } else {
+      singleDose = dose;
+    }
+
+    const vialSizes = selectedMedicationData.vialSizes;
+    if (!vialSizes || vialSizes.length === 0) return null;
+
+    // For single vial size, return simple calculation
+    if (vialSizes.length === 1) {
+      const vial = vialSizes[0];
+      const vialCount = Math.ceil(singleDose / vial.strength);
+      return [{ vial, count: vialCount }];
+    }
+
+    // For multiple vial sizes, use the optimal combination for single dose
+    const sortedVials = [...vialSizes].sort((a, b) => b.strength - a.strength);
+    const combination = [];
+    let remainingDose = singleDose;
+    
+    for (const vial of sortedVials) {
+      const vialCount = Math.floor(remainingDose / vial.strength);
+      if (vialCount > 0) {
+        combination.push({ vial, count: vialCount });
+        remainingDose -= vialCount * vial.strength;
+      }
+    }
+    
+    if (remainingDose > 0.01) {
+      const smallestVial = sortedVials[sortedVials.length - 1];
+      const existingSmallest = combination.find(c => c.vial === smallestVial);
+      if (existingSmallest) {
+        existingSmallest.count += 1;
+      } else {
+        combination.push({ vial: smallestVial, count: 1 });
+      }
+    }
+
+    return combination;
   }, [selectedMedicationData, inputs.dose, inputs.patientWeight, inputs.doseUnit]);
 
   // Keep the original function for backward compatibility
@@ -1073,10 +1190,21 @@ const RedesignedPumpCalculator = () => {
   }, [calculateAllVialCombinations]);
 
   // Calculate drug volume
-  const calculateDrugVolume = useCallback(() => {
-    if (!selectedMedicationData || !calculateVialCombination()) return 0;
+  const calculateDrugVolume = useCallback((forSingleDose = false) => {
+    if (!selectedMedicationData) return 0;
     
-    const vialCombination = calculateVialCombination();
+    // If calculating for single dose, ignore dose frequency and days supply
+    let vialCombination;
+    if (forSingleDose) {
+      // Calculate vial combination for single dose only
+      const singleDoseCombination = calculateSingleDoseVialCombination();
+      if (!singleDoseCombination) return 0;
+      vialCombination = singleDoseCombination;
+    } else {
+      vialCombination = calculateVialCombination();
+      if (!vialCombination) return 0;
+    }
+    
     let totalVolume = 0;
     
     if (selectedMedicationData.dosageForm === 'lyophilized') {
@@ -1126,7 +1254,7 @@ const RedesignedPumpCalculator = () => {
     }
     
     return totalVolume;
-  }, [selectedMedicationData, calculateVialCombination]);
+  }, [selectedMedicationData, calculateVialCombination, calculateSingleDoseVialCombination]);
 
   // Calculate infusion rate
   const calculateInfusionRate = useCallback((totalVolume, totalTimeMinutes) => {
@@ -1445,7 +1573,8 @@ const RedesignedPumpCalculator = () => {
 
     // Get vial combination and calculate drug volume
     const vialCombination = calculateVialCombination();
-    const drugVolume = calculateDrugVolume();
+    // Drug volume should always be calculated for single dose only, not total doses
+    const drugVolume = calculateDrugVolume(true);
     
     // Calculate total vials and actual dose
     let totalVials = 0;
@@ -1670,7 +1799,7 @@ const RedesignedPumpCalculator = () => {
               {/* Dose input row - prescribed and correct dose side by side */}
               <div className="dose-input-row">
                 {/* Prescribed Dose */}
-                <div className="dose-item">
+                <div className="dose-card">
                   <label className="section-label">Prescribed Dose</label>
                   <div className="dose-input-group">
                     <input
@@ -1698,7 +1827,7 @@ const RedesignedPumpCalculator = () => {
                 </div>
 
                 {/* Correct Dose Display */}
-                <div className="dose-item correct-dose-display">
+                <div className="dose-card correct-dose-display">
                   <label className="section-label">Correct Dose for Patient</label>
                   <div className="correct-dose-info">
                     {selectedMedicationData && inputs.patientWeight ? (
@@ -1732,6 +1861,45 @@ const RedesignedPumpCalculator = () => {
                 </div>
               </div>
 
+              {/* Dose Frequency and Days Supply Row */}
+              <div className="dose-frequency-row">
+                {/* Dose Frequency */}
+                <div className="dose-card">
+                  <label className="section-label">Dose Frequency</label>
+                  <div className="dose-input-group">
+                    <input
+                      type="number"
+                      value={inputs.doseFrequency}
+                      onChange={(e) => handleInputChange('doseFrequency', e.target.value)}
+                      placeholder="Enter frequency"
+                      className={`supply-input ${errors.doseFrequency ? 'error' : ''}`}
+                      step="1"
+                      min="1"
+                    />
+                    <span className="input-suffix">days</span>
+                  </div>
+                  {errors.doseFrequency && <span className="error-text">{errors.doseFrequency}</span>}
+                </div>
+
+                {/* Days Supply */}
+                <div className="dose-card">
+                  <label className="section-label">Days Supply</label>
+                  <div className="dose-input-group">
+                    <input
+                      type="number"
+                      value={inputs.daysSupply}
+                      onChange={(e) => handleInputChange('daysSupply', e.target.value)}
+                      placeholder="Enter days"
+                      className={`supply-input ${errors.daysSupply ? 'error' : ''}`}
+                      step="1"
+                      min="1"
+                    />
+                    <span className="input-suffix">days</span>
+                  </div>
+                  {errors.daysSupply && <span className="error-text">{errors.daysSupply}</span>}
+                </div>
+              </div>
+
               {/* Dose Safety Indicator */}
               {selectedMedicationData && inputs.dose && (
                 <div className="dose-item dose-safety-section">
@@ -1743,6 +1911,11 @@ const RedesignedPumpCalculator = () => {
                     selectedSpecialDosing={selectedSpecialDosing}
                     onSpecialDosingChange={setSelectedSpecialDosing}
                     patientWeight={inputs.patientWeight}
+                    actualDose={inputs.doseUnit.includes('/kg') ? 
+                      (parseFloat(inputs.dose) || 0).toFixed(2) : 
+                      ((parseFloat(inputs.dose) || 0) / (parseFloat(inputs.patientWeight) || 1)).toFixed(2)
+                    }
+                    actualDoseUnit={inputs.doseUnit.includes('/kg') ? 'mg/kg' : 'mg/kg'}
                   />
                 </div>
               )}
@@ -1853,13 +2026,18 @@ const RedesignedPumpCalculator = () => {
                     </div>
                   </div>
                   <div className="calc-card">
-                    <div className="calc-card-label">Drug Volume</div>
+                    <div className="calc-card-label">
+                      Drug Volume
+                      {inputs.doseFrequency && inputs.daysSupply && (
+                        <span className="calc-card-note"> (per dose)</span>
+                      )}
+                    </div>
                     <div className="calc-card-value">
-                      {calculateDrugVolume()} mL
+                      {calculateDrugVolume(true)} mL
                       {selectedMedicationData?.dosageForm === 'lyophilized' && (
                         <div className="calc-card-detail">
                           {(() => {
-                            const vials = calculateVialCombination();
+                            const vials = calculateSingleDoseVialCombination();
                             if (vials && vials[0]) {
                               return `(${vials.reduce((sum, v) => sum + v.count, 0)} × ${vials[0].vial.reconstitutionVolume} mL)`;
                             }
@@ -2267,7 +2445,20 @@ const RedesignedPumpCalculator = () => {
                 </div>
                 <div className="result-card">
                   <div className="result-label">TOTAL VIALS</div>
-                  <div className="result-value">{results.totalVials}</div>
+                  <div className="result-value">
+                    {results.totalVials}
+                    {inputs.doseFrequency && inputs.daysSupply && (
+                      <div className="vial-calculation-info">
+                        <div className="calculation-breakdown">
+                          <span className="formula">
+                            {Math.ceil(parseFloat(inputs.daysSupply) / parseFloat(inputs.doseFrequency))} doses × {Math.ceil(results.prescribedDose / (results.vialCombination?.[0]?.vial?.strength || 1))} vials/dose
+                          </span>
+                          <span className="equals"> = </span>
+                          <span className="result">{results.totalVials} vials</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="result-card">
                   <div className="result-label">DRUG VOLUME</div>
@@ -2289,21 +2480,6 @@ const RedesignedPumpCalculator = () => {
                   <div className="result-label">TOTAL TIME</div>
                   <div className="result-value">{results.totalTimeFormatted}</div>
                 </div>
-                {/* Vial Breakdown as Result Card */}
-                {results.vialCombination && results.vialCombination.length > 0 && (
-                  <div className="result-card vial-breakdown-card">
-                    <div className="result-label">VIAL BREAKDOWN</div>
-                    <div className="vial-breakdown-content">
-                      {results.vialCombination.map((item, index) => (
-                        <div key={index} className="vial-breakdown-item">
-                          <span className="vial-count">{item.count}</span>
-                          <span className="vial-multiplier">×</span>
-                          <span className="vial-strength">{item.vial.strength} {item.vial.unit}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Detailed Infusion Plan */}
