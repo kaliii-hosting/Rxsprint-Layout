@@ -1,182 +1,165 @@
-/* Overlay */
-.pump-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 10001;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-[data-theme="dark"] .pump-overlay {
-  background: rgba(0, 0, 0, 0.7);
-}
-
-.pump-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--bg-primary);
-  z-index: 10002;
-  display: flex;
-  flex-direction: column;
-  transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Overlay when visible */
-.pump-overlay {
-  opacity: 1;
-  visibility: visible;
-}
-
-.pump-modal {
-  transform: translateY(0);
-}
-
-/* Modal Header */
-.pump-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-}
-
-.pump-modal-header h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text-primary);
+/* Pump Simulator Styles - Theme Independent */
+.pump-simulator-container * {
   margin: 0;
-}
-
-.close-pump-modal {
-  background: none;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
-  color: var(--text-secondary);
   padding: 0;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+  box-sizing: border-box;
 }
 
-.close-pump-modal:hover {
-  background-color: var(--hover-bg);
+/* Force all pump device elements to ignore theme colors with high specificity */
+.pump-simulator-container .pump-device,
+.pump-simulator-container .pump-device * {
+  color: inherit !important;
 }
 
-/* Modal Content */
-.pump-modal-content {
-  flex: 1;
+/* Override theme rules with higher specificity for all buttons */
+.pump-simulator-container.light .pump-device button,
+.pump-simulator-container.dark .pump-device button,
+[data-theme="light"] .pump-simulator-container .pump-device button,
+[data-theme="dark"] .pump-simulator-container .pump-device button,
+body[data-theme="light"] .pump-simulator-container .pump-device button,
+body[data-theme="dark"] .pump-simulator-container .pump-device button {
+  color: white !important;
+}
+
+/* Specific button color overrides with maximum specificity */
+.pump-simulator-container.light .pump-device .btn-power,
+.pump-simulator-container.dark .pump-device .btn-power,
+.pump-simulator-container.light .pump-device .btn-help,
+.pump-simulator-container.dark .pump-device .btn-help,
+.pump-simulator-container.light .pump-device .btn-run,
+.pump-simulator-container.dark .pump-device .btn-run,
+.pump-simulator-container.light .pump-device .btn-run.paused,
+.pump-simulator-container.dark .pump-device .btn-run.paused,
+.pump-simulator-container.light .pump-device .btn-arrow,
+.pump-simulator-container.dark .pump-device .btn-arrow,
+.pump-simulator-container.light .pump-device .btn-no,
+.pump-simulator-container.dark .pump-device .btn-no,
+.pump-simulator-container.light .pump-device .btn-yes,
+.pump-simulator-container.dark .pump-device .btn-yes,
+.pump-simulator-container.light .pump-device .btn-number,
+.pump-simulator-container.dark .pump-device .btn-number,
+.pump-simulator-container.light .pump-device .btn-prime,
+.pump-simulator-container.dark .pump-device .btn-prime {
+  color: white !important;
+}
+
+/* Silence button with specific color */
+.pump-simulator-container.light .pump-device .btn-silence,
+.pump-simulator-container.dark .pump-device .btn-silence,
+.pump-simulator-container.light .pump-device .btn-silence .dot,
+.pump-simulator-container.dark .pump-device .btn-silence .dot {
+  color: #333 !important;
+}
+
+/* Additional overrides for any missed elements */
+[data-theme="light"] .pump-simulator-container .pump-device .btn-power,
+[data-theme="dark"] .pump-simulator-container .pump-device .btn-power,
+[data-theme="light"] .pump-simulator-container .pump-device .btn-help,
+[data-theme="dark"] .pump-simulator-container .pump-device .btn-help,
+[data-theme="light"] .pump-simulator-container .pump-device .btn-run,
+[data-theme="dark"] .pump-simulator-container .pump-device .btn-run,
+[data-theme="light"] .pump-simulator-container .pump-device .btn-arrow,
+[data-theme="dark"] .pump-simulator-container .pump-device .btn-arrow,
+[data-theme="light"] .pump-simulator-container .pump-device .btn-no,
+[data-theme="dark"] .pump-simulator-container .pump-device .btn-no,
+[data-theme="light"] .pump-simulator-container .pump-device .btn-yes,
+[data-theme="dark"] .pump-simulator-container .pump-device .btn-yes,
+[data-theme="light"] .pump-simulator-container .pump-device .btn-number,
+[data-theme="dark"] .pump-simulator-container .pump-device .btn-number,
+[data-theme="light"] .pump-simulator-container .pump-device .btn-prime,
+[data-theme="dark"] .pump-simulator-container .pump-device .btn-prime {
+  color: white !important;
+}
+
+/* Fullscreen container */
+.pump-simulator-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 20px;
+  align-items: center;
   overflow: auto;
-  background: var(--bg-primary);
 }
 
-[data-theme="light"] .pump-modal-content {
+/* Light theme fullscreen background */
+.pump-simulator-container.light {
   background: white;
 }
 
-[data-theme="dark"] .pump-modal-content {
-  background: #1a1a1a;
+/* Dark theme fullscreen background */
+.pump-simulator-container.dark {
+  background: #2d2d2d;
 }
 
-/* Pump Device Styles */
+/* Close button */
+.pump-close-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #999;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: all 0.2s ease;
+}
+
+.pump-close-button:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: #666;
+  transform: scale(1.1);
+}
+
+.pump-simulator-container.dark .pump-close-button {
+  background: rgba(50, 50, 50, 0.9);
+  color: #fff;
+  border-color: #666;
+}
+
+.pump-simulator-container.dark .pump-close-button:hover {
+  background: rgba(70, 70, 70, 1);
+  border-color: #999;
+}
+
+/* Content wrapper for centering */
+.pump-content-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  width: 100%;
+  min-height: 100%;
+}
+
+/* Main pump container */
 .pump-device {
   width: 380px;
-  background: #e8e4dc;
+  max-width: 100%;
+  background: #e8e4dc !important;
   border-radius: 15px;
   padding: 15px;
   box-shadow: 
     0 10px 30px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   position: relative;
-}
-
-/* Ensure pump device doesn't inherit theme styles */
-.pump-device {
-  color: #333;
-}
-
-/* Ensure all button text remains as designed */
-.pump-device .btn {
-  color: white !important;
-}
-
-/* Force white text on all specific button types - override theme styles */
-[data-theme="light"] .pump-device .btn-power,
-[data-theme="dark"] .pump-device .btn-power,
-.pump-device .btn-power {
-  color: white !important;
-}
-
-[data-theme="light"] .pump-device .btn-help,
-[data-theme="dark"] .pump-device .btn-help,
-.pump-device .btn-help {
-  color: white !important;
-}
-
-[data-theme="light"] .pump-device .btn-run,
-[data-theme="dark"] .pump-device .btn-run,
-.pump-device .btn-run {
-  color: white !important;
-}
-
-[data-theme="light"] .pump-device .btn-no,
-[data-theme="dark"] .pump-device .btn-no,
-.pump-device .btn-no {
-  color: white !important;
-}
-
-[data-theme="light"] .pump-device .btn-yes,
-[data-theme="dark"] .pump-device .btn-yes,
-.pump-device .btn-yes {
-  color: white !important;
-}
-
-[data-theme="light"] .pump-device .btn-arrow,
-[data-theme="dark"] .pump-device .btn-arrow,
-.pump-device .btn-arrow {
-  color: white !important;
-}
-
-[data-theme="light"] .pump-device .btn-number,
-[data-theme="dark"] .pump-device .btn-number,
-.pump-device .btn-number {
-  color: white !important;
-}
-
-[data-theme="light"] .pump-device .btn-prime,
-[data-theme="dark"] .pump-device .btn-prime,
-.pump-device .btn-prime {
-  color: white !important;
-}
-
-/* SILENCE button keeps its dark text */
-[data-theme="light"] .pump-device .btn-silence,
-[data-theme="dark"] .pump-device .btn-silence,
-.pump-device .btn-silence {
   color: #333 !important;
 }
 
 /* Display area */
-.display-area {
-  background: #f5f3f0;
+.pump-device .display-area {
+  background: #f5f3f0 !important;
   border-radius: 8px;
   padding: 8px;
   margin-bottom: 8px;
@@ -184,7 +167,7 @@
 }
 
 /* Header */
-.header-row {
+.pump-device .header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -192,29 +175,29 @@
   padding: 0 5px;
 }
 
-.brand-text {
+.pump-device .brand-text {
   font-size: 13px;
-  color: #4a5d8f;
+  color: #4a5d8f !important;
   font-weight: bold;
   letter-spacing: 0.5px;
 }
 
-.model-text {
+.pump-device .model-text {
   font-size: 14px;
-  color: #333;
+  color: #333 !important;
   font-weight: bold;
 }
 
-.model-text .cms {
-  color: #e31e24;
+.pump-device .model-text .cms {
+  color: #e31e24 !important;
   text-decoration: underline;
   font-style: italic;
 }
 
-/* LCD Screen */
-.lcd-screen {
-  background: #e0f7fa;
-  border: 2px solid #0066cc;
+/* LCD Screen - light cyan/pale blue background */
+.pump-device .lcd-screen {
+  background: #e0f7fa !important;
+  border: 2px solid #0066cc !important;
   border-radius: 3px;
   padding: 0;
   min-height: 90px;
@@ -223,46 +206,46 @@
 }
 
 /* Screen content */
-.screen-content {
+.pump-device .screen-content {
   font-family: Arial, sans-serif;
   font-size: 16px;
   font-weight: bold;
-  color: #0033cc;
+  color: #0033cc !important;
   line-height: 1.3;
   text-align: center;
   padding: 8px;
 }
 
-.screen-line {
+.pump-device .screen-line {
   margin: 2px 0;
-  color: #0033cc;
+  color: #0033cc !important;
   font-family: Arial, sans-serif;
   padding: 2px 0;
   font-weight: bold;
 }
 
-/* Selected state */
-.selected {
-  background: #0066cc;
+/* Selected state - blue background with white text */
+.pump-device .selected {
+  background: #0066cc !important;
   color: white !important;
   padding: 2px 0;
   display: block;
   width: 100%;
 }
 
-/* Status bar for running screen */
-.status-bar {
+/* Blue status bar on left for running screen */
+.pump-device .status-bar {
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: 35px;
-  background: #0066cc;
+  background: #0066cc !important;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: white !important;
   font-size: 16px;
   font-weight: bold;
   line-height: 0.9;
@@ -270,43 +253,43 @@
 }
 
 /* Main content area */
-.main-content {
+.pump-device .main-content {
   margin-left: 45px;
   padding: 8px 10px;
   text-align: left;
 }
 
 /* Running display */
-.info-row {
+.pump-device .info-row {
   display: flex;
   justify-content: space-between;
   margin: 3px 0;
   font-size: 15px;
-  color: #0033cc;
+  color: #0033cc !important;
   font-family: Arial, sans-serif;
   font-weight: bold;
 }
 
-.info-label {
+.pump-device .info-label {
   font-weight: bold;
   text-transform: uppercase;
 }
 
-.info-value {
+.pump-device .info-value {
   font-weight: bold;
   text-align: right;
 }
 
 /* Button panel */
-.button-panel {
-  background: white;
+.pump-device .button-panel {
+  background: white !important;
   border-radius: 10px;
   padding: 10px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Top row buttons */
-.top-row {
+.pump-device .top-row {
   display: flex;
   gap: 8px;
   margin-bottom: 10px;
@@ -315,8 +298,8 @@
 }
 
 /* ON/OFF button */
-.btn-power {
-  background: #ff6633;
+.pump-device .btn-power {
+  background: #ff6633 !important;
   color: white !important;
   border: none;
   border-radius: 5px;
@@ -331,55 +314,55 @@
 }
 
 /* LED indicators */
-.led-group {
+.pump-device .led-group {
   display: flex;
   flex-direction: column;
   gap: 2px;
   margin-left: 10px;
 }
 
-.led-row {
+.pump-device .led-row {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.led-dot {
+.pump-device .led-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #e0e0e0;
-  border: 1px solid #999;
+  background: #e0e0e0 !important;
+  border: 1px solid #999 !important;
 }
 
-.led-dot.active-green {
-  background: #4caf50;
+.pump-device .led-dot.active-green {
+  background: #4caf50 !important;
   box-shadow: 0 0 4px #4caf50;
 }
 
-.led-dot.active-yellow {
-  background: #ffd700;
+.pump-device .led-dot.active-yellow {
+  background: #ffd700 !important;
   box-shadow: 0 0 4px #ffd700;
 }
 
-.led-label {
+.pump-device .led-label {
   font-size: 9px;
-  color: #666;
+  color: #666 !important;
   font-weight: normal;
 }
 
-.spacer {
+.pump-device .spacer {
   flex: 1;
 }
 
-.right-buttons {
+.pump-device .right-buttons {
   display: flex;
   gap: 8px;
 }
 
 /* HELP OPTIONS button */
-.btn-help {
-  background: #ff69b4;
+.pump-device .btn-help {
+  background: #ff69b4 !important;
   color: white !important;
   border: none;
   border-radius: 5px;
@@ -394,8 +377,8 @@
 }
 
 /* RUN PAUSE button */
-.btn-run {
-  background: #4caf50;
+.pump-device .btn-run {
+  background: #4caf50 !important;
   color: white !important;
   border: none;
   border-radius: 5px;
@@ -409,19 +392,19 @@
   white-space: nowrap;
 }
 
-.btn-run.paused {
-  background: #e53935;
+.pump-device .btn-run.paused {
+  background: #e53935 !important;
 }
 
 /* Main button grid */
-.button-grid {
+.pump-device .button-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
 }
 
 /* Standard button */
-.btn {
+.pump-device .btn {
   border: none;
   border-radius: 5px;
   padding: 0;
@@ -437,17 +420,17 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: inherit;
+  color: inherit !important;
 }
 
-.btn:active {
+.pump-device .btn:active {
   transform: translateY(1px);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Arrow buttons */
-.btn-arrow {
-  background: #5b7bc7;
+.pump-device .btn-arrow {
+  background: #5b7bc7 !important;
   color: white !important;
   font-size: 30px;
   line-height: 1;
@@ -455,8 +438,8 @@
 }
 
 /* NO CHANGE button */
-.btn-no {
-  background: #e53935;
+.pump-device .btn-no {
+  background: #e53935 !important;
   color: white !important;
   font-size: 14px;
   line-height: 1.1;
@@ -464,8 +447,8 @@
 }
 
 /* YES ENTER button */
-.btn-yes {
-  background: #43a047;
+.pump-device .btn-yes {
+  background: #43a047 !important;
   color: white !important;
   font-size: 14px;
   line-height: 1.1;
@@ -473,8 +456,8 @@
 }
 
 /* Number buttons */
-.btn-number {
-  background: #3f51b5;
+.pump-device .btn-number {
+  background: #3f51b5 !important;
   color: white !important;
   position: relative;
   padding: 4px;
@@ -484,7 +467,7 @@
   justify-content: space-between;
 }
 
-.number-content {
+.pump-device .number-content {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -492,27 +475,25 @@
   padding: 0 6px;
 }
 
-.number-label {
+.pump-device .number-label {
   font-size: 9px;
   line-height: 1.1;
   text-align: left;
   font-weight: normal;
   margin-bottom: 2px;
-  color: white !important;
 }
 
-.number-digit {
+.pump-device .number-digit {
   font-size: 28px;
   font-weight: bold;
   align-self: flex-end;
   line-height: 1;
   margin-top: auto;
-  color: white !important;
 }
 
 /* SILENCE button */
-.btn-silence {
-  background: #fdd835;
+.pump-device .btn-silence {
+  background: #fdd835 !important;
   color: #333 !important;
   font-size: 10px;
   font-weight: bold;
@@ -524,14 +505,14 @@
   gap: 4px;
 }
 
-.btn-silence .dot {
+.pump-device .btn-silence .dot {
   font-size: 20px;
   line-height: 0.5;
 }
 
 /* PRIME BOLUS button */
-.btn-prime {
-  background: #2e7d32;
+.pump-device .btn-prime {
+  background: #2e7d32 !important;
   color: white !important;
   font-size: 11px;
   line-height: 1.1;
@@ -544,34 +525,189 @@
   51%, 100% { opacity: 0; }
 }
 
-.cursor {
+.pump-device .cursor {
   animation: blink 1s infinite;
 }
 
-/* Responsive design */
-@media (max-width: 480px) {
-  .pump-device {
-    width: 100%;
-    max-width: 380px;
-  }
-  
-  .pump-modal-content {
-    padding: 10px;
-  }
-}
-
-/* Ultimate override for button colors - must be at the end */
-[data-theme] .pump-modal .pump-device button.btn-power,
-[data-theme] .pump-modal .pump-device button.btn-help,
-[data-theme] .pump-modal .pump-device button.btn-run,
-[data-theme] .pump-modal .pump-device button.btn-no,
-[data-theme] .pump-modal .pump-device button.btn-yes,
-[data-theme] .pump-modal .pump-device button.btn-arrow,
-[data-theme] .pump-modal .pump-device button.btn-number,
-[data-theme] .pump-modal .pump-device button.btn-prime {
+/* Final override to ensure button colors are maintained */
+.pump-simulator-container .pump-device button[class*="btn-"] {
   color: white !important;
 }
 
-[data-theme] .pump-modal .pump-device button.btn-silence {
+.pump-simulator-container .pump-device button.btn-silence {
   color: #333 !important;
+}
+
+/* Prevent any CSS variable inheritance */
+.pump-simulator-container .pump-device {
+  --text-primary: initial !important;
+  --text-secondary: initial !important;
+  --text-tertiary: initial !important;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 480px) {
+  /* Adjust close button for mobile */
+  .pump-close-button {
+    top: 10px;
+    right: 10px;
+    width: 35px;
+    height: 35px;
+    font-size: 24px;
+  }
+
+  /* Scale down the pump device */
+  .pump-device {
+    width: 320px;
+    padding: 10px;
+  }
+
+  /* Adjust header text */
+  .pump-device .brand-text {
+    font-size: 11px;
+  }
+
+  .pump-device .model-text {
+    font-size: 12px;
+  }
+
+  /* Adjust LCD screen */
+  .pump-device .lcd-screen {
+    min-height: 80px;
+  }
+
+  .pump-device .screen-content {
+    font-size: 14px;
+    padding: 6px;
+  }
+
+  /* Adjust button panel */
+  .pump-device .button-panel {
+    padding: 8px;
+  }
+
+  /* Adjust top row */
+  .pump-device .top-row {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  /* Adjust power button */
+  .pump-device .btn-power {
+    padding: 8px 10px;
+    font-size: 10px;
+  }
+
+  /* Adjust LED group */
+  .pump-device .led-group {
+    margin-left: 6px;
+  }
+
+  .pump-device .led-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .pump-device .led-label {
+    font-size: 8px;
+  }
+
+  /* Adjust help and run buttons */
+  .pump-device .btn-help,
+  .pump-device .btn-run {
+    padding: 6px 8px;
+    font-size: 9px;
+  }
+
+  /* Adjust main button grid */
+  .pump-device .button-grid {
+    gap: 4px;
+  }
+
+  /* Adjust all buttons */
+  .pump-device .btn {
+    min-height: 44px;
+  }
+
+  /* Adjust arrow buttons */
+  .pump-device .btn-arrow {
+    font-size: 24px;
+    padding: 6px;
+  }
+
+  /* Adjust text buttons */
+  .pump-device .btn-no,
+  .pump-device .btn-yes {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  /* Adjust number buttons */
+  .pump-device .btn-number {
+    padding: 3px;
+  }
+
+  .pump-device .number-content {
+    padding: 0 4px;
+  }
+
+  .pump-device .number-label {
+    font-size: 8px;
+  }
+
+  .pump-device .number-digit {
+    font-size: 22px;
+  }
+
+  /* Adjust silence button */
+  .pump-device .btn-silence {
+    font-size: 9px;
+    padding: 6px;
+  }
+
+  .pump-device .btn-silence .dot {
+    font-size: 16px;
+  }
+
+  /* Adjust prime button */
+  .pump-device .btn-prime {
+    font-size: 9px;
+    padding: 6px;
+  }
+
+  /* Adjust info rows */
+  .pump-device .info-row {
+    font-size: 13px;
+  }
+
+  /* Adjust status bar */
+  .pump-device .status-bar {
+    width: 30px;
+    font-size: 14px;
+  }
+
+  .pump-device .main-content {
+    margin-left: 35px;
+    padding: 6px 8px;
+  }
+}
+
+/* Very small mobile devices */
+@media (max-width: 360px) {
+  .pump-device {
+    width: 290px;
+    padding: 8px;
+  }
+
+  .pump-device .btn {
+    min-height: 40px;
+  }
+
+  .pump-device .number-digit {
+    font-size: 20px;
+  }
+
+  .pump-device .btn-arrow {
+    font-size: 22px;
+  }
 }

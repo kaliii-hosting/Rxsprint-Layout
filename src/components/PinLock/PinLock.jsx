@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, Pill } from 'lucide-react';
 import './PinLock.css';
 
 const PinLock = ({ onUnlock }) => {
@@ -282,76 +282,86 @@ const PinLock = ({ onUnlock }) => {
         <div id="creature"></div>
       </div>
       
-      <div className="pin-lock-wrapper">
-        <div className="pin-lock-container" ref={pinContainerRef}>
-          <div className="pin-header">
-            <h1 className="pin-title">Enter Passcode</h1>
-          </div>
-          
-          <div className="pin-dots-container">
-            <div className="pin-dots">
-              {[0, 1, 2, 3].map((index) => (
-                <div 
-                  key={index}
-                  ref={el => pinDotsRef.current[index] = el}
-                  className={`pin-dot ${index < pin.length ? 'filled' : ''}`}
-                >
-                  <div className="pin-dot-inner"></div>
-                </div>
-              ))}
+      {/* Background container to prevent animation showing through */}
+      <div className="pin-lock-container-bg">
+        <div className="pin-lock-wrapper">
+          <div className="pin-lock-container" ref={pinContainerRef}>
+            <div className="pin-header">
+              <div className="pin-logo">
+                <img 
+                  src="https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii//RXSPRINT%20SVG%20LOGO.svg" 
+                  alt="RxSprint Logo" 
+                  className="pin-logo-image"
+                />
+              </div>
+              <h1 className="pin-title">Enter Passcode</h1>
             </div>
-          </div>
-          
-          <div className="pin-pad">
-            <div className="pin-pad-numbers">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+            
+            <div className="pin-dots-container">
+              <div className="pin-dots">
+                {[0, 1, 2, 3].map((index) => (
+                  <div 
+                    key={index}
+                    ref={el => pinDotsRef.current[index] = el}
+                    className={`pin-dot ${index < pin.length ? 'filled' : ''}`}
+                  >
+                    <div className="pin-dot-inner"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="pin-pad">
+              <div className="pin-pad-numbers">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                  <button
+                    key={num}
+                    className="pin-button"
+                    onClick={() => handleNumberClick(num.toString())}
+                    type="button"
+                  >
+                    <span className="pin-button-number">{num}</span>
+                    <span className="pin-button-letters">
+                      {num === 2 && 'ABC'}
+                      {num === 3 && 'DEF'}
+                      {num === 4 && 'GHI'}
+                      {num === 5 && 'JKL'}
+                      {num === 6 && 'MNO'}
+                      {num === 7 && 'PQRS'}
+                      {num === 8 && 'TUV'}
+                      {num === 9 && 'WXYZ'}
+                    </span>
+                  </button>
+                ))}
+                
                 <button
-                  key={num}
-                  className="pin-button"
-                  onClick={() => handleNumberClick(num.toString())}
+                  className="pin-button pin-button-clear"
+                  onClick={clearPin}
                   type="button"
                 >
-                  <span className="pin-button-number">{num}</span>
-                  <span className="pin-button-letters">
-                    {num === 2 && 'ABC'}
-                    {num === 3 && 'DEF'}
-                    {num === 4 && 'GHI'}
-                    {num === 5 && 'JKL'}
-                    {num === 6 && 'MNO'}
-                    {num === 7 && 'PQRS'}
-                    {num === 8 && 'TUV'}
-                    {num === 9 && 'WXYZ'}
-                  </span>
+                  Clear
                 </button>
-              ))}
-              
-              <button
-                className="pin-button pin-button-clear"
-                onClick={clearPin}
-                type="button"
-              >
-                Clear
-              </button>
-              
-              <button
-                className="pin-button"
-                onClick={() => handleNumberClick('0')}
-                type="button"
-              >
-                <span className="pin-button-number">0</span>
-              </button>
-              
-              <button
-                className="pin-button pin-button-delete"
-                onClick={handleDelete}
-                type="button"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" strokeLinecap="round" strokeLinejoin="round"/>
-                  <line x1="18" y1="9" x2="12" y2="15" strokeLinecap="round" strokeLinejoin="round"/>
-                  <line x1="12" y1="9" x2="18" y2="15" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
+                
+                <button
+                  className="pin-button"
+                  onClick={() => handleNumberClick('0')}
+                  type="button"
+                >
+                  <span className="pin-button-number">0</span>
+                </button>
+                
+                <button
+                  className="pin-button pin-button-delete"
+                  onClick={handleDelete}
+                  type="button"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="18" y1="9" x2="12" y2="15" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="12" y1="9" x2="18" y2="15" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>

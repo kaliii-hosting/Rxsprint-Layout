@@ -30,6 +30,7 @@ const Analyzer = () => {
   const [suppliesError, setSuppliesError] = useState(null);
   const [isPasteFocused, setIsPasteFocused] = useState({ previous: false, current: false });
   const [activeFilter, setActiveFilter] = useState(null); // null, 'all', 'matched', 'changed', 'new', or 'missing'
+  const [analysisProgress, setAnalysisProgress] = useState(''); // Progress message for supplies analyzer
   
   // Legacy single file states for backward compatibility
   const previousSupplyFile = previousSupplyFiles[0] || null;
@@ -903,6 +904,7 @@ const Analyzer = () => {
     setIsAnalyzingSupplies(true);
     setSuppliesError(null);
     setSuppliesComparisonResults(null);
+    setAnalysisProgress('Connecting to Azure Document Intelligence...');
     
     const suppliesEndpoint = 'https://supplies-analyzer-custom2.cognitiveservices.azure.com/';
     const suppliesApiKey = '03f80f22ae65405b9aac9bbed2048244';
@@ -911,12 +913,43 @@ const Analyzer = () => {
     const apiVersion = '2023-07-31'; // Using stable API version
     
     try {
+      // Test connection to Azure first
+      console.log('Testing connection to Azure Document Intelligence...');
+      const testUrl = `${suppliesEndpoint}formrecognizer/info?api-version=${apiVersion}`;
+      
+      try {
+        const testResponse = await fetch(testUrl, {
+          method: 'GET',
+          headers: {
+            'Ocp-Apim-Subscription-Key': suppliesApiKey
+          }
+        });
+        
+        if (!testResponse.ok) {
+          console.error('Azure connection test failed:', testResponse.status);
+          if (testResponse.status === 401) {
+            throw new Error('API key authentication failed. Please check the API key.');
+          } else if (testResponse.status === 403) {
+            throw new Error('Access forbidden. The API key may not have the required permissions.');
+          }
+        } else {
+          console.log('Azure connection test successful');
+          setAnalysisProgress('Connection established. Starting document analysis...');
+        }
+      } catch (testErr) {
+        console.error('Connection test error:', testErr);
+        if (testErr.name === 'TypeError' && testErr.message.includes('Failed to fetch')) {
+          throw new Error('Unable to connect to Azure. Please check your internet connection and try again.');
+        }
+        throw testErr;
+      }
       // Analyze all previous order documents
       console.log('=== STARTING SUPPLIES ANALYSIS ===');
       console.log(`Step 1: Analyzing ${previousSupplyFiles.length} previous order document(s)...`);
       
       let allPreviousData = [];
       for (let i = 0; i < previousSupplyFiles.length; i++) {
+        setAnalysisProgress(`Analyzing previous order ${i + 1} of ${previousSupplyFiles.length}...`);
         console.log(`Analyzing previous file ${i + 1}/${previousSupplyFiles.length}: ${previousSupplyFiles[i].name}`);
         const data = await analyzeSupplyDocument(previousSupplyFiles[i], suppliesEndpoint, suppliesApiKey, modelId, apiVersion);
         allPreviousData = [...allPreviousData, ...data];
@@ -934,6 +967,7 @@ const Analyzer = () => {
       
       let allCurrentData = [];
       for (let i = 0; i < currentSupplyFiles.length; i++) {
+        setAnalysisProgress(`Analyzing current order ${i + 1} of ${currentSupplyFiles.length}...`);
         console.log(`Analyzing current file ${i + 1}/${currentSupplyFiles.length}: ${currentSupplyFiles[i].name}`);
         const data = await analyzeSupplyDocument(currentSupplyFiles[i], suppliesEndpoint, suppliesApiKey, modelId, apiVersion);
         allCurrentData = [...allCurrentData, ...data];
@@ -959,6 +993,7 @@ const Analyzer = () => {
       });
       
       // Extract tables and compare
+      setAnalysisProgress('Comparing orders...');
       const comparison = compareSupplyTables(allPreviousData, allCurrentData);
       console.log('Comparison results:', {
         previousCount: comparison.previousOrders.length,
@@ -983,20 +1018,53 @@ const Analyzer = () => {
         console.log('Debug: Check if Lion-Heart model is returning data in a different format');
         setSuppliesError('Unable to extract order data from the uploaded screenshots. The Lion-Heart model may need to be retrained or the data format may be different.');
         setIsAnalyzingSupplies(false);
+        setAnalysisProgress('');
         return;
       }
       
       setSuppliesComparisonResults(comparison);
+      setAnalysisProgress('Analysis complete!');
       
     } catch (err) {
       console.error('Supplies analysis error:', err);
-      setSuppliesError(`Failed to analyze supply documents: ${err.message}`);
+      console.error('Error type:', err.name);
+      console.error('Error stack:', err.stack);
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to analyze supply documents: ';
+      
+      if (err.name === 'AbortError') {
+        errorMessage += 'Request timed out after 60 seconds. Please try with smaller images or check your internet connection.';
+      } else if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
+        errorMessage += 'Network connection error. This could be due to:\n• No internet connection\n• CORS blocking the request\n• Azure service is unreachable\n• Firewall blocking the request';
+      } else if (err.message.includes('401')) {
+        errorMessage += 'Authentication failed. The API key may be invalid or expired.';
+      } else if (err.message.includes('403')) {
+        errorMessage += 'Access forbidden. The API key may not have permission to access this resource.';
+      } else if (err.message.includes('404') || (err.message.includes('Model') && err.message.includes('not found'))) {
+        errorMessage += 'The Lion-Heart model was not found. Please ensure the model exists in your Azure Document Intelligence resource.';
+      } else if (err.message.includes('429')) {
+        errorMessage += 'Too many requests. Please wait a moment and try again.';
+      } else if (err.message.includes('timed out')) {
+        errorMessage += err.message;
+      } else {
+        errorMessage += err.message || 'Unknown error occurred';
+      }
+      
+      setSuppliesError(errorMessage);
     } finally {
       setIsAnalyzingSupplies(false);
+      setAnalysisProgress('');
     }
   };
   
   const analyzeSupplyDocument = async (file, endpoint, apiKey, modelId, apiVersion) => {
+    // Check file size (max 4MB for better performance)
+    const maxSize = 4 * 1024 * 1024; // 4MB
+    if (file.size > maxSize) {
+      throw new Error(`File "${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(2)}MB). Please use images under 4MB for better performance.`);
+    }
+    
     // Ensure endpoint ends with /
     const cleanEndpoint = endpoint.endsWith('/') ? endpoint : endpoint + '/';
     const analyzeUrl = `${cleanEndpoint}formrecognizer/documentModels/${modelId}:analyze?api-version=${apiVersion}`;
@@ -1008,11 +1076,17 @@ const Analyzer = () => {
     console.log('File size:', file.size, 'bytes');
     console.log('File type:', file.type);
     
-    // Add timeout to prevent hanging
+    // Add timeout to prevent hanging - increased to 60 seconds
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for initial request
+    const timeoutId = setTimeout(() => {
+      console.error('Request timeout - aborting after 60 seconds');
+      controller.abort();
+    }, 60000); // 60 second timeout for initial request
     
     try {
+      console.log('Sending POST request to Azure...');
+      const startTime = Date.now();
+      
       const response = await fetch(analyzeUrl, {
         method: 'POST',
         headers: {
@@ -1024,15 +1098,32 @@ const Analyzer = () => {
       });
       
       clearTimeout(timeoutId);
-      console.log('Initial request completed, status:', response.status);
+      const requestTime = Date.now() - startTime;
+      console.log(`Initial request completed in ${requestTime}ms, status: ${response.status}`);
       
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Azure API error response:', errorText);
         console.error('Response status:', response.status);
+        console.error('Response headers:', Object.fromEntries(response.headers.entries()));
         
         if (response.status === 404) {
+          // Try to parse error for more details
+          try {
+            const errorObj = JSON.parse(errorText);
+            if (errorObj.error?.code === 'ModelNotFound') {
+              throw new Error(`Model '${modelId}' not found. The Lion-Heart model may have been deleted or renamed. Please contact support.`);
+            }
+          } catch (e) {
+            // If parsing fails, use generic message
+          }
           throw new Error(`Model '${modelId}' not found. Please ensure the model exists in your Azure Document Intelligence resource.`);
+        } else if (response.status === 401) {
+          throw new Error('Authentication failed. The API key may be invalid or expired.');
+        } else if (response.status === 403) {
+          throw new Error('Access forbidden. The API key may not have permission to access this model.');
+        } else if (response.status === 429) {
+          throw new Error('Too many requests. Please wait a moment and try again.');
         } else {
           throw new Error(`Azure API error: ${response.status} - ${errorText}`);
         }
@@ -1049,7 +1140,7 @@ const Analyzer = () => {
     // Poll for results
     let result;
     let attempts = 0;
-    const maxAttempts = 30;
+    const maxAttempts = 60; // Increased to 60 attempts (2 minutes total)
     
     console.log('Starting to poll for results...');
     
@@ -1058,18 +1149,36 @@ const Analyzer = () => {
         await new Promise(r => setTimeout(r, 2000));
         console.log(`Polling attempt ${attempts + 1}/${maxAttempts}...`);
         
-        const resultResponse = await fetch(operationLocation, {
-          headers: { 'Ocp-Apim-Subscription-Key': apiKey }
-        });
+        // Add timeout for each polling request
+        const pollController = new AbortController();
+        const pollTimeoutId = setTimeout(() => pollController.abort(), 10000); // 10 second timeout per poll
         
-        if (!resultResponse.ok) {
-          const errorText = await resultResponse.text();
-          console.error('Polling error:', errorText);
-          throw new Error(`Failed to get analysis results: ${resultResponse.status}`);
+        try {
+          const resultResponse = await fetch(operationLocation, {
+            headers: { 'Ocp-Apim-Subscription-Key': apiKey },
+            signal: pollController.signal
+          });
+          
+          clearTimeout(pollTimeoutId);
+          
+          if (!resultResponse.ok) {
+            const errorText = await resultResponse.text();
+            console.error('Polling error:', errorText);
+            throw new Error(`Failed to get analysis results: ${resultResponse.status}`);
+          }
+          
+          result = await resultResponse.json();
+          console.log('Current status:', result.status);
+        } catch (pollError) {
+          clearTimeout(pollTimeoutId);
+          if (pollError.name === 'AbortError') {
+            console.error('Poll request timed out, retrying...');
+            attempts++;
+            continue;
+          }
+          throw pollError;
         }
         
-        result = await resultResponse.json();
-        console.log('Current status:', result.status);
         attempts++;
       } while ((result.status === 'running' || result.status === 'notStarted') && attempts < maxAttempts);
     } catch (pollError) {
@@ -1078,7 +1187,7 @@ const Analyzer = () => {
     }
     
     if (attempts >= maxAttempts) {
-      throw new Error('Document analysis timed out after 60 seconds');
+      throw new Error('Document analysis timed out after 2 minutes. Please try again with smaller images or contact support.');
     }
     
     if (result.status !== 'succeeded') {
@@ -1150,9 +1259,10 @@ const Analyzer = () => {
     } catch (error) {
       clearTimeout(timeoutId);
       if (error.name === 'AbortError') {
-        console.error('Request timed out after 30 seconds');
-        throw new Error('Request to Azure timed out. Please try again.');
+        console.error('Request timed out after 60 seconds');
+        throw new Error('Request to Azure timed out after 60 seconds. This could be due to large file size or slow connection. Please try with smaller images.');
       }
+      console.error('Error during document analysis:', error);
       throw error;
     }
   };
@@ -3309,6 +3419,11 @@ const Analyzer = () => {
                   <GitCompare size={64} className="supplies-scanning-icon" />
                 </div>
                 <p className="scan-text supplies-scan-text">Analyzing and comparing supply orders...</p>
+                {analysisProgress && (
+                  <p className="scan-progress-text" style={{ marginTop: '10px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                    {analysisProgress}
+                  </p>
+                )}
                 <div className="scan-progress">
                   <div className="scan-progress-bar"></div>
                 </div>

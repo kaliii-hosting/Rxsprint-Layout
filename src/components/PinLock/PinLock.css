@@ -64,17 +64,36 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Full Screen iOS-Style Pin Lock Container */
+.pin-lock-container-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 0;
+  border: none;
+  padding: clamp(2rem, 5vw, 3rem);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .pin-lock-wrapper {
   width: 100%;
   max-width: 320px;
-  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
   position: relative;
-  z-index: 10;
+  z-index: 110;
+  margin: 0 auto;
 }
 
 .pin-lock-container {
@@ -84,7 +103,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 52px;
+  gap: clamp(2rem, 5vw, 2.5rem);
 }
 
 /* Shake Animation */
@@ -98,35 +117,70 @@ body {
   animation: shake 0.6s ease-in-out;
 }
 
-/* PIN Header */
+/* Simple iOS PIN Header */
 .pin-header {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.5rem, 4vw, 2rem);
+  width: 100%;
+}
+
+/* Simple Logo Container */
+.pin-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: clamp(0.5rem, 2vw, 1rem);
+}
+
+.pin-logo-image {
+  width: auto;
+  height: clamp(60px, 12vw, 80px);
+  max-width: 240px;
+  filter: none;
+  animation: none;
+  transition: none;
+}
+
+.pin-logo-image:hover {
+  filter: none;
+  transform: none;
 }
 
 .pin-title {
-  font-size: 18px;
+  font-size: clamp(18px, 4vw, 20px);
   font-weight: 300;
   color: #fff;
   margin: 0;
   letter-spacing: -0.45px;
   line-height: 1.2;
+  text-align: center;
 }
 
-/* PIN Dots Container */
+/* Simple iOS PIN Dots Container */
 .pin-dots-container {
   margin: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pin-dots {
   display: flex;
   justify-content: center;
-  gap: 24px;
+  align-items: center;
+  gap: clamp(18px, 4vw, 24px);
 }
 
-/* PIN Dot */
+/* Simple iOS PIN Dot */
 .pin-dot {
-  width: 13px;
-  height: 13px;
+  width: clamp(12px, 2.5vw, 13px);
+  height: clamp(12px, 2.5vw, 13px);
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.35);
   background: transparent;
@@ -203,7 +257,7 @@ body {
   }
 }
 
-/* PIN Pad */
+/* Simple iOS PIN Pad */
 .pin-pad {
   width: 100%;
   max-width: 282px;
@@ -213,19 +267,19 @@ body {
 .pin-pad-numbers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 17px;
+  gap: clamp(12px, 3vw, 17px);
   width: 100%;
   margin: 0 auto;
 }
 
-/* PIN Button */
+/* Simple iOS PIN Button */
 .pin-button {
   position: relative;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  width: 75px;
-  height: 75px;
+  width: clamp(60px, 15vw, 75px);
+  height: clamp(60px, 15vw, 75px);
   cursor: pointer;
   transition: all 0.1s ease;
   display: flex;
@@ -244,7 +298,7 @@ body {
 }
 
 .pin-button-number {
-  font-size: 30px;
+  font-size: clamp(24px, 6vw, 30px);
   font-weight: 100;
   color: #fff;
   line-height: 1;
@@ -291,18 +345,10 @@ body {
 
 /* Remove light theme overrides - keep dark theme always */
 
-/* Responsive Design - Maintain proportions */
-@media (max-width: 375px) {
-  .pin-lock-container {
-    gap: 40px;
-  }
-  
-  .pin-pad {
-    max-width: 260px;
-  }
-  
-  .pin-pad-numbers {
-    gap: 15px;
+/* Viewport units fallback for better zoom support */
+@supports not (width: clamp(1px, 1vw, 2px)) {
+  .pin-logo-image {
+    height: 64px;
   }
   
   .pin-button {
@@ -313,101 +359,84 @@ body {
   .pin-button-number {
     font-size: 28px;
   }
-  
-  .pin-button-letters {
-    font-size: 9px;
-  }
-  
-  .pin-button-delete svg {
-    width: 21px;
-    height: 21px;
+}
+
+/* Full Screen Mobile Responsiveness */
+@media (max-width: 480px) {
+  .pin-lock-container-bg {
+    padding: clamp(1.5rem, 4vw, 2rem);
   }
 }
 
+@media (max-width: 375px) {
+  .pin-lock-container-bg {
+    padding: clamp(1rem, 3vw, 1.5rem);
+  }
+  
+  .pin-pad {
+    max-width: 260px;
+  }
+}
+
+/* Small devices */
 @media (max-width: 320px) {
-  .pin-lock-container {
-    gap: 35px;
+  .pin-lock-container-bg {
+    padding: clamp(0.75rem, 2vw, 1rem);
   }
   
   .pin-pad {
     max-width: 240px;
-  }
-  
-  .pin-pad-numbers {
-    gap: 13px;
-  }
-  
-  .pin-button {
-    width: 65px;
-    height: 65px;
-  }
-  
-  .pin-button-number {
-    font-size: 26px;
-  }
-  
-  .pin-button-letters {
-    font-size: 8px;
-    letter-spacing: 1.5px;
-  }
-  
-  .pin-button-clear {
-    font-size: 15px;
-  }
-  
-  .pin-button-delete svg {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .pin-dots {
-    gap: 20px;
-  }
-  
-  .pin-dot {
-    width: 12px;
-    height: 12px;
-  }
-  
-  .pin-dot.filled .pin-dot-inner {
-    width: 12px;
-    height: 12px;
   }
 }
 
 /* Landscape orientation */
 @media (max-height: 600px) and (orientation: landscape) {
+  .pin-lock-container-bg {
+    padding: clamp(0.5rem, 2vh, 1rem) clamp(1rem, 3vw, 2rem);
+  }
+  
   .pin-lock-container {
-    gap: 30px;
+    gap: clamp(1rem, 3vh, 1.5rem);
   }
   
   .pin-pad {
     max-width: 240px;
   }
-  
-  .pin-button {
-    width: 60px;
-    height: 60px;
+}
+
+/* Large screens and high DPI displays */
+@media (min-width: 1440px) {
+  .pin-lock-container-bg {
+    max-width: 520px;
   }
   
-  .pin-button-number {
-    font-size: 24px;
+  .pin-lock-wrapper {
+    max-width: 360px;
   }
   
-  .pin-button-letters {
-    font-size: 8px;
+  .pin-pad {
+    max-width: 320px;
+  }
+}
+
+/* Very large screens */
+@media (min-width: 1920px) {
+  .pin-lock-container-bg {
+    max-width: 560px;
   }
   
-  .pin-button-clear {
-    font-size: 14px;
+  .pin-lock-wrapper {
+    max-width: 400px;
   }
   
-  .pin-pad-numbers {
-    gap: 12px;
+  .pin-pad {
+    max-width: 360px;
   }
-  
-  .pin-button-delete svg {
-    width: 19px;
-    height: 19px;
+}
+
+/* Support for browser zoom */
+@media (min-resolution: 120dpi) {
+  .pin-lock-container-bg {
+    transform: translate(-50%, -50%) scale(1);
   }
 }

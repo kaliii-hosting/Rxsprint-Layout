@@ -309,6 +309,10 @@
     grid-template-columns: 1fr;
   }
   
+  .dose-frequency-row {
+    grid-template-columns: 1fr;
+  }
+  
   .infusion-params-cards {
     grid-template-columns: 1fr;
   }
@@ -485,6 +489,35 @@
     width: 100%;
     max-width: none;
   }
+}
+
+/* Dose Frequency Row */
+.dose-frequency-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dose-frequency-row .dose-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.dose-frequency-row .dose-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dose-frequency-row .input-suffix {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* Time Input Row */
@@ -774,6 +807,25 @@
   background: var(--bg-tertiary);
   border-radius: 4px;
   border-left: 3px solid var(--primary-color);
+}
+
+/* Incorrect Dose Display */
+.incorrect-dose-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.incorrect-label {
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.incorrect-value {
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 0.875rem;
 }
 
 .dose-safety-section {
@@ -1976,6 +2028,7 @@
   grid-template-columns: repeat(6, 1fr);
   gap: 1rem;
   margin-top: 1.5rem;
+  align-items: stretch; /* Ensure all cards stretch to same height */
 }
 
 .param-card {
@@ -1985,9 +2038,10 @@
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  justify-content: space-between;
   transition: all 0.3s ease;
   min-width: 0; /* Prevent overflow in grid */
+  height: 100%; /* Ensure all cards same height */
 }
 
 .param-card:hover {
@@ -1998,15 +2052,18 @@
 
 .param-card-icon {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   color: var(--primary-color);
-  margin-bottom: 0.5rem;
+  min-height: 45px; /* Fixed height for label area */
+  margin-bottom: 0.75rem;
 }
 
 .param-card-icon svg {
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .param-card-label {
@@ -2015,6 +2072,12 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.param-card .supply-input {
+  margin-top: auto; /* Push input to bottom */
 }
 
 /* Infusion Mode Card */
@@ -2091,6 +2154,14 @@
   margin-bottom: 0.5rem;
 }
 
+.calc-card-note {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  text-transform: none;
+  font-style: italic;
+}
+
 .calc-card-value {
   font-size: 1.25rem;
   font-weight: 700;
@@ -2125,6 +2196,14 @@
     grid-template-columns: 1fr;
   }
   
+  .param-card {
+    min-height: auto; /* Allow natural height on mobile */
+  }
+  
+  .param-card-icon {
+    min-height: auto; /* Remove fixed height on mobile */
+  }
+  
   .infusion-mode-options {
     grid-template-columns: 1fr;
   }
@@ -2136,214 +2215,193 @@
   margin: 1rem 0;
 }
 
-.dose-safety-title {
-  font-size: 0.875rem;
+.dose-safety-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dose-safety-card {
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  box-shadow: none;
+}
+
+.dose-safety-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Inactive state colors - muted/faded */
+.dose-safety-card.low-dose {
+  background: #fefcf3;
+  border-color: #f3f4f6;
+  opacity: 0.7;
+}
+
+.dose-safety-card.correct-dose {
+  background: #f0fdf4;
+  border-color: #f3f4f6;
+  opacity: 0.7;
+}
+
+.dose-safety-card.high-dose {
+  background: #fef2f2;
+  border-color: #f3f4f6;
+  opacity: 0.7;
+}
+
+.dose-card-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.dose-card-title {
+  font-size: 1.25rem;
   font-weight: 700;
-  color: var(--text-primary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+/* Title colors for inactive states - muted */
+.dose-safety-card.low-dose .dose-card-title {
+  color: #d97706;
+  opacity: 0.8;
+}
+
+.dose-safety-card.correct-dose .dose-card-title {
+  color: #059669;
+  opacity: 0.8;
+}
+
+.dose-safety-card.high-dose .dose-card-title {
+  color: #b91c1c;
+  opacity: 0.8;
+}
+
+.active-indicator {
+  color: #ffffff;
+  font-size: 1.5rem;
+  margin-left: 0.5rem;
+}
+
+.dose-card-content {
   text-align: center;
 }
 
-.dose-safety-bar {
-  display: flex;
-  width: 100%;
-  height: 70px;
-  border-radius: 12px;
-  overflow: visible;
-  margin-bottom: 1rem;
-  gap: 10px;
-  padding: 6px;
-  background: #f3f4f6;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e5e7eb;
+.dose-main-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
 }
 
-[data-theme="dark"] .dose-safety-bar {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+.dose-threshold {
+  font-size: 1.125rem;
+  font-weight: 600;
 }
 
-.dose-zone {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  opacity: 0.7;
-  position: relative;
-  border-radius: 8px;
-  border: 2px solid transparent;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+.dose-unit {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
 
-[data-theme="dark"] .dose-zone {
-  opacity: 0.5;
+.dose-sub-text {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
 }
 
-/* Zone colors with WCAG AA compliant contrast */
-.low-dose {
-  background: #fef3c7;
+/* Content colors for inactive states - muted */
+.dose-safety-card.low-dose .dose-card-content {
   color: #78350f;
-  border: 2px solid #f59e0b;
-  font-weight: 600;
+  opacity: 0.7;
 }
 
-[data-theme="dark"] .low-dose {
+.dose-safety-card.correct-dose .dose-card-content {
+  color: #064e3b;
+  opacity: 0.7;
+}
+
+.dose-safety-card.high-dose .dose-card-content {
+  color: #7f1d1d;
+  opacity: 0.7;
+}
+
+/* Active Cards - Solid background matching screenshot */
+.dose-safety-card.low-dose.active {
   background: #fbbf24;
-  color: #451a03;
-  border: 2px solid #f59e0b;
-}
-
-.correct-dose {
-  background: #d1fae5;
-  color: #065f46;
-  border: 2px solid #10b981;
-  font-weight: 600;
-}
-
-[data-theme="dark"] .correct-dose {
-  background: #10b981;
-  color: #ffffff;
-  border: 2px solid #059669;
-}
-
-.high-dose {
-  background: #fee2e2;
-  color: #991b1b;
-  border: 2px solid #ef4444;
-  font-weight: 600;
-}
-
-[data-theme="dark"] .high-dose {
-  background: #ef4444;
-  color: #ffffff;
-  border: 2px solid #dc2626;
-}
-
-/* Active state with enhanced visual distinction */
-.dose-zone.active {
-  opacity: 1;
-  transform: scale(1.05);
-  z-index: 2;
-  border-width: 3px;
-}
-
-/* Light theme active states */
-.dose-zone.active.low-dose {
-  background: #fbbf24;
-  color: #451a03;
-  border-color: #d97706;
-  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.2), 0 4px 12px rgba(251, 191, 36, 0.3);
-}
-
-[data-theme="dark"] .dose-zone.active.low-dose {
   border-color: #f59e0b;
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+  transform: translateY(-2px);
+  opacity: 1;
 }
 
-.dose-zone.active.correct-dose {
+.dose-safety-card.low-dose.active .dose-card-title,
+.dose-safety-card.low-dose.active .dose-card-content {
+  color: #ffffff;
+  opacity: 1;
+}
+
+.dose-safety-card.correct-dose.active {
   background: #10b981;
-  color: #ffffff;
-  border-color: #047857;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2), 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-[data-theme="dark"] .dose-zone.active.correct-dose {
   border-color: #059669;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+  transform: translateY(-2px);
+  opacity: 1;
 }
 
-.dose-zone.active.high-dose {
-  background: #ef4444;
+.dose-safety-card.correct-dose.active .dose-card-title,
+.dose-safety-card.correct-dose.active .dose-card-content {
   color: #ffffff;
-  border-color: #b91c1c;
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2), 0 4px 12px rgba(239, 68, 68, 0.3);
+  opacity: 1;
 }
 
-[data-theme="dark"] .dose-zone.active.high-dose {
+.dose-safety-card.high-dose.active {
+  background: #ef4444;
   border-color: #dc2626;
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  transform: translateY(-2px);
+  opacity: 1;
 }
 
-.dose-zone.active::before {
-  content: '';
-  position: absolute;
-  inset: -5px;
-  border-radius: 12px;
-  border: 3px solid;
-  border-color: inherit;
-  animation: pulse 2s infinite;
+.dose-safety-card.high-dose.active .dose-card-title,
+.dose-safety-card.high-dose.active .dose-card-content {
+  color: #ffffff;
+  opacity: 1;
 }
 
+/* Animations */
 @keyframes pulse {
   0% {
     opacity: 1;
-    transform: scale(1);
   }
   50% {
-    opacity: 0.6;
-    transform: scale(1.02);
+    opacity: 0.5;
   }
   100% {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
-.zone-label {
-  font-size: 0.875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  text-align: center;
-  white-space: nowrap;
-  line-height: 1.2;
+@keyframes neonPulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
 }
 
-/* Ensure text is always visible */
-.dose-zone.active .zone-label {
-  font-weight: 800;
-  font-size: 0.9375rem;
-}
-
-/* Dose safety info section */
-.dose-safety-info {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 0.5rem;
-}
-
-.dose-info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.dose-percentage {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.dose-status-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  background: var(--primary-light);
-  border-radius: 4px;
-  display: inline-block;
-}
 
 /* Special Dosing Options - Pump Sheet Style */
 .special-dosing-section {
@@ -2489,6 +2547,16 @@
   
   .dosing-value .dose-number {
     font-size: 1.25rem;
+  }
+  
+  /* Dose safety responsive */
+  .dose-safety-cards {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .dose-safety-card {
+    padding: 0.875rem;
   }
 }
 
@@ -2794,4 +2862,38 @@
 
 .calculate-btn.primary:disabled svg {
   color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Vial Calculation Info Styles */
+.vial-calculation-info {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.calculation-breakdown {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.calculation-breakdown .formula {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.calculation-breakdown .equals {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.calculation-breakdown .result {
+  font-weight: 700;
+  color: var(--primary-color);
+  font-size: 1rem;
 }
