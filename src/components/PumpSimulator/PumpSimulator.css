@@ -1,0 +1,577 @@
+/* Overlay */
+.pump-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10001;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+[data-theme="dark"] .pump-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.pump-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-primary);
+  z-index: 10002;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Overlay when visible */
+.pump-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pump-modal {
+  transform: translateY(0);
+}
+
+/* Modal Header */
+.pump-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.pump-modal-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.close-pump-modal {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.close-pump-modal:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Modal Content */
+.pump-modal-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: auto;
+  background: var(--bg-primary);
+}
+
+[data-theme="light"] .pump-modal-content {
+  background: white;
+}
+
+[data-theme="dark"] .pump-modal-content {
+  background: #1a1a1a;
+}
+
+/* Pump Device Styles */
+.pump-device {
+  width: 380px;
+  background: #e8e4dc;
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
+}
+
+/* Ensure pump device doesn't inherit theme styles */
+.pump-device {
+  color: #333;
+}
+
+/* Ensure all button text remains as designed */
+.pump-device .btn {
+  color: white !important;
+}
+
+/* Force white text on all specific button types - override theme styles */
+[data-theme="light"] .pump-device .btn-power,
+[data-theme="dark"] .pump-device .btn-power,
+.pump-device .btn-power {
+  color: white !important;
+}
+
+[data-theme="light"] .pump-device .btn-help,
+[data-theme="dark"] .pump-device .btn-help,
+.pump-device .btn-help {
+  color: white !important;
+}
+
+[data-theme="light"] .pump-device .btn-run,
+[data-theme="dark"] .pump-device .btn-run,
+.pump-device .btn-run {
+  color: white !important;
+}
+
+[data-theme="light"] .pump-device .btn-no,
+[data-theme="dark"] .pump-device .btn-no,
+.pump-device .btn-no {
+  color: white !important;
+}
+
+[data-theme="light"] .pump-device .btn-yes,
+[data-theme="dark"] .pump-device .btn-yes,
+.pump-device .btn-yes {
+  color: white !important;
+}
+
+[data-theme="light"] .pump-device .btn-arrow,
+[data-theme="dark"] .pump-device .btn-arrow,
+.pump-device .btn-arrow {
+  color: white !important;
+}
+
+[data-theme="light"] .pump-device .btn-number,
+[data-theme="dark"] .pump-device .btn-number,
+.pump-device .btn-number {
+  color: white !important;
+}
+
+[data-theme="light"] .pump-device .btn-prime,
+[data-theme="dark"] .pump-device .btn-prime,
+.pump-device .btn-prime {
+  color: white !important;
+}
+
+/* SILENCE button keeps its dark text */
+[data-theme="light"] .pump-device .btn-silence,
+[data-theme="dark"] .pump-device .btn-silence,
+.pump-device .btn-silence {
+  color: #333 !important;
+}
+
+/* Display area */
+.display-area {
+  background: #f5f3f0;
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 8px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Header */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 5px;
+}
+
+.brand-text {
+  font-size: 13px;
+  color: #4a5d8f;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.model-text {
+  font-size: 14px;
+  color: #333;
+  font-weight: bold;
+}
+
+.model-text .cms {
+  color: #e31e24;
+  text-decoration: underline;
+  font-style: italic;
+}
+
+/* LCD Screen */
+.lcd-screen {
+  background: #e0f7fa;
+  border: 2px solid #0066cc;
+  border-radius: 3px;
+  padding: 0;
+  min-height: 90px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Screen content */
+.screen-content {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #0033cc;
+  line-height: 1.3;
+  text-align: center;
+  padding: 8px;
+}
+
+.screen-line {
+  margin: 2px 0;
+  color: #0033cc;
+  font-family: Arial, sans-serif;
+  padding: 2px 0;
+  font-weight: bold;
+}
+
+/* Selected state */
+.selected {
+  background: #0066cc;
+  color: white !important;
+  padding: 2px 0;
+  display: block;
+  width: 100%;
+}
+
+/* Status bar for running screen */
+.status-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 35px;
+  background: #0066cc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 0.9;
+  letter-spacing: 1px;
+}
+
+/* Main content area */
+.main-content {
+  margin-left: 45px;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+/* Running display */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 3px 0;
+  font-size: 15px;
+  color: #0033cc;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.info-label {
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.info-value {
+  font-weight: bold;
+  text-align: right;
+}
+
+/* Button panel */
+.button-panel {
+  background: white;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Top row buttons */
+.top-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ON/OFF button */
+.btn-power {
+  background: #ff6633;
+  color: white !important;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 14px;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* LED indicators */
+.led-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 10px;
+}
+
+.led-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.led-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  border: 1px solid #999;
+}
+
+.led-dot.active-green {
+  background: #4caf50;
+  box-shadow: 0 0 4px #4caf50;
+}
+
+.led-dot.active-yellow {
+  background: #ffd700;
+  box-shadow: 0 0 4px #ffd700;
+}
+
+.led-label {
+  font-size: 9px;
+  color: #666;
+  font-weight: normal;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.right-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* HELP OPTIONS button */
+.btn-help {
+  background: #ff69b4;
+  color: white !important;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 10px;
+  font-weight: bold;
+  font-size: 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* RUN PAUSE button */
+.btn-run {
+  background: #4caf50;
+  color: white !important;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 10px;
+  font-weight: bold;
+  font-size: 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.btn-run.paused {
+  background: #e53935;
+}
+
+/* Main button grid */
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+/* Standard button */
+.btn {
+  border: none;
+  border-radius: 5px;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  transition: all 0.1s;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: inherit;
+}
+
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Arrow buttons */
+.btn-arrow {
+  background: #5b7bc7;
+  color: white !important;
+  font-size: 30px;
+  line-height: 1;
+  padding: 8px;
+}
+
+/* NO CHANGE button */
+.btn-no {
+  background: #e53935;
+  color: white !important;
+  font-size: 14px;
+  line-height: 1.1;
+  padding: 8px;
+}
+
+/* YES ENTER button */
+.btn-yes {
+  background: #43a047;
+  color: white !important;
+  font-size: 14px;
+  line-height: 1.1;
+  padding: 8px;
+}
+
+/* Number buttons */
+.btn-number {
+  background: #3f51b5;
+  color: white !important;
+  position: relative;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.number-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 6px;
+}
+
+.number-label {
+  font-size: 9px;
+  line-height: 1.1;
+  text-align: left;
+  font-weight: normal;
+  margin-bottom: 2px;
+  color: white !important;
+}
+
+.number-digit {
+  font-size: 28px;
+  font-weight: bold;
+  align-self: flex-end;
+  line-height: 1;
+  margin-top: auto;
+  color: white !important;
+}
+
+/* SILENCE button */
+.btn-silence {
+  background: #fdd835;
+  color: #333 !important;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.btn-silence .dot {
+  font-size: 20px;
+  line-height: 0.5;
+}
+
+/* PRIME BOLUS button */
+.btn-prime {
+  background: #2e7d32;
+  color: white !important;
+  font-size: 11px;
+  line-height: 1.1;
+  padding: 8px;
+}
+
+/* Blinking cursor */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor {
+  animation: blink 1s infinite;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .pump-device {
+    width: 100%;
+    max-width: 380px;
+  }
+  
+  .pump-modal-content {
+    padding: 10px;
+  }
+}
+
+/* Ultimate override for button colors - must be at the end */
+[data-theme] .pump-modal .pump-device button.btn-power,
+[data-theme] .pump-modal .pump-device button.btn-help,
+[data-theme] .pump-modal .pump-device button.btn-run,
+[data-theme] .pump-modal .pump-device button.btn-no,
+[data-theme] .pump-modal .pump-device button.btn-yes,
+[data-theme] .pump-modal .pump-device button.btn-arrow,
+[data-theme] .pump-modal .pump-device button.btn-number,
+[data-theme] .pump-modal .pump-device button.btn-prime {
+  color: white !important;
+}
+
+[data-theme] .pump-modal .pump-device button.btn-silence {
+  color: #333 !important;
+}
