@@ -1,170 +1,87 @@
+/* Pump Page - Mobile First Design */
 .pump-page {
   background: var(--bg-secondary);
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  min-height: 100vh;
-  min-height: 100dvh;
-  height: auto !important;
   width: 100%;
+  height: 100vh;
+  height: 100dvh;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  overflow: hidden;
   position: relative;
-  -webkit-overflow-scrolling: touch !important;
-  scroll-behavior: smooth;
-  -ms-overflow-style: -ms-autohiding-scrollbar;
-  overscroll-behavior-y: none;
 }
 
 .pump-page.page-container {
-  min-height: 100vh;
-  min-height: 100dvh;
-  height: auto !important;
+  height: 100vh;
+  height: 100dvh;
   padding: 0;
   box-sizing: border-box;
-  overflow: visible !important;
+  overflow: hidden;
 }
 
-/* Mobile responsive adjustments for proper scrolling */
+/* Mobile styles - similar to note generator */
 @media (max-width: 768px) {
   .pump-page {
-    height: auto;
-    min-height: 100vh;
-    min-height: 100dvh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    padding: 0;
-    margin: 0;
     position: relative;
-  }
-  
-  .pump-page.page-container {
-    height: auto;
-    min-height: 100vh;
-    min-height: 100dvh;
-    max-height: none;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    padding: 0;
-    margin: 0;
-    position: relative;
-  }
-
-  /* Ensure pump calculator content is scrollable */
-  .pump-calculator-container,
-  .calculator-dashboard,
-  .pump-content {
-    height: auto;
-    max-height: none;
-    overflow: visible;
-  }
-}
-
-/* Tablet responsive */
-@media (max-width: 992px) {
-  .pump-page {
-    padding: 0;
-  }
-}
-
-/* Small mobile devices */
-@media (max-width: 480px) {
-  .pump-page {
-    min-height: 100vh;
-    min-height: 100dvh;
-  }
-}
-
-/* Landscape orientation */
-@media (max-height: 600px) and (orientation: landscape) {
-  .pump-page {
-    min-height: 100vh;
-    overflow-y: auto;
-  }
-}
-/* Mobile Scrolling Fixes */
-@media (max-width: 768px) {
-  /* Fix body and html for mobile */
-  body {
-    overflow-y: auto \!important;
-    overflow-x: hidden \!important;
-    -webkit-overflow-scrolling: touch \!important;
-  }
-  
-  /* Ensure pump page is scrollable */
-  .pump-page {
-    overflow-y: auto \!important;
-    overflow-x: hidden \!important;
-    height: auto \!important;
-    min-height: 100vh \!important;
-    max-height: none \!important;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
   }
   
   .pump-calculator-container {
-    overflow-y: visible \!important;
-    height: auto \!important;
-    min-height: auto \!important;
-    max-height: none \!important;
+    flex: 1;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    width: 100%;
+    padding-bottom: 4rem !important;
   }
   
-  .pump-calculator-full-width {
-    overflow: visible \!important;
-    height: auto \!important;
-  }
-  
-  /* Fix sections to allow scrolling */
-  .calculator-section {
-    overflow: visible \!important;
-    max-height: none \!important;
-  }
-  
-  .section-content {
-    overflow: visible \!important;
-    max-height: none \!important;
-  }
-  
-  /* Ensure cards don't restrict height */
-  .dose-card,
-  .param-card,
-  .info-card {
-    overflow: visible \!important;
-    max-height: none \!important;
+  /* Ensure all content is visible */
+  .pump-calculator-container * {
+    max-width: 100% !important;
   }
 }
 
 /* iOS specific fixes */
 @supports (-webkit-touch-callout: none) {
-  .pump-page {
-    position: relative \!important;
-    -webkit-transform: translateZ(0) \!important;
-  }
-  
   .pump-calculator-container {
-    -webkit-transform: translateZ(0) \!important;
-  }
-}
-
-/* Prevent horizontal scroll on mobile */
-* {
-  max-width: 100vw \!important;
-}
-
-@media (max-width: 768px) {
-  .professional-time-input,
-  .professional-volume-input,
-  .professional-rate-input {
-    width: 100% \!important;
-    max-width: 100% \!important;
+    -webkit-overflow-scrolling: touch;
   }
   
-  .time-input-container,
-  .volume-input-container,
-  .rate-input-container {
-    width: 100% \!important;
-    max-width: 100% \!important;
+  /* Prevent zoom on input focus */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Additional mobile overrides */
+@media (max-width: 768px) {
+  /* Force visibility of all sections */
+  .pump-page *:not(style) {
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Ensure proper stacking */
+  .pump-calculator-full-width > * {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  
+  /* Remove any fixed positioning */
+  .pump-page *, 
+  .pump-calculator-container * {
+    position: relative !important;
+  }
+  
+  /* Exception for dropdowns and modals */
+  .dropdown-menu,
+  .modal,
+  .modal-overlay {
+    position: fixed !important;
   }
 }

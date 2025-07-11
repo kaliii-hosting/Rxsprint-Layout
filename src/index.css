@@ -21,6 +21,18 @@ body {
   position: relative;
 }
 
+/* Prevent horizontal overflow on mobile */
+@media (max-width: 768px) {
+  html, body {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  * {
+    max-width: 100vw !important;
+  }
+}
+
 #root {
   width: 100%;
   min-height: 100vh;
@@ -28,6 +40,7 @@ body {
   display: flex;
   flex-direction: column;
 }
+
 
 :root {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -106,17 +119,23 @@ body {
   --info-color: #3b82f6;
 }
 
-/* Global Light Theme Fix: Force white text on all neon orange buttons */
-[data-theme="light"] button[style*="background: #ff5400"],
-[data-theme="light"] button[style*="background-color: #ff5400"],
+/* ======================================== */
+/* LIGHT THEME ORANGE BUTTON TEXT FIX      */
+/* ======================================== */
+
+/* Rule 1: Orange buttons with inline styles should have white text */
+[data-theme="light"] button[style*="background: #ff5400"]:not(.professional-action-btn),
+[data-theme="light"] button[style*="background-color: #ff5400"]:not(.professional-action-btn),
+[data-theme="light"] button[style*="background: rgb(255, 84, 0)"]:not(.professional-action-btn),
+[data-theme="light"] button[style*="background-color: rgb(255, 84, 0)"]:not(.professional-action-btn),
 [data-theme="light"] .btn[style*="background: #ff5400"],
+[data-theme="light"] .btn[style*="background-color: #ff5400"],
 [data-theme="light"] .button[style*="background: #ff5400"],
-[data-theme="light"] button[class*="orange"],
-[data-theme="light"] button[class*="primary"],
-[data-theme="light"] .btn[class*="orange"],
-[data-theme="light"] .btn[class*="primary"],
-[data-theme="light"] .button[class*="orange"],
-[data-theme="light"] .button[class*="primary"],
+[data-theme="light"] .button[style*="background-color: #ff5400"] {
+  color: white !important;
+}
+
+/* Rule 2: Specific button classes that should have white text on orange background */
 [data-theme="light"] .search-button,
 [data-theme="light"] .check-interaction-btn,
 [data-theme="light"] .continent-btn,
@@ -141,7 +160,7 @@ body {
 [data-theme="light"] .bookmark-btn,
 [data-theme="light"] .add-first-btn,
 [data-theme="light"] .workflow-action-btn,
-[data-theme="light"] .calculate-btn,
+[data-theme="light"] .calculate-btn:not(.calculate-fixed-btn):not(.calculate-custom-btn),
 [data-theme="light"] .prescription-btn,
 [data-theme="light"] .prescription-btn.edit,
 [data-theme="light"] .mode-btn.active,
@@ -150,9 +169,16 @@ body {
 [data-theme="light"] .analyzer-action-btn,
 [data-theme="light"] .analyzer-action-btn.primary {
   color: white !important;
-  --text-primary: white !important;
-  --text-secondary: white !important;
-  --text-tertiary: white !important;
+}
+
+/* Rule 3: Primary and orange class buttons */
+[data-theme="light"] button.primary:not(.professional-action-btn),
+[data-theme="light"] .btn.primary,
+[data-theme="light"] .button.primary,
+[data-theme="light"] button.orange:not(.professional-action-btn),
+[data-theme="light"] .btn.orange,
+[data-theme="light"] .button.orange {
+  color: white !important;
 }
 
 /* Force white text on hover states for orange buttons in light theme */
@@ -191,9 +217,6 @@ body {
 [data-theme="light"] .analyzer-action-btn:hover,
 [data-theme="light"] .analyzer-action-btn.primary:hover {
   color: white !important;
-  --text-primary: white !important;
-  --text-secondary: white !important;
-  --text-tertiary: white !important;
 }
 
 /* Force white text on active states for orange buttons in light theme */
@@ -215,9 +238,6 @@ body {
 [data-theme="light"] .calc-btn.operation:active,
 [data-theme="light"] .calc-btn.equals:active {
   color: white !important;
-  --text-primary: white !important;
-  --text-secondary: white !important;
-  --text-tertiary: white !important;
 }
 
 /* Comprehensive selector for any button with orange background */
@@ -698,7 +718,6 @@ body[data-theme="light"] .confirm-btn,
 body[data-theme="light"] .save-btn,
 body[data-theme="light"] .create-btn,
 body[data-theme="light"] .workflow-action-btn,
-body[data-theme="light"] .calculate-btn,
 body[data-theme="light"] .prescription-btn,
 body[data-theme="light"] .mode-btn.active,
 body[data-theme="light"] .calc-btn.operation,
@@ -719,7 +738,6 @@ body[data-theme="light"] .confirm-btn svg,
 body[data-theme="light"] .save-btn svg,
 body[data-theme="light"] .create-btn svg,
 body[data-theme="light"] .workflow-action-btn svg,
-body[data-theme="light"] .calculate-btn svg,
 body[data-theme="light"] .prescription-btn svg,
 body[data-theme="light"] .mode-btn.active svg,
 body[data-theme="light"] .calc-btn.operation svg,
@@ -834,4 +852,208 @@ body[data-theme="light"] .notes-content .action-btn.primary svg {
   justify-content: center;
   gap: 0.5rem;
   margin-top: 1rem;
+}
+
+/* EXCLUSIONS: Components that should NOT have white text forced */
+/* Professional action buttons should use their own text colors */
+[data-theme="light"] .professional-action-btn:not(.primary):not([style*="background: #ff"]) {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .professional-action-btn:not(.primary):not([style*="background: #ff"]) .btn-label {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .professional-action-btn:not(.primary):not([style*="background: #ff"]) .btn-description {
+  color: var(--text-secondary) !important;
+}
+
+/* Calculate buttons in pump page should keep their custom styling */
+/* NOTE: These rules are now at the END of the file for higher specificity */
+
+/* Ensure orange background buttons specifically get white text */
+[data-theme="light"] button[style*="background: #ff5400"],
+[data-theme="light"] button[style*="background-color: #ff5400"],
+[data-theme="light"] button[style*="background: rgb(255, 84, 0)"],
+[data-theme="light"] button[style*="background-color: rgb(255, 84, 0)"],
+[data-theme="light"] .btn[style*="background: #ff5400"],
+[data-theme="light"] .btn[style*="background-color: #ff5400"],
+[data-theme="light"] .button[style*="background: #ff5400"],
+[data-theme="light"] .button[style*="background-color: #ff5400"] {
+  color: white !important;
+}
+
+/* Buttons with orange/primary background color should have white text */
+[data-theme="light"] button.primary,
+[data-theme="light"] .btn.primary,
+[data-theme="light"] .button.primary,
+[data-theme="light"] .action-btn.primary,
+[data-theme="light"] button.orange,
+[data-theme="light"] .btn.orange,
+[data-theme="light"] .button.orange {
+  background: #ff5400;
+  background-color: #ff5400;
+  color: white !important;
+}
+
+/* Rule 4: Ensure ALL child elements of orange buttons have white text */
+[data-theme="light"] .search-button *,
+[data-theme="light"] .check-interaction-btn *,
+[data-theme="light"] .action-btn.primary *,
+[data-theme="light"] .submit-btn *,
+[data-theme="light"] .save-btn *,
+[data-theme="light"] .create-btn *,
+[data-theme="light"] .confirm-btn *,
+[data-theme="light"] .filter-btn.active *,
+[data-theme="light"] .cart-button *,
+[data-theme="light"] .add-to-cart-btn *,
+[data-theme="light"] .checkout-btn *,
+[data-theme="light"] .modal-add-to-cart-btn *,
+[data-theme="light"] .workflow-action-btn *,
+[data-theme="light"] .calculate-btn:not(.calculate-fixed-btn):not(.calculate-custom-btn) *,
+[data-theme="light"] .prescription-btn *,
+[data-theme="light"] .mode-btn.active *,
+[data-theme="light"] .calc-btn.operation *,
+[data-theme="light"] .calc-btn.equals *,
+[data-theme="light"] .analyzer-action-btn.primary *,
+[data-theme="light"] button.primary:not(.professional-action-btn) *,
+[data-theme="light"] .btn.primary *,
+[data-theme="light"] .button.primary *,
+[data-theme="light"] button[style*="background: #ff5400"]:not(.professional-action-btn) *,
+[data-theme="light"] button[style*="background-color: #ff5400"]:not(.professional-action-btn) * {
+  color: white !important;
+}
+
+/* ======================================== */
+/* END OF LIGHT THEME ORANGE BUTTON FIX    */
+/* ======================================== */
+
+/* ======================================== */
+/* PUMP PAGE CALCULATE BUTTONS FIX         */
+/* ======================================== */
+/* CRITICAL: Force dark text on calculate buttons in pump page */
+/* These rules MUST override any white text rules */
+
+[data-theme="light"] .pump-page .professional-action-btn.calculate-fixed-btn,
+[data-theme="light"] .pump-page .professional-action-btn.calculate-custom-btn {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .pump-page .professional-action-btn.calculate-fixed-btn *,
+[data-theme="light"] .pump-page .professional-action-btn.calculate-custom-btn * {
+  color: inherit !important;
+}
+
+[data-theme="light"] .pump-page .professional-action-btn.calculate-fixed-btn .btn-label,
+[data-theme="light"] .pump-page .professional-action-btn.calculate-custom-btn .btn-label {
+  color: #000000 !important;
+}
+
+[data-theme="light"] .pump-page .professional-action-btn.calculate-fixed-btn .btn-description,
+[data-theme="light"] .pump-page .professional-action-btn.calculate-custom-btn .btn-description {
+  color: #666666 !important;
+}
+
+/* Even more specific selectors to ensure override */
+html[data-theme="light"] body .pump-page .calculate-wrapper .professional-action-btn.calculate-fixed-btn,
+html[data-theme="light"] body .pump-page .calculate-wrapper .professional-action-btn.calculate-custom-btn {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="light"] body .pump-page .calculate-wrapper .professional-action-btn.calculate-fixed-btn .btn-label,
+html[data-theme="light"] body .pump-page .calculate-wrapper .professional-action-btn.calculate-custom-btn .btn-label {
+  color: #000000 !important;
+}
+
+html[data-theme="light"] body .pump-page .calculate-wrapper .professional-action-btn.calculate-fixed-btn .btn-description,
+html[data-theme="light"] body .pump-page .calculate-wrapper .professional-action-btn.calculate-custom-btn .btn-description {
+  color: #666666 !important;
+}
+
+/* Force dark text class should always win */
+[data-theme="light"] .force-dark-text,
+[data-theme="light"] .force-dark-text * {
+  color: #000000 !important;
+}
+
+[data-theme="light"] .force-dark-text .btn-label {
+  color: #000000 !important;
+}
+
+[data-theme="light"] .force-dark-text .btn-description {
+  color: #666666 !important;
+}
+
+/* NUCLEAR OPTION: Target these specific buttons with attribute selectors */
+[data-theme="light"] button[class*="calculate-fixed-btn"],
+[data-theme="light"] button[class*="calculate-custom-btn"] {
+  color: #000000 !important;
+}
+
+[data-theme="light"] button[class*="calculate-fixed-btn"] *,
+[data-theme="light"] button[class*="calculate-custom-btn"] * {
+  color: inherit !important;
+}
+
+/* ULTIMATE FIX: Maximum specificity override for pump page calculate buttons */
+html[data-theme="light"] body .pump-calculator-container .professional-action-container button.professional-action-btn.calculate-fixed-btn,
+html[data-theme="light"] body .pump-calculator-container .professional-action-container button.professional-action-btn.calculate-custom-btn {
+  color: #1a1a1a !important;
+  -webkit-text-fill-color: #1a1a1a !important;
+}
+
+html[data-theme="light"] body .pump-calculator-container .professional-action-container button.professional-action-btn.calculate-fixed-btn span.btn-label,
+html[data-theme="light"] body .pump-calculator-container .professional-action-container button.professional-action-btn.calculate-custom-btn span.btn-label {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+html[data-theme="light"] body .pump-calculator-container .professional-action-container button.professional-action-btn.calculate-fixed-btn span.btn-description,
+html[data-theme="light"] body .pump-calculator-container .professional-action-container button.professional-action-btn.calculate-custom-btn span.btn-description {
+  color: #666666 !important;
+  -webkit-text-fill-color: #666666 !important;
+}
+
+html[data-theme="light"] body .pump-calculator-container .professional-action-container button.professional-action-btn.calculate-fixed-btn .btn-status span,
+html[data-theme="light"] body .pump-calculator-container .professional-action-container button.professional-action-btn.calculate-custom-btn .btn-status span {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+}
+
+/* Remove the calculate-btn class from having white text in light theme */
+[data-theme="light"] .calculate-btn.professional-action-btn {
+  color: #1a1a1a !important;
+  -webkit-text-fill-color: #1a1a1a !important;
+}
+
+[data-theme="light"] button[class*="calculate-fixed-btn"] .btn-label,
+[data-theme="light"] button[class*="calculate-custom-btn"] .btn-label {
+  color: #000000 !important;
+}
+
+[data-theme="light"] button[class*="calculate-fixed-btn"] .btn-description,
+[data-theme="light"] button[class*="calculate-custom-btn"] .btn-description {
+  color: #666666 !important;
+}
+
+/* Last resort: Use ID selectors if they exist or very specific attribute matching */
+[data-theme="light"] .pump-calculator-container button.professional-action-btn.calculate-fixed-btn,
+[data-theme="light"] .pump-calculator-container button.professional-action-btn.calculate-custom-btn {
+  color: #000000 !important;
+  background-color: transparent !important;
+}
+
+[data-theme="light"] .pump-calculator-container button.professional-action-btn.calculate-fixed-btn span,
+[data-theme="light"] .pump-calculator-container button.professional-action-btn.calculate-custom-btn span {
+  color: inherit !important;
+}
+
+[data-theme="light"] .pump-calculator-container button.professional-action-btn.calculate-fixed-btn .btn-label,
+[data-theme="light"] .pump-calculator-container button.professional-action-btn.calculate-custom-btn .btn-label {
+  color: #000000 !important;
+}
+
+[data-theme="light"] .pump-calculator-container button.professional-action-btn.calculate-fixed-btn .btn-description,
+[data-theme="light"] .pump-calculator-container button.professional-action-btn.calculate-custom-btn .btn-description {
+  color: #666666 !important;
 }

@@ -205,6 +205,28 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
 };
 
 const RedesignedPumpCalculator = () => {
+  // Theme detection
+  const [theme, setTheme] = useState('light');
+  
+  useEffect(() => {
+    // Get initial theme
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    setTheme(currentTheme);
+    
+    // Watch for theme changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          setTheme(document.documentElement.getAttribute('data-theme') || 'light');
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, { attributes: true });
+    
+    return () => observer.disconnect();
+  }, []);
+  
   // Core state
   const [inputs, setInputs] = useState({
     patientWeight: '',
@@ -1681,22 +1703,46 @@ const RedesignedPumpCalculator = () => {
     setShowResults(true);
   };
 
+  // Handle calculate button click
+  const handleCalculate = () => {
+    // Validate required fields
+    if (!selectedMedicationData || !inputs.patientWeight || !inputs.dose) {
+      alert('Please fill in all required fields: Medication, Patient Weight, and Prescribed Dose');
+      return;
+    }
+
+    // Set expanded sections to show results
+    setExpandedSections(prev => ({
+      ...prev,
+      results: true
+    }));
+
+    // The calculation logic is already triggered by the useEffect hooks
+    // when all required inputs are filled
+  };
+
   // Reset calculator
   const resetCalculator = () => {
     setInputs({
+      selectedMedication: '',
       patientWeight: '',
       dose: '',
       doseUnit: 'mg/kg',
+      doseFrequency: '',
+      daysSupply: '',
+      totalInfusionTime: '',
       totalInfusionVolume: '',
-      primeVolume: '10',
-      flushVolume: '10',
-      totalInfusionTime: { hours: '', minutes: '' },
-      infusionMode: 'removeOverfill',
       infusionRate: '',
-      useCustomSteps: false
+      infusionSteps: []
     });
-    setSelectedMedication(null);
+    setExpandedSections({
+      medicationSetup: true,
+      doseCalculation: false,
+      infusionParameters: false,
+      results: false
+    });
     setResults(null);
+    setSelectedMedication(null);
     setShowResults(false);
     setErrors({});
     setCustomInfusionSteps([
@@ -2150,67 +2196,189 @@ const RedesignedPumpCalculator = () => {
                 </div>
               </div>
 
-              {/* Calculated Values Cards */}
+              {/* Calculated Values Cards - Professional Design */}
               {inputs.dose && inputs.patientWeight && selectedMedicationData && (
-                <div className="calculated-values-cards">
-                  <div className="calc-card">
-                    <div className="calc-card-label">Total Dose</div>
-                    <div className="calc-card-value">
-                      {formatNumber(
-                        inputs.doseUnit.includes('/kg') ? 
-                          parseFloat(inputs.dose) * parseFloat(inputs.patientWeight) : 
-                          parseFloat(inputs.dose)
-                      )} {inputs.doseUnit.replace('/kg', '')}
+                <div className="infusion-params-cards">
+                  {/* Total Dose Card - Professional Design */}
+                  <div className="dose-card total-dose-calc-card">
+                    <label className="section-label">
+                      <Calculator size={16} />
+                      Total Dose
+                    </label>
+                    <div className="professional-calc-display">
+                      <div className="calc-display-container">
+                        <div className="calc-display-value">
+                          <span className="calc-value-number">
+                            {formatNumber(
+                              inputs.doseUnit.includes('/kg') ? 
+                                parseFloat(inputs.dose) * parseFloat(inputs.patientWeight) : 
+                                parseFloat(inputs.dose)
+                            )}
+                          </span>
+                          <span className="calc-value-unit">
+                            {inputs.doseUnit.replace('/kg', '')}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Calculation preview */}
+                      <div className="calc-display-preview">
+                        <Calculator size={14} className="preview-icon" />
+                        <span className="preview-value">
+                          {inputs.doseUnit.includes('/kg') ? 
+                            `${inputs.dose} × ${inputs.patientWeight} kg` : 
+                            `Fixed: ${inputs.dose} ${inputs.doseUnit}`}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Orange banner with explanation */}
+                    <div className="param-banner orange-banner">
+                      <Info size={14} />
+                      <span className="banner-text">
+                        {inputs.doseUnit.includes('/kg') ? 
+                          `${inputs.dose} ${inputs.doseUnit} × ${inputs.patientWeight} kg = ${formatNumber(parseFloat(inputs.dose) * parseFloat(inputs.patientWeight))} ${inputs.doseUnit.replace('/kg', '')}` : 
+                          `Fixed dose calculation`}
+                      </span>
                     </div>
                   </div>
-                  <div className="calc-card vials-card">
-                    <div className="calc-card-label">Total Vials</div>
-                    <div className="calc-card-value">
-                      {(() => {
-                        const allCombinations = calculateAllVialCombinations();
-                        if (!allCombinations || allCombinations.length === 0) return '0 vials';
-                        
-                        const optimalCombo = allCombinations[0];
-                        const hasMultipleOptions = allCombinations.length > 1 && 
-                          selectedMedicationData?.vialSizes?.length > 1;
-                        
-                        return (
-                          <>
-                            <div className="vial-total">{optimalCombo.totalVials} vials</div>
-                            {hasMultipleOptions && (
+
+                  {/* Total Vials Card - Professional Design */}
+                  <div className="dose-card total-vials-calc-card">
+                    <label className="section-label">
+                      <Package size={16} />
+                      Total Vials Required
+                    </label>
+                    <div className="professional-calc-display">
+                      <div className="calc-display-container">
+                        <div className="calc-display-value">
+                          <span className="calc-value-number">
+                            {(() => {
+                              const allCombinations = calculateAllVialCombinations();
+                              if (!allCombinations || allCombinations.length === 0) return '0';
+                              return allCombinations[0].totalVials;
+                            })()}
+                          </span>
+                          <span className="calc-value-unit">VIALS</span>
+                        </div>
+                        {(() => {
+                          const allCombinations = calculateAllVialCombinations();
+                          const hasMultipleOptions = allCombinations && allCombinations.length > 1 && 
+                            selectedMedicationData?.vialSizes?.length > 1;
+                          
+                          if (hasMultipleOptions) {
+                            return (
                               <button 
-                                className="view-combinations-btn"
+                                className="calc-detail-btn"
                                 onClick={() => setShowVialCombinations(true)}
                                 type="button"
                               >
-                                View details
+                                <Info size={14} />
+                                View options
                               </button>
-                            )}
-                          </>
-                        );
-                      })()}
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
+                      {/* Vial combination preview */}
+                      <div className="calc-display-preview">
+                        <Package size={14} className="preview-icon" />
+                        <span className="preview-value">
+                          {(() => {
+                            const allCombinations = calculateAllVialCombinations();
+                            if (!allCombinations || allCombinations.length === 0) return 'No vials';
+                            
+                            const optimalCombo = allCombinations[0];
+                            if (inputs.doseFrequency && inputs.daysSupply) {
+                              const numberOfDoses = Math.ceil(parseFloat(inputs.daysSupply) / parseFloat(inputs.doseFrequency));
+                              return `${numberOfDoses} doses × ${Math.ceil(optimalCombo.actualDose / optimalCombo.totalVials)} vial/dose`;
+                            }
+                            
+                            return optimalCombo.combination.map((item, idx) => 
+                              `${idx > 0 ? ' + ' : ''}${item.count}×${item.vial.strength}${item.vial.unit}`
+                            ).join('');
+                          })()}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Orange banner with explanation */}
+                    <div className="param-banner orange-banner">
+                      <Info size={14} />
+                      <span className="banner-text">
+                        {(() => {
+                          const allCombinations = calculateAllVialCombinations();
+                          if (!allCombinations || allCombinations.length === 0) return 'Enter dose to calculate';
+                          
+                          const optimalCombo = allCombinations[0];
+                          if (inputs.doseFrequency && inputs.daysSupply) {
+                            const numberOfDoses = Math.ceil(parseFloat(inputs.daysSupply) / parseFloat(inputs.doseFrequency));
+                            const prescribedDose = inputs.doseUnit.includes('/kg') ? 
+                              parseFloat(inputs.dose) * parseFloat(inputs.patientWeight) : 
+                              parseFloat(inputs.dose);
+                            const vialsPerDose = Math.ceil(prescribedDose / (optimalCombo.combination[0]?.vial?.strength || 1));
+                            const totalVials = allCombinations[0].totalVials;
+                            return `${numberOfDoses} doses × ${vialsPerDose} vials/dose = ${totalVials} vials`;
+                          }
+                          
+                          return `Optimal combination: ${optimalCombo.waste} ${inputs.doseUnit.replace('/kg', '')} waste`;
+                        })()}
+                      </span>
                     </div>
                   </div>
-                  <div className="calc-card">
-                    <div className="calc-card-label">
+
+                  {/* Drug Volume Card - Professional Design */}
+                  <div className="dose-card drug-volume-calc-card">
+                    <label className="section-label">
+                      <Droplets size={16} />
                       Drug Volume
                       {inputs.doseFrequency && inputs.daysSupply && (
-                        <span className="calc-card-note"> (per dose)</span>
+                        <span className="calc-label-note"> (per dose)</span>
                       )}
-                    </div>
-                    <div className="calc-card-value">
-                      {calculateDrugVolume(true)} mL
-                      {selectedMedicationData?.dosageForm === 'lyophilized' && (
-                        <div className="calc-card-detail">
+                    </label>
+                    <div className="professional-calc-display">
+                      <div className="calc-display-container">
+                        <div className="calc-display-value">
+                          <span className="calc-value-number">
+                            {calculateDrugVolume(true)}
+                          </span>
+                          <span className="calc-value-unit">mL</span>
+                        </div>
+                      </div>
+                      {/* Volume calculation preview */}
+                      <div className="calc-display-preview">
+                        <Droplets size={14} className="preview-icon" />
+                        <span className="preview-value">
                           {(() => {
+                            if (selectedMedicationData?.dosageForm === 'lyophilized') {
+                              const vials = calculateSingleDoseVialCombination();
+                              if (vials && vials[0]) {
+                                const totalVials = vials.reduce((sum, v) => sum + v.count, 0);
+                                return `${totalVials} vial${totalVials > 1 ? 's' : ''} × ${vials[0].vial.reconstitutionVolume} mL`;
+                              }
+                            }
+                            return `Volume: ${calculateDrugVolume(true)}`;
+                          })()}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Orange banner with explanation */}
+                    <div className="param-banner orange-banner">
+                      <Info size={14} />
+                      <span className="banner-text">
+                        {(() => {
+                          if (selectedMedicationData?.dosageForm === 'lyophilized') {
                             const vials = calculateSingleDoseVialCombination();
                             if (vials && vials[0]) {
-                              return `(${vials.reduce((sum, v) => sum + v.count, 0)} × ${vials[0].vial.reconstitutionVolume} mL)`;
+                              return `Reconstituted at ${vials[0].vial.finalConcentration} mg/mL`;
                             }
-                            return '';
-                          })()}
-                        </div>
-                      )}
+                          } else if (selectedMedicationData?.dosageForm === 'solution') {
+                            const vials = calculateSingleDoseVialCombination();
+                            if (vials && vials[0]) {
+                              return `Solution concentration: ${vials[0].vial.concentration} mg/mL`;
+                            }
+                          }
+                          return 'Drug volume calculation';
+                        })()}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -2318,26 +2486,76 @@ const RedesignedPumpCalculator = () => {
                 </div>
               </div>
 
-              {/* Infusion Mode Card */}
+              {/* Infusion Mode Card - Professional Medical Toggle */}
               <div className="infusion-mode-card">
-                <div className="param-card-icon">
-                  <Settings size={20} />
-                  <label className="param-card-label">Infusion Mode</label>
-                </div>
-                <div className="infusion-mode-options">
-                  <div 
-                    className={`mode-option ${inputs.infusionMode === 'removeOverfill' ? 'active' : ''}`}
-                    onClick={() => handleInputChange('infusionMode', 'removeOverfill')}
-                  >
-                    <div className="mode-option-icon">🧪</div>
-                    <div className="mode-option-label">Remove Overfill</div>
+                <div className="infusion-mode-header">
+                  <div className="param-card-icon">
+                    <Settings size={20} />
+                    <label className="param-card-label">Infusion Preparation Method</label>
                   </div>
-                  <div 
-                    className={`mode-option ${inputs.infusionMode === 'addToEmptyBag' ? 'active' : ''}`}
-                    onClick={() => handleInputChange('infusionMode', 'addToEmptyBag')}
-                  >
-                    <div className="mode-option-icon">💉</div>
-                    <div className="mode-option-label">Add to Empty Bag</div>
+                  <div className="infusion-mode-info">
+                    <Info size={14} />
+                    <span className="mode-info-text">
+                      {inputs.infusionMode === 'removeOverfill' ? 
+                        'Remove overfill from NS bag before adding drug' : 
+                        'Add drug to empty sterile container'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="professional-toggle-container">
+                  <div className="toggle-option left">
+                    <Package size={18} />
+                    <span>Remove Overfill</span>
+                  </div>
+                  
+                  <div className="medical-toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="infusion-mode-toggle"
+                      className="toggle-input"
+                      checked={inputs.infusionMode === 'addToEmptyBag'}
+                      onChange={(e) => handleInputChange('infusionMode', e.target.checked ? 'addToEmptyBag' : 'removeOverfill')}
+                    />
+                    <label htmlFor="infusion-mode-toggle" className="toggle-label">
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+                  
+                  <div className="toggle-option right">
+                    <FlaskConical size={18} />
+                    <span>Empty Container</span>
+                  </div>
+                </div>
+                
+                {/* Dynamic Volume Preview */}
+                <div className="infusion-mode-preview">
+                  <div className="preview-item">
+                    <span className="preview-label">Volume to Remove:</span>
+                    <span className="preview-value">
+                      {(() => {
+                        if (inputs.infusionMode === 'addToEmptyBag') {
+                          return '0 mL (Not applicable)';
+                        } else {
+                          const drugVolume = parseFloat(calculateDrugVolume(true)) || 0;
+                          const bagSize = calculateSalineBagSize() || 0;
+                          const overfillValue = getOverfillValue(bagSize) || 0;
+                          let volumeToRemove = 0;
+                          
+                          // Match the main calculation logic
+                          if (selectedMedication === 'ELAPRASE') {
+                            volumeToRemove = overfillValue;
+                          } else {
+                            volumeToRemove = drugVolume + overfillValue;
+                          }
+                          
+                          // Round up to nearest 5 mL for easier measurement
+                          volumeToRemove = Math.ceil(volumeToRemove / 5) * 5;
+                          
+                          return volumeToRemove > 0 ? `${volumeToRemove} mL` : '0 mL';
+                        }
+                      })()}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -2538,58 +2756,6 @@ const RedesignedPumpCalculator = () => {
         )}
 
 
-        {/* Action Buttons */}
-        <div className="calculator-section action-section">
-          <div className="action-buttons-container">
-            <div className="action-buttons">
-              <button 
-                className={`calculate-btn primary ${!inputs.useCustomSteps ? 'active-mode' : ''}`}
-                onClick={() => {
-                  if (!canCalculateFixed()) {
-                    setFixedInfusionError('Infusion rate field required');
-                    setTimeout(() => setFixedInfusionError(''), 3000);
-                  } else if (!inputs.useCustomSteps) {
-                    setFixedInfusionError('');
-                    calculatePumpSettings();
-                  }
-                }}
-                disabled={inputs.useCustomSteps}
-                title={inputs.useCustomSteps ? 'Disable custom steps to use fixed infusion' : 'Calculate with fixed infusion rate'}
-              >
-                <Calculator size={16} />
-                Calculate Fixed Infusion
-              </button>
-              <button 
-                className={`calculate-btn primary ${inputs.useCustomSteps ? 'active-mode' : ''}`}
-                onClick={() => {
-                  if (!inputs.useCustomSteps) {
-                    handleInputChange('useCustomSteps', true);
-                    setFixedInfusionError('');
-                  } else if (canCalculateCustom() && customStepsValidation.isAcceptable) {
-                    calculatePumpSettings();
-                  }
-                }}
-                disabled={!canCalculateCustom() || (inputs.useCustomSteps && !customStepsValidation.isAcceptable)}
-                title={!inputs.useCustomSteps ? 'Click to open custom infusion steps' : !customStepsValidation.isAcceptable ? 'Custom steps must pass validation' : 'Calculate with custom infusion steps'}
-              >
-                <Activity size={16} />
-                {inputs.useCustomSteps ? 'Calculate Custom Infusion' : 'Setup Custom Infusion'}
-              </button>
-              <button 
-                className="reset-btn"
-                onClick={resetCalculator}
-              >
-                Reset All
-              </button>
-            </div>
-            {fixedInfusionError && (
-              <div className="fixed-infusion-error">
-                <AlertCircle size={16} />
-                <span>{fixedInfusionError}</span>
-              </div>
-            )}
-          </div>
-        </div>
 
         {/* Results Section */}
         {showResults && results && (
@@ -2602,49 +2768,76 @@ const RedesignedPumpCalculator = () => {
               {/* Key Results Grid */}
               <div className="results-grid">
                 <div className="result-card">
-                  <div className="result-label">PRESCRIBED DOSE</div>
-                  <div className="result-value">{formatNumber(results.prescribedDose)} {results.doseUnit.replace('/kg', '')}</div>
-                </div>
-                <div className="result-card">
-                  <div className="result-label">ACTUAL DOSE</div>
-                  <div className="result-value">{formatNumber(results.actualDose)} {results.doseUnit.replace('/kg', '')}</div>
-                </div>
-                <div className="result-card">
-                  <div className="result-label">TOTAL VIALS</div>
-                  <div className="result-value">
-                    {results.totalVials}
-                    {inputs.doseFrequency && inputs.daysSupply && (
-                      <div className="vial-calculation-info">
-                        <div className="calculation-breakdown">
-                          <span className="formula">
-                            {Math.ceil(parseFloat(inputs.daysSupply) / parseFloat(inputs.doseFrequency))} doses × {Math.ceil(results.prescribedDose / (results.vialCombination?.[0]?.vial?.strength || 1))} vials/dose
-                          </span>
-                          <span className="equals"> = </span>
-                          <span className="result">{results.totalVials} vials</span>
-                        </div>
-                      </div>
-                    )}
+                  <div className="result-icon">
+                    <Calculator size={24} />
+                  </div>
+                  <div className="result-content">
+                    <div className="result-label">PRESCRIBED DOSE</div>
+                    <div className="result-value">{formatNumber(results.prescribedDose)} {results.doseUnit.replace('/kg', '')}</div>
                   </div>
                 </div>
                 <div className="result-card">
-                  <div className="result-label">DRUG VOLUME</div>
-                  <div className="result-value">{results.drugVolume} mL</div>
+                  <div className="result-icon">
+                    <Check size={24} />
+                  </div>
+                  <div className="result-content">
+                    <div className="result-label">ACTUAL DOSE</div>
+                    <div className="result-value">{formatNumber(results.actualDose)} {results.doseUnit.replace('/kg', '')}</div>
+                  </div>
                 </div>
                 <div className="result-card">
-                  <div className="result-label">SALINE BAG</div>
-                  <div className="result-value">{results.bagSize} mL</div>
+                  <div className="result-icon">
+                    <Package size={24} />
+                  </div>
+                  <div className="result-content">
+                    <div className="result-label">TOTAL VIALS</div>
+                    <div className="result-value">{results.totalVials}</div>
+                  </div>
                 </div>
                 <div className="result-card">
-                  <div className="result-label">VOLUME TO REMOVE</div>
-                  <div className="result-value volume-remove">{results.volumeToRemove} mL</div>
+                  <div className="result-icon">
+                    <Droplets size={24} />
+                  </div>
+                  <div className="result-content">
+                    <div className="result-label">DRUG VOLUME</div>
+                    <div className="result-value">{results.drugVolume} mL</div>
+                  </div>
                 </div>
                 <div className="result-card">
-                  <div className="result-label">INFUSION RATE</div>
-                  <div className="result-value">{results.infusionRate} mL/hr</div>
+                  <div className="result-icon">
+                    <FlaskConical size={24} />
+                  </div>
+                  <div className="result-content">
+                    <div className="result-label">SALINE BAG</div>
+                    <div className="result-value">{results.bagSize} mL</div>
+                  </div>
                 </div>
                 <div className="result-card">
-                  <div className="result-label">TOTAL TIME</div>
-                  <div className="result-value">{results.totalTimeFormatted}</div>
+                  <div className="result-icon">
+                    <Minus size={24} />
+                  </div>
+                  <div className="result-content">
+                    <div className="result-label">VOLUME TO REMOVE</div>
+                    <div className="result-value volume-remove">{results.volumeToRemove} mL</div>
+                  </div>
+                </div>
+                <div className="result-card">
+                  <div className="result-icon">
+                    <Activity size={24} />
+                  </div>
+                  <div className="result-content">
+                    <div className="result-label">INFUSION RATE</div>
+                    <div className="result-value">{results.infusionRate} mL/hr</div>
+                  </div>
+                </div>
+                <div className="result-card">
+                  <div className="result-icon">
+                    <Clock size={24} />
+                  </div>
+                  <div className="result-content">
+                    <div className="result-label">TOTAL TIME</div>
+                    <div className="result-value">{results.totalTimeFormatted}</div>
+                  </div>
                 </div>
               </div>
 
@@ -2706,6 +2899,164 @@ const RedesignedPumpCalculator = () => {
             </div>
           </div>
         )}
+
+        {/* Professional Action Buttons Container */}
+        <div className="professional-action-container">
+          <div className="action-container-header">
+            <h3>
+              <Activity size={20} />
+              Calculate Infusion Parameters
+            </h3>
+            <p className="action-container-description">
+              Choose your calculation method based on your infusion requirements
+            </p>
+          </div>
+          
+          <div className="professional-action-buttons">
+            {/* Reset Button */}
+            <div className="action-button-wrapper reset-wrapper">
+              <button 
+                className="professional-action-btn reset-btn"
+                onClick={resetCalculator}
+                title="Clear all inputs and start over"
+              >
+                <div className="btn-icon-wrapper">
+                  <X size={20} />
+                </div>
+                <div className="btn-content">
+                  <span className="btn-label">Reset Form</span>
+                  <span className="btn-description">Clear all inputs</span>
+                </div>
+              </button>
+            </div>
+            
+            {/* Calculate Fixed Infusion Button */}
+            <div className="action-button-wrapper calculate-wrapper">
+              <button 
+                className={`professional-action-btn calculate-fixed-btn ${theme === 'light' ? 'force-dark-text' : ''}`}
+                onClick={() => {
+                  if (!canCalculateFixed()) {
+                    setFixedInfusionError('Please fill in all required fields including infusion rate');
+                    setTimeout(() => setFixedInfusionError(''), 5000);
+                  } else {
+                    setFixedInfusionError('');
+                    calculatePumpSettings();
+                  }
+                }}
+                disabled={!selectedMedicationData || !inputs.patientWeight || !inputs.dose}
+                title="Calculate using standard infusion parameters"
+              >
+                <div className="btn-icon-wrapper icon-primary">
+                  <Calculator size={20} />
+                </div>
+                <div className="btn-content">
+                  <span 
+                    className="btn-label" 
+                    ref={el => {
+                      if (el) {
+                        el.style.setProperty('color', theme === 'light' ? '#000000' : '#ffffff', 'important');
+                      }
+                    }}
+                    key={`fixed-label-${theme}`}
+                  >
+                    Fixed Rate Infusion
+                  </span>
+                  <span 
+                    className="btn-description"
+                    ref={el => {
+                      if (el) {
+                        el.style.setProperty('color', theme === 'light' ? '#666666' : '#cccccc', 'important');
+                      }
+                    }}
+                  >
+                    Use standard protocol
+                  </span>
+                </div>
+                {!selectedMedicationData || !inputs.patientWeight || !inputs.dose ? (
+                  <div className="btn-status disabled">
+                    <Info size={14} />
+                    <span>Fill required fields</span>
+                  </div>
+                ) : (
+                  <div className="btn-status ready">
+                    <Check size={14} />
+                    <span>Ready</span>
+                  </div>
+                )}
+              </button>
+            </div>
+            
+            {/* Calculate Custom Infusion Button */}
+            <div className="action-button-wrapper calculate-wrapper">
+              <button 
+                className={`professional-action-btn calculate-custom-btn ${theme === 'light' ? 'force-dark-text' : ''}`}
+                onClick={() => {
+                  if (!inputs.useCustomSteps) {
+                    handleInputChange('useCustomSteps', true);
+                    setExpandedSections(prev => ({
+                      ...prev,
+                      infusionParameters: true
+                    }));
+                  } else if (canCalculateCustom() && customStepsValidation.isAcceptable) {
+                    calculatePumpSettings();
+                  }
+                }}
+                disabled={!selectedMedicationData || !inputs.patientWeight || !inputs.dose}
+                title="Set up custom infusion steps with variable rates"
+              >
+                <div className="btn-icon-wrapper icon-primary">
+                  <Settings size={20} />
+                </div>
+                <div className="btn-content">
+                  <span 
+                    className="btn-label"
+                    ref={el => {
+                      if (el) {
+                        el.style.setProperty('color', theme === 'light' ? '#000000' : '#ffffff', 'important');
+                      }
+                    }}
+                  >
+                    Custom Steps Infusion
+                  </span>
+                  <span 
+                    className="btn-description"
+                    ref={el => {
+                      if (el) {
+                        el.style.setProperty('color', theme === 'light' ? '#666666' : '#cccccc', 'important');
+                      }
+                    }}
+                  >
+                    Variable rate protocol
+                  </span>
+                </div>
+                {!selectedMedicationData || !inputs.patientWeight || !inputs.dose ? (
+                  <div className="btn-status disabled">
+                    <Info size={14} />
+                    <span>Fill required fields</span>
+                  </div>
+                ) : inputs.useCustomSteps && !customStepsValidation.isAcceptable ? (
+                  <div className="btn-status warning">
+                    <AlertCircle size={14} />
+                    <span>Fix validation errors</span>
+                  </div>
+                ) : (
+                  <div className="btn-status ready">
+                    <Check size={14} />
+                    <span>{inputs.useCustomSteps ? 'Calculate' : 'Setup'}</span>
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
+          
+          {/* Error Message Display */}
+          {fixedInfusionError && (
+            <div className="action-error-message">
+              <AlertCircle size={16} />
+              <span>{fixedInfusionError}</span>
+            </div>
+          )}
+        </div>
 
         {/* Vial Combinations Modal */}
         {showVialCombinations && (
