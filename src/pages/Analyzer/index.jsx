@@ -20,6 +20,9 @@ const Analyzer = () => {
   const [selectedSupplyFile, setSelectedSupplyFile] = useState(null);
   const [supplyPreviewUrl, setSupplyPreviewUrl] = useState(null);
   
+  // OPTIMIZATION 5: Cache for analyzed documents
+  const analysisCache = useRef(new Map());
+  
   // New states for supplies comparison - now supporting multiple files
   const [previousSupplyFiles, setPreviousSupplyFiles] = useState([]);
   const [currentSupplyFiles, setCurrentSupplyFiles] = useState([]);
@@ -947,15 +950,67 @@ const Analyzer = () => {
       console.log('=== STARTING SUPPLIES ANALYSIS ===');
       console.log(`Step 1: Analyzing ${previousSupplyFiles.length} previous order document(s)...`);
       
-      let allPreviousData = [];
-      for (let i = 0; i < previousSupplyFiles.length; i++) {
-        setAnalysisProgress(`Analyzing previous order ${i + 1} of ${previousSupplyFiles.length}...`);
-        console.log(`Analyzing previous file ${i + 1}/${previousSupplyFiles.length}: ${previousSupplyFiles[i].name}`);
-        const data = await analyzeSupplyDocument(previousSupplyFiles[i], suppliesEndpoint, suppliesApiKey, modelId, apiVersion);
-        allPreviousData = [...allPreviousData, ...data];
-      }
+      // OPTIMIZATION 1 & 7: Process ALL files in parallel (both previous and current)
+      const totalFiles = previousSupplyFiles.length + currentSupplyFiles.length;
+      setAnalysisProgress(`Analyzing ${totalFiles} documents in parallel...`);
       
-      console.log('Step 1 Complete: Previous order data extracted:', allPreviousData.length, 'items total');
+      // Track progress
+      let completedFiles = 0;
+      const updateProgress = () => {
+        completedFiles++;
+        const percentage = Math.round((completedFiles / totalFiles) * 100);
+        setAnalysisProgress(`Analyzing documents: ${completedFiles}/${totalFiles} complete (${percentage}%)...`);
+      };
+      
+      // Create promises for all files
+      const allPromises = [];
+      
+      // Process all previous files
+      const previousPromises = previousSupplyFiles.map((file, index) => {
+        console.log(`Starting analysis of previous file ${index + 1}/${previousSupplyFiles.length}: ${file.name}`);
+        return analyzeSupplyDocument(file, suppliesEndpoint, suppliesApiKey, modelId, apiVersion)
+          .then(data => {
+            updateProgress();
+            console.log(`Completed previous file ${index + 1}: ${file.name}, extracted ${data.length} items`);
+            return { type: 'previous', data };
+          })
+          .catch(err => {
+            console.error(`Failed to analyze previous file ${file.name}:`, err);
+            throw err;
+          });
+      });
+      
+      // Process all current files
+      const currentPromises = currentSupplyFiles.map((file, index) => {
+        console.log(`Starting analysis of current file ${index + 1}/${currentSupplyFiles.length}: ${file.name}`);
+        return analyzeSupplyDocument(file, suppliesEndpoint, suppliesApiKey, modelId, apiVersion)
+          .then(data => {
+            updateProgress();
+            console.log(`Completed current file ${index + 1}: ${file.name}, extracted ${data.length} items`);
+            return { type: 'current', data };
+          })
+          .catch(err => {
+            console.error(`Failed to analyze current file ${file.name}:`, err);
+            throw err;
+          });
+      });
+      
+      // Run all analyses in parallel
+      allPromises.push(...previousPromises, ...currentPromises);
+      const allResults = await Promise.all(allPromises);
+      
+      // Separate results by type
+      const allPreviousData = allResults
+        .filter(r => r.type === 'previous')
+        .flatMap(r => r.data);
+      
+      const allCurrentData = allResults
+        .filter(r => r.type === 'current')
+        .flatMap(r => r.data);
+      
+      console.log('Analysis Complete:');
+      console.log('- Previous order data extracted:', allPreviousData.length, 'items total');
+      console.log('- Current order data extracted:', allCurrentData.length, 'items total');
       
       // Debug log the extracted data
       console.log('\n=== EXTRACTED PREVIOUS ORDERS ===');
@@ -963,19 +1018,6 @@ const Analyzer = () => {
         console.log(`${idx + 1}. RX: ${order.rxNumber}, Med: "${order.medication}", Prescriber: "${order.prescriber}", Qty: "${order.quantity}", Days: "${order.daySupply}"`);
       });
       
-      console.log(`\nStep 2: Analyzing ${currentSupplyFiles.length} current order document(s)...`);
-      
-      let allCurrentData = [];
-      for (let i = 0; i < currentSupplyFiles.length; i++) {
-        setAnalysisProgress(`Analyzing current order ${i + 1} of ${currentSupplyFiles.length}...`);
-        console.log(`Analyzing current file ${i + 1}/${currentSupplyFiles.length}: ${currentSupplyFiles[i].name}`);
-        const data = await analyzeSupplyDocument(currentSupplyFiles[i], suppliesEndpoint, suppliesApiKey, modelId, apiVersion);
-        allCurrentData = [...allCurrentData, ...data];
-      }
-      
-      console.log('Step 2 Complete: Current order data extracted:', allCurrentData.length, 'items total');
-      
-      // Debug log the extracted data
       console.log('\n=== EXTRACTED CURRENT ORDERS ===');
       allCurrentData.forEach((order, idx) => {
         console.log(`${idx + 1}. RX: ${order.rxNumber}, Med: "${order.medication}", Prescriber: "${order.prescriber}", Qty: "${order.quantity}", Days: "${order.daySupply}"`);
@@ -1059,6 +1101,13 @@ const Analyzer = () => {
   };
   
   const analyzeSupplyDocument = async (file, endpoint, apiKey, modelId, apiVersion) => {
+    // OPTIMIZATION 6: Check cache first
+    const cacheKey = `${file.name}-${file.size}-${file.lastModified}`;
+    if (analysisCache.current.has(cacheKey)) {
+      console.log(`Using cached results for ${file.name}`);
+      return analysisCache.current.get(cacheKey);
+    }
+    
     // Check file size (max 4MB for better performance)
     const maxSize = 4 * 1024 * 1024; // 4MB
     if (file.size > maxSize) {
@@ -1076,12 +1125,12 @@ const Analyzer = () => {
     console.log('File size:', file.size, 'bytes');
     console.log('File type:', file.type);
     
-    // Add timeout to prevent hanging - increased to 60 seconds
+    // Add timeout to prevent hanging
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
-      console.error('Request timeout - aborting after 60 seconds');
+      console.error('Request timeout - aborting after 30 seconds');
       controller.abort();
-    }, 60000); // 60 second timeout for initial request
+    }, 30000); // OPTIMIZATION 3: Reduced to 30 second timeout for initial request
     
     try {
       console.log('Sending POST request to Azure...');
@@ -1140,18 +1189,25 @@ const Analyzer = () => {
     // Poll for results
     let result;
     let attempts = 0;
-    const maxAttempts = 60; // Increased to 60 attempts (2 minutes total)
+    const maxAttempts = 60; // 60 attempts max
     
     console.log('Starting to poll for results...');
     
+    // OPTIMIZATION 2: Use exponential backoff for polling
+    const getPollingDelay = (attemptNum) => {
+      // Start with 500ms, increase to max 2000ms
+      return Math.min(500 + (attemptNum * 100), 2000);
+    };
+    
     try {
       do {
-        await new Promise(r => setTimeout(r, 2000));
-        console.log(`Polling attempt ${attempts + 1}/${maxAttempts}...`);
+        const delay = getPollingDelay(attempts);
+        await new Promise(r => setTimeout(r, delay));
+        console.log(`Polling attempt ${attempts + 1}/${maxAttempts} (delay: ${delay}ms)...`);
         
         // Add timeout for each polling request
         const pollController = new AbortController();
-        const pollTimeoutId = setTimeout(() => pollController.abort(), 10000); // 10 second timeout per poll
+        const pollTimeoutId = setTimeout(() => pollController.abort(), 5000); // Reduced to 5 second timeout per poll
         
         try {
           const resultResponse = await fetch(operationLocation, {
@@ -1231,22 +1287,24 @@ const Analyzer = () => {
     }
     
     // Check if we have custom model results (documents with fields) or table results
+    let extractedData = [];
+    
     if (result.analyzeResult.documents && result.analyzeResult.documents.length > 0 && 
         result.analyzeResult.documents[0].fields && 
         Object.keys(result.analyzeResult.documents[0].fields).length > 0) {
       // Custom model with extracted fields
       console.log('Using custom model field extraction');
-      return extractSupplyFieldData(result.analyzeResult.documents[0].fields);
+      extractedData = extractSupplyFieldData(result.analyzeResult.documents[0].fields);
     } else if (result.analyzeResult.tables && result.analyzeResult.tables.length > 0) {
       // Fallback to table extraction if no custom fields
       console.log('Using table extraction (no custom fields found or Lion-Heart returns tables)');
-      return extractSupplyTableData(result.analyzeResult);
+      extractedData = extractSupplyTableData(result.analyzeResult);
     } else if (result.analyzeResult.keyValuePairs && result.analyzeResult.keyValuePairs.length > 0) {
       // Check if Lion-Heart returns key-value pairs
       console.log('Found key-value pairs, count:', result.analyzeResult.keyValuePairs.length);
       console.log('Sample key-value pair:', result.analyzeResult.keyValuePairs[0]);
       // For now, return empty array but log the structure
-      return [];
+      extractedData = [];
     } else {
       console.warn('No documents, tables, or key-value pairs found in analyze result');
       console.log('Full analyze result keys:', Object.keys(result.analyzeResult));
@@ -1254,8 +1312,14 @@ const Analyzer = () => {
       if (result.analyzeResult.pages) {
         console.log('Pages found:', result.analyzeResult.pages.length);
       }
-      return [];
+      extractedData = [];
     }
+    
+    // Store in cache before returning
+    analysisCache.current.set(cacheKey, extractedData);
+    console.log(`Cached results for ${file.name} (${extractedData.length} items)`);
+    
+    return extractedData;
     } catch (error) {
       clearTimeout(timeoutId);
       if (error.name === 'AbortError') {
@@ -2177,10 +2241,14 @@ const Analyzer = () => {
       return normalized;
     };
     
-    // Calculate similarity between two strings (0-1, where 1 is identical)
+    // OPTIMIZATION 4: Simplified similarity calculation for better performance
     const calculateSimilarity = (str1, str2) => {
       if (!str1 || !str2) return 0;
       if (str1 === str2) return 1;
+      
+      // Quick check for very different lengths
+      const lenDiff = Math.abs(str1.length - str2.length);
+      if (lenDiff > Math.max(str1.length, str2.length) * 0.5) return 0;
       
       const longer = str1.length > str2.length ? str1 : str2;
       const shorter = str1.length > str2.length ? str2 : str1;
