@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon } from 'lucide-react';
+import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { firestore as db, storage } from '../../config/firebase';
@@ -30,11 +30,20 @@ const Notes = () => {
     title: '',
     content: '',
     starred: false,
-    images: []
+    images: [],
+    banners: []
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [showAllNotesPopup, setShowAllNotesPopup] = useState(true); // Auto-open by default
+  const [showAllNotesPopup, setShowAllNotesPopup] = useState(false); // Changed to false - only open when needed
+  const [newBannerText, setNewBannerText] = useState('');
+  const [showBannerInput, setShowBannerInput] = useState(false);
+  const [copiedBannerId, setCopiedBannerId] = useState(null);
+  const [bannerLineBreak, setBannerLineBreak] = useState(false); // false = existing line (default)
+  const [currentLineNumber, setCurrentLineNumber] = useState(0); // Track which line we're on
+  const [bannerColorOrange, setBannerColorOrange] = useState(false); // false = blue (default), true = orange
+  const bannerInputRef = useRef(null);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false); // Track if user has manually interacted
   
   // Delete confirmation state removed - using window.confirm instead
   
@@ -95,8 +104,11 @@ const Notes = () => {
         handleSelectNote(noteToSelect);
         setShowAllNotesPopup(false); // Close the popup since we're selecting a specific note
       }
+    } else if (!selectedNote && !isCreating && !loading && !hasUserInteracted) {
+      // Show popup when no note is selected (only if user hasn't interacted yet)
+      setShowAllNotesPopup(true);
     }
-  }, [notes, location.state]);
+  }, [notes, location.state, selectedNote, isCreating, loading, hasUserInteracted]);
 
   const handleCreateNote = () => {
     setIsCreating(true);
@@ -106,8 +118,12 @@ const Notes = () => {
       title: 'New Note',
       content: '',
       starred: false,
-      images: []
+      images: [],
+      banners: []
     });
+    // Reset line tracking for new note
+    setCurrentLineNumber(0);
+    setBannerLineBreak(false);
   };
 
   const handleSelectNote = (note) => {
@@ -116,10 +132,18 @@ const Notes = () => {
       title: note.title || '',
       content: note.content || '',
       starred: note.starred || false,
-      images: note.images || []
+      images: note.images || [],
+      banners: note.banners || []
     });
     setIsEditing(false);
     setIsCreating(false);
+    // Reset line tracking when selecting a note
+    const maxLineNumber = (note.banners || []).reduce((max, banner) => 
+      Math.max(max, banner.lineNumber || 0), 0);
+    setCurrentLineNumber(maxLineNumber);
+    setBannerLineBreak(false);
+    // Mark that user has interacted
+    setHasUserInteracted(true);
     // Close mobile menu when note is selected
     setIsMobileMenuOpen(false);
   };
@@ -143,6 +167,7 @@ const Notes = () => {
           content: formData.content,
           starred: formData.starred,
           images: formData.images || [],
+          banners: formData.banners || [],
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         };
@@ -165,6 +190,7 @@ const Notes = () => {
           content: formData.content,
           starred: formData.starred,
           images: formData.images || [],
+          banners: formData.banners || [],
           updatedAt: serverTimestamp()
         };
         await updateDoc(noteRef, updateData);
@@ -191,7 +217,7 @@ const Notes = () => {
     try {
       await deleteDoc(doc(db, 'notes', selectedNote.id));
       setSelectedNote(null);
-      setFormData({ title: '', content: '', starred: false, images: [] });
+      setFormData({ title: '', content: '', starred: false, images: [], banners: [] });
     } catch (error) {
       console.error('Error deleting note:', error);
       alert('Failed to delete note. Please try again.');
@@ -350,6 +376,60 @@ const Notes = () => {
     }
   };
 
+  // Add a new banner
+  const addBanner = () => {
+    if (!newBannerText.trim()) return;
+    
+    const newBanner = {
+      id: Date.now().toString(),
+      text: newBannerText.trim(),
+      createdAt: new Date(),
+      newLine: bannerLineBreak,
+      isOrange: bannerColorOrange  // Track if this banner should be orange
+    };
+    
+    setFormData(prev => ({
+      ...prev,
+      banners: [...(prev.banners || []), newBanner]
+    }));
+    
+    setNewBannerText('');
+    setShowBannerInput(false);
+    
+    // Focus the input field again for quick multiple banner creation
+    setTimeout(() => {
+      if (bannerInputRef.current) {
+        bannerInputRef.current.focus();
+      }
+    }, 100);
+    
+    // Removed auto-save to prevent unexpected closing
+  };
+
+  // Remove a banner
+  const removeBanner = (bannerId) => {
+    setFormData(prev => ({
+      ...prev,
+      banners: prev.banners.filter(banner => banner.id !== bannerId)
+    }));
+    
+    // Removed auto-save to prevent unexpected closing
+  };
+
+  // Copy banner text to clipboard
+  const copyBannerToClipboard = async (banner) => {
+    try {
+      await navigator.clipboard.writeText(banner.text);
+      setCopiedBannerId(banner.id);
+      setTimeout(() => {
+        setCopiedBannerId(null);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+      alert('Failed to copy text to clipboard');
+    }
+  };
+
 
   return (
     <div className="notes-page page-container">
@@ -366,7 +446,7 @@ const Notes = () => {
                   setSelectedNote(null);
                   setIsCreating(false);
                   setIsEditing(false);
-                  setFormData({ title: '', content: '', starred: false, images: [] });
+                  setFormData({ title: '', content: '', starred: false, images: [], banners: [] });
                   setShowAllNotesPopup(true);
                 }}
                 title="Back to All Notes"
@@ -403,7 +483,7 @@ const Notes = () => {
                     setIsCreating(false);
                     if (isCreating) {
                       setSelectedNote(null);
-                      setFormData({ title: '', content: '', starred: false, images: [] });
+                      setFormData({ title: '', content: '', starred: false, images: [], banners: [] });
                       setShowAllNotesPopup(true);
                     } else {
                       setFormData({
@@ -476,12 +556,90 @@ const Notes = () => {
               >
                 {isEditing || isCreating ? (
                   <>
-                    <RichTextEditor
-                      value={formData.content}
-                      onChange={(content) => setFormData({ ...formData, content })}
-                      placeholder="Start typing your note..."
-                      onImageUpload={uploadImage}
-                    />
+                    {/* Add Banner Controls - Always visible */}
+                    <div className="editor-banner-controls">
+                      <div className="banner-input-wrapper">
+                        <textarea
+                          ref={bannerInputRef}
+                          className="banner-input"
+                          placeholder="Enter banner text..."
+                          value={newBannerText}
+                          onChange={(e) => {
+                            setNewBannerText(e.target.value);
+                            // Auto-resize textarea
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey && newBannerText.trim()) {
+                              e.preventDefault();
+                              addBanner();
+                            }
+                          }}
+                          rows={1}
+                        />
+                        <button
+                          className="add-banner-btn"
+                          onClick={addBanner}
+                          disabled={!newBannerText.trim()}
+                          title="Add new banner"
+                        >
+                          <Tag size={16} />
+                          Add Banner
+                        </button>
+                        <button
+                          className="banner-toggle-btn"
+                          onClick={() => setBannerLineBreak(!bannerLineBreak)}
+                          title={bannerLineBreak ? "New line" : "Existing line"}
+                        >
+                          {bannerLineBreak ? "New Line" : "Existing Line"}
+                        </button>
+                        <button
+                          className={`banner-color-toggle-btn ${bannerColorOrange ? 'orange' : 'blue'}`}
+                          onClick={() => setBannerColorOrange(!bannerColorOrange)}
+                          title={bannerColorOrange ? "Orange color" : "Blue color"}
+                        >
+                          {bannerColorOrange ? "Orange" : "Blue"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="note-content-edit-area">
+                      {/* Display banners in content area during edit mode */}
+                      {formData.banners && formData.banners.length > 0 && (
+                        <div className="content-banners-container edit-mode">
+                          {formData.banners.map((banner, index) => (
+                            <React.Fragment key={banner.id}>
+                              {banner.newLine && index > 0 && <div className="banner-line-break" />}
+                              <div 
+                                className={`content-banner-item ${banner.isOrange ? 'new-line' : ''} ${copiedBannerId === banner.id ? 'copied' : ''}`}
+                                onClick={() => copyBannerToClipboard(banner)}
+                                title="Click to copy"
+                              >
+                                <span className="banner-text">{banner.text}</span>
+                                <button
+                                  className="remove-banner-btn inline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeBanner(banner.id);
+                                  }}
+                                  title="Remove banner"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </div>
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      )}
+
+                      <RichTextEditor
+                        value={formData.content}
+                        onChange={(content) => setFormData({ ...formData, content })}
+                        placeholder="Start typing your note..."
+                        onImageUpload={uploadImage}
+                      />
+                    </div>
                     {uploadingImage && (
                       <div className="upload-indicator">
                         <div className="spinner" />
@@ -491,6 +649,30 @@ const Notes = () => {
                   </>
                 ) : (
                   <div className="note-content">
+                    {/* Display banners in the content area when viewing */}
+                    {formData.banners && formData.banners.length > 0 && (
+                      <div className="content-banners-container">
+                        {formData.banners.map((banner, index) => (
+                          <React.Fragment key={banner.id}>
+                            {banner.newLine && index > 0 && <div className="banner-line-break" />}
+                            <div 
+                              className={`content-banner-item ${banner.isOrange ? 'new-line' : ''} ${copiedBannerId === banner.id ? 'copied' : ''}`}
+                              onClick={() => copyBannerToClipboard(banner)}
+                              title="Click to copy"
+                            >
+                              <span className="banner-text">{banner.text}</span>
+                              <div className="banner-icon">
+                                {copiedBannerId === banner.id ? (
+                                  <Check size={18} className="copied-icon" />
+                                ) : (
+                                  <Copy size={18} className="copy-icon" />
+                                )}
+                              </div>
+                            </div>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    )}
                     {renderContent(formData.content)}
                   </div>
                 )}
@@ -525,7 +707,10 @@ const Notes = () => {
                     <div
                       key={note.id}
                       className="main-note-card"
-                      onClick={() => handleSelectNote(note)}
+                      onClick={() => {
+                        handleSelectNote(note);
+                        setShowAllNotesPopup(false);
+                      }}
                     >
                       <div className="main-note-header">
                         <h3>{note.title || 'Untitled'}</h3>
@@ -599,8 +784,10 @@ const Notes = () => {
                 <button 
                   className="toggle-btn"
                   onClick={() => {
-                    handleCreateNote();
                     setShowAllNotesPopup(false);
+                    setTimeout(() => {
+                      handleCreateNote();
+                    }, 100);
                   }}
                 >
                   <Plus size={16} />

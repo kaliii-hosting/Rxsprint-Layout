@@ -5,6 +5,10 @@
 :root {
   --primary-light-rgb: 59, 130, 246;
   --bg-tertiary-rgb: 241, 245, 249;
+  --banner-bg: #e0f2fe;
+  --banner-border: #0284c7;
+  --banner-text: #0c4a6e;
+  --banner-hover: #bae6fd;
 }
 
 /* Notes Page Container */
@@ -2454,5 +2458,495 @@ body:has(.notes-popup-overlay) .layout {
   
   [data-theme="dark"] .rich-text-editor .editor-toolbar {
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.95), rgba(10, 10, 10, 0.98));
+  }
+}
+
+/* Banner Section Styles */
+.editor-banner-controls {
+  padding: 1rem 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.content-banners-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  padding: 0;
+}
+
+/* Note content edit area */
+.note-content-edit-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 2rem 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Banners in edit mode - positioned at top of content */
+.content-banners-container.edit-mode {
+  margin-bottom: 1.5rem;
+}
+
+.content-banner-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+/* Inline remove button for edit mode */
+.remove-banner-btn.inline {
+  background: rgba(255, 255, 255, 0.2);
+  margin-left: 0.5rem;
+  color: white;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  flex-shrink: 0;
+}
+
+.remove-banner-btn.inline:hover {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.remove-banner-btn.inline svg {
+  width: 14px;
+  height: 14px;
+}
+
+.content-banner-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.content-banner-item.copied {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+/* New line banners - orange theme */
+.content-banner-item.new-line {
+  background: linear-gradient(135deg, #CB6015 0%, #A04E11 100%);
+  box-shadow: 0 4px 12px rgba(203, 96, 21, 0.25);
+}
+
+.content-banner-item.new-line:hover {
+  background: linear-gradient(135deg, #A04E11 0%, #803C0D 100%);
+  box-shadow: 0 8px 20px rgba(203, 96, 21, 0.35);
+}
+
+.content-banner-item.new-line.copied {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.content-banner-item .banner-text {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.content-banner-item .banner-icon {
+  display: flex;
+  align-items: center;
+  opacity: 0.9;
+}
+
+.content-banner-item .copy-icon,
+.content-banner-item .copied-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.add-banner-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: #CB6015 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.add-banner-btn svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+  width: 18px;
+  height: 18px;
+}
+
+/* Ensure add banner button text is white in all themes */
+[data-theme="light"] .add-banner-btn,
+[data-theme="dark"] .add-banner-btn {
+  color: white !important;
+}
+
+[data-theme="light"] .add-banner-btn svg,
+[data-theme="dark"] .add-banner-btn svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+.add-banner-btn:hover {
+  background: #A04E11 !important;
+  color: white !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 96, 21, 0.3);
+}
+
+.add-banner-btn:hover svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+.add-banner-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Force button text to be white in all cases */
+.editor-banner-controls .add-banner-btn {
+  background: #CB6015 !important;
+  color: white !important;
+}
+
+/* Ensure add banner button uses correct color in all contexts */
+.banner-input-wrapper .add-banner-btn {
+  background: #CB6015 !important;
+  background-color: #CB6015 !important;
+  color: white !important;
+}
+
+.banner-input-wrapper .add-banner-btn:hover {
+  background: #A04E11 !important;
+  background-color: #A04E11 !important;
+  color: white !important;
+}
+
+/* Banner Input Container */
+.banner-input-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+/* Banner Input Wrapper */
+.banner-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* Banner Toggle Button */
+.banner-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem 0.75rem 2.5rem;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 130px;
+  min-height: 44px;
+  position: relative;
+}
+
+.banner-toggle-btn::before {
+  content: '⇄';
+  position: absolute;
+  left: 0.75rem;
+  font-size: 1.2rem;
+  opacity: 0.6;
+}
+
+.banner-toggle-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--primary-color);
+  color: var(--text-primary);
+}
+
+/* Banner Line Break */
+.banner-line-break {
+  width: 100%;
+  height: 0;
+  margin: 0.5rem 0;
+  flex-basis: 100%;
+}
+
+/* Banner Color Toggle Button */
+.banner-color-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem 0.75rem 2.5rem;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 100px;
+  min-height: 44px;
+  position: relative;
+}
+
+.banner-color-toggle-btn::before {
+  content: '⇄';
+  position: absolute;
+  left: 0.75rem;
+  font-size: 1.2rem;
+  opacity: 0.6;
+}
+
+.banner-color-toggle-btn.blue {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.banner-color-toggle-btn.blue:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #2563eb;
+}
+
+.banner-color-toggle-btn.orange {
+  border-color: #CB6015;
+  color: white !important;
+  background: #CB6015;
+}
+
+.banner-color-toggle-btn.orange::before {
+  color: white !important;
+  opacity: 0.8;
+}
+
+.banner-color-toggle-btn.orange:hover {
+  background: #A04E11;
+  border-color: #A04E11;
+  color: white !important;
+}
+
+.banner-input {
+  flex: 1;
+  padding: 0.75rem 1.25rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  font-size: 1rem;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  min-height: 44px;
+  resize: none;
+  overflow: hidden;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.banner-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
+}
+
+.banner-input-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.banner-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.banner-action-btn.save {
+  background: #10b981;
+  color: white;
+}
+
+.banner-action-btn.save:hover:not(:disabled) {
+  background: #059669;
+}
+
+.banner-action-btn.save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.banner-action-btn.cancel {
+  background: var(--button-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.banner-action-btn.cancel:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+/* Edit Mode Banners List */
+.edit-banners-list {
+  margin-top: 2rem;
+  padding: 1.5rem 4rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+.edit-banners-list h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+.banners-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.edit-banner-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.edit-banner-item .banner-text {
+  color: var(--text-primary);
+}
+
+.banner-text {
+  user-select: none;
+}
+
+.remove-banner-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-banner-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.no-banners {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Dark theme adjustments for banners */
+[data-theme="dark"] .content-banner-item {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+[data-theme="dark"] .content-banner-item:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+}
+
+[data-theme="dark"] .content-banner-item.copied {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+[data-theme="dark"] .editor-banner-controls {
+  background: rgba(20, 20, 20, 0.5);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .edit-banners-list {
+  background: rgba(20, 20, 20, 0.5);
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .editor-banner-controls,
+  .edit-banners-list {
+    padding: 1rem;
+  }
+  
+  .note-content-edit-area {
+    padding: 1rem;
+  }
+  
+  .content-banners-container.edit-mode {
+    margin-bottom: 1rem;
+  }
+  
+  .content-banner-item {
+    font-size: 0.875rem;
+    padding: 0.625rem 1rem;
   }
 }

@@ -40,6 +40,7 @@ const NoteGenerator = () => {
     sig: '',
     dose: '',
     patientWeight: '',
+    pregnancyStatus: '',
     orderLastFilled: '',
     numberOfDoses: '',
     lastDoseDate: '',
@@ -78,6 +79,7 @@ const NoteGenerator = () => {
     'sig',
     'dose',
     'patientWeight',
+    'pregnancyStatus',
     'orderLastFilled',
     'numberOfDoses',
     'lastDoseDate',
@@ -180,6 +182,10 @@ const NoteGenerator = () => {
     
     if (interventionForm.patientWeight) {
       fields.push(`Patient's weight is ${interventionForm.patientWeight} kg`);
+    }
+    
+    if (interventionForm.pregnancyStatus) {
+      fields.push(`Patient is ${interventionForm.pregnancyStatus}`);
     }
     
     if (interventionForm.orderLastFilled) {
@@ -330,17 +336,18 @@ const NoteGenerator = () => {
   // Save edited note
   const handleSaveEdit = () => {
     setIsEditingNote(false);
+    // Keep the edited note in state
   };
 
   // Cancel edit
   const handleCancelEdit = () => {
     setIsEditingNote(false);
-    setEditedNote(generateInterventionNote());
+    setEditedNote('');
   };
 
   // Get the current note text
   const getCurrentNoteText = () => {
-    return isEditingNote ? editedNote : generateInterventionNote();
+    return editedNote || generateInterventionNote();
   };
 
   // Reset form
@@ -350,6 +357,7 @@ const NoteGenerator = () => {
       sig: '',
       dose: '',
       patientWeight: '',
+      pregnancyStatus: '',
       orderLastFilled: '',
       numberOfDoses: '',
       lastDoseDate: '',
@@ -468,6 +476,24 @@ const NoteGenerator = () => {
                       />
                     </div>
                     <div className="input-group">
+                      <label>Patient Pregnancy Status</label>
+                      <div className="custom-dropdown">
+                        <select
+                          ref={el => formRefs.current['pregnancyStatus'] = el}
+                          value={interventionForm.pregnancyStatus}
+                          onChange={(e) => updateInterventionField('pregnancyStatus', e.target.value)}
+                          onKeyPress={(e) => handleKeyPress(e, 'pregnancyStatus')}
+                          className={`note-dropdown ${filledFields.has('pregnancyStatus') ? 'filled' : ''}`}
+                        >
+                          <option value="">Select...</option>
+                          <option value="pregnant">Pregnant</option>
+                          <option value="not pregnant">Not pregnant</option>
+                          <option value="not of child bearing age">Not of child bearing age</option>
+                        </select>
+                        <ChevronDown className="dropdown-icon" size={16} />
+                      </div>
+                    </div>
+                    <div className="input-group">
                       <label>Order last filled</label>
                       <input
                         ref={el => formRefs.current['orderLastFilled'] = el}
@@ -524,8 +550,8 @@ const NoteGenerator = () => {
                           className={`note-dropdown ${filledFields.has('ivAccessIssues') ? 'filled' : ''}`}
                         >
                           <option value="">Select...</option>
-                          <option value="no-issues">No reports of any IV access issues</option>
                           <option value="has-issues">Patient reported IV access issue</option>
+                          <option value="no-issues">No reports of any IV access issues</option>
                         </select>
                         <ChevronDown className="dropdown-icon" size={16} />
                       </div>
@@ -897,8 +923,8 @@ const NoteGenerator = () => {
                           className={`note-dropdown ${filledFields.has('pharmacistQuestions') ? 'filled' : ''}`}
                         >
                           <option value="">Select...</option>
-                          <option value="no-questions">Patient had no questions for RPh</option>
                           <option value="had-questions">Patient had questions for RPh</option>
+                          <option value="no-questions">Patient had no questions for RPh</option>
                         </select>
                         <ChevronDown className="dropdown-icon" size={16} />
                       </div>

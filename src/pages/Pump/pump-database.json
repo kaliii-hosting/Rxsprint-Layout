@@ -280,7 +280,8 @@
           "volume": 5,
           "concentration": 40,
           "reconstitutionSolution": "Sterile water",
-          "reconstitutionVolume": 5.1
+          "reconstitutionVolume": 5.1,
+          "withdrawVolume": 5
         }
       ],
       "standardDose": {
@@ -344,7 +345,8 @@
           "volume": 7.2,
           "concentration": 5,
           "reconstitutionSolution": "Sterile water or Normal Saline",
-          "reconstitutionVolume": 7.2
+          "reconstitutionVolume": 7.2,
+          "withdrawVolume": 7
         },
         {
           "strength": 5,
@@ -352,7 +354,8 @@
           "volume": 1.1,
           "concentration": 5,
           "reconstitutionSolution": "Sterile water or Normal Saline",
-          "reconstitutionVolume": 1.1
+          "reconstitutionVolume": 1.1,
+          "withdrawVolume": 1
         }
       ],
       "standardDose": {
@@ -501,7 +504,8 @@
           "volume": 10.3,
           "concentration": 5,
           "reconstitutionSolution": "Only Sterile Water",
-          "reconstitutionVolume": 10.3
+          "reconstitutionVolume": 10.3,
+          "withdrawVolume": 10
         }
       ],
       "standardDose": {
@@ -691,7 +695,8 @@
           "volume": 10,
           "concentration": 10,
           "reconstitutionSolution": "Only Sterile Water",
-          "reconstitutionVolume": 10
+          "reconstitutionVolume": 10,
+          "withdrawVolume": 10
         }
       ],
       "standardDose": {
@@ -779,7 +784,8 @@
           "volume": 7,
           "concentration": 15,
           "reconstitutionSolution": "Only Sterile Water",
-          "reconstitutionVolume": 7.2
+          "reconstitutionVolume": 7.2,
+          "withdrawVolume": 7
         },
         {
           "strength": 65,
@@ -930,7 +936,8 @@
           "volume": 4.3,
           "concentration": 100,
           "reconstitutionSolution": "Only Sterile Water",
-          "reconstitutionVolume": 4.3
+          "reconstitutionVolume": 4.3,
+          "withdrawVolume": 4
         }
       ],
       "standardDose": {
@@ -974,7 +981,8 @@
           "volume": 5.1,
           "concentration": 4,
           "reconstitutionSolution": "Only Sterile Water",
-          "reconstitutionVolume": 5.1
+          "reconstitutionVolume": 5.1,
+          "withdrawVolume": 5
         },
         {
           "strength": 4,
@@ -982,7 +990,8 @@
           "volume": 1.1,
           "concentration": 4,
           "reconstitutionSolution": "Only Sterile Water",
-          "reconstitutionVolume": 1.1
+          "reconstitutionVolume": 1.1,
+          "withdrawVolume": 1
         }
       ],
       "standardDose": {

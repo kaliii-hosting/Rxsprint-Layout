@@ -270,6 +270,11 @@
   z-index: 1;
 }
 
+/* Fix for light theme - ensure medication names are black */
+[data-theme="light"] .medication-name {
+  color: #000000 !important;
+}
+
 .check-icon {
   position: absolute;
   top: 0.5rem;
