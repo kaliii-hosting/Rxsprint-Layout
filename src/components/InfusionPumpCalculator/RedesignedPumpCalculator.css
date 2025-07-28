@@ -53,7 +53,6 @@
   }
 }
 
-/* Calculator Section - Mobile First */
 .calculator-section {
   width: 100%;
   background: var(--bg-tertiary);
@@ -79,7 +78,6 @@
   }
 }
 
-/* Section Headers - Mobile First */
 .section-header {
   background: var(--primary-light);
   padding: 0.75rem;
@@ -89,6 +87,42 @@
   justify-content: flex-start;
   gap: 0.5rem;
   border-radius: 12px 12px 0 0;
+}
+
+/* Reset button in section header */
+.reset-section-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #dc2626;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-section-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.reset-section-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+}
+
+.reset-section-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.reset-section-btn:hover svg {
+  transform: rotate(-180deg);
 }
 
 @media (min-width: 768px) {
@@ -171,12 +205,13 @@
   gap: 1.25rem;
 }
 
-/* Medication info cards row */
+/* Medication info cards row - matching dose-cards style */
 .medication-info-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
   margin-top: 0.5rem;
+  align-items: stretch;
 }
 
 .setup-item {
@@ -196,6 +231,8 @@
   flex-direction: column;
   gap: 0.75rem;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: visible;
 }
 
 .medication-info-card:hover {
@@ -226,9 +263,20 @@
   flex-shrink: 0;
 }
 
+/* Responsive card value sizing */
+@media (max-width: 1400px) {
+  .medication-info-cards .calc-value-number {
+    font-size: 2rem;
+  }
+}
+
 @media (max-width: 1200px) {
   .medication-info-cards {
     grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .medication-info-cards .calc-value-number {
+    font-size: 1.75rem;
   }
 }
 
@@ -1156,6 +1204,50 @@
   background: var(--button-bg);
 }
 
+/* Orange Banner Styles */
+.param-banner {
+  width: calc(100% + 2.5rem);
+  margin: 0.75rem -1.25rem -1.25rem -1.25rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+/* Specific styles for param-banner in medication-info-card */
+.medication-info-card .param-banner {
+  width: calc(100% + 2.5rem);
+  margin: 0.75rem -1.25rem -1.25rem -1.25rem;
+}
+
+.param-banner.orange-banner {
+  background: linear-gradient(135deg, #ff6847 0%, #ff5722 100%);
+  color: white;
+  width: calc(100% + 2.5rem) !important;
+  margin: 0.75rem -1.25rem -1.25rem -1.25rem !important;
+  padding: 0.625rem 1rem !important;
+}
+
+.param-banner.orange-banner svg {
+  color: white !important;
+  flex-shrink: 0;
+}
+
+.param-banner.orange-banner .banner-text {
+  font-size: 0.75rem !important;
+  color: white !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
+
+/* Dark theme support */
+[data-theme="dark"] .param-banner.orange-banner {
+  background: linear-gradient(135deg, #ff6847 0%, #ff5722 100%);
+}
+
 
 /* Action Section */
 .action-section {
@@ -1824,6 +1916,7 @@
   border-radius: 12px;
   transition: all 0.3s ease;
   position: relative;
+  overflow: hidden;
 }
 
 .custom-step-row.valid {
@@ -1877,8 +1970,11 @@
 
 .step-inputs {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
+  align-items: start;
+  width: 100%;
+  min-width: 0;
 }
 
 .step-input-group {
@@ -1901,6 +1997,25 @@
   width: 100%;
 }
 
+/* Duration input wrapper */
+.duration-input-wrapper {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.duration-input-wrapper input {
+  width: auto;
+  flex: 1;
+  min-width: 3rem;
+}
+
+.duration-input-wrapper span {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
 .step-input-group .supply-dropdown {
   padding: 0.625rem 1rem;
   background: var(--input-bg);
@@ -1917,6 +2032,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .step-valid-indicator,
@@ -1949,18 +2065,17 @@
 
 /* Step error message */
 .step-error-message {
-  grid-column: 2 / -1;
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid #ef4444;
-  border-radius: 6px;
-  color: #ef4444;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #ff6847 0%, #ff5722 100%);
+  color: white;
   font-size: 0.875rem;
   font-weight: 500;
-  margin-top: 0.5rem;
+  margin: 1rem -1rem -1rem -1rem;
+  border-radius: 0 0 12px 12px;
 }
 
 .step-error-message svg {
@@ -1992,6 +2107,7 @@
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .remove-step-btn:hover:not(:disabled) {
@@ -2847,6 +2963,190 @@
 
 .special-dosing-button.selected .empty-circle {
   border-color: var(--primary-color);
+}
+
+/* Professional Card Display Styles */
+.professional-card-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.card-value-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+  min-height: 100px;
+  width: 100%;
+  flex: 1;
+}
+
+.card-value-container:hover {
+  border-color: var(--primary-border);
+}
+
+.calc-display-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.calc-value-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.calc-value-unit {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.calc-display-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  margin-top: auto;
+}
+
+.calc-display-preview .preview-icon {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.calc-display-preview .preview-value {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Ensure medication info cards match dose card styling */
+.medication-info-cards .dose-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 280px;
+}
+
+.medication-info-cards .dose-card .professional-card-display {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Section Label with Toggle */
+.section-label-with-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.section-label-with-toggle .section-label {
+  margin-bottom: 0;
+}
+
+/* Volume Method Toggle Styles */
+.volume-method-toggle {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--bg-primary);
+  padding: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.volume-method-toggle .toggle-option {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+}
+
+.volume-method-toggle .toggle-option span {
+  display: inline-block;
+}
+
+.volume-method-toggle .toggle-option:hover:not(.active) {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.volume-method-toggle .toggle-option.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  font-weight: 600;
+}
+
+.volume-method-toggle .toggle-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive toggle buttons */
+@media (max-width: 768px) {
+  .section-label-with-toggle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .volume-method-toggle {
+    width: 100%;
+  }
+  
+  .volume-method-toggle .toggle-option {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+  
+  .volume-method-toggle .toggle-option span {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .volume-method-toggle .toggle-option {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .volume-method-toggle .toggle-option svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 /* Responsive adjustments for special dosing buttons */
@@ -6174,6 +6474,13 @@
     padding: 0.5rem 0.75rem;
     font-size: 0.7rem;
     border-radius: 0 0 12px 12px;
+  }
+  
+  /* Ensure orange-banner maintains proper styling */
+  .param-banner.orange-banner {
+    width: calc(100% + 2.5rem) !important;
+    margin: 0.75rem -1.25rem -1.25rem -1.25rem !important;
+    padding: 0.625rem 1rem !important;
   }
   
   /* Grids */

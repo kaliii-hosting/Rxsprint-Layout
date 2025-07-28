@@ -15,7 +15,8 @@ import {
   Settings,
   Plus,
   Minus,
-  X
+  X,
+  RotateCcw
 } from 'lucide-react';
 import './RedesignedPumpCalculator.css';
 import pumpDatabase from '../../pages/Pump/pump-database.json';
@@ -251,6 +252,7 @@ const RedesignedPumpCalculator = () => {
   const [fixedInfusionError, setFixedInfusionError] = useState('');
   const [selectedSpecialDosing, setSelectedSpecialDosing] = useState(null);
   const [showVialCombinations, setShowVialCombinations] = useState(false);
+  const [volumeCalculationMethod, setVolumeCalculationMethod] = useState('withdrawn'); // 'withdrawn' or 'reconstitution'
   
   // Custom infusion steps state
   const [customInfusionSteps, setCustomInfusionSteps] = useState([
@@ -261,6 +263,13 @@ const RedesignedPumpCalculator = () => {
     durationValid: false,
     stepsValid: []
   });
+  const [expandedSections, setExpandedSections] = useState({
+    medicationSetup: true,
+    doseCalculation: false,
+    infusionParameters: false,
+    results: false
+  });
+  const [selectedVialSize, setSelectedVialSize] = useState(null);
 
   // Get medications list
   const medications = useMemo(() => {
@@ -896,6 +905,8 @@ const RedesignedPumpCalculator = () => {
       const rate = parseFloat(step.rate) || 0;
       let volume = 0;
       let duration = 0;
+      
+      duration = parseFloat(step.duration) || 0;
       let calculatedVolume = 0;
       let calculatedDuration = 0;
 
@@ -1238,7 +1249,7 @@ const RedesignedPumpCalculator = () => {
   }, [calculateAllVialCombinations]);
 
   // Calculate drug volume
-  const calculateDrugVolume = useCallback((forSingleDose = false) => {
+  const calculateDrugVolume = useCallback((forSingleDose = false, calculationMethod = 'withdrawn') => {
     if (!selectedMedicationData) return 0;
     
     // If calculating for single dose, ignore dose frequency and days supply
@@ -1256,52 +1267,68 @@ const RedesignedPumpCalculator = () => {
     let totalVolume = 0;
     
     if (selectedMedicationData.dosageForm === 'lyophilized') {
-      // For lyophilized powders, calculate total sterile water needed for reconstitution
-      // Drug volume = number of vials × reconstitution volume per vial
-      // Note: reconstitution volume is the amount of sterile water to add (e.g., 7.2 mL)
-      // This may differ from final volume after mixing (e.g., 7 mL) due to powder displacement
+      // For lyophilized powders, use the most accurate volume available
       vialCombination.forEach(item => {
-        const reconVolume = item.vial.reconstitutionVolume || 0;
-        if (reconVolume === 0) {
-          console.warn(`No reconstitution volume found for ${selectedMedicationData.brandName}`);
+        let vialVolume = 0;
+        
+        if (calculationMethod === 'reconstitution') {
+          // Use reconstitution volume (sterile water volume)
+          if (item.vial.reconstitutionVolume) {
+            vialVolume = item.vial.reconstitutionVolume;
+          } else {
+            // Fallback to other volumes if reconstitution volume not available
+            vialVolume = item.vial.withdrawVolume || item.vial.volume || 0;
+          }
+        } else {
+          // Default to 'withdrawn' method
+          // Priority order for volume calculation:
+          // 1. withdrawVolume - actual drawable volume after reconstitution
+          // 2. volume - final volume after reconstitution 
+          // 3. reconstitutionVolume - volume of diluent added
+          if (item.vial.withdrawVolume) {
+            // Most accurate - actual volume that can be withdrawn
+            vialVolume = item.vial.withdrawVolume;
+          } else if (item.vial.volume) {
+            // Final volume after reconstitution (includes drug + diluent)
+            vialVolume = item.vial.volume;
+          } else if (item.vial.reconstitutionVolume) {
+            // Volume of diluent added (less accurate due to displacement)
+            vialVolume = item.vial.reconstitutionVolume;
+          }
         }
-        totalVolume += item.count * reconVolume;
+        
+        if (vialVolume === 0) {
+          console.warn(`No volume data found for ${selectedMedicationData.brandName}`);
+        }
+        
+        totalVolume += item.count * vialVolume;
       });
-      // Return exact volume needed for reconstitution (rounded to 0.1 mL for display)
-      // Example: POMBILITI - 17 vials × 7.2 mL = 122.4 mL
-      const result = Math.round(totalVolume * 10) / 10;
       
-      // Debug logging for verification
-      if (selectedMedicationData.brandName === 'POMBILITI') {
-        console.log('POMBILITI Drug Volume Calculation:', {
-          vialCombination: vialCombination.map(item => ({
-            strength: item.vial.strength,
-            count: item.count,
-            reconVolume: item.vial.reconstitutionVolume
-          })),
-          totalVolume: result
-        });
+      // Check if medication has special pooling requirements
+      if (selectedMedicationData.poolingInstructions) {
+        // Some medications require pooling multiple vials which affects total volume
+        const totalVialCount = vialCombination.reduce((sum, item) => sum + item.count, 0);
+        if (selectedMedicationData.poolingInstructions.minVialsForPooling && 
+            totalVialCount >= selectedMedicationData.poolingInstructions.minVialsForPooling) {
+          // Apply pooling factor if specified
+          if (selectedMedicationData.poolingInstructions.volumeFactor) {
+            totalVolume = totalVolume * selectedMedicationData.poolingInstructions.volumeFactor;
+          }
+        }
       }
       
-      return result;
+      // Round to 0.1 mL for precise measurement
+      return Math.round(totalVolume * 10) / 10;
     } else {
-      // For solutions, use the actual vial volume
+      // For solutions, calculate based on actual vial volumes
       vialCombination.forEach(item => {
         totalVolume += item.count * (item.vial.volume || 0);
       });
       
-      // Apply rounding rules only for solution medications
-      if (totalVolume > 10) {
-        // Round up to nearest 2.5 or 5 mL for easier measurement
-        if (totalVolume <= 50) {
-          totalVolume = Math.ceil(totalVolume / 2.5) * 2.5;
-        } else {
-          totalVolume = Math.ceil(totalVolume / 5) * 5;
-        }
-      }
+      // For solutions, return exact volume to 0.1 mL precision
+      // No artificial rounding as exact volumes are clinically important
+      return Math.round(totalVolume * 10) / 10;
     }
-    
-    return totalVolume;
   }, [selectedMedicationData, calculateVialCombination, calculateSingleDoseVialCombination]);
 
   // Calculate infusion rate
@@ -1723,28 +1750,46 @@ const RedesignedPumpCalculator = () => {
 
   // Reset calculator
   const resetCalculator = () => {
+    // Reset all input fields
     setInputs({
       selectedMedication: '',
       patientWeight: '',
       dose: '',
       doseUnit: 'mg/kg',
       doseFrequency: '',
-      daysSupply: '',
-      totalInfusionTime: '',
+      vialSize: '',
+      bagVolume: '',
+      flushVolume: '',
+      overfillVolume: '', 
       totalInfusionVolume: '',
+      totalInfusionTime: { hours: '', minutes: '' },
+      infusionMode: 'removeOverfill',
       infusionRate: '',
-      infusionSteps: []
+      useCustomSteps: false
     });
+    
+    // Reset sections
     setExpandedSections({
       medicationSetup: true,
       doseCalculation: false,
       infusionParameters: false,
       results: false
     });
-    setResults(null);
+    
+    // Reset medication selection
     setSelectedMedication(null);
+    
+    // Reset calculation results
+    setResults(null);
     setShowResults(false);
+    
+    // Reset errors
     setErrors({});
+    
+    // Reset dose safety
+    setDoseSafety({ classification: 'unknown', ratio: 0, color: '#6c757d' });
+    
+    // Reset custom infusion steps
     setCustomInfusionSteps([
       { id: 1, rate: '', duration: '', volume: '', description: 'Flush', isFlush: true }
     ]);
@@ -1753,7 +1798,13 @@ const RedesignedPumpCalculator = () => {
       durationValid: false,
       stepsValid: []
     });
+    
+    // Reset other states
     setFixedInfusionError('');
+    setSelectedVialSize(null);
+    setSelectedSpecialDosing(null);
+    setShowVialCombinations(false);
+    setVolumeCalculationMethod('withdrawn');
   };
 
   // Format number
@@ -1817,45 +1868,172 @@ const RedesignedPumpCalculator = () => {
               {/* Medication info cards */}
               {selectedMedicationData && (
                 <div className="medication-info-cards">
-                  {/* Original Infusion Rate */}
-                  <div className="medication-info-card">
-                    <div className="card-label">Original Infusion Rate</div>
-                    <div className="card-value">
-                      <Info size={20} />
-                      <span>{selectedMedicationData.infusionRate || 'N/A'}</span>
+                  {/* Vial Size */}
+                  <div className="dose-card">
+                    <label className="section-label">
+                      <FlaskConical size={16} />
+                      Vial Size
+                    </label>
+                    <div className="professional-card-display">
+                      <div className="card-value-container">
+                        <div className="calc-display-value">
+                          <span className="calc-value-number">
+                            {selectedMedicationData.vialSizes?.length > 0 ? (
+                              selectedMedicationData.vialSizes.length === 1 ? (
+                                // Single vial size
+                                <>
+                                  {selectedMedicationData.vialSizes[0].strength}
+                                </>
+                              ) : (
+                                // Multiple vial sizes count
+                                selectedMedicationData.vialSizes.length
+                              )
+                            ) : (
+                              'N/A'
+                            )}
+                          </span>
+                          <span className="calc-value-unit">
+                            {selectedMedicationData.vialSizes?.length > 0 ? (
+                              selectedMedicationData.vialSizes.length === 1 ? (
+                                selectedMedicationData.vialSizes[0].unit
+                              ) : (
+                                'SIZES'
+                              )
+                            ) : (
+                              ''
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Vial details preview */}
+                      <div className="calc-display-preview">
+                        <FlaskConical size={14} className="preview-icon" />
+                        <span className="preview-value">
+                          {selectedMedicationData.vialSizes?.length > 0 ? (
+                            selectedMedicationData.vialSizes.length === 1 ? (
+                              `${selectedMedicationData.vialSizes[0].strength} ${selectedMedicationData.vialSizes[0].unit}` +
+                              (selectedMedicationData.vialSizes[0].volume ? ` (${selectedMedicationData.vialSizes[0].volume} mL)` : '')
+                            ) : (
+                              selectedMedicationData.vialSizes.map((vial, idx) => 
+                                `${idx > 0 ? ', ' : ''}${vial.strength}${vial.unit}`
+                              ).join('')
+                            )
+                          ) : (
+                            'No vial data'
+                          )}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Saline Bag Size */}
-                  <div className="medication-info-card">
-                    <div className="card-label">NS Bag Size</div>
-                    <div className="card-value">
-                      <Package size={20} />
-                      <span>{calculateSalineBagSize() || 'Enter weight'} mL</span>
+                  <div className="dose-card">
+                    <label className="section-label">
+                      <Package size={16} />
+                      NS Bag Size
+                    </label>
+                    <div className="professional-card-display">
+                      <div className="card-value-container">
+                        <div className="calc-display-value">
+                          <span className="calc-value-number">
+                            {calculateSalineBagSize() || '0'}
+                          </span>
+                          <span className="calc-value-unit">mL</span>
+                        </div>
+                      </div>
+                      {/* Bag size preview */}
+                      <div className="calc-display-preview">
+                        <Package size={14} className="preview-icon" />
+                        <span className="preview-value">
+                          {(() => {
+                            if (!calculateSalineBagSize()) return 'Enter weight';
+                            
+                            const weight = parseFloat(inputs.patientWeight);
+                            const rules = selectedMedicationData?.salineBagRules;
+                            
+                            if (rules?.fixed) {
+                              return `Fixed ${rules.bagSize} mL for all weights`;
+                            }
+                            
+                            if (rules?.weightBased && rules.rules) {
+                              const matchedRule = rules.rules.find(rule => 
+                                weight >= rule.minWeight && 
+                                (rule.maxWeight === null || weight <= rule.maxWeight)
+                              );
+                              if (matchedRule?.description) {
+                                return matchedRule.description;
+                              }
+                            }
+                            
+                            return `${calculateSalineBagSize()} mL bag`;
+                          })()}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Overfill Value */}
-                  <div className="medication-info-card">
-                    <div className="card-label">Overfill Value</div>
-                    <div className="card-value">
-                      <Droplets size={20} />
-                      <span>{calculateSalineBagSize() ? getOverfillValue(calculateSalineBagSize()) : '0'} mL</span>
+                  <div className="dose-card">
+                    <label className="section-label">
+                      <Droplets size={16} />
+                      Overfill Value
+                    </label>
+                    <div className="professional-card-display">
+                      <div className="card-value-container">
+                        <div className="calc-display-value">
+                          <span className="calc-value-number">
+                            {calculateSalineBagSize() ? getOverfillValue(calculateSalineBagSize()) : '0'}
+                          </span>
+                          <span className="calc-value-unit">mL</span>
+                        </div>
+                      </div>
+                      {/* Overfill preview */}
+                      <div className="calc-display-preview">
+                        <Droplets size={14} className="preview-icon" />
+                        <span className="preview-value">
+                          {(() => {
+                            if (!calculateSalineBagSize()) return 'No overfill';
+                            
+                            const bagSize = calculateSalineBagSize();
+                            const overfillRule = selectedMedicationData?.overfillRules?.specialRule;
+                            
+                            if (overfillRule) {
+                              return overfillRule;
+                            }
+                            
+                            return `Standard overfill for ${bagSize} mL bag`;
+                          })()}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Infusion Steps Info */}
-                  <div className="medication-info-card">
-                    <div className="card-label">Infusion Steps Protocol</div>
-                    <div className="card-value">
-                      <Activity size={20} />
-                      <span>
-                        {selectedMedicationData.infusionSteps?.weightBased ? 
-                          'Weight-based steps' : 
-                          selectedMedicationData.infusionSteps?.defaultInfusion ? 
-                            'Constant rate' : 
-                            'Step-wise infusion'}
-                      </span>
+                  {/* Dose Info */}
+                  <div className="dose-card">
+                    <label className="section-label">
+                      <Activity size={16} />
+                      Dose
+                    </label>
+                    <div className="professional-card-display">
+                      <div className="card-value-container">
+                        <div className="calc-display-value">
+                          <span className="calc-value-number">
+                            {selectedMedicationData.standardDose?.value || 'N/A'}
+                          </span>
+                          <span className="calc-value-unit">
+                            {selectedMedicationData.standardDose?.unit || ''}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Dose preview */}
+                      <div className="calc-display-preview">
+                        <Activity size={14} className="preview-icon" />
+                        <span className="preview-value">
+                          {selectedMedicationData.standardDose ? 
+                            (selectedMedicationData.standardDose.frequency || 'Standard dose') : 
+                            'No dose data'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2225,19 +2403,10 @@ const RedesignedPumpCalculator = () => {
                         <Calculator size={14} className="preview-icon" />
                         <span className="preview-value">
                           {inputs.doseUnit.includes('/kg') ? 
-                            `${inputs.dose} × ${inputs.patientWeight} kg` : 
-                            `Fixed: ${inputs.dose} ${inputs.doseUnit}`}
+                            `${inputs.dose} ${inputs.doseUnit} × ${inputs.patientWeight} kg` : 
+                            `Fixed dose calculation`}
                         </span>
                       </div>
-                    </div>
-                    {/* Orange banner with explanation */}
-                    <div className="param-banner orange-banner">
-                      <Info size={14} />
-                      <span className="banner-text">
-                        {inputs.doseUnit.includes('/kg') ? 
-                          `${inputs.dose} ${inputs.doseUnit} × ${inputs.patientWeight} kg = ${formatNumber(parseFloat(inputs.dose) * parseFloat(inputs.patientWeight))} ${inputs.doseUnit.replace('/kg', '')}` : 
-                          `Fixed dose calculation`}
-                      </span>
                     </div>
                   </div>
 
@@ -2300,45 +2469,47 @@ const RedesignedPumpCalculator = () => {
                         </span>
                       </div>
                     </div>
-                    {/* Orange banner with explanation */}
-                    <div className="param-banner orange-banner">
-                      <Info size={14} />
-                      <span className="banner-text">
-                        {(() => {
-                          const allCombinations = calculateAllVialCombinations();
-                          if (!allCombinations || allCombinations.length === 0) return 'Enter dose to calculate';
-                          
-                          const optimalCombo = allCombinations[0];
-                          if (inputs.doseFrequency && inputs.daysSupply) {
-                            const numberOfDoses = Math.ceil(parseFloat(inputs.daysSupply) / parseFloat(inputs.doseFrequency));
-                            const prescribedDose = inputs.doseUnit.includes('/kg') ? 
-                              parseFloat(inputs.dose) * parseFloat(inputs.patientWeight) : 
-                              parseFloat(inputs.dose);
-                            const vialsPerDose = Math.ceil(prescribedDose / (optimalCombo.combination[0]?.vial?.strength || 1));
-                            const totalVials = allCombinations[0].totalVials;
-                            return `${numberOfDoses} doses × ${vialsPerDose} vials/dose = ${totalVials} vials`;
-                          }
-                          
-                          return `Optimal combination: ${optimalCombo.waste} ${inputs.doseUnit.replace('/kg', '')} waste`;
-                        })()}
-                      </span>
-                    </div>
                   </div>
 
-                  {/* Drug Volume Card - Professional Design */}
+                  {/* Drug Volume Card - Professional Design with Toggle */}
                   <div className="dose-card drug-volume-calc-card">
-                    <label className="section-label">
-                      <Droplets size={16} />
-                      Drug Volume
-                      {inputs.doseFrequency && inputs.daysSupply && (
-                        <span className="calc-label-note"> (per dose)</span>
+                    <div className="section-label-with-toggle">
+                      <label className="section-label">
+                        <Droplets size={16} />
+                        Drug Volume
+                        {inputs.doseFrequency && inputs.daysSupply && (
+                          <span className="calc-label-note"> (per dose)</span>
+                        )}
+                      </label>
+                      {/* Volume Calculation Method Toggle */}
+                      {selectedMedicationData?.dosageForm === 'lyophilized' && (
+                        <div className="volume-method-toggle">
+                          <button
+                            className={`toggle-option ${volumeCalculationMethod === 'withdrawn' ? 'active' : ''}`}
+                            onClick={() => setVolumeCalculationMethod('withdrawn')}
+                            type="button"
+                            title="Drug Volume Removed from Vial"
+                          >
+                            <FlaskConical size={14} />
+                            <span>Removed from Vial</span>
+                          </button>
+                          <button
+                            className={`toggle-option ${volumeCalculationMethod === 'reconstitution' ? 'active' : ''}`}
+                            onClick={() => setVolumeCalculationMethod('reconstitution')}
+                            type="button"
+                            title="Sterile Water Volume to Reconstitute Vial"
+                          >
+                            <Droplets size={14} />
+                            <span>Sterile Water</span>
+                          </button>
+                        </div>
                       )}
-                    </label>
+                    </div>
                     <div className="professional-calc-display">
                       <div className="calc-display-container">
                         <div className="calc-display-value">
                           <span className="calc-value-number">
-                            {calculateDrugVolume(true)}
+                            {calculateDrugVolume(true, volumeCalculationMethod)}
                           </span>
                           <span className="calc-value-unit">mL</span>
                         </div>
@@ -2352,33 +2523,25 @@ const RedesignedPumpCalculator = () => {
                               const vials = calculateSingleDoseVialCombination();
                               if (vials && vials[0]) {
                                 const totalVials = vials.reduce((sum, v) => sum + v.count, 0);
-                                return `${totalVials} vial${totalVials > 1 ? 's' : ''} × ${vials[0].vial.reconstitutionVolume} mL`;
+                                const volumeType = volumeCalculationMethod === 'withdrawn' ? 
+                                  (vials[0].vial.withdrawVolume || vials[0].vial.volume || vials[0].vial.reconstitutionVolume) :
+                                  vials[0].vial.reconstitutionVolume;
+                                if (volumeCalculationMethod === 'withdrawn') {
+                                  return `Volume removed from vial (${totalVials} × ${volumeType} mL)`;
+                                } else {
+                                  return `Sterile water to reconstitute (${totalVials} × ${volumeType} mL)`;
+                                }
+                              }
+                            } else if (selectedMedicationData?.dosageForm === 'solution') {
+                              const vials = calculateSingleDoseVialCombination();
+                              if (vials && vials[0] && vials[0].vial.concentration) {
+                                return `Solution: ${vials[0].vial.concentration} mg/mL`;
                               }
                             }
-                            return `Volume: ${calculateDrugVolume(true)}`;
+                            return `Volume: ${calculateDrugVolume(true, volumeCalculationMethod)} mL`;
                           })()}
                         </span>
                       </div>
-                    </div>
-                    {/* Orange banner with explanation */}
-                    <div className="param-banner orange-banner">
-                      <Info size={14} />
-                      <span className="banner-text">
-                        {(() => {
-                          if (selectedMedicationData?.dosageForm === 'lyophilized') {
-                            const vials = calculateSingleDoseVialCombination();
-                            if (vials && vials[0]) {
-                              return `Reconstituted at ${vials[0].vial.finalConcentration} mg/mL`;
-                            }
-                          } else if (selectedMedicationData?.dosageForm === 'solution') {
-                            const vials = calculateSingleDoseVialCombination();
-                            if (vials && vials[0]) {
-                              return `Solution concentration: ${vials[0].vial.concentration} mg/mL`;
-                            }
-                          }
-                          return 'Drug volume calculation';
-                        })()}
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -2594,12 +2757,22 @@ const RedesignedPumpCalculator = () => {
                 {customStepsValidation.durationValid ? (
                   <div className="validation-indicator valid">
                     <Check size={16} />
-                    <span>Duration: {customStepsValidation.stepDurationTotal} min</span>
+                    <span>Duration: {(() => {
+                      const totalMins = customStepsValidation.stepDurationTotal || 0;
+                      const hours = Math.floor(totalMins / 60);
+                      const mins = Math.round(totalMins % 60);
+                      return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                    })()}</span>
                   </div>
                 ) : (
                   <div className="validation-indicator invalid">
                     <X size={16} />
-                    <span>Duration: {customStepsValidation.stepDurationTotal} min</span>
+                    <span>Duration: {(() => {
+                      const totalMins = customStepsValidation.stepDurationTotal || 0;
+                      const hours = Math.floor(totalMins / 60);
+                      const mins = Math.round(totalMins % 60);
+                      return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                    })()}</span>
                   </div>
                 )}
               </div>
@@ -2728,7 +2901,17 @@ const RedesignedPumpCalculator = () => {
                     <div className="validation-method">
                       <div>✓ All steps are valid</div>
                       <div>✓ Total volume: {customStepsValidation.stepVolumeTotal?.toFixed(1)} mL = {inputs.totalInfusionVolume} mL</div>
-                      <div>✓ Total duration: {customStepsValidation.stepDurationTotal?.toFixed(0)} min = {(parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + (parseInt(inputs.totalInfusionTime.minutes) || 0)} min</div>
+                      <div>✓ Total duration: {(() => {
+                        const totalMins = customStepsValidation.stepDurationTotal || 0;
+                        const hours = Math.floor(totalMins / 60);
+                        const mins = Math.round(totalMins % 60);
+                        const expectedTotalMins = (parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + (parseInt(inputs.totalInfusionTime.minutes) || 0);
+                        const expectedHours = Math.floor(expectedTotalMins / 60);
+                        const expectedMins = Math.round(expectedTotalMins % 60);
+                        const actualDisplay = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                        const expectedDisplay = expectedHours > 0 ? `${expectedHours}h ${expectedMins}m` : `${expectedMins}m`;
+                        return `${actualDisplay} = ${expectedDisplay}`;
+                      })()}</div>
                     </div>
                   </div>
                 ) : (
