@@ -21,7 +21,7 @@
   width: 100%;
   height: 100%;
   background: var(--bg-secondary);
-  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   padding: 0;
   overflow-y: auto;
   overflow-x: hidden;
@@ -55,13 +55,14 @@
 
 .calculator-section {
   width: 100%;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: white;
+  border: none;
   border-radius: 12px;
   margin-bottom: 1rem;
   overflow: visible;
   transition: all 0.3s ease;
   animation: fadeInUp 0.5s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 @media (min-width: 768px) {
@@ -79,9 +80,9 @@
 }
 
 .section-header {
-  background: var(--primary-light);
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--primary-border);
+  background: #f8f9fa;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e9ecef;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -134,19 +135,26 @@
 }
 
 .section-header h3 {
-  font-size: clamp(1.125rem, 2vw, 1.375rem);
-  font-weight: 700;
-  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
   margin: 0;
-  letter-spacing: -0.5px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   text-align: left;
   flex: 1;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .section-header svg {
-  color: var(--primary-color);
+  color: #ff6b35;
+}
+
+.section-header svg {
+  color: #ff6b35;
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
 }
 
 /* Close section button */
@@ -176,11 +184,13 @@
 
 /* Section Content */
 .section-content {
-  padding: 1.5rem;
+  padding: 20px;
+  background: transparent;
   width: 100%;
   overflow: visible;
   min-height: auto;
   height: auto;
+  border-radius: 0 0 12px 12px;
 }
 
 .section-description {
@@ -189,13 +199,109 @@
   margin-bottom: 1.5rem;
 }
 
-/* Setup Grid - Medication Setup Section */
+/* Setup Grid - Medication Setup Section - Matching Dose Safety Layout */
 .setup-grid {
+  width: 100%;
+  background: var(--bg-tertiary, #f5f5f5);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 12px;
+  padding: 1.25rem;
+  position: relative;
+  overflow: visible;
+  transition: all 0.3s ease;
   display: flex !important;
   flex-direction: column;
-  gap: 1.5rem;
-  width: 100%;
+  gap: 1rem;
   visibility: visible !important;
+}
+
+/* Medication Selection Full Width - Restored */
+.medication-selection-full {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.medication-dropdown-wrapper {
+  width: 100%;
+  padding: 0 1rem;
+  position: relative;
+  z-index: 999999;
+  isolation: isolate;
+}
+
+.medication-select-dropdown {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2714%27%20height%3D%278%27%20viewBox%3D%270%200%2014%208%27%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%3E%3Cpath%20d%3D%27M1.707%201.707l5.293%205.293%205.293-5.293%27%20stroke%3D%27%23374151%27%20stroke-width%3D%272%27%20fill%3D%27none%27%20fill-rule%3D%27evenodd%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  padding-right: 3rem;
+}
+
+.medication-select-dropdown:hover {
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.medication-select-dropdown:focus {
+  outline: none;
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+}
+
+.medication-select-dropdown.error {
+  border-color: #ef4444;
+}
+
+.medication-select-dropdown option {
+  padding: 0.5rem;
+  font-weight: 500;
+}
+
+
+/* Medication Info Cards Row - All cards in same row */
+.medication-info-cards-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .medication-info-cards-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .medication-info-cards-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dose display value for medication cards */
+.dose-display-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 /* Primary inputs row */
@@ -208,7 +314,7 @@
 /* Medication info cards row - matching dose-cards style */
 .medication-info-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-top: 0.5rem;
   align-items: stretch;
@@ -217,8 +323,9 @@
 .setup-item {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
   min-width: 0;
+  height: 100%;
 }
 
 /* Card style for medication info */
@@ -266,17 +373,27 @@
 /* Responsive card value sizing */
 @media (max-width: 1400px) {
   .medication-info-cards .calc-value-number {
-    font-size: 2rem;
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 1200px) {
   .medication-info-cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .medication-info-cards .calc-value-number {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .medication-info-cards {
     grid-template-columns: repeat(2, 1fr);
   }
   
   .medication-info-cards .calc-value-number {
-    font-size: 1.75rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -293,12 +410,41 @@
     grid-template-columns: 1fr;
     display: grid !important;
     visibility: visible !important;
+    gap: 1rem;
   }
   
   .medication-info-cards {
     grid-template-columns: 1fr;
     display: grid !important;
     visibility: visible !important;
+    gap: 1rem;
+  }
+  
+  /* Ensure proper sizing for setup items */
+  .setup-item {
+    width: 100%;
+  }
+  
+  /* Adjust input and dropdown heights for mobile */
+  .supply-input,
+  .supply-dropdown {
+    min-height: 50px;
+    font-size: 1rem;
+    padding: 0.875rem 1rem;
+  }
+  
+  .dropdown-icon {
+    right: 0.75rem;
+  }
+  
+  /* Medication info cards adjustments */
+  .medication-info-cards .dose-card {
+    min-height: auto;
+    padding: 1rem;
+  }
+  
+  .medication-info-cards .calc-value-number {
+    font-size: 1rem;
   }
   
   /* Ensure dropdowns and inputs are visible */
@@ -373,24 +519,25 @@
 
 /* Card style for dose items */
 .dose-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: white;
+  border: 1px solid #f0f0f0;
   border-radius: 12px;
-  padding: 1.25rem;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   transition: all 0.3s ease;
   height: 100%;
-  min-height: 280px;
+  min-height: 240px;
   box-sizing: border-box;
   width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .dose-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow-sm);
-  border-color: var(--primary-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-color: #e0e0e0;
 }
 
 /* Full width items */
@@ -514,46 +661,48 @@
   grid-column: 1 / -1;
 }
 
-/* Section Labels */
+/* Section Labels - Matching Dose Calculation Style */
 .section-label {
-  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  color: #7a7a7a;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .section-label svg {
   width: 16px;
   height: 16px;
-  color: var(--primary-color);
+  color: #ff6b35;
 }
 
 /* Input Styles */
 .supply-input {
   width: 100%;
-  padding: clamp(0.625rem, 1.5vw, 0.875rem) clamp(0.875rem, 2vw, 1rem);
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
+  padding: 12px 16px;
+  background: white;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: var(--text-primary);
-  font-size: clamp(0.875rem, 1.5vw, 1rem);
-  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #2c3e50;
+  font-size: 15px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   transition: all 0.2s ease;
 }
 
 .supply-input::placeholder {
-  color: var(--text-tertiary);
+  color: #bbb;
 }
 
 .supply-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  background: var(--input-bg);
-  box-shadow: 0 0 0 3px var(--primary-light);
+  border-color: #ff6b35;
+  background: white;
+  box-shadow: none;
 }
 
 .supply-input.error {
@@ -566,16 +715,417 @@
   width: 100%;
 }
 
+/* Mega Menu Styles */
+.mega-menu-container {
+  position: relative;
+  width: 100%;
+  z-index: 10;
+}
+
+.mega-menu-trigger {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 2.5rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  color: #2c3e50;
+  font-size: 15px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mega-menu-trigger:hover {
+  border-color: #ff6b35;
+}
+
+.mega-menu-trigger:focus {
+  outline: none;
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+}
+
+.mega-menu-trigger.error {
+  border-color: #ef4444;
+}
+
+.mega-menu-value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.mega-menu-dropdown {
+  position: fixed;
+  top: 10vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90vw;
+  max-width: 1000px;
+  max-height: 80vh;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideDownDesktop 0.3s ease;
+}
+
+@keyframes slideDownDesktop {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.mega-menu-search {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f9f9f9;
+}
+
+.search-icon {
+  color: #999;
+  flex-shrink: 0;
+}
+
+.mega-menu-search-input {
+  flex: 1;
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: all 0.2s ease;
+}
+
+.mega-menu-search-input:focus {
+  outline: none;
+  border-color: #ff6b35;
+}
+
+.mega-menu-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.mega-menu-no-results {
+  padding: 40px 20px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+.mega-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+}
+
+@media (min-width: 1200px) {
+  .mega-menu-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.mega-menu-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mega-menu-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.mega-menu-grid::-webkit-scrollbar-thumb {
+  background: #ff6b35;
+  border-radius: 3px;
+}
+
+.mega-menu-grid::-webkit-scrollbar-thumb:hover {
+  background: #ff5722;
+}
+
+.mega-menu-item {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  background: #f9f9f9;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  min-height: 80px;
+}
+
+.mega-menu-item:hover {
+  background: #fff5f0;
+  border-color: #ff6b35;
+  transform: translateY(-1px);
+}
+
+.mega-menu-item.selected {
+  background: #ff6b35;
+  color: white;
+}
+
+.mega-menu-item.multiple-vials {
+  background: linear-gradient(135deg, #f9f9f9 0%, #fff5f0 100%);
+  border: 1px solid #ffcc99;
+}
+
+.mega-menu-item.multiple-vials:hover {
+  background: linear-gradient(135deg, #fff5f0 0%, #ffe5d5 100%);
+  border-color: #ff6b35;
+}
+
+.mega-menu-item.multiple-vials.selected {
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+  color: white;
+}
+
+.mega-menu-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.mega-menu-brand {
+  font-size: 14px;
+  font-weight: 600;
+  color: inherit;
+  line-height: 1.2;
+}
+
+.multiple-vials-icon {
+  color: #ff6b35;
+  flex-shrink: 0;
+}
+
+.mega-menu-item.selected .multiple-vials-icon {
+  color: white;
+}
+
+.mega-menu-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mega-menu-generic {
+  font-size: 12px;
+  color: #666;
+  opacity: 0.9;
+  line-height: 1.3;
+}
+
+.mega-menu-item.selected .mega-menu-generic {
+  color: white;
+  opacity: 0.9;
+}
+
+.mega-menu-vials {
+  font-size: 10px;
+  font-weight: 500;
+  color: #ff6b35;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.mega-menu-item.selected .mega-menu-vials {
+  color: white;
+  opacity: 0.9;
+}
+
+/* Mega Menu Portal Container */
+.mega-menu-portal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.mega-menu-portal > * {
+  pointer-events: auto;
+}
+
+/* Mega menu overlay */
+.mega-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Mega Menu Header */
+.mega-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  border-radius: 12px 12px 0 0;
+}
+
+.mega-menu-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.mega-menu-close {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: #666;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mega-menu-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #333;
+}
+
+/* Mobile responsive mega menu */
+@media (max-width: 768px) {
+  .mega-menu-dropdown {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    transform: translateY(0);
+    max-height: 90vh;
+    border-radius: 20px 20px 0 0;
+    animation: slideUpMobile 0.3s ease;
+  }
+  
+  @keyframes slideUpMobile {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes megaMenuSlideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
+  .mega-menu-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 0;
+  }
+  
+  .mega-menu-search {
+    padding: 16px;
+    position: relative;
+    background: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  
+  .mega-menu-header {
+    position: sticky;
+    top: 0;
+    z-index: 11;
+    background: white;
+    border-radius: 20px 20px 0 0;
+  }
+  
+  .mega-menu-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+}
+
+@media (max-width: 480px) {
+  .mega-menu-item {
+    padding: 14px 16px;
+  }
+  
+  .mega-menu-brand {
+    font-size: 16px;
+  }
+  
+  .mega-menu-generic {
+    font-size: 14px;
+  }
+}
+
 .supply-dropdown {
   width: 100%;
-  padding: clamp(0.625rem, 1.5vw, 0.875rem) clamp(0.875rem, 2vw, 1rem);
+  padding: 12px 16px;
   padding-right: 2.5rem;
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
+  background: white;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: var(--text-primary);
-  font-size: clamp(0.875rem, 1.5vw, 1rem);
-  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #2c3e50;
+  font-size: 15px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   cursor: pointer;
   appearance: none;
   transition: all 0.2s ease;
@@ -583,9 +1133,9 @@
 
 .supply-dropdown:focus {
   outline: none;
-  border-color: var(--primary-color);
-  background: var(--input-bg);
-  box-shadow: 0 0 0 3px var(--primary-light);
+  border-color: #ff6b35;
+  background: white;
+  box-shadow: none;
 }
 
 .supply-dropdown option {
@@ -598,7 +1148,7 @@
   right: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-tertiary);
+  color: #999;
   pointer-events: none;
 }
 
@@ -648,6 +1198,23 @@
   gap: 1rem;
   align-items: stretch;
   margin-bottom: 1rem;
+}
+
+/* All cards in one row for dose calculation section */
+.dose-fields-row.all-in-one-row {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 1200px) {
+  .dose-fields-row.all-in-one-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dose-fields-row.all-in-one-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Dose Input Row - Match infusion params cards layout */
@@ -782,11 +1349,12 @@
   }
 }
 
-/* Error Text */
+/* Error Text - Matching Dose Calculation Style */
 .error-text {
   color: var(--error-color);
-  font-size: clamp(0.75rem, 1.2vw, 0.875rem);
-  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
 }
 
 /* Dose Safety Indicator - Modern Clean Design */
@@ -1038,6 +1606,8 @@
   font-size: 1rem;
   color: var(--text-secondary);
   font-weight: 500;
+  position: relative;
+  z-index: 1;
 }
 
 .total-dose-value {
@@ -1081,15 +1651,24 @@
   margin: 1.5rem 0 0.5rem;
   padding-top: 1.5rem;
   border-top: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .parameters-divider h4 {
-  font-size: 1rem;
+  font-size: 18px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #2c3e50;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.parameters-divider svg {
+  color: #ff6b35;
+  flex-shrink: 0;
 }
 
 /* Custom Infusion Steps Button */
@@ -2381,11 +2960,13 @@
 
 /* Additional Parameters Cards */
 .additional-params-cards {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  display: flex;
+  flex-wrap: nowrap;
   gap: 1rem;
   margin-top: 1.5rem;
   align-items: stretch; /* Ensure all cards stretch to same height */
+  overflow: visible; /* Allow dropdowns to overflow */
+  position: relative;
 }
 
 .param-card {
@@ -2397,8 +2978,13 @@
   flex-direction: column;
   justify-content: space-between;
   transition: all 0.3s ease;
-  min-width: 0; /* Prevent overflow in grid */
+  flex: 1 0 auto; /* Allow cards to grow/shrink but maintain minimum width */
+  min-width: 200px; /* Set minimum width for each card */
   height: 100%; /* Ensure all cards same height */
+  position: relative;
+  overflow: visible;
+  transform: translateZ(0); /* Fix for border rendering issues */
+  backface-visibility: hidden; /* Prevent flickering */
 }
 
 .param-card:hover {
@@ -2533,21 +3119,35 @@
 }
 
 @media (max-width: 1400px) {
-  .additional-params-cards {
+  .infusion-params-cards {
     grid-template-columns: repeat(3, 1fr);
   }
+  
+  /* Additional params cards now use flexbox - no grid columns needed */
+}
+
+@media (max-width: 1200px) {
+  .infusion-params-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  /* Additional params cards now use flexbox - no grid columns needed */
 }
 
 @media (max-width: 992px) {
-  .additional-params-cards {
+  .infusion-params-cards {
     grid-template-columns: repeat(2, 1fr);
   }
+  
+  /* Additional params cards now use flexbox - no grid columns needed */
 }
 
 @media (max-width: 768px) {
-  .additional-params-cards {
+  .infusion-params-cards {
     grid-template-columns: 1fr;
   }
+  
+  /* Additional params cards now use flexbox - no grid columns needed */
   
   .calculated-values-cards {
     grid-template-columns: 1fr;
@@ -2596,23 +3196,26 @@
   box-shadow: none;
 }
 
-/* Inactive state colors - matching screenshot design */
+/* Inactive state colors - subtle glow */
 .dose-safety-card.low-dose:not(.active) {
   background: rgba(255, 255, 255, 0.95);
-  border-color: #fbbf24;
+  border: 2px solid #ffd700;
   opacity: 1;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
 }
 
 .dose-safety-card.correct-dose:not(.active) {
   background: rgba(255, 255, 255, 0.95);
-  border-color: #10b981;
+  border: 2px solid #00ff00;
   opacity: 1;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
 }
 
 .dose-safety-card.high-dose:not(.active) {
   background: rgba(255, 255, 255, 0.95);
-  border-color: #ef4444;
+  border: 2px solid #ff3838;
   opacity: 1;
+  box-shadow: 0 0 10px rgba(255, 56, 56, 0.2);
 }
 
 /* Dark theme support for inactive cards */
@@ -2664,6 +3267,8 @@
   right: 1rem;
   top: 50%;
   transform: translateY(-50%);
+  z-index: 2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .dose-card-content {
@@ -2672,24 +3277,45 @@
 }
 
 .dose-main-value {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
+  line-height: 1;
 }
 
 .dose-threshold {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  position: relative;
+  z-index: 2;
 }
 
 .dose-unit {
   font-size: 0.875rem;
   margin-top: 0.25rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: relative;
+  z-index: 2;
 }
 
 .dose-sub-text {
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  position: relative;
+  z-index: 2;
+}
+
+/* Ensure all active card text has proper shadow */
+.dose-safety-card.active .dose-threshold,
+.dose-safety-card.active .dose-unit,
+.dose-safety-card.active .dose-sub-text,
+.dose-safety-card.active .dose-percentage,
+.dose-safety-card.active .standard-dose {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* Content colors for inactive states - grey text */
@@ -2704,19 +3330,39 @@
   color: #6b7280;
 }
 
-/* Active Cards - Solid background matching screenshot */
+/* Active Cards - Illuminating colors */
 .dose-safety-card.low-dose.active {
-  background: #fbbf24;
-  border-color: #fbbf24;
+  background: #ffd700;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  border-color: #ffd700;
   transform: none;
   opacity: 1;
   padding: 1rem 1.5rem;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.3);
+  position: relative;
+}
+
+/* Add shadow overlay for better text readability */
+.dose-safety-card.low-dose.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%);
+  border-radius: 25px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .dose-safety-card.low-dose.active .dose-card-title,
 .dose-safety-card.low-dose.active .dose-card-content {
   color: #ffffff;
   opacity: 1;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .dose-safety-card.low-dose.active .dose-card-header {
@@ -2724,17 +3370,37 @@
 }
 
 .dose-safety-card.correct-dose.active {
-  background: #10b981;
-  border-color: #10b981;
+  background: #00ff00;
+  background: linear-gradient(135deg, #00ff00 0%, #32ff7e 100%);
+  border-color: #00ff00;
   transform: none;
   opacity: 1;
   padding: 1rem 1.5rem;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(0, 255, 0, 0.3);
+  position: relative;
+}
+
+/* Add shadow overlay for better text readability */
+.dose-safety-card.correct-dose.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.25) 100%);
+  border-radius: 25px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .dose-safety-card.correct-dose.active .dose-card-title,
 .dose-safety-card.correct-dose.active .dose-card-content {
   color: #ffffff;
   opacity: 1;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .dose-safety-card.correct-dose.active .dose-card-header {
@@ -2742,17 +3408,37 @@
 }
 
 .dose-safety-card.high-dose.active {
-  background: #ef4444;
-  border-color: #ef4444;
+  background: #ff3838;
+  background: linear-gradient(135deg, #ff3838 0%, #ff6b6b 100%);
+  border-color: #ff3838;
   transform: none;
   opacity: 1;
   padding: 1rem 1.5rem;
+  box-shadow: 0 0 20px rgba(255, 56, 56, 0.5), 0 0 40px rgba(255, 56, 56, 0.3);
+  position: relative;
+}
+
+/* Add shadow overlay for better text readability */
+.dose-safety-card.high-dose.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%);
+  border-radius: 25px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .dose-safety-card.high-dose.active .dose-card-title,
 .dose-safety-card.high-dose.active .dose-card-content {
   color: #ffffff;
   opacity: 1;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .dose-safety-card.high-dose.active .dose-card-header {
@@ -2975,16 +3661,46 @@
   justify-content: space-between;
 }
 
+/* Days coverage indicator */
+.days-coverage-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 8px 12px;
+  background: rgba(255, 107, 53, 0.08);
+  border-radius: 6px;
+  margin: 0.5rem 0;
+  border: 1px solid rgba(255, 107, 53, 0.2);
+}
+
+.coverage-icon {
+  color: #ff6b35;
+  flex-shrink: 0;
+}
+
+.coverage-text {
+  font-size: 13px;
+  color: #ff6b35;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Vial count item */
+.vial-count-item {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
 .card-value-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  background: transparent;
+  border: none;
   border-radius: 12px;
   padding: 1rem;
   transition: all 0.3s ease;
-  min-height: 100px;
+  min-height: 120px;
   width: 100%;
   flex: 1;
 }
@@ -3001,16 +3717,16 @@
 }
 
 .calc-value-number {
-  font-size: 2.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ff6b35;
   line-height: 1;
 }
 
 .calc-value-unit {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #999;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -3019,22 +3735,24 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--bg-tertiary);
+  padding: 10px 12px;
+  background: #fff5f0;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: none;
   margin-top: auto;
 }
 
 .calc-display-preview .preview-icon {
-  color: var(--primary-color);
+  color: #ff6b35;
   flex-shrink: 0;
+  font-size: 14px;
 }
 
 .calc-display-preview .preview-value {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
+  font-size: 13px;
+  color: #ff6b35;
   font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Ensure medication info cards match dose card styling */
@@ -3255,17 +3973,137 @@
 
 /* Dose safety responsive */
 @media (max-width: 768px) {
+  /* Dose safety indicator container */
+  .dose-safety-indicator {
+    padding: 1rem;
+  }
+  
+  /* Prescribed dose card mobile adjustments */
+  .prescribed-dose-display {
+    margin-bottom: 1rem;
+  }
+  
+  .prescribed-dose-card {
+    padding: 1rem;
+  }
+  
+  .prescribed-dose-value .dose-number {
+    font-size: 2.5rem;
+  }
+  
+  .prescribed-dose-status {
+    top: -8px;
+    right: 12px;
+  }
+  
+  /* Dose safety cards */
   .dose-safety-cards {
     grid-template-columns: 1fr;
     gap: 0.75rem;
   }
   
   .dose-safety-card {
+    padding: 1rem;
+    min-height: auto;
+  }
+  
+  /* Adjust font sizes for mobile */
+  .dose-main-value {
+    font-size: 1.25rem;
+  }
+  
+  .dose-threshold {
+    font-size: 1.75rem;
+  }
+  
+  .dose-sub-text {
+    font-size: 0.8125rem;
+  }
+  
+  .dose-card-title {
+    font-size: 0.75rem;
+  }
+  
+  /* Explanation toggle positioning */
+  .explanation-toggle {
+    padding: 0.25rem;
+    margin-right: 0.25rem;
+  }
+  
+  /* Special dosing section */
+  .special-dosing-section {
+    margin-top: 1rem;
+    padding: 0 0.5rem;
+  }
+  
+  .special-dosing-cards {
+    gap: 0.625rem;
+  }
+  
+  .special-dosing-button {
     padding: 0.875rem;
+  }
+  
+  .dosing-value .dose-number {
+    font-size: 1.375rem;
+  }
+  
+  .dosing-value .dose-unit {
+    font-size: 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
+  /* Medication Setup Section - Small screens */
+  .setup-primary-row,
+  .medication-info-cards {
+    gap: 0.75rem;
+  }
+  
+  .supply-input,
+  .supply-dropdown {
+    min-height: 45px;
+    font-size: 0.9375rem;
+    padding: 0.75rem;
+  }
+  
+  .section-label {
+    font-size: 0.8125rem;
+  }
+  
+  .medication-info-cards .dose-card {
+    padding: 0.875rem;
+  }
+  
+  .medication-info-cards .calc-value-number {
+    font-size: 0.875rem;
+  }
+  
+  /* Dose Safety Section - Small screens */
+  .dose-safety-indicator {
+    padding: 0.75rem;
+  }
+  
+  .prescribed-dose-card {
+    padding: 0.875rem;
+  }
+  
+  .prescribed-dose-value .dose-number {
+    font-size: 2rem;
+  }
+  
+  .dose-safety-card {
+    padding: 0.875rem;
+  }
+  
+  .dose-main-value {
+    font-size: 1.25rem;
+  }
+  
+  .dose-threshold {
+    font-size: 1.5rem;
+  }
+  
   .special-dosing-header {
     margin-bottom: 0.75rem;
   }
@@ -3418,6 +4256,16 @@
 .combination-option.optimal {
   border-color: var(--primary-color);
   background: var(--primary-light);
+}
+
+.combination-option.selected {
+  border-color: #CB6015;
+  background: rgba(203, 96, 21, 0.1);
+  box-shadow: 0 0 0 2px rgba(203, 96, 21, 0.2);
+}
+
+.combination-option {
+  cursor: pointer;
 }
 
 .combination-header {
@@ -3786,11 +4634,25 @@
     gap: 0.75rem !important;
   }
   
-  /* Additional Parameters - Stack vertically */
+  /* Additional Parameters - Keep horizontal on mobile with scroll */
   .additional-params-cards {
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: row !important;
     gap: 0.75rem !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+  
+  /* Ensure vial dropdown is visible on mobile */
+  .vial-size-card:has(.vial-size-dropdown) {
+    overflow: visible !important;
+    z-index: 9999 !important;
+  }
+  
+  .vial-size-dropdown {
+    position: fixed !important; /* Use fixed positioning on mobile */
+    z-index: 99999 !important;
   }
   
   /* Action buttons - Ensure visibility */
@@ -4068,27 +4930,28 @@
 
 .professional-action-btn {
   width: 100%;
-  min-height: 200px;
-  padding: 1.5rem;
-  padding-bottom: 3.5rem; /* Extra padding to prevent overlap with status banner */
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  min-height: 80px;
+  padding: 1.25rem 2rem;
+  background: white;
+  border: 2px solid #e5e7eb;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
   position: relative;
   overflow: hidden;
-  color: var(--text-primary); /* Ensure text color is set */
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
 }
 
 .professional-action-btn:hover:not(:disabled) {
-  transform: translateY(-4px);
-  border-color: var(--primary-border);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  border-color: #ff6b35;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+  background: #fff5f0;
 }
 
 .professional-action-btn:disabled {
@@ -4104,15 +4967,15 @@
 
 /* Button Icon Wrapper */
 .btn-icon-wrapper {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: var(--bg-tertiary);
-  border: 2px solid var(--border-color);
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .btn-icon-wrapper.icon-primary {
@@ -4132,32 +4995,50 @@
 
 /* Reset button specific */
 .reset-wrapper .btn-icon-wrapper {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: #fee2e2;
   color: #ef4444;
 }
 
+.reset-wrapper .professional-action-btn:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
 .reset-wrapper .professional-action-btn:hover .btn-icon-wrapper {
-  background: #ef4444;
-  color: white;
+  background: #fecaca;
+}
+
+/* Calculate buttons specific */
+.calculate-wrapper .btn-icon-wrapper {
+  background: #fef3e2;
+  color: #ff6b35;
+}
+
+.calculate-wrapper .professional-action-btn:hover {
+  background: #fff5f0;
+  border-color: #ff6b35;
+}
+
+.calculate-wrapper .professional-action-btn:hover .btn-icon-wrapper {
+  background: #ffe4d1;
 }
 
 /* Button Content */
 .btn-content {
-  text-align: center;
+  text-align: left;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin-bottom: 0.5rem; /* Space above status banner */
+  gap: 0.25rem;
 }
 
 .btn-label {
   display: block;
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0;
 }
 
 .btn-description {
@@ -4395,21 +5276,21 @@
   }
   
   .professional-action-btn {
-    min-height: 120px;
-    padding: 1.25rem;
-    padding-right: 1rem;
-    flex-direction: row;
-    text-align: left;
+    min-height: 70px;
+    padding: 1rem 1.25rem;
   }
   
   .btn-icon-wrapper {
-    width: 50px;
-    height: 50px;
-    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
   }
   
-  .btn-content {
-    text-align: left;
+  .btn-label {
+    font-size: 0.9375rem;
+  }
+  
+  .btn-description {
+    font-size: 0.8125rem;
     margin-bottom: 0;
     flex: 1;
   }
@@ -4731,16 +5612,16 @@
 }
 
 .calc-value-number {
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #ff6b35;
   line-height: 1;
 }
 
 .calc-value-unit {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #999;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -4781,13 +5662,15 @@
 }
 
 .calc-display-preview .preview-icon {
-  color: var(--primary-color);
+  color: #ff6b35;
   flex-shrink: 0;
+  font-size: 14px;
 }
 
 .calc-display-preview .preview-value {
-  color: var(--text-primary);
+  color: #ff6b35;
   font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .calc-label-note {
@@ -4801,7 +5684,8 @@
 /* Professional calc cards specific styles */
 .total-dose-calc-card .calc-value-number,
 .total-vials-calc-card .calc-value-number,
-.drug-volume-calc-card .calc-value-number {
+.drug-volume-calc-card .calc-value-number,
+.drug-removal-calc-card .calc-value-number {
   color: var(--primary-color);
 }
 
@@ -4820,7 +5704,7 @@
   }
   
   .calc-value-number {
-    font-size: 1.75rem;
+    font-size: 0.875rem;
   }
   
   .calc-value-unit {
@@ -6031,7 +6915,7 @@
 /* Ensure all dose cards have equal height */
 .infusion-params-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   align-items: stretch;
 }
@@ -6041,6 +6925,226 @@
   flex-direction: column;
   height: 100%;
   min-height: 280px;
+}
+
+/* When Total Vials and Drug Volume cards are the only cards in the row, 
+   make them display side by side with equal width */
+.infusion-params-cards:has(.total-vials-calc-card):has(.drug-volume-calc-card):not(:has(.time-input-card)) {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* On larger screens, ensure the two cards take equal width */
+.infusion-params-cards:has(.total-vials-calc-card):has(.drug-volume-calc-card):not(:has(.time-input-card)) .total-vials-calc-card,
+.infusion-params-cards:has(.total-vials-calc-card):has(.drug-volume-calc-card):not(:has(.time-input-card)) .drug-volume-calc-card {
+  grid-column: auto; /* Let them sit naturally in the 2-column grid */
+}
+
+/* Ensure proper layout on tablet and mobile */
+@media (max-width: 992px) {
+  .infusion-params-cards:has(.total-vials-calc-card):has(.drug-volume-calc-card):not(:has(.time-input-card)) {
+    grid-template-columns: 1fr; /* Stack on smaller screens */
+  }
+}
+
+/* Ensure infusion-params-cards displays 3 cards in a row when all are present */
+.infusion-params-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* When all three calculation cards are present, display them in equal columns */
+.infusion-params-cards:has(.total-vials-calc-card):has(.drug-volume-calc-card):has(.drug-removal-calc-card) {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Ensure all calculation cards have the same height and styling */
+.total-vials-calc-card,
+.drug-volume-calc-card,
+.drug-removal-calc-card {
+  min-height: 280px;
+}
+
+/* Custom vial selection styles */
+.custom-vial-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.custom-vial-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.vial-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.vial-strength {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.vial-volume {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.vial-count-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vial-count-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vial-count-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--primary-color);
+}
+
+.vial-count-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vial-count-input {
+  width: 60px;
+  height: 32px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-weight: 600;
+  background: var(--bg-primary);
+}
+
+/* Custom combination summary */
+.custom-combination-summary {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+}
+
+.summary-metrics {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.metric-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.metric-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.metric-value {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Waste indicator */
+.waste-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+}
+
+.waste-indicator.has-waste {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.waste-indicator.no-waste {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.waste-icon {
+  color: #ef4444;
+  flex-shrink: 0;
+}
+
+.check-icon {
+  color: #22c55e;
+  flex-shrink: 0;
+}
+
+.waste-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.waste-text {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.waste-percentage {
+  color: #ef4444;
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+.no-waste-text {
+  color: #22c55e;
+  font-weight: 500;
+}
+
+/* Supply validation */
+.supply-validation {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.supply-validation.sufficient {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.supply-validation.insufficient {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.custom-placeholder {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 .dose-card .professional-time-input,
@@ -6593,6 +7697,703 @@
   }
 }
 
+/* Disabled state for dose safety indicator */
+.dose-safety-indicator.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.dose-safety-indicator.disabled .dose-safety-card {
+  background-color: #f5f5f5;
+  border-color: #e0e0e0;
+}
+
+.dose-safety-indicator.disabled .dose-main-value,
+.dose-safety-indicator.disabled .dose-threshold,
+.dose-safety-indicator.disabled .dose-sub-text,
+.dose-safety-indicator.disabled .dose-card-title {
+  color: #999;
+}
+
+.dose-safety-indicator.disabled .special-dosing-button {
+  background-color: #f5f5f5;
+  border-color: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.dose-safety-indicator.disabled .active-indicator {
+  display: none;
+}
+
+.dose-safety-indicator.disabled .prescribed-dose-card {
+  background-color: #f5f5f5;
+  border-color: #e0e0e0;
+}
+
+.dose-safety-indicator.disabled .prescribed-dose-value .dose-number,
+.dose-safety-indicator.disabled .prescribed-dose-value .dose-unit,
+.dose-safety-indicator.disabled .prescribed-dose-title {
+  color: #999;
+}
+
+.dose-safety-indicator.disabled .status-indicator {
+  color: #999;
+  background-color: rgba(153, 153, 153, 0.1);
+}
+
+/* Toggle card in param-card */
+.param-card.toggle-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Disabled param card styling */
+.param-card.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.param-card.disabled .param-card-icon svg {
+  color: #999;
+}
+
+.param-card.disabled .param-card-label {
+  color: #999;
+}
+
+/* Action Button Styles - Bigger and Centered */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 56px;
+  min-width: 200px;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.action-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Button container centering */
+.professional-action-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+/* Pump Action Buttons - New Style */
+.pump-action-btn {
+  flex: 1;
+  min-width: 200px;
+  min-height: 60px;
+  padding: 1.25rem 2rem;
+  background: #CB6015;
+  color: white !important;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.pump-action-btn:hover {
+  background: #B55013;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(203, 96, 21, 0.3);
+}
+
+.pump-action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(203, 96, 21, 0.2);
+}
+
+.pump-action-btn svg {
+  width: 22px;
+  height: 22px;
+  color: white;
+}
+
+.pump-action-btn span {
+  color: white !important;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+/* Reset button variant */
+.pump-action-btn.reset-btn {
+  background: #dc3545;
+}
+
+.pump-action-btn.reset-btn:hover {
+  background: #c82333;
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+}
+
+/* Fixed Rate and Custom Steps buttons - Force CB6015 color */
+.pump-action-btn.fixed-rate-btn,
+.pump-action-btn.custom-steps-btn {
+  background: #CB6015 !important;
+  color: white !important;
+}
+
+.pump-action-btn.fixed-rate-btn:hover,
+.pump-action-btn.custom-steps-btn:hover {
+  background: #B55013 !important;
+  box-shadow: 0 6px 20px rgba(203, 96, 21, 0.3);
+}
+
+.pump-action-btn.fixed-rate-btn span,
+.pump-action-btn.custom-steps-btn span {
+  color: white !important;
+}
+
+.pump-action-btn.fixed-rate-btn svg,
+.pump-action-btn.custom-steps-btn svg {
+  color: white !important;
+}
+
+/* Disabled state */
+.pump-action-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pump-action-btn:disabled:hover {
+  background: #9ca3af;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Force CB6015 color for all themes with maximum specificity */
+.pump-calculator-container .professional-action-container .professional-action-buttons .pump-action-btn.fixed-rate-btn,
+.pump-calculator-container .professional-action-container .professional-action-buttons .pump-action-btn.custom-steps-btn,
+[data-theme="light"] .pump-action-btn.fixed-rate-btn,
+[data-theme="light"] .pump-action-btn.custom-steps-btn,
+[data-theme="dark"] .pump-action-btn.fixed-rate-btn,
+[data-theme="dark"] .pump-action-btn.custom-steps-btn,
+html body .pump-action-btn.fixed-rate-btn,
+html body .pump-action-btn.custom-steps-btn {
+  background: #CB6015 !important;
+  background-color: #CB6015 !important;
+  color: white !important;
+  border: none !important;
+}
+
+.pump-calculator-container .professional-action-container .professional-action-buttons .pump-action-btn.fixed-rate-btn:hover,
+.pump-calculator-container .professional-action-container .professional-action-buttons .pump-action-btn.custom-steps-btn:hover,
+[data-theme="light"] .pump-action-btn.fixed-rate-btn:hover,
+[data-theme="light"] .pump-action-btn.custom-steps-btn:hover,
+[data-theme="dark"] .pump-action-btn.fixed-rate-btn:hover,
+[data-theme="dark"] .pump-action-btn.custom-steps-btn:hover,
+html body .pump-action-btn.fixed-rate-btn:hover,
+html body .pump-action-btn.custom-steps-btn:hover {
+  background: #B55013 !important;
+  background-color: #B55013 !important;
+}
+
+[data-theme="light"] .pump-action-btn.fixed-rate-btn span,
+[data-theme="light"] .pump-action-btn.custom-steps-btn span,
+[data-theme="dark"] .pump-action-btn.fixed-rate-btn span,
+[data-theme="dark"] .pump-action-btn.custom-steps-btn span,
+[data-theme="light"] .pump-action-btn.fixed-rate-btn svg,
+[data-theme="light"] .pump-action-btn.custom-steps-btn svg,
+[data-theme="dark"] .pump-action-btn.fixed-rate-btn svg,
+[data-theme="dark"] .pump-action-btn.custom-steps-btn svg,
+.pump-action-btn.fixed-rate-btn span,
+.pump-action-btn.custom-steps-btn span,
+.pump-action-btn.fixed-rate-btn svg,
+.pump-action-btn.custom-steps-btn svg {
+  color: white !important;
+  fill: white !important;
+}
+
+/* Responsive styles for pump action buttons */
+@media (max-width: 768px) {
+  .professional-action-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .pump-action-btn {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+/* Custom Vial Section */
+.custom-vial-section {
+  margin-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 20px;
+}
+
+.custom-vial-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.custom-vial-toggle:hover {
+  background: #eeeeee;
+  border-color: #ccc;
+}
+
+.custom-vial-toggle .toggle-arrow {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+.custom-vial-toggle .toggle-arrow.open {
+  transform: rotate(180deg);
+}
+
+.custom-vial-inputs {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.custom-vial-inputs h4 {
+  margin: 0 0 16px 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.custom-vial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.custom-vial-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.custom-vial-input-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.custom-vial-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.vial-count-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  color: #666;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vial-count-btn:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.vial-count-btn:active {
+  transform: scale(0.95);
+}
+
+.custom-vial-count {
+  flex: 1;
+  text-align: center;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 50px;
+}
+
+.custom-vial-count:focus {
+  outline: none;
+}
+
+/* Hide number input arrows */
+.custom-vial-count::-webkit-inner-spin-button,
+.custom-vial-count::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.custom-combination-summary {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.summary-row:not(:last-child) {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.summary-label {
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.summary-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.summary-value.highlight {
+  color: #CB6015;
+}
+
+.coverage-indicator {
+  margin-left: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.coverage-indicator.sufficient {
+  color: #00c853;
+}
+
+.coverage-indicator.insufficient {
+  color: #ff5252;
+}
+
+.apply-custom-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 20px;
+  background: #CB6015;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.apply-custom-btn:hover {
+  background: #B55013;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 96, 21, 0.3);
+}
+
+.apply-custom-btn:active {
+  transform: translateY(0);
+}
+
+.action-button-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.action-btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.action-btn.primary {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 85, 0, 0.15);
+}
+
+.action-btn.primary svg {
+  color: white;
+  fill: white;
+}
+
+.action-btn.primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 85, 0, 0.25);
+  border-color: var(--primary-hover);
+}
+
+.action-btn.danger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+}
+
+.action-btn.danger svg {
+  color: white;
+  fill: white;
+}
+
+.action-btn.danger:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.25);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.action-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.action-btn.primary:disabled:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.action-btn.danger:disabled:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: white;
+}
+
+/* Responsive button styling */
+@media (max-width: 768px) {
+  .action-btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.9375rem;
+    min-height: 52px;
+    min-width: 180px;
+  }
+  
+  .action-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    min-height: 48px;
+    min-width: 160px;
+    gap: 0.5rem;
+  }
+  
+  .action-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .professional-action-buttons {
+    gap: 0.75rem;
+  }
+}
+
+.toggle-switch-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.toggle-option-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle-switch .toggle-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch .toggle-label {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e5e7eb;
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.toggle-switch .toggle-slider {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch .toggle-input:checked + .toggle-label {
+  background-color: #ff6b35;
+}
+
+.toggle-switch .toggle-input:checked + .toggle-label .toggle-slider {
+  transform: translateX(26px);
+}
+
+/* Vial sizes list styling */
+.vial-sizes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.vial-size-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.vial-size-item .vial-icon {
+  color: #ff6b35;
+  flex-shrink: 0;
+}
+
+.vial-size-item .vial-strength {
+  font-weight: 500;
+  color: #374151;
+}
+
+.vial-size-item .vial-volume {
+  color: #9ca3af;
+  font-size: 0.8125rem;
+}
+
+.dose-safety-indicator.disabled .dose-safety-card {
+  position: relative;
+}
+
+.dose-safety-indicator.disabled .dose-safety-card .dose-card-content,
+.dose-safety-indicator.disabled .dose-safety-card .dose-percentage,
+.dose-safety-indicator.disabled .dose-safety-card .dose-threshold,
+.dose-safety-indicator.disabled .dose-safety-card .dose-sub-text,
+.dose-safety-indicator.disabled .dose-safety-card .standard-dose,
+.dose-safety-indicator.disabled .dose-safety-card .dose-value-container {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.dose-safety-indicator.disabled .dose-safety-card::after {
+  content: "Enter weight & dose";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #666;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.dose-safety-indicator.disabled svg {
+  color: #999;
+}
+
+.dose-safety-indicator.disabled .explanation-toggle {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Fix for very small screens */
 @media (max-width: 360px) {
   .pump-calculator-container {
@@ -6856,4 +8657,1458 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 
 .force-dark-text .btn-description {
   color: #666666 !important;
+}
+
+/* Xenpozyme Weight Adjustment Notice */
+.xenpozyme-weight-notice {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #0284c7;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1rem 0;
+  animation: slideIn 0.3s ease;
+}
+
+.weight-adjustment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #0c4a6e;
+  margin-bottom: 0.75rem;
+}
+
+.weight-adjustment-header svg {
+  color: #0284c7;
+}
+
+.weight-adjustment-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.weight-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+}
+
+.weight-label {
+  font-weight: 500;
+  color: #0c4a6e;
+}
+
+.weight-value {
+  font-weight: 600;
+  color: #0284c7;
+  font-size: 1.125rem;
+}
+
+.weight-rule {
+  margin-left: auto;
+  padding: 0.25rem 0.75rem;
+  background: #0284c7;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.weight-adjustment-rules {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.rule-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.rule-condition {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.rule-action {
+  color: #0c4a6e;
+  font-weight: 600;
+}
+
+/* Dark theme styles for Xenpozyme notice */
+[data-theme="dark"] .xenpozyme-weight-notice {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(2, 132, 199, 0.15) 100%);
+  border-color: #0891b2;
+}
+
+[data-theme="dark"] .weight-adjustment-header {
+  color: #7dd3fc;
+}
+
+[data-theme="dark"] .weight-adjustment-header svg {
+  color: #38bdf8;
+}
+
+[data-theme="dark"] .weight-status {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+[data-theme="dark"] .weight-label {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .weight-value {
+  color: #38bdf8;
+}
+
+[data-theme="dark"] .rule-item {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .rule-condition {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .rule-action {
+  color: #7dd3fc;
+}
+
+/* Mobile styles for Xenpozyme notice */
+@media (max-width: 768px) {
+  .xenpozyme-weight-notice {
+    margin: 0.75rem 0;
+    padding: 0.875rem;
+  }
+  
+  .weight-status {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .weight-rule {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Prescribed Dose Display */
+.prescribed-dose-display {
+  margin-bottom: 1.5rem;
+}
+
+.prescribed-dose-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 2px solid #cbd5e1;
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: visible;
+}
+
+.prescribed-dose-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.prescribed-dose-header svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.prescribed-dose-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.prescribed-dose-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.prescribed-dose-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.prescribed-dose-value .dose-number {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.prescribed-dose-value .dose-unit {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.prescribed-dose-status {
+  position: absolute;
+  top: -10px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.status-indicator {
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-indicator.low {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fbbf24;
+}
+
+.status-indicator.correct {
+  background: #d1fae5;
+  color: #064e3b;
+  border: 1px solid #34d399;
+}
+
+.status-indicator.high {
+  background: #fee2e2;
+  color: #7f1d1d;
+  border: 1px solid #f87171;
+}
+
+.status-indicator.unknown {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+/* Dark theme prescribed dose card */
+[data-theme="dark"] .prescribed-dose-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%);
+  border-color: #475569;
+}
+
+[data-theme="dark"] .prescribed-dose-title {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .prescribed-dose-value .dose-number {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .prescribed-dose-value .dose-unit {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .status-indicator.low {
+  background: rgba(254, 243, 199, 0.1);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+[data-theme="dark"] .status-indicator.correct {
+  background: rgba(209, 250, 229, 0.1);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+[data-theme="dark"] .status-indicator.high {
+  background: rgba(254, 226, 226, 0.1);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+/* Dose Card Explanation Styles */
+.dose-card-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.explanation-toggle {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #e0e0e0;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: all 0.3s ease;
+  margin-left: auto;
+  margin-right: 0.5rem;
+  z-index: 2;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.explanation-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: white;
+}
+
+.explanation-toggle:active {
+  transform: scale(0.95);
+}
+
+.explanation-toggle svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+/* Toggle styles for inactive cards */
+.dose-safety-card.low-dose:not(.active) .explanation-toggle {
+  background: white;
+  border-color: #ffd700;
+  color: #ffa500;
+}
+
+.dose-safety-card.low-dose:not(.active) .explanation-toggle:hover {
+  background: #fffaf0;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.dose-safety-card.correct-dose:not(.active) .explanation-toggle {
+  background: white;
+  border-color: #00ff00;
+  color: #00cc00;
+}
+
+.dose-safety-card.correct-dose:not(.active) .explanation-toggle:hover {
+  background: #f0fff0;
+  box-shadow: 0 4px 12px rgba(0, 255, 0, 0.3);
+}
+
+.dose-safety-card.high-dose:not(.active) .explanation-toggle {
+  background: white;
+  border-color: #ff3838;
+  color: #ff3838;
+}
+
+.dose-safety-card.high-dose:not(.active) .explanation-toggle:hover {
+  background: #fff0f0;
+  box-shadow: 0 4px 12px rgba(255, 56, 56, 0.3);
+}
+
+/* Toggle styles for active cards */
+.dose-safety-card.active .explanation-toggle {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.dose-safety-card.active .explanation-toggle:hover {
+  background: white;
+  border-color: rgba(255, 255, 255, 0.5);
+  color: rgba(0, 0, 0, 0.9);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.card-explanation {
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  margin-top: 0.75rem;
+  border-radius: 0 0 12px 12px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-explanation p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+/* Dark theme explanation styles */
+[data-theme="dark"] .explanation-toggle {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .explanation-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .dose-safety-card.active .explanation-toggle {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .dose-safety-card.active .explanation-toggle:hover {
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+[data-theme="dark"] .card-explanation {
+  background: rgba(255, 255, 255, 0.03);
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .card-explanation p {
+  color: #94a3b8;
+}
+
+/* Adjust active indicator position */
+.dose-card-header .active-indicator {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .prescribed-dose-card {
+    padding: 1rem;
+  }
+  
+  .prescribed-dose-value .dose-number {
+    font-size: 2.5rem;
+  }
+  
+  .prescribed-dose-value .dose-unit {
+    font-size: 0.875rem;
+  }
+  
+  .prescribed-dose-status {
+    top: -8px;
+    right: 15px;
+  }
+  
+  .status-indicator {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.625rem;
+  }
+  
+  .dose-main-value {
+    font-size: 2rem;
+  }
+  
+  .dose-threshold {
+    font-size: 1.75rem;
+  }
+}
+
+/* Horizontal Vial Size Card */
+.vial-size-horizontal-card {
+  background: white;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.vial-size-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 12px;
+  font-weight: 500;
+  color: #7a7a7a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  white-space: nowrap;
+}
+
+.vial-size-header svg {
+  color: #ff6b35;
+  width: 16px;
+  height: 16px;
+}
+
+.vial-size-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.vial-size-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.vial-value-number {
+  font-size: 5rem;
+  font-weight: 600;
+  color: #ff6b35;
+  line-height: 1;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.vial-value-unit {
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.vial-size-details-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.vial-single-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 10px 12px;
+  background: #fff5f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #ff6b35;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.vial-single-info .preview-icon {
+  color: #ff6b35;
+  font-size: 14px;
+}
+
+.vial-multiple-info {
+  flex: 1;
+}
+
+.vial-info-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #ff6b35;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.vial-info-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.vial-info-item {
+  padding: 8px 12px;
+  background: #fff5f0;
+  border-radius: 6px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vial-strength {
+  font-weight: 600;
+  color: #ff6b35;
+}
+
+.vial-volume {
+  color: #ff8c5a;
+  font-size: 12px;
+}
+
+/* Mobile responsive for vial size horizontal card */
+@media (max-width: 768px) {
+  .vial-size-horizontal-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 16px;
+  }
+  
+  .vial-size-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+  }
+  
+  .vial-value-number {
+    font-size: 3.5rem;
+  }
+  
+  .vial-value-unit {
+    font-size: 1.25rem;
+  }
+  
+  .vial-info-grid {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .vial-info-item {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .vial-value-number {
+    font-size: 3rem;
+  }
+  
+  .vial-value-unit {
+    font-size: 1rem;
+  }
+}
+
+/* Vial Sizes Details Section */
+.vial-sizes-details {
+  margin-top: 1rem;
+  padding: 10px 12px;
+  background: #fff5f0;
+  border-radius: 8px;
+  border: none;
+}
+
+.vial-sizes-header {
+  font-size: 11px;
+  font-weight: 500;
+  color: #ff6b35;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.vial-sizes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.vial-size-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s ease;
+}
+
+.vial-size-item:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.vial-strength {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.875rem;
+}
+
+.vial-volume {
+  font-size: 0.8125rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Vial Size Input Wrapper and Dropdown Styles */
+.vial-size-input-wrapper {
+  position: relative;
+  width: 100%;
+  z-index: 100;
+}
+
+/* Ensure vial size card allows dropdown overflow */
+.vial-size-card {
+  overflow: visible !important;
+  position: relative;
+  z-index: 10;
+}
+
+/* When dropdown is open, prevent clipping */
+.vial-size-card:has(.vial-size-dropdown) {
+  z-index: 1000;
+  overflow: visible !important;
+}
+
+/* Ensure parent containers don't clip the dropdown */
+.medication-setup-section .section-content,
+.setup-grid,
+.additional-params-cards {
+  overflow: visible !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* When vial dropdown is open, increase z-index of parent containers */
+.section-content:has(.vial-size-dropdown),
+.setup-grid:has(.vial-size-dropdown),
+.additional-params-cards:has(.vial-size-dropdown) {
+  z-index: 1000 !important;
+  overflow: visible !important;
+}
+
+.vial-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-color);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 2px 6px;
+  margin-left: 6px;
+  min-width: 18px;
+  height: 18px;
+}
+
+.vial-dropdown-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.vial-dropdown-arrow:hover {
+  color: var(--primary-color);
+  background: rgba(255, 107, 53, 0.1);
+}
+
+.vial-dropdown-arrow.open {
+  transform: translateY(-50%) rotate(180deg);
+  color: var(--primary-color);
+}
+
+/* Visual indicator for inputs with dropdown */
+.supply-input.has-dropdown {
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.supply-input.has-dropdown:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.supply-input.has-dropdown:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+}
+
+.vial-size-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  min-width: 250px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 99999;
+  overflow: hidden;
+  animation: dropdownFadeIn 0.2s ease;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vial-option {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vial-option:last-child {
+  border-bottom: none;
+}
+
+.vial-option:hover {
+  background: var(--bg-secondary);
+}
+
+.vial-option.selected {
+  background: rgba(255, 107, 53, 0.1);
+  border-left: 3px solid var(--primary-color);
+  padding-left: 13px;
+}
+
+.vial-option-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vial-option .vial-strength {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+}
+
+.vial-option .vial-volume {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.vial-selected-icon {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+/* Dark theme vial dropdown */
+[data-theme="dark"] .vial-size-dropdown {
+  background: var(--bg-secondary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .vial-option:hover {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .vial-option.selected {
+  background: rgba(255, 107, 53, 0.15);
+}
+
+/* Custom Medication Dropdown Styles */
+.medication-custom-dropdown {
+  position: relative;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  font-size: 0.9375rem;
+}
+
+.medication-custom-dropdown:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.medication-custom-dropdown.open {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+}
+
+.medication-custom-dropdown.error {
+  border-color: var(--error-color);
+}
+
+.medication-dropdown-display {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.medication-dropdown-display .placeholder {
+  color: var(--text-secondary);
+}
+
+.dropdown-chevron {
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.dropdown-chevron.open {
+  transform: rotate(180deg);
+  color: var(--primary-color);
+}
+
+.medication-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 9999999;
+  max-height: 400px;
+  overflow-y: auto;
+  animation: dropdownFadeIn 0.2s ease;
+  isolation: isolate;
+}
+
+.medication-search-wrapper {
+  position: sticky;
+  top: 0;
+  background: var(--bg-primary);
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.medication-search-wrapper svg {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.medication-search-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.medication-search-input:focus {
+  border-color: var(--primary-color);
+  background: var(--bg-primary);
+}
+
+.medication-options-list {
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.medication-options-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.medication-options-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.medication-options-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.medication-options-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+[data-theme="dark"] .medication-options-list {
+  scrollbar-color: #475569 #1e293b;
+}
+
+[data-theme="dark"] .medication-options-list::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+[data-theme="dark"] .medication-options-list::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+[data-theme="dark"] .medication-options-list::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.medication-option {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.medication-option:last-child {
+  border-bottom: none;
+}
+
+.medication-option:hover {
+  background: var(--bg-secondary);
+}
+
+.medication-option.focused {
+  background: var(--bg-secondary);
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+}
+
+.medication-option.selected {
+  background: rgba(255, 107, 53, 0.1);
+  border-left: 3px solid var(--primary-color);
+  padding-left: 13px;
+}
+
+.medication-option-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.medication-option-name {
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.medication-option-tags {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.medication-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.medication-tag.vial-tag {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #90caf9;
+}
+
+.medication-tag.dosing-tag {
+  background: #f3e5f5;
+  color: #6a1b9a;
+  border: 1px solid #ba68c8;
+}
+
+/* Dark theme medication dropdown */
+[data-theme="dark"] .medication-custom-dropdown {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .medication-dropdown-menu {
+  background: var(--bg-secondary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .medication-search-wrapper {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .medication-search-input {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .medication-option:hover {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .medication-option.selected {
+  background: rgba(255, 107, 53, 0.15);
+}
+
+[data-theme="dark"] .medication-tag.vial-tag {
+  background: rgba(33, 150, 243, 0.15);
+  color: #64b5f6;
+  border-color: rgba(33, 150, 243, 0.3);
+}
+
+[data-theme="dark"] .medication-tag.dosing-tag {
+  background: rgba(156, 39, 176, 0.15);
+  color: #ba68c8;
+  border-color: rgba(156, 39, 176, 0.3);
+}
+
+/* Toggle Field Styles */
+.toggle-field {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem !important;
+  min-height: 48px;
+}
+
+.toggle-field-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+
+.toggle-field-label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Infusion Mode Toggle Styles */
+.infusion-mode-toggle {
+  position: relative;
+  width: 48px;
+  height: 24px;
+}
+
+.infusion-toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.infusion-toggle-label {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: all 0.3s ease;
+  border-radius: 24px;
+}
+
+.infusion-toggle-slider {
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.infusion-toggle-input:checked + .infusion-toggle-label {
+  background-color: var(--primary-color);
+}
+
+.infusion-toggle-input:checked + .infusion-toggle-label .infusion-toggle-slider {
+  transform: translateX(24px);
+}
+
+/* Dark theme toggle field */
+[data-theme="dark"] .toggle-field {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .infusion-toggle-label {
+  background-color: #555;
+}
+
+/* Dark theme vial sizes */
+[data-theme="dark"] .vial-sizes-details {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .vial-sizes-header {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .vial-size-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .vial-size-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .vial-strength {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .vial-volume {
+  color: #94a3b8;
+}
+
+/* Mobile adjustments for vial sizes */
+@media (max-width: 768px) {
+  .vial-sizes-details {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+  }
+  
+  .vial-size-item {
+    padding: 0.375rem 0.625rem;
+  }
+  
+  .vial-strength {
+    font-size: 0.8125rem;
+  }
+  
+  .vial-volume {
+    font-size: 0.75rem;
+  }
+}
+
+/* Custom Vial Calculator Styles */
+.custom-vial-calculator {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.custom-calculation-results {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.result-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.result-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.result-field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.result-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+}
+
+.result-value .placeholder {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.result-value .waste-amount {
+  color: #ef4444;
+}
+
+.result-value .no-waste {
+  color: #22c55e;
+}
+
+.status-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.status-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-message.warning {
+  background: rgba(251, 191, 36, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.status-message.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-message.success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.vial-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Fix z-index issues for medication dropdown */
+.medication-dropdown-wrapper {
+  z-index: 999999 !important;
+}
+
+.medication-dropdown-menu {
+  z-index: 9999999 !important;
+  /* Remove position: fixed to maintain proper positioning */
+  /* Keep position: absolute as defined earlier in the file */
+}
+
+/* Ensure all unit labels are below dropdown */
+.dose-unit,
+.unit-label,
+.dose-input-field span,
+.parameter-card .unit {
+  position: relative;
+  z-index: 1 \!important;
+}
+
+/* Force medication dropdown to be on top when open */
+.medication-dropdown-wrapper:has(.medication-dropdown-menu) {
+  z-index: 9999999 \!important;
+}
+
+/* Specific fix for patient weight card to prevent KG unit from overlapping dropdown */
+.patient-weight-card {
+  position: relative;
+  z-index: 1 !important;
+}
+
+.patient-weight-card .dose-unit,
+.patient-weight-card .dose-input-field span,
+.patient-weight-card .dose-input-field .dose-unit {
+  z-index: 1 !important;
+  position: relative;
+}
+
+/* Force patient weight card to stay below dropdown */
+.medication-setup-section:has(.dropdown-open) ~ * .patient-weight-card,
+.medication-setup-section:has(.dropdown-open) ~ * .patient-weight-card * {
+  z-index: 1 !important;
+}
+
+/* Ensure medication dropdown menu is always on top of all other elements */
+.medication-dropdown-wrapper.dropdown-open {
+  z-index: 999999999 !important;
+  position: relative !important;
+}
+
+.medication-dropdown-wrapper.dropdown-open .medication-dropdown-menu {
+  z-index: 999999999 !important;
+  /* Use the original position: absolute */
+}
+
+/* Override any z-index on dose units and ensure they stay below */
+.dose-card .dose-unit,
+.patient-weight-card .dose-unit,
+.dose-input-field .dose-unit {
+  z-index: 1 !important;
+  position: relative !important;
+}
+
+/* Ensure dropdown menu has absolute highest priority */
+.medication-dropdown-menu {
+  z-index: 2147483647 !important; /* Maximum z-index value */
+  background: var(--bg-primary) !important;
+  position: absolute !important;
+}
+
+/* When dropdown is open, force all other elements to lower z-index */
+body:has(.medication-dropdown-wrapper.dropdown-open) .patient-weight-card,
+body:has(.medication-dropdown-wrapper.dropdown-open) .dose-card:not(.medication-card),
+body:has(.medication-dropdown-wrapper.dropdown-open) .dose-unit {
+  z-index: auto !important;
+  position: relative !important;
+}
+
+/* Additional specific rule for the patient weight kg unit */
+.patient-weight-card .dose-input-field .dose-unit {
+  z-index: -1 !important;
+  position: relative !important;
+}
+
+/* When dropdown is open, create a stacking context */
+.medication-dropdown-wrapper.dropdown-open {
+  isolation: isolate !important;
+}
+
+/* Ensure the dropdown menu creates its own layer */
+.medication-dropdown-menu {
+  transform: translateZ(0) !important;
+  will-change: transform !important;
 }

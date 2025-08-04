@@ -1940,3 +1940,51 @@ body .subsection-card.completed,
 .subsection-card.completed .pump-table {
   border: 1px solid rgba(0, 0, 0, 0.2) !important;
 }
+
+/* Context Menu Styles */
+.workflow-context-menu {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0.5rem;
+  min-width: 150px;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.context-menu-item:hover {
+  background: var(--button-bg);
+  color: var(--primary-color);
+}
+
+/* Context Menu Hint */
+.context-menu-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.context-menu-hint::before {
+  content: "💡";
+  font-size: 0.875rem;
+}

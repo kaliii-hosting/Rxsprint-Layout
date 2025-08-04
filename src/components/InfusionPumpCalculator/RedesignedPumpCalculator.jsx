@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, memo } from 'react';
+import ReactDOM from 'react-dom';
 import { 
   Calculator, 
   ChevronDown, 
@@ -16,13 +17,35 @@ import {
   Plus,
   Minus,
   X,
-  RotateCcw
+  RotateCcw,
+  ChevronUp,
+  Search,
+  Star,
+  Shield,
+  Sliders,
+  User
 } from 'lucide-react';
 import './RedesignedPumpCalculator.css';
 import pumpDatabase from '../../pages/Pump/pump-database.json';
 
+// MegaMenu Portal Component
+const MegaMenuPortal = ({ children, isOpen }) => {
+  if (!isOpen) return null;
+  
+  return ReactDOM.createPortal(
+    <div className="mega-menu-portal">
+      {children}
+    </div>,
+    document.body
+  );
+};
+
 // Dose Safety Indicator Component
 const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, selectedSpecialDosing, onSpecialDosingChange, patientWeight, actualDose, actualDoseUnit, correctDose }) => {
+  const [showLowExplanation, setShowLowExplanation] = useState(false);
+  const [showCorrectExplanation, setShowCorrectExplanation] = useState(false);
+  const [showHighExplanation, setShowHighExplanation] = useState(false);
+  
   const handleSpecialDosingClick = (option) => {
     if (selectedSpecialDosing?.id === option.id) {
       onSpecialDosingChange(null);
@@ -30,14 +53,71 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
       onSpecialDosingChange(option);
     }
   };
+  
+  // Check if weight and dose are populated
+  const isDisabled = !patientWeight || parseFloat(patientWeight) <= 0 || 
+                     !actualDose || parseFloat(actualDose) <= 0;
+  
+  // Calculate dose per weight
+  const calculateDosePerWeight = () => {
+    if (!actualDose || !patientWeight || parseFloat(patientWeight) <= 0) return null;
+    
+    const dose = parseFloat(actualDose);
+    const weight = parseFloat(patientWeight);
+    
+    // If already in per kg format, return as is
+    if (actualDoseUnit.includes('/kg')) {
+      return { value: dose.toFixed(2), unit: actualDoseUnit };
+    }
+    
+    // Convert to per kg format
+    const dosePerKg = dose / weight;
+    const baseUnit = actualDoseUnit.replace('/kg', '');
+    return { value: dosePerKg.toFixed(2), unit: `${baseUnit}/kg` };
+  };
+  
+  const dosePerWeight = calculateDosePerWeight();
 
   return (
-    <div className="dose-safety-indicator">
+    <div className={`dose-safety-indicator ${isDisabled ? 'disabled' : ''}`}>
+      {/* Current Dose Rate Card */}
+      {dosePerWeight && (
+        <div className="prescribed-dose-display">
+          <div className="prescribed-dose-card">
+            <div className="prescribed-dose-header">
+              <Pill size={18} />
+              <span className="prescribed-dose-title">CURRENT DOSE RATE</span>
+            </div>
+            <div className="prescribed-dose-content">
+              <div className="prescribed-dose-value">
+                <span className="dose-number">{dosePerWeight.value}</span>
+                <span className="dose-unit">{dosePerWeight.unit}</span>
+              </div>
+              <div className="prescribed-dose-status">
+                <span className={`status-indicator ${doseSafety.classification}`}>
+                  {doseSafety.classification === 'low' ? 'Below Standard' :
+                   doseSafety.classification === 'correct' ? 'Within Range' :
+                   doseSafety.classification === 'high' ? 'Above Standard' : 'Enter Dose'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="dose-safety-cards">
         {/* Low Dose Card */}
         <div className={`dose-safety-card low-dose ${doseSafety.classification === 'low' ? 'active' : ''}`}>
           <div className="dose-card-header">
             <span className="dose-card-title">LOW DOSE</span>
+            <button 
+              className="explanation-toggle"
+              onClick={() => setShowLowExplanation(!showLowExplanation)}
+              type="button"
+              aria-label="Toggle explanation"
+            >
+              {showLowExplanation ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
             {doseSafety.classification === 'low' && (
               <span className="active-indicator">●</span>
             )}
@@ -61,12 +141,25 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
               </>
             )}
           </div>
+          {showLowExplanation && (
+            <div className="card-explanation">
+              <p>Activates when the prescribed dose falls below 80% of the standard dose or below the minimum acceptable range.</p>
+            </div>
+          )}
         </div>
 
         {/* Correct Dose Card - ALWAYS SHOWS DATABASE DOSE */}
         <div className={`dose-safety-card correct-dose ${doseSafety.classification === 'correct' ? 'active' : ''}`}>
           <div className="dose-card-header">
             <span className="dose-card-title">CORRECT DOSE</span>
+            <button 
+              className="explanation-toggle"
+              onClick={() => setShowCorrectExplanation(!showCorrectExplanation)}
+              type="button"
+              aria-label="Toggle explanation"
+            >
+              {showCorrectExplanation ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
             {doseSafety.classification === 'correct' && (
               <span className="active-indicator">●</span>
             )}
@@ -101,12 +194,25 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
               </>
             )}
           </div>
+          {showCorrectExplanation && (
+            <div className="card-explanation">
+              <p>Always displays the standard database dose and activates when prescriptions fall within the safe 80-120% range.</p>
+            </div>
+          )}
         </div>
 
         {/* High Dose Card */}
         <div className={`dose-safety-card high-dose ${doseSafety.classification === 'high' ? 'active' : ''}`}>
           <div className="dose-card-header">
             <span className="dose-card-title">HIGH DOSE</span>
+            <button 
+              className="explanation-toggle"
+              onClick={() => setShowHighExplanation(!showHighExplanation)}
+              type="button"
+              aria-label="Toggle explanation"
+            >
+              {showHighExplanation ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
             {doseSafety.classification === 'high' && (
               <span className="active-indicator">●</span>
             )}
@@ -130,6 +236,11 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
               </>
             )}
           </div>
+          {showHighExplanation && (
+            <div className="card-explanation">
+              <p>Triggers when doses exceed 120% of standard or maximum limits.</p>
+            </div>
+          )}
         </div>
       </div>
       
@@ -205,6 +316,203 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
   );
 };
 
+// Custom Vial Calculator Component with Real-time Updates
+const CustomVialCalculator = ({ 
+  customVialCounts, 
+  setCustomVialCounts,
+  selectedMedicationData, 
+  inputs, 
+  formatNumber 
+}) => {
+  // Local state for immediate updates
+  const [localCounts, setLocalCounts] = useState(customVialCounts);
+  const [calculationResults, setCalculationResults] = useState({
+    totalVials: 0,
+    daysCovered: 0,
+    waste: 0,
+    wastePercentage: 0,
+    hasWaste: false
+  });
+
+  // Calculate function
+  const performCalculations = (counts) => {
+    const totalVials = Object.values(counts).reduce((sum, count) => sum + parseInt(count) || 0, 0);
+    
+    if (!selectedMedicationData || !inputs.dose || !inputs.patientWeight || totalVials === 0) {
+      return {
+        totalVials,
+        daysCovered: 0,
+        waste: 0,
+        wastePercentage: 0,
+        hasWaste: false
+      };
+    }
+
+    // Calculate total drug available
+    let totalDrugAvailable = 0;
+    Object.entries(counts).forEach(([vialId, count]) => {
+      const vialCount = parseInt(count) || 0;
+      if (vialCount > 0) {
+        const vialSize = selectedMedicationData.vialSizes?.find(v => 
+          `${v.strength}-${v.unit}` === vialId
+        );
+        if (vialSize && vialSize.strength) {
+          totalDrugAvailable += parseFloat(vialSize.strength) * vialCount;
+        }
+      }
+    });
+
+    // Calculate single dose
+    const weight = parseFloat(inputs.patientWeight) || 0;
+    const dose = parseFloat(inputs.dose) || 0;
+    const doseFrequency = parseFloat(inputs.doseFrequency) || 1;
+    const daysSupply = parseFloat(inputs.daysSupply) || 1;
+    
+    let singleDose = dose;
+    if (inputs.doseUnit === 'mg/kg' || inputs.doseUnit === 'units/kg') {
+      singleDose = dose * weight;
+    }
+
+    const dailyDose = singleDose * doseFrequency;
+    const totalDrugNeeded = dailyDose * daysSupply;
+    
+    const daysCovered = dailyDose > 0 ? Math.floor(totalDrugAvailable / dailyDose) : 0;
+    const waste = Math.max(0, totalDrugAvailable - totalDrugNeeded);
+    const wastePercentage = totalDrugAvailable > 0 ? (waste / totalDrugAvailable) * 100 : 0;
+
+    return {
+      totalVials,
+      daysCovered,
+      waste: Math.round(waste * 100) / 100,
+      wastePercentage: Math.round(wastePercentage * 10) / 10,
+      hasWaste: waste > 0
+    };
+  };
+
+  // Update calculations whenever counts change
+  useEffect(() => {
+    const results = performCalculations(localCounts);
+    setCalculationResults(results);
+  }, [localCounts, inputs.dose, inputs.patientWeight, inputs.doseUnit, inputs.doseFrequency, inputs.daysSupply, selectedMedicationData]);
+
+  // Handle count changes
+  const handleCountChange = (vialId, newCount) => {
+    const updatedCounts = { ...localCounts, [vialId]: newCount };
+    setLocalCounts(updatedCounts);
+    setCustomVialCounts(updatedCounts);
+  };
+
+  return (
+    <div className="custom-vial-calculator">
+      {/* Vial Selection Grid */}
+      <div className="custom-vial-selection">
+        {selectedMedicationData?.vialSizes?.map((vial) => {
+          const vialId = `${vial.strength}-${vial.unit}`;
+          const count = localCounts[vialId] || 0;
+          
+          return (
+            <div key={vialId} className="custom-vial-row">
+              <div className="vial-info">
+                <span className="vial-strength">{vial.strength} {vial.unit}</span>
+                {vial.volume && <span className="vial-volume">{vial.volume} mL</span>}
+              </div>
+              <div className="vial-controls">
+                <button
+                  type="button"
+                  className="vial-count-btn minus"
+                  onClick={() => handleCountChange(vialId, Math.max(0, count - 1))}
+                  disabled={count === 0}
+                >
+                  <Minus size={14} />
+                </button>
+                <input
+                  type="number"
+                  value={count}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    if (value >= 0 && value <= 999) {
+                      handleCountChange(vialId, value);
+                    }
+                  }}
+                  className="vial-count-input"
+                  min="0"
+                  max="999"
+                />
+                <button
+                  type="button"
+                  className="vial-count-btn plus"
+                  onClick={() => handleCountChange(vialId, Math.min(999, count + 1))}
+                  disabled={count >= 999}
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Real-time Calculation Results */}
+      <div className="custom-calculation-results">
+        <div className="result-fields">
+          <div className="result-field">
+            <label>Total Vials</label>
+            <div className="result-value">{calculationResults.totalVials}</div>
+          </div>
+          <div className="result-field">
+            <label>Days Covered</label>
+            <div className="result-value">
+              {(!inputs.dose || !inputs.patientWeight) ? (
+                <span className="placeholder">Enter dose</span>
+              ) : (
+                calculationResults.daysCovered
+              )}
+            </div>
+          </div>
+          <div className="result-field">
+            <label>Medication Waste</label>
+            <div className="result-value">
+              {(!inputs.dose || !inputs.patientWeight) ? (
+                <span className="placeholder">Enter dose</span>
+              ) : calculationResults.hasWaste ? (
+                <span className="waste-amount">
+                  {formatNumber(calculationResults.waste)} {inputs.doseUnit.replace('/kg', '')} ({calculationResults.wastePercentage}%)
+                </span>
+              ) : (
+                <span className="no-waste">No waste</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Status Messages */}
+        {inputs.dose && inputs.patientWeight && (
+          <div className="status-messages">
+            {calculationResults.hasWaste && calculationResults.wastePercentage > 20 && (
+              <div className="status-message warning">
+                <AlertCircle size={14} />
+                <span>High waste percentage - consider different vial combination</span>
+              </div>
+            )}
+            {inputs.daysSupply && calculationResults.daysCovered < parseInt(inputs.daysSupply) && (
+              <div className="status-message error">
+                <AlertCircle size={14} />
+                <span>Need {parseInt(inputs.daysSupply) - calculationResults.daysCovered} more days of coverage</span>
+              </div>
+            )}
+            {inputs.daysSupply && calculationResults.daysCovered >= parseInt(inputs.daysSupply) && !calculationResults.hasWaste && (
+              <div className="status-message success">
+                <Check size={14} />
+                <span>Optimal combination - covers required days with no waste</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const RedesignedPumpCalculator = () => {
   // Theme detection
   const [theme, setTheme] = useState('light');
@@ -247,12 +555,19 @@ const RedesignedPumpCalculator = () => {
   const [selectedMedication, setSelectedMedication] = useState(null);
   const [results, setResults] = useState(null);
   const [showResults, setShowResults] = useState(false);
+  const [isFixedRateCalculation, setIsFixedRateCalculation] = useState(false);
   const [errors, setErrors] = useState({});
   const [doseSafety, setDoseSafety] = useState({ classification: 'unknown', ratio: 0, color: '#6c757d' });
   const [fixedInfusionError, setFixedInfusionError] = useState('');
   const [selectedSpecialDosing, setSelectedSpecialDosing] = useState(null);
   const [showVialCombinations, setShowVialCombinations] = useState(false);
   const [volumeCalculationMethod, setVolumeCalculationMethod] = useState('withdrawn'); // 'withdrawn' or 'reconstitution'
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [selectedCombination, setSelectedCombination] = useState(null);
+  const [showVialSizeDropdown, setShowVialSizeDropdown] = useState(false);
+  const [showMedicationDropdown, setShowMedicationDropdown] = useState(false);
+  const [medicationSearchTerm, setMedicationSearchTerm] = useState('');
+  const [focusedMedicationIndex, setFocusedMedicationIndex] = useState(0);
   
   // Custom infusion steps state
   const [customInfusionSteps, setCustomInfusionSteps] = useState([
@@ -270,13 +585,52 @@ const RedesignedPumpCalculator = () => {
     results: false
   });
   const [selectedVialSize, setSelectedVialSize] = useState(null);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [megaMenuSearch, setMegaMenuSearch] = useState('');
+  const megaMenuRef = useRef(null);
+  const vialDropdownRef = useRef(null);
+  const megaMenuButtonRef = useRef(null);
+  const medicationDropdownRef = useRef(null);
+
+  // Get special dosing options for a medication - moved here to be available for medications list
+  const getSpecialDosingOptions = (medicationKey = null) => {
+    const medKey = medicationKey || selectedMedication;
+    if (!medKey) return [];
+    
+    const specialDosingMap = {
+      'LUMIZYME': [
+        { id: 'standard', label: 'Standard dose: 20 mg/kg every 2 weeks', value: 20, unit: 'mg/kg', frequency: 'every 2 weeks' },
+        { id: 'weekly-high', label: 'High dose: 40 mg/kg weekly', value: 40, unit: 'mg/kg', frequency: 'weekly' }
+      ],
+      'CEREZYME': [
+        { id: 'low-frequent', label: 'Low dose: 2.5 units/kg 3 times weekly', value: 2.5, unit: 'units/kg', frequency: '3 times weekly' },
+        { id: 'standard', label: 'Standard dose: 60 units/kg every 2 weeks', value: 60, unit: 'units/kg', frequency: 'every 2 weeks' }
+      ],
+      'ELAPRASE': [
+        { id: 'standard', label: 'Standard dose: 0.5 mg/kg weekly', value: 0.5, unit: 'mg/kg', frequency: 'weekly' },
+        { id: 'high-severe', label: 'Severe cases: 1 mg/kg weekly', value: 1, unit: 'mg/kg', frequency: 'weekly' }
+      ],
+      'NEXVIAZYME': [
+        { id: 'standard', label: 'Standard dose: 20 mg/kg every 2 weeks', value: 20, unit: 'mg/kg', frequency: 'every 2 weeks' },
+        { id: 'eopd', label: 'EOPD dose: 40 mg/kg every 2 weeks', value: 40, unit: 'mg/kg', frequency: 'every 2 weeks' }
+      ],
+      'POMBILITI': [
+        { id: 'standard', label: 'Standard dose: 20 mg/kg every 2 weeks', value: 20, unit: 'mg/kg', frequency: 'every 2 weeks' },
+        { id: 'eopd', label: 'EOPD dose: 40 mg/kg every 2 weeks', value: 40, unit: 'mg/kg', frequency: 'every 2 weeks' }
+      ]
+    };
+    
+    return specialDosingMap[medKey] || [];
+  };
 
   // Get medications list
   const medications = useMemo(() => {
     return Object.entries(pumpDatabase.medications).map(([key, med]) => ({
       key,
       ...med,
-      color: med.brandColor || '#ff5500'
+      color: med.brandColor || '#ff5500',
+      hasMultipleVials: med.vialSizes && med.vialSizes.length > 1,
+      hasSpecialDosing: getSpecialDosingOptions(key).length > 0
     }));
   }, []);
 
@@ -284,6 +638,90 @@ const RedesignedPumpCalculator = () => {
   const selectedMedicationData = useMemo(() => {
     return selectedMedication ? pumpDatabase.medications[selectedMedication] : null;
   }, [selectedMedication]);
+
+  // Filter medications based on search term for custom dropdown
+  const filteredMedicationsDropdown = useMemo(() => {
+    if (!medicationSearchTerm) return medications;
+    
+    const searchLower = medicationSearchTerm.toLowerCase();
+    return medications.filter(med => 
+      med.brandName.toLowerCase().includes(searchLower) ||
+      (med.genericName && med.genericName.toLowerCase().includes(searchLower)) ||
+      (med.indication && med.indication.toLowerCase().includes(searchLower))
+    );
+  }, [medications, medicationSearchTerm]);
+
+  // Filter medications based on search
+  const filteredMedications = useMemo(() => {
+    if (!megaMenuSearch) return medications;
+    
+    const searchLower = megaMenuSearch.toLowerCase();
+    return medications.filter(med => 
+      med.brandName.toLowerCase().includes(searchLower) ||
+      (med.genericName && med.genericName.toLowerCase().includes(searchLower)) ||
+      (med.indication && med.indication.toLowerCase().includes(searchLower))
+    );
+  }, [medications, megaMenuSearch]);
+
+  // Close mega menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (megaMenuRef.current && !megaMenuRef.current.contains(event.target) &&
+          megaMenuButtonRef.current && !megaMenuButtonRef.current.contains(event.target)) {
+        setMegaMenuOpen(false);
+      }
+    };
+
+    if (megaMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+      
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+        document.body.style.overflow = '';
+      };
+    }
+  }, [megaMenuOpen]);
+
+  // Close vial dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (vialDropdownRef.current && !vialDropdownRef.current.contains(event.target)) {
+        setShowVialSizeDropdown(false);
+      }
+    };
+
+    if (showVialSizeDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+      };
+    }
+  }, [showVialSizeDropdown]);
+
+  // Close medication dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (medicationDropdownRef.current && !medicationDropdownRef.current.contains(event.target)) {
+        setShowMedicationDropdown(false);
+      }
+    };
+
+    if (showMedicationDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+      };
+    }
+  }, [showMedicationDropdown]);
 
   // Get available dose units based on selected medication
   const availableDoseUnits = useMemo(() => {
@@ -301,56 +739,6 @@ const RedesignedPumpCalculator = () => {
     return [medicationUnit, `${medicationUnit}/kg`];
   }, [selectedMedicationData]);
 
-  // Get special dosing options for the selected medication
-  const getSpecialDosingOptions = useCallback(() => {
-    if (!selectedMedication) return [];
-    
-    const specialDosingMap = {
-      'LUMIZYME': [
-        { id: 'standard', label: 'Standard dose: 20 mg/kg every 2 weeks', value: 20, unit: 'mg/kg', frequency: 'every 2 weeks' },
-        { id: 'weekly-high', label: 'High dose: 40 mg/kg weekly', value: 40, unit: 'mg/kg', frequency: 'weekly' }
-      ],
-      'CEREZYME': [
-        { id: 'low-frequent', label: 'Low dose: 2.5 units/kg 3 times weekly', value: 2.5, unit: 'units/kg', frequency: '3 times weekly' },
-        { id: 'standard', label: 'Standard dose: 60 units/kg every 2 weeks', value: 60, unit: 'units/kg', frequency: 'every 2 weeks' },
-        { id: 'high', label: 'High dose: up to 120 units/kg every 2 weeks', value: 120, unit: 'units/kg', frequency: 'every 2 weeks' }
-      ],
-      'FABRAZYME': [
-        { id: 'standard', label: 'Standard dose: 1 mg/kg every 2 weeks', value: 1, unit: 'mg/kg', frequency: 'every 2 weeks' },
-        { id: 'rechallenge', label: 'Rechallenge protocol: 0.5 mg/kg (for IgE-positive/skin-test-positive)', value: 0.5, unit: 'mg/kg', frequency: 'every 2 weeks' }
-      ],
-      'KANUMA': [
-        { id: 'standard', label: 'Standard dose: 1 mg/kg every 2 weeks', value: 1, unit: 'mg/kg', frequency: 'every 2 weeks' },
-        { id: 'rapid-progression', label: 'Rapidly progressing disease: 3 mg/kg every 2 weeks', value: 3, unit: 'mg/kg', frequency: 'every 2 weeks' },
-        { id: 'infant-weekly', label: 'Infants <6 months: 1 mg/kg weekly', value: 1, unit: 'mg/kg', frequency: 'weekly', condition: 'age < 6 months' }
-      ],
-      'NEXVIAZYME': [
-        { id: 'adult', label: 'Adults (≥30 kg): 20 mg/kg every 2 weeks', value: 20, unit: 'mg/kg', frequency: 'every 2 weeks', condition: 'weight ≥ 30 kg' },
-        { id: 'pediatric', label: 'Pediatric (<30 kg): 40 mg/kg every 2 weeks', value: 40, unit: 'mg/kg', frequency: 'every 2 weeks', condition: 'weight < 30 kg' }
-      ],
-      'POMBILITI': [
-        { id: 'standard', label: 'Standard dose: 20 mg/kg every 2 weeks', value: 20, unit: 'mg/kg', frequency: 'every 2 weeks' },
-        { id: 'oral-40-49kg', label: 'Oral dosing (40-49.9 kg): 195 mg (3 capsules)', value: 195, unit: 'mg', frequency: 'as directed', condition: '40-49.9 kg' },
-        { id: 'oral-50kg+', label: 'Oral dosing (≥50 kg): 260 mg (4 capsules)', value: 260, unit: 'mg', frequency: 'as directed', condition: '≥50 kg' }
-      ],
-      'VPRIV': [
-        { id: 'standard', label: 'Standard dose: 60 units/kg every 2 weeks', value: 60, unit: 'units/kg', frequency: 'every 2 weeks' },
-        { id: 'high', label: 'High dose: up to 120 units/kg every 2 weeks', value: 120, unit: 'units/kg', frequency: 'every 2 weeks' }
-      ],
-      'ZAVESCA': [
-        { id: 'crcl-70+', label: 'CrCl >70: 100 mg three times daily', value: 100, unit: 'mg', frequency: 'TID', condition: 'CrCl >70' },
-        { id: 'crcl-50-70', label: 'CrCl 50-70: 100 mg twice daily', value: 100, unit: 'mg', frequency: 'BID', condition: 'CrCl 50-70' },
-        { id: 'crcl-30-50', label: 'CrCl 30-50: 100 mg once daily', value: 100, unit: 'mg', frequency: 'daily', condition: 'CrCl 30-50' },
-        { id: 'npc-bsa-1.25+', label: 'NPC (BSA ≥1.25): 200 mg TID', value: 200, unit: 'mg', frequency: 'TID', condition: 'BSA ≥1.25' },
-        { id: 'npc-bsa-0.88-1.25', label: 'NPC (BSA 0.88-1.25): 200 mg BID', value: 200, unit: 'mg', frequency: 'BID', condition: 'BSA 0.88-1.25' },
-        { id: 'npc-bsa-0.73-0.88', label: 'NPC (BSA 0.73-0.88): 100 mg TID', value: 100, unit: 'mg', frequency: 'TID', condition: 'BSA 0.73-0.88' },
-        { id: 'npc-bsa-0.47-0.73', label: 'NPC (BSA 0.47-0.73): 100 mg BID', value: 100, unit: 'mg', frequency: 'BID', condition: 'BSA 0.47-0.73' },
-        { id: 'npc-bsa-0.47', label: 'NPC (BSA <0.47): 100 mg daily', value: 100, unit: 'mg', frequency: 'daily', condition: 'BSA <0.47' }
-      ]
-    };
-    
-    return specialDosingMap[selectedMedication] || [];
-  }, [selectedMedication]);
 
   // Calculate dose safety classification
   const getDoseSafety = useCallback(() => {
@@ -473,7 +861,7 @@ const RedesignedPumpCalculator = () => {
     }
     
     // Get the standard dose value
-    const standardDose = medicationDosing.value;
+    const standardDose = medicationDosing.value || medicationDosing.maintenanceDose;
     const doseRange = medicationDosing.range;
     
     // Check if dose is within defined range (if range exists)
@@ -635,7 +1023,7 @@ const RedesignedPumpCalculator = () => {
         percentage: safety.percentage
       });
     }
-  }, [getDoseSafety, inputs.dose, inputs.doseUnit, selectedMedication, selectedMedicationData, selectedSpecialDosing]);
+  }, [getDoseSafety, inputs.dose, inputs.doseUnit, inputs.patientWeight, selectedMedication, selectedMedicationData, selectedSpecialDosing]);
 
   // Reset special dosing when medication changes (moved from onChange handler for clarity)
   useEffect(() => {
@@ -646,10 +1034,19 @@ const RedesignedPumpCalculator = () => {
   const calculateCorrectDose = useCallback(() => {
     if (!selectedMedicationData) return null;
     
+    // If special dosing is selected, use that as the correct dose
+    if (selectedSpecialDosing) {
+      return {
+        dose: selectedSpecialDosing.value,
+        unit: selectedSpecialDosing.unit,
+        note: selectedSpecialDosing.label
+      };
+    }
+    
     const weight = parseFloat(inputs.patientWeight) || 0;
     const medicationDosing = selectedMedicationData.standardDose;
     
-    if (!medicationDosing || !medicationDosing.value) return null;
+    if (!medicationDosing || (!medicationDosing.value && !medicationDosing.maintenanceDose)) return null;
     
     // For pediatric patients with special dosing
     if (medicationDosing.pediatricDose && weight < 30) {
@@ -662,6 +1059,15 @@ const RedesignedPumpCalculator = () => {
     
     // For medications with escalation schedules
     if (medicationDosing.escalationSchedule) {
+      // For XENPOZYME, explicitly show 3 mg/kg
+      if (selectedMedicationData.brandName === 'XENPOZYME') {
+        return {
+          dose: medicationDosing.maintenanceDose || 3.0,
+          unit: 'mg/kg',
+          note: 'Maintenance dose',
+          weightAdjustment: medicationDosing.weightAdjustment || null
+        };
+      }
       return {
         dose: medicationDosing.maintenanceDose || medicationDosing.escalationSchedule.week14,
         unit: medicationDosing.unit,
@@ -670,7 +1076,7 @@ const RedesignedPumpCalculator = () => {
     }
     
     // Standard dose calculation
-    const standardDose = medicationDosing.value;
+    const standardDose = medicationDosing.value || medicationDosing.maintenanceDose;
     if (medicationDosing.unit.includes('/kg')) {
       // For weight-based dosing, always show the per kg dose
       // Only calculate total if weight is provided
@@ -687,11 +1093,14 @@ const RedesignedPumpCalculator = () => {
         unit: medicationDosing.unit
       };
     }
-  }, [selectedMedicationData, inputs.patientWeight]);
+  }, [selectedMedicationData, inputs.patientWeight, selectedSpecialDosing]);
 
   // Calculate saline bag size based on patient weight and medication rules
   const calculateSalineBagSize = useCallback(() => {
     if (!selectedMedicationData || !inputs.patientWeight) return null;
+    
+    // Skip saline bag calculation for oral medications
+    if (selectedMedicationData.dosageForm === 'oral') return null;
     
     const weight = parseFloat(inputs.patientWeight);
     const bagRules = selectedMedicationData.salineBagRules;
@@ -703,13 +1112,24 @@ const RedesignedPumpCalculator = () => {
     }
     
     if (bagRules.weightBased && bagRules.rules) {
-      for (const rule of bagRules.rules) {
+      // Sort rules by minWeight to ensure we check them in order
+      const sortedRules = [...bagRules.rules].sort((a, b) => {
+        const aMin = a.minWeight || 0;
+        const bMin = b.minWeight || 0;
+        return aMin - bMin;
+      });
+      
+      for (const rule of sortedRules) {
         if (rule.minWeight !== null && rule.maxWeight !== null) {
-          if (weight >= rule.minWeight && weight <= rule.maxWeight) {
+          // For gaps like 35.1, round the boundary to include exact values
+          const adjustedMin = rule.minWeight > 0 && rule.minWeight % 1 > 0 ? Math.floor(rule.minWeight) : rule.minWeight;
+          if (weight >= adjustedMin && weight <= rule.maxWeight) {
             return rule.bagSize;
           }
         } else if (rule.minWeight !== null && rule.maxWeight === null) {
-          if (weight >= rule.minWeight) {
+          // For upper ranges like 100.1+, include the exact boundary value
+          const adjustedMin = rule.minWeight > 0 && rule.minWeight % 1 > 0 ? Math.floor(rule.minWeight) : rule.minWeight;
+          if (weight >= adjustedMin) {
             return rule.bagSize;
           }
         } else if (rule.minWeight === null && rule.maxWeight !== null) {
@@ -720,17 +1140,109 @@ const RedesignedPumpCalculator = () => {
       }
     }
     
+    // Handle weight and dose based rules (e.g., KANUMA, NEXVIAZYME)
+    if (bagRules.weightAndDoseBased && bagRules.rules) {
+      const dose = parseFloat(inputs.dose) || 1; // Default to 1 mg/kg if not set
+      
+      // Handle NEXVIAZYME special case with dose-specific ranges
+      if (Array.isArray(bagRules.rules)) {
+        for (const doseRule of bagRules.rules) {
+          if (doseRule.dose) {
+            // Check if this is the correct dose rule
+            const targetDose = parseFloat(doseRule.dose.replace('mg/kg', ''));
+            if (Math.abs(dose - targetDose) < 0.1 && doseRule.weightRanges) {
+              // Find the appropriate weight range
+              for (const range of doseRule.weightRanges) {
+                if (weight >= range.minWeight && weight <= range.maxWeight) {
+                  return range.bagSize;
+                }
+              }
+            }
+          } else {
+            // Handle KANUMA-style rules
+            if (weight >= doseRule.minWeight && weight <= doseRule.maxWeight) {
+              // Check if medication has rapid progression dose (3 mg/kg)
+              if (selectedMedicationData.standardDose?.rapidProgression && dose >= 3) {
+                return doseRule.dose3mg || doseRule.dose1mg;
+              }
+              return doseRule.dose1mg;
+            }
+          }
+        }
+      }
+    }
+    
+    // Handle weight or condition based rules (e.g., NAGLAZYME)
+    if (bagRules.weightOrConditionBased && bagRules.rules) {
+      for (const rule of bagRules.rules) {
+        if (rule.condition === 'weight <20kg or fluid overload' && weight < 20) {
+          return rule.bagSize;
+        } else if (rule.condition === 'standard' && weight >= 20) {
+          return rule.bagSize;
+        }
+      }
+    }
+    
     return null;
-  }, [selectedMedicationData, inputs.patientWeight]);
+  }, [selectedMedicationData, inputs.patientWeight, inputs.dose]);
 
   // Get overfill value based on bag size
   const getOverfillValue = useCallback((bagSize) => {
-    if (!selectedMedicationData) return 0;
+    if (!selectedMedicationData || !bagSize) return 0;
+    
+    // Skip overfill for oral medications
+    if (selectedMedicationData.dosageForm === 'oral') return 0;
+    
+    // Convert bagSize to string to ensure consistent key lookup
+    const bagSizeStr = String(bagSize);
     
     const overfillRules = selectedMedicationData.overfillRules;
     if (!overfillRules) return 0;
     
-    return overfillRules[bagSize] || 0;
+    // Check if there's a direct match in medication-specific rules
+    if (overfillRules[bagSizeStr] !== undefined) {
+      return overfillRules[bagSizeStr];
+    }
+    
+    // For missing bag sizes, use the default overfill rules from configuration
+    const defaultOverfillRules = pumpDatabase.configuration?.overfillRules || {
+      "50": 5,
+      "100": 7,
+      "150": 25,
+      "200": 28,  // Added 200 mL
+      "250": 30,
+      "300": 35,
+      "500": 40,
+      "600": 45,
+      "700": 50,
+      "800": 55,
+      "900": 58,
+      "1000": 60
+    };
+    
+    // Check default rules
+    if (defaultOverfillRules[bagSizeStr] !== undefined) {
+      return defaultOverfillRules[bagSizeStr];
+    }
+    
+    // If no exact match found, try to interpolate or use closest value
+    const numericBagSize = parseInt(bagSizeStr);
+    const availableSizes = Object.keys(defaultOverfillRules).map(k => parseInt(k)).sort((a, b) => a - b);
+    
+    // Find the closest bag size
+    let closestSize = availableSizes[0];
+    let minDiff = Math.abs(numericBagSize - closestSize);
+    
+    for (const size of availableSizes) {
+      const diff = Math.abs(numericBagSize - size);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestSize = size;
+      }
+    }
+    
+    // Return overfill for closest size
+    return defaultOverfillRules[String(closestSize)] || 0;
   }, [selectedMedicationData]);
 
   // Handle input changes
@@ -1026,10 +1538,179 @@ const RedesignedPumpCalculator = () => {
   }, [inputs.useCustomSteps, customInfusionSteps, inputs.totalInfusionVolume, inputs.totalInfusionTime, validateCustomSteps]);
 
 
+  // Calculate days coverage for custom vial combination
+  const calculateCustomDaysCoverage = (customCounts) => {
+    console.log('calculateCustomDaysCoverage called with:', {
+      customCounts,
+      selectedMedicationData: selectedMedicationData?.brandName,
+      vialSizes: selectedMedicationData?.vialSizes,
+      inputs: {
+        dose: inputs.dose,
+        patientWeight: inputs.patientWeight,
+        doseUnit: inputs.doseUnit,
+        doseFrequency: inputs.doseFrequency,
+        daysSupply: inputs.daysSupply
+      }
+    });
+
+    // Basic validation
+    if (!selectedMedicationData || !customCounts) {
+      console.log('Missing data for days coverage calculation');
+      return 0;
+    }
+
+    // Return 0 if no dose or weight entered yet
+    if (!inputs.dose || !inputs.patientWeight) {
+      console.log('Missing dose or patient weight');
+      return 0;
+    }
+    
+    const weight = parseFloat(inputs.patientWeight) || 0;
+    const dose = parseFloat(inputs.dose) || 0;
+    const doseFrequency = parseFloat(inputs.doseFrequency) || 1;
+    
+    // Ensure we have valid numbers
+    if (weight <= 0 || dose <= 0) {
+      return 0;
+    }
+    
+    // Calculate single dose
+    let singleDose;
+    if (inputs.doseUnit === 'mg/kg' || inputs.doseUnit === 'units/kg') {
+      singleDose = dose * weight;
+    } else {
+      singleDose = dose;
+    }
+    
+    // Calculate total drug available from custom vial counts
+    let totalDrugAvailable = 0;
+    
+    // Ensure we have vial sizes
+    if (!selectedMedicationData.vialSizes || !Array.isArray(selectedMedicationData.vialSizes)) {
+      return 0;
+    }
+    
+    // Calculate total drug from selected vials
+    Object.entries(customCounts).forEach(([vialId, count]) => {
+      const vialCount = parseInt(count) || 0;
+      if (vialCount > 0) {
+        // Find matching vial
+        const vialSize = selectedMedicationData.vialSizes.find(v => 
+          `${v.strength}-${v.unit}` === vialId
+        );
+        
+        if (vialSize && vialSize.strength) {
+          const vialStrength = parseFloat(vialSize.strength);
+          if (!isNaN(vialStrength)) {
+            totalDrugAvailable += vialStrength * vialCount;
+          }
+        }
+      }
+    });
+    
+    // If no drug available, return 0
+    if (totalDrugAvailable <= 0) {
+      return 0;
+    }
+    
+    // Calculate how many days this covers
+    const dailyDose = singleDose * doseFrequency;
+    
+    if (dailyDose <= 0) {
+      return 0;
+    }
+    
+    const daysCovered = Math.floor(totalDrugAvailable / dailyDose);
+    
+    console.log('Days coverage calculation:', {
+      totalDrugAvailable,
+      dailyDose,
+      daysCovered,
+      customCounts
+    });
+    
+    return isNaN(daysCovered) ? 0 : daysCovered;
+  };
+
+  // Calculate waste for custom vial combination
+  const calculateCustomWaste = (customCounts) => {
+    if (!selectedMedicationData || !inputs.dose || !inputs.patientWeight || !customCounts) {
+      return { waste: 0, wastePercentage: 0, hasWaste: false };
+    }
+    
+    const weight = parseFloat(inputs.patientWeight) || 0;
+    const dose = parseFloat(inputs.dose) || 0;
+    const doseFrequency = parseFloat(inputs.doseFrequency) || 1;
+    const daysSupply = parseFloat(inputs.daysSupply) || 1;
+    
+    if (weight <= 0 || dose <= 0) {
+      return { waste: 0, wastePercentage: 0, hasWaste: false };
+    }
+    
+    let singleDose;
+    if (inputs.doseUnit === 'mg/kg' || inputs.doseUnit === 'units/kg') {
+      singleDose = dose * weight;
+    } else {
+      singleDose = dose;
+    }
+    
+    // Calculate total drug needed
+    const totalDrugNeeded = singleDose * doseFrequency * daysSupply;
+    
+    // Calculate total drug available from custom vial counts
+    let totalDrugAvailable = 0;
+    
+    // Calculate total drug from selected vials - check all possible ID formats
+    Object.entries(customCounts).forEach(([vialId, count]) => {
+      const vialCount = parseInt(count) || 0;
+      if (vialCount > 0 && selectedMedicationData.vialSizes) {
+        // Find matching vial by checking different ID formats
+        const vialSize = selectedMedicationData.vialSizes.find(v => {
+          // Check exact match
+          if (`${v.strength}-${v.unit}` === vialId) return true;
+          // Check with spaces
+          if (`${v.strength} ${v.unit}` === vialId) return true;
+          // Check numeric strength match
+          if (v.strength && v.unit && `${parseFloat(v.strength)}-${v.unit}` === vialId) return true;
+          return false;
+        });
+        
+        if (vialSize && vialSize.strength) {
+          const vialStrength = parseFloat(vialSize.strength);
+          if (!isNaN(vialStrength)) {
+            totalDrugAvailable += vialStrength * vialCount;
+          }
+        }
+      }
+    });
+    
+    // Calculate waste
+    const waste = totalDrugAvailable - totalDrugNeeded;
+    const wastePercentage = totalDrugAvailable > 0 ? (waste / totalDrugAvailable) * 100 : 0;
+    
+    return {
+      waste: Math.max(0, waste),
+      wastePercentage: Math.max(0, wastePercentage),
+      hasWaste: waste > 0,
+      totalDrugAvailable,
+      totalDrugNeeded
+    };
+  };
+
   // Calculate vial combination
   // Calculate all possible vial combinations for medications with multiple vial sizes
   const calculateAllVialCombinations = useCallback(() => {
     if (!selectedMedicationData || !inputs.dose || !inputs.patientWeight) return null;
+    
+    // Filter out non-injectable forms (capsules, tablets)
+    const injectableVials = selectedMedicationData.vialSizes?.filter(vial => 
+      !vial.form || (vial.form !== 'capsule' && vial.form !== 'tablet')
+    );
+    
+    if (!injectableVials || injectableVials.length === 0) {
+      console.error(`No injectable vials found for ${selectedMedicationData.brandName}`);
+      return null;
+    }
 
     const weight = parseFloat(inputs.patientWeight);
     const dose = parseFloat(inputs.dose);
@@ -1046,18 +1727,20 @@ const RedesignedPumpCalculator = () => {
     // Calculate total dose needed
     let totalDose = singleDose;
     
-    // If both dose frequency and days supply are provided, calculate total for the treatment period
-    if (doseFrequency > 0 && daysSupply > 0) {
-      const numberOfDoses = Math.ceil(daysSupply / doseFrequency);
-      totalDose = singleDose * numberOfDoses;
+    // Always use days supply if provided
+    if (daysSupply > 0) {
+      if (doseFrequency > 0) {
+        const numberOfDoses = Math.ceil(daysSupply / doseFrequency);
+        totalDose = singleDose * numberOfDoses;
+      } else {
+        // If no frequency specified, assume daily dosing
+        totalDose = singleDose * daysSupply;
+      }
     }
 
-    const vialSizes = selectedMedicationData.vialSizes;
-    if (!vialSizes || vialSizes.length === 0) return null;
-
     // For single vial size, return simple calculation
-    if (vialSizes.length === 1) {
-      const vial = vialSizes[0];
+    if (injectableVials.length === 1) {
+      const vial = injectableVials[0];
       const vialCount = Math.ceil(totalDose / vial.strength);
       return [{
         combination: [{ vial, count: vialCount }],
@@ -1070,7 +1753,7 @@ const RedesignedPumpCalculator = () => {
 
     // For multiple vial sizes, calculate different combinations
     const combinations = [];
-    const sortedVials = [...vialSizes].sort((a, b) => b.strength - a.strength);
+    const sortedVials = [...injectableVials].sort((a, b) => b.strength - a.strength);
 
     // Strategy 1: Use larger vials first (minimize vial count)
     const largeVialsFirst = [];
@@ -1131,7 +1814,59 @@ const RedesignedPumpCalculator = () => {
       });
     }
 
-    // Strategy 3: Try to get exact dose or minimize waste
+    // Strategy 3: Balanced approach - Mix of large and small vials
+    if (sortedVials.length >= 2) {
+      const balancedCombo = [];
+      let remainingForBalance = totalDose;
+      
+      // Use large vials but leave room for at least one small vial
+      const largeVial = sortedVials[0];
+      const smallVial = sortedVials[sortedVials.length - 1];
+      const maxLargeVials = Math.floor((totalDose - smallVial.strength) / largeVial.strength);
+      
+      if (maxLargeVials > 0) {
+        balancedCombo.push({ vial: largeVial, count: maxLargeVials });
+        remainingForBalance -= maxLargeVials * largeVial.strength;
+      }
+      
+      // Fill remainder with smaller vials
+      for (let i = 1; i < sortedVials.length; i++) {
+        const vial = sortedVials[i];
+        const count = Math.floor(remainingForBalance / vial.strength);
+        if (count > 0) {
+          balancedCombo.push({ vial, count });
+          remainingForBalance -= count * vial.strength;
+        }
+      }
+      
+      // Add one more of smallest if needed
+      if (remainingForBalance > 0.01) {
+        const existing = balancedCombo.find(c => c.vial === smallVial);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          balancedCombo.push({ vial: smallVial, count: 1 });
+        }
+      }
+      
+      let totalVialsBalance = 0;
+      let actualDoseBalance = 0;
+      balancedCombo.forEach(item => {
+        totalVialsBalance += item.count;
+        actualDoseBalance += item.count * item.vial.strength;
+      });
+      
+      combinations.push({
+        combination: balancedCombo,
+        totalVials: totalVialsBalance,
+        actualDose: actualDoseBalance,
+        waste: actualDoseBalance - totalDose,
+        strategy: 'Balanced mix',
+        isOptimal: false
+      });
+    }
+    
+    // Strategy 4: Try to get exact dose or minimize waste
     // This is more complex - try different combinations
     if (sortedVials.length === 2) {
       const [large, small] = sortedVials;
@@ -1252,6 +1987,9 @@ const RedesignedPumpCalculator = () => {
   const calculateDrugVolume = useCallback((forSingleDose = false, calculationMethod = 'withdrawn') => {
     if (!selectedMedicationData) return 0;
     
+    // Skip drug volume calculation for oral medications
+    if (selectedMedicationData.dosageForm === 'oral') return 0;
+    
     // If calculating for single dose, ignore dose frequency and days supply
     let vialCombination;
     if (forSingleDose) {
@@ -1269,6 +2007,12 @@ const RedesignedPumpCalculator = () => {
     if (selectedMedicationData.dosageForm === 'lyophilized') {
       // For lyophilized powders, use the most accurate volume available
       vialCombination.forEach(item => {
+        // Skip non-injectable forms (like capsules)
+        if (item.vial.form === 'capsule' || item.vial.form === 'tablet') {
+          console.log(`Skipping non-injectable form: ${item.vial.form}`);
+          return;
+        }
+        
         let vialVolume = 0;
         
         if (calculationMethod === 'reconstitution') {
@@ -1298,7 +2042,16 @@ const RedesignedPumpCalculator = () => {
         }
         
         if (vialVolume === 0) {
-          console.warn(`No volume data found for ${selectedMedicationData.brandName}`);
+          console.warn(`No volume data found for ${selectedMedicationData.brandName}`, {
+            vial: item.vial,
+            calculationMethod,
+            medicationData: selectedMedicationData
+          });
+          // Use a default volume if none is found
+          if (item.vial.strength && item.vial.concentration) {
+            vialVolume = item.vial.strength / item.vial.concentration;
+            console.log(`Calculated volume from strength/concentration: ${vialVolume} mL`);
+          }
         }
         
         totalVolume += item.count * vialVolume;
@@ -1330,6 +2083,49 @@ const RedesignedPumpCalculator = () => {
       return Math.round(totalVolume * 10) / 10;
     }
   }, [selectedMedicationData, calculateVialCombination, calculateSingleDoseVialCombination]);
+  
+  // Calculate drug removal volume
+  const calculateDrugRemovalVolume = useCallback(() => {
+    if (!selectedMedicationData || !inputs.dose || !inputs.patientWeight) return 0;
+    
+    // Skip removal volume for oral medications
+    if (selectedMedicationData.dosageForm === 'oral') return 0;
+    
+    // Only calculate removal volume when in removeOverfill mode
+    if (inputs.infusionMode !== 'removeOverfill') return 0;
+    
+    const drugVol = calculateDrugVolume(true, volumeCalculationMethod);
+    const bagSize = calculateSalineBagSize() || drugVol;
+    const overfill = getOverfillValue(bagSize);
+    let volumeToRemove = 0;
+    
+    // Check for special removal rules
+    const specialRule = selectedMedicationData.overfillRules?.specialRule || 
+                       selectedMedicationData.salineBagRules?.specialInstructions;
+    
+    if (specialRule?.includes('DO NOT remove')) {
+      // For medications with DO NOT remove rule (ELAPRASE, VPRIV)
+      volumeToRemove = 0;
+    } else if (selectedMedication === 'NAGLAZYME') {
+      // NAGLAZYME has special rules based on bag size
+      if (bagSize === 100) {
+        volumeToRemove = 0; // Do not remove overfill for 100ml bag
+      } else if (bagSize === 250) {
+        volumeToRemove = 30; // Remove 30 mL for 250 mL bag
+      } else {
+        volumeToRemove = drugVol + overfill;
+      }
+    } else {
+      // Standard removal: drug volume + overfill
+      volumeToRemove = drugVol + overfill;
+    }
+    
+    // Round up to nearest 5 mL for easier measurement
+    volumeToRemove = Math.ceil(volumeToRemove / 5) * 5;
+    
+    return volumeToRemove;
+  }, [selectedMedicationData, inputs.dose, inputs.patientWeight, inputs.infusionMode, 
+      calculateDrugVolume, calculateSalineBagSize, getOverfillValue, selectedMedication, volumeCalculationMethod]);
 
   // Calculate infusion rate
   const calculateInfusionRate = useCallback((totalVolume, totalTimeMinutes) => {
@@ -1629,10 +2425,13 @@ const RedesignedPumpCalculator = () => {
 
 
   // Calculate pump settings
-  const calculatePumpSettings = () => {
+  const calculatePumpSettings = (isFixedRate = false) => {
     if (!validateInputs()) {
       return;
     }
+    
+    // Set the calculation type
+    setIsFixedRateCalculation(isFixedRate);
 
     const weight = parseFloat(inputs.patientWeight);
     const dose = parseFloat(inputs.dose);
@@ -1676,10 +2475,24 @@ const RedesignedPumpCalculator = () => {
     let finalVolume = totalVolume;
 
     if (inputs.infusionMode === 'removeOverfill') {
-      // Don't remove drug volume for ELAPRASE
-      if (selectedMedication === 'ELAPRASE') {
-        volumeToRemove = overfillValue;
+      // Check for special removal rules
+      const specialRule = selectedMedicationData.overfillRules?.specialRule || 
+                         selectedMedicationData.salineBagRules?.specialInstructions;
+      
+      if (specialRule?.includes('DO NOT remove')) {
+        // For medications with DO NOT remove rule (ELAPRASE, VPRIV)
+        volumeToRemove = 0;
+      } else if (selectedMedication === 'NAGLAZYME') {
+        // NAGLAZYME has special rules based on bag size
+        if (bagSize === 100) {
+          volumeToRemove = 0; // Do not remove overfill for 100ml bag
+        } else if (bagSize === 250) {
+          volumeToRemove = 30; // Remove 30 mL for 250 mL bag
+        } else {
+          volumeToRemove = drugVolume + overfillValue;
+        }
       } else {
+        // Standard removal: drug volume + overfill
         volumeToRemove = drugVolume + overfillValue;
       }
       // Round up to nearest 5 mL for easier measurement
@@ -1748,6 +2561,116 @@ const RedesignedPumpCalculator = () => {
     // when all required inputs are filled
   };
 
+
+
+  // Helper function to calculate using auto mode logic for custom vials
+  const calculateCustomVialMetrics = (customCounts) => {
+    if (!selectedMedicationData || !inputs.dose || !inputs.patientWeight) {
+      return { totalDrug: 0, daysCovered: 0, waste: 0, wastePercentage: 0, hasWaste: false };
+    }
+
+    // Use the same dose calculation logic as auto mode
+    const weight = parseFloat(inputs.patientWeight);
+    const dose = parseFloat(inputs.dose);
+    const doseFrequency = parseFloat(inputs.doseFrequency) || 1;
+    const daysSupply = parseFloat(inputs.daysSupply) || 1;
+    
+    let singleDose;
+    if (inputs.doseUnit === 'mg/kg' || inputs.doseUnit === 'units/kg') {
+      singleDose = dose * weight;
+    } else {
+      singleDose = dose;
+    }
+
+    // Calculate total dose needed using auto mode logic
+    const totalDoseNeeded = singleDose * doseFrequency * daysSupply;
+
+    // Calculate total drug available from custom vials
+    let totalDrugAvailable = 0;
+    Object.entries(customCounts).forEach(([vialId, count]) => {
+      const vialCount = parseInt(count) || 0;
+      if (vialCount > 0 && selectedMedicationData?.vialSizes) {
+        // Filter out non-injectable forms (same as auto mode)
+        const vial = selectedMedicationData.vialSizes.find(v => 
+          `${v.strength}-${v.unit}` === vialId && 
+          (!v.form || (v.form !== 'capsule' && v.form !== 'tablet'))
+        );
+        if (vial && vial.strength) {
+          totalDrugAvailable += parseFloat(vial.strength) * vialCount;
+        }
+      }
+    });
+
+    // Calculate days covered using auto mode logic
+    const dailyDose = singleDose * doseFrequency;
+    const daysCovered = dailyDose > 0 ? Math.floor(totalDrugAvailable / dailyDose) : 0;
+
+    // Calculate waste using auto mode logic
+    const waste = Math.max(0, totalDrugAvailable - totalDoseNeeded);
+    const wastePercentage = totalDrugAvailable > 0 ? (waste / totalDrugAvailable) * 100 : 0;
+
+    return {
+      totalDrug: totalDrugAvailable,
+      daysCovered,
+      waste: Math.round(waste * 100) / 100,
+      wastePercentage: Math.round(wastePercentage * 10) / 10,
+      hasWaste: waste > 0
+    };
+  };
+
+
+  // Handle keyboard navigation for medication dropdown
+  const handleMedicationKeyDown = (e) => {
+    if (!showMedicationDropdown) return;
+
+    const medications = filteredMedicationsDropdown;
+    const maxIndex = medications.length - 1;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setFocusedMedicationIndex(prev => Math.min(prev + 1, maxIndex));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setFocusedMedicationIndex(prev => Math.max(prev - 1, 0));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (medications[focusedMedicationIndex]) {
+          const med = medications[focusedMedicationIndex];
+          setSelectedMedication(med.key);
+          handleInputChange('selectedMedication', med.key);
+          setShowMedicationDropdown(false);
+          setMedicationSearchTerm('');
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowMedicationDropdown(false);
+        setMedicationSearchTerm('');
+        break;
+      default:
+        // Don't prevent default for other keys - let the input handle normal typing
+        break;
+    }
+  };
+
+  // Reset focused index when search term changes
+  useEffect(() => {
+    setFocusedMedicationIndex(0);
+  }, [medicationSearchTerm]);
+
+  // Scroll focused item into view
+  useEffect(() => {
+    if (showMedicationDropdown) {
+      const focusedElement = document.querySelector('.medication-option.focused');
+      if (focusedElement) {
+        focusedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [focusedMedicationIndex, showMedicationDropdown]);
+
   // Reset calculator
   const resetCalculator = () => {
     // Reset all input fields
@@ -1782,6 +2705,7 @@ const RedesignedPumpCalculator = () => {
     // Reset calculation results
     setResults(null);
     setShowResults(false);
+    setIsFixedRateCalculation(false);
     
     // Reset errors
     setErrors({});
@@ -1805,6 +2729,9 @@ const RedesignedPumpCalculator = () => {
     setSelectedSpecialDosing(null);
     setShowVialCombinations(false);
     setVolumeCalculationMethod('withdrawn');
+    setVialCombinationMode('auto');
+    updateCustomVialCounts({});
+    setShowCustomInput(false);
   };
 
   // Format number
@@ -1824,217 +2751,290 @@ const RedesignedPumpCalculator = () => {
           </div>
           <div className="section-content">
             <div className="setup-grid">
-              {/* Primary inputs row */}
-              <div className="setup-primary-row">
-                {/* Medication Selection */}
-                <div className="setup-item">
-                  <label className="section-label">
-                    <FlaskConical size={16} />
-                    Select Medication
-                  </label>
-                  <div className="custom-dropdown">
-                    <select
-                      value={selectedMedication || ''}
-                      onChange={(e) => setSelectedMedication(e.target.value)}
-                      className={`supply-dropdown ${errors.medication ? 'error' : ''}`}
-                    >
-                      <option value="">Choose medication...</option>
-                      {medications.map(med => (
-                        <option key={med.key} value={med.key}>
-                          {med.brandName} - {med.genericName || med.indication}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown size={20} className="dropdown-icon" />
-                  </div>
-                  {errors.medication && <span className="error-text">{errors.medication}</span>}
-                </div>
-
-                {/* Patient Weight */}
-                <div className="setup-item">
-                  <label className="section-label">Patient Weight (kg)</label>
-                  <input
-                    type="number"
-                    value={inputs.patientWeight}
-                    onChange={(e) => handleInputChange('patientWeight', e.target.value)}
-                    placeholder="Enter weight"
-                    className={`supply-input ${errors.patientWeight ? 'error' : ''}`}
-                    step="0.1"
-                  />
-                  {errors.patientWeight && <span className="error-text">{errors.patientWeight}</span>}
-                </div>
-              </div>
-
-              {/* Medication info cards */}
-              {selectedMedicationData && (
-                <div className="medication-info-cards">
-                  {/* Vial Size */}
-                  <div className="dose-card">
-                    <label className="section-label">
-                      <FlaskConical size={16} />
-                      Vial Size
-                    </label>
-                    <div className="professional-card-display">
-                      <div className="card-value-container">
-                        <div className="calc-display-value">
-                          <span className="calc-value-number">
-                            {selectedMedicationData.vialSizes?.length > 0 ? (
-                              selectedMedicationData.vialSizes.length === 1 ? (
-                                // Single vial size
-                                <>
-                                  {selectedMedicationData.vialSizes[0].strength}
-                                </>
-                              ) : (
-                                // Multiple vial sizes count
-                                selectedMedicationData.vialSizes.length
-                              )
-                            ) : (
-                              'N/A'
-                            )}
-                          </span>
-                          <span className="calc-value-unit">
-                            {selectedMedicationData.vialSizes?.length > 0 ? (
-                              selectedMedicationData.vialSizes.length === 1 ? (
-                                selectedMedicationData.vialSizes[0].unit
-                              ) : (
-                                'SIZES'
-                              )
-                            ) : (
-                              ''
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                      {/* Vial details preview */}
-                      <div className="calc-display-preview">
-                        <FlaskConical size={14} className="preview-icon" />
-                        <span className="preview-value">
-                          {selectedMedicationData.vialSizes?.length > 0 ? (
-                            selectedMedicationData.vialSizes.length === 1 ? (
-                              `${selectedMedicationData.vialSizes[0].strength} ${selectedMedicationData.vialSizes[0].unit}` +
-                              (selectedMedicationData.vialSizes[0].volume ? ` (${selectedMedicationData.vialSizes[0].volume} mL)` : '')
-                            ) : (
-                              selectedMedicationData.vialSizes.map((vial, idx) => 
-                                `${idx > 0 ? ', ' : ''}${vial.strength}${vial.unit}`
-                              ).join('')
-                            )
-                          ) : (
-                            'No vial data'
-                          )}
+              {/* Medication Selection - Dropdown Menu Design */}
+              <div className="medication-selection-full">
+                <label className="section-label">
+                  <FlaskConical size={16} />
+                  Select Medication
+                </label>
+                <div className={`medication-dropdown-wrapper ${showMedicationDropdown ? 'dropdown-open' : ''}`} ref={medicationDropdownRef}>
+                  <div 
+                    className={`medication-custom-dropdown ${errors.medication ? 'error' : ''} ${showMedicationDropdown ? 'open' : ''}`}
+                    onClick={() => setShowMedicationDropdown(!showMedicationDropdown)}
+                    onKeyDown={handleMedicationKeyDown}
+                    tabIndex={0}
+                  >
+                    <div className="medication-dropdown-display">
+                      {selectedMedication ? (
+                        <span>
+                          {pumpDatabase.medications[selectedMedication].brandName} - {pumpDatabase.medications[selectedMedication].genericName || pumpDatabase.medications[selectedMedication].indication}
                         </span>
+                      ) : (
+                        <span className="placeholder">Choose medication...</span>
+                      )}
+                    </div>
+                    <ChevronDown size={20} className={`dropdown-chevron ${showMedicationDropdown ? 'open' : ''}`} />
+                  </div>
+                  
+                  {showMedicationDropdown && (
+                    <div className="medication-dropdown-menu">
+                      <div className="medication-search-wrapper">
+                        <Search size={16} />
+                        <input
+                          type="text"
+                          placeholder="Search medications..."
+                          value={medicationSearchTerm}
+                          onChange={(e) => setMedicationSearchTerm(e.target.value)}
+                          className="medication-search-input"
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={handleMedicationKeyDown}
+                          autoFocus
+                        />
+                      </div>
+                      <div className="medication-options-list">
+                        {filteredMedicationsDropdown.map((med, index) => (
+                          <div
+                            key={med.key}
+                            className={`medication-option ${selectedMedication === med.key ? 'selected' : ''} ${index === focusedMedicationIndex ? 'focused' : ''}`}
+                            onClick={() => {
+                              setSelectedMedication(med.key);
+                              handleInputChange('selectedMedication', med.key);
+                              setShowMedicationDropdown(false);
+                              setMedicationSearchTerm('');
+                            }}
+                            onMouseEnter={() => setFocusedMedicationIndex(index)}
+                          >
+                            <div className="medication-option-content">
+                              <span className="medication-option-name">
+                                {med.brandName} - {med.genericName || med.indication}
+                              </span>
+                              <div className="medication-option-tags">
+                                {med.hasMultipleVials && (
+                                  <span className="medication-tag vial-tag">Multiple Vials</span>
+                                )}
+                                {med.hasSpecialDosing && (
+                                  <span className="medication-tag dosing-tag">Special Dosing</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {errors.medication && <span className="error-text">{errors.medication}</span>}
+              </div>
+              
+              {/* Xenpozyme Weight Adjustment Notice */}
+              {selectedMedication === 'XENPOZYME' && (selectedMedicationData?.standardDose?.weightAdjustment || inputs.patientWeight) && (
+                <div className="xenpozyme-weight-notice">
+                  <div className="weight-adjustment-header">
+                    <Settings size={16} />
+                    <span>Weight Adjustment for XENPOZYME</span>
+                  </div>
+                  <div className="weight-adjustment-content">
+                    {parseFloat(inputs.patientWeight) > 0 && (
+                      <div className="weight-status">
+                        <span className="weight-label">Patient Weight:</span>
+                        <span className="weight-value">{inputs.patientWeight} kg</span>
+                        <span className="weight-rule">
+                          {parseFloat(inputs.patientWeight) < 30 
+                            ? '→ Use Actual Body Weight' 
+                            : '→ Use Adjusted Body Weight'}
+                        </span>
+                      </div>
+                    )}
+                    <div className="weight-adjustment-rules">
+                      <div className="rule-item">
+                        <span className="rule-condition">If weight &lt; 30 kg:</span>
+                        <span className="rule-action">Use actual body weight</span>
+                      </div>
+                      <div className="rule-item">
+                        <span className="rule-condition">If weight ≥ 30 kg:</span>
+                        <span className="rule-action">Use adjusted body weight</span>
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
 
-                  {/* Saline Bag Size */}
-                  <div className="dose-card">
-                    <label className="section-label">
-                      <Package size={16} />
-                      NS Bag Size
-                    </label>
-                    <div className="professional-card-display">
-                      <div className="card-value-container">
-                        <div className="calc-display-value">
-                          <span className="calc-value-number">
-                            {calculateSalineBagSize() || '0'}
-                          </span>
-                          <span className="calc-value-unit">mL</span>
+              {/* Medication info cards - Using param-card design */}
+              {selectedMedicationData && (
+                <div className="additional-params-cards">
+                  {/* Standard Dose */}
+                  <div className="param-card">
+                    <div className="param-card-icon">
+                      <Activity size={20} />
+                      <label className="param-card-label">Standard Dose</label>
+                    </div>
+                    <input
+                      type="text"
+                      value={(() => {
+                        const dose = selectedMedicationData.standardDose;
+                        if (!dose) return 'N/A';
+                        // For medications with maintenance dose (like XENPOZYME)
+                        if (dose.maintenanceDose) return `${dose.maintenanceDose} ${dose.unit || ''}`;
+                        // For medications with standard value
+                        if (dose.value) return `${dose.value} ${dose.unit || ''}`;
+                        return 'N/A';
+                      })()}
+                      readOnly
+                      className="supply-input"
+                      style={{ backgroundColor: 'var(--bg-tertiary)', cursor: 'not-allowed' }}
+                      title={selectedMedicationData.standardDose ? 
+                        (selectedMedicationData.standardDose.frequency || 'Standard dose') : 
+                        'No dose data'}
+                    />
+                  </div>
+
+                  {/* Vial Size */}
+                  <div className="param-card vial-size-card">
+                    <div className="param-card-icon">
+                      <FlaskConical size={20} />
+                      <label className="param-card-label">
+                        Vial Size
+                        {selectedMedicationData.vialSizes?.length > 1 && (
+                          <span className="vial-count-badge">{selectedMedicationData.vialSizes.length}</span>
+                        )}
+                      </label>
+                    </div>
+                    <div className="vial-size-input-wrapper" ref={vialDropdownRef}>
+                      <input
+                        type="text"
+                        value={(() => {
+                          if (selectedVialSize) {
+                            return `${selectedVialSize.strength} ${selectedVialSize.unit}${selectedVialSize.volume ? ` (${selectedVialSize.volume} mL)` : ''}`;
+                          } else if (selectedMedicationData.vialSizes?.length === 1) {
+                            const vial = selectedMedicationData.vialSizes[0];
+                            return `${vial.strength} ${vial.unit}${vial.volume ? ` (${vial.volume} mL)` : ''}`;
+                          } else if (selectedMedicationData.vialSizes?.length > 1) {
+                            return `Select from ${selectedMedicationData.vialSizes.length} sizes`;
+                          }
+                          return 'N/A';
+                        })()}
+                        readOnly
+                        className={`supply-input ${selectedMedicationData.vialSizes?.length > 1 ? 'has-dropdown' : ''}`}
+                        style={{ 
+                          backgroundColor: 'var(--bg-tertiary)', 
+                          cursor: selectedMedicationData.vialSizes?.length > 1 ? 'pointer' : 'not-allowed',
+                          paddingRight: selectedMedicationData.vialSizes?.length > 1 ? '40px' : '12px'
+                        }}
+                        onClick={() => {
+                          if (selectedMedicationData.vialSizes?.length > 1) {
+                            setShowVialSizeDropdown(!showVialSizeDropdown);
+                          }
+                        }}
+                        title={(() => {
+                          if (selectedMedicationData.vialSizes?.length > 1) {
+                            return 'Click to select vial size';
+                          } else if (selectedMedicationData.vialSizes?.length === 1) {
+                            const vial = selectedMedicationData.vialSizes[0];
+                            return `${vial.strength} ${vial.unit}${vial.volume ? ` - Volume: ${vial.volume} mL` : ''}`;
+                          }
+                          return 'No vial data';
+                        })()}
+                      />
+                      {selectedMedicationData.vialSizes?.length > 1 && (
+                        <div 
+                          className={`vial-dropdown-arrow ${showVialSizeDropdown ? 'open' : ''}`}
+                          onClick={() => setShowVialSizeDropdown(!showVialSizeDropdown)}
+                        >
+                          <ChevronDown size={16} />
                         </div>
-                      </div>
-                      {/* Bag size preview */}
-                      <div className="calc-display-preview">
-                        <Package size={14} className="preview-icon" />
-                        <span className="preview-value">
-                          {(() => {
-                            if (!calculateSalineBagSize()) return 'Enter weight';
-                            
-                            const weight = parseFloat(inputs.patientWeight);
-                            const rules = selectedMedicationData?.salineBagRules;
-                            
-                            if (rules?.fixed) {
-                              return `Fixed ${rules.bagSize} mL for all weights`;
-                            }
-                            
-                            if (rules?.weightBased && rules.rules) {
-                              const matchedRule = rules.rules.find(rule => 
-                                weight >= rule.minWeight && 
-                                (rule.maxWeight === null || weight <= rule.maxWeight)
-                              );
-                              if (matchedRule?.description) {
-                                return matchedRule.description;
-                              }
-                            }
-                            
-                            return `${calculateSalineBagSize()} mL bag`;
-                          })()}
-                        </span>
-                      </div>
+                      )}
+                      {showVialSizeDropdown && selectedMedicationData.vialSizes?.length > 1 && (
+                        <div className="vial-size-dropdown">
+                          {selectedMedicationData.vialSizes.map((vial, index) => (
+                            <div 
+                              key={index} 
+                              className={`vial-option ${selectedVialSize?.strength === vial.strength ? 'selected' : ''}`}
+                              onClick={() => {
+                                setSelectedVialSize(vial);
+                                handleInputChange('vialSize', vial);
+                                setShowVialSizeDropdown(false);
+                              }}
+                            >
+                              <div className="vial-option-content">
+                                <span className="vial-strength">{vial.strength} {vial.unit}</span>
+                                {vial.volume && (
+                                  <span className="vial-volume">Volume: {vial.volume} mL</span>
+                                )}
+                              </div>
+                              {selectedVialSize?.strength === vial.strength && (
+                                <Check size={16} className="vial-selected-icon" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* Overfill Value */}
-                  <div className="dose-card">
-                    <label className="section-label">
-                      <Droplets size={16} />
-                      Overfill Value
-                    </label>
-                    <div className="professional-card-display">
-                      <div className="card-value-container">
-                        <div className="calc-display-value">
-                          <span className="calc-value-number">
-                            {calculateSalineBagSize() ? getOverfillValue(calculateSalineBagSize()) : '0'}
-                          </span>
-                          <span className="calc-value-unit">mL</span>
-                        </div>
-                      </div>
-                      {/* Overfill preview */}
-                      <div className="calc-display-preview">
-                        <Droplets size={14} className="preview-icon" />
-                        <span className="preview-value">
-                          {(() => {
-                            if (!calculateSalineBagSize()) return 'No overfill';
-                            
-                            const bagSize = calculateSalineBagSize();
-                            const overfillRule = selectedMedicationData?.overfillRules?.specialRule;
-                            
-                            if (overfillRule) {
-                              return overfillRule;
-                            }
-                            
-                            return `Standard overfill for ${bagSize} mL bag`;
-                          })()}
-                        </span>
-                      </div>
+                  <div className="param-card">
+                    <div className="param-card-icon">
+                      <Droplets size={20} />
+                      <label className="param-card-label">Overfill Value (mL)</label>
                     </div>
+                    <input
+                      type="text"
+                      value={`${calculateSalineBagSize() ? getOverfillValue(calculateSalineBagSize()) : '0'} mL`}
+                      readOnly
+                      className="supply-input"
+                      style={{ backgroundColor: 'var(--bg-tertiary)', cursor: 'not-allowed' }}
+                      title={(() => {
+                        if (!calculateSalineBagSize()) return 'No overfill';
+                        
+                        const bagSize = calculateSalineBagSize();
+                        const overfillRule = selectedMedicationData?.overfillRules?.specialRule;
+                        
+                        if (overfillRule) {
+                          return overfillRule;
+                        }
+                        
+                        return `Standard overfill for ${bagSize} mL bag`;
+                      })()}
+                    />
                   </div>
 
-                  {/* Dose Info */}
-                  <div className="dose-card">
-                    <label className="section-label">
-                      <Activity size={16} />
-                      Dose
-                    </label>
-                    <div className="professional-card-display">
-                      <div className="card-value-container">
-                        <div className="calc-display-value">
-                          <span className="calc-value-number">
-                            {selectedMedicationData.standardDose?.value || 'N/A'}
-                          </span>
-                          <span className="calc-value-unit">
-                            {selectedMedicationData.standardDose?.unit || ''}
-                          </span>
-                        </div>
-                      </div>
-                      {/* Dose preview */}
-                      <div className="calc-display-preview">
-                        <Activity size={14} className="preview-icon" />
-                        <span className="preview-value">
-                          {selectedMedicationData.standardDose ? 
-                            (selectedMedicationData.standardDose.frequency || 'Standard dose') : 
-                            'No dose data'}
-                        </span>
-                      </div>
+                  {/* Saline/D5W Bag Size */}
+                  <div className="param-card">
+                    <div className="param-card-icon">
+                      <Package size={20} />
+                      <label className="param-card-label">
+                        {selectedMedicationData?.salineBagRules?.specialInstructions?.includes('D5W') ? 'D5W' : 'NS'} Bag Size (mL)
+                      </label>
                     </div>
+                    <input
+                      type="text"
+                      value={`${calculateSalineBagSize() || '0'} mL`}
+                      readOnly
+                      className="supply-input"
+                      style={{ backgroundColor: 'var(--bg-tertiary)', cursor: 'not-allowed' }}
+                      title={(() => {
+                        if (!calculateSalineBagSize()) return 'Enter weight';
+                        
+                        const weight = parseFloat(inputs.patientWeight);
+                        const rules = selectedMedicationData?.salineBagRules;
+                        
+                        if (rules?.fixed) {
+                          return `Fixed ${rules.bagSize} mL for all weights`;
+                        }
+                        
+                        if (rules?.weightBased && rules.rules) {
+                          const matchedRule = rules.rules.find(rule => 
+                            weight >= rule.minWeight && 
+                            (rule.maxWeight === null || weight <= rule.maxWeight)
+                          );
+                          if (matchedRule?.description) {
+                            return matchedRule.description;
+                          }
+                        }
+                        
+                        return `${calculateSalineBagSize()} mL bag`;
+                      })()}
+                    />
                   </div>
                 </div>
               )}
@@ -2051,7 +3051,7 @@ const RedesignedPumpCalculator = () => {
           <div className="section-content">
             <div className="dose-grid">
               {/* All dose fields in one row - professional design matching infusion parameters */}
-              <div className="dose-fields-row">
+              <div className="dose-fields-row all-in-one-row">
                 {/* Prescribed Dose - Professional Design */}
                 <div className="dose-card prescribed-dose-card">
                   <label className="section-label">
@@ -2086,6 +3086,7 @@ const RedesignedPumpCalculator = () => {
                             value={inputs.doseUnit}
                             onChange={(e) => handleInputChange('doseUnit', e.target.value)}
                             className="dose-unit-dropdown"
+                            tabIndex="-1"
                           >
                             {availableDoseUnits.map(unit => (
                               <option key={unit} value={unit}>{unit}</option>
@@ -2104,6 +3105,39 @@ const RedesignedPumpCalculator = () => {
                     </div>
                   </div>
                   {errors.dose && <span className="error-text">{errors.dose}</span>}
+                </div>
+
+                {/* Patient Weight - Moved from medication section */}
+                <div className="dose-card patient-weight-card">
+                  <label className="section-label">
+                    <User size={16} />
+                    Patient Weight
+                  </label>
+                  <div className="professional-dose-input">
+                    <div className="dose-input-container">
+                      <div className="dose-input-field">
+                        <input
+                          type="number"
+                          value={inputs.patientWeight}
+                          onChange={(e) => handleInputChange('patientWeight', e.target.value)}
+                          placeholder="0"
+                          className={`dose-value-input ${errors.patientWeight ? 'error' : ''}`}
+                          step="0.1"
+                          min="0"
+                          max="999"
+                        />
+                        <span className="dose-unit">kg</span>
+                      </div>
+                    </div>
+                    {/* Weight display preview */}
+                    <div className="dose-display-preview">
+                      <User size={14} className="preview-icon" />
+                      <span className="preview-value">
+                        {inputs.patientWeight ? `${inputs.patientWeight} kg` : 'Not entered'}
+                      </span>
+                    </div>
+                  </div>
+                  {errors.patientWeight && <span className="error-text">{errors.patientWeight}</span>}
                 </div>
 
                 {/* Dose Frequency - Professional Design */}
@@ -2196,23 +3230,30 @@ const RedesignedPumpCalculator = () => {
               {/* Dose Safety Indicator */}
               {selectedMedicationData && (
                 <div className="dose-item dose-safety-section">
-                  <label className="section-label">Dose Safety</label>
+                  <label className="section-label">
+                    <Shield size={16} />
+                    Dose Safety
+                  </label>
                   <DoseSafetyIndicator 
+                    key={`${selectedMedication}-${selectedSpecialDosing?.id || 'none'}-${inputs.dose}-${inputs.doseUnit}`}
                     doseSafety={doseSafety} 
                     standardDose={selectedMedicationData?.standardDose}
                     specialDosingOptions={getSpecialDosingOptions()}
                     selectedSpecialDosing={selectedSpecialDosing}
                     onSpecialDosingChange={setSelectedSpecialDosing}
                     patientWeight={inputs.patientWeight}
-                    actualDose={inputs.doseUnit.includes('/kg') ? 
-                      (parseFloat(inputs.dose) || 0).toFixed(2) : 
-                      ((parseFloat(inputs.dose) || 0) / (parseFloat(inputs.patientWeight) || 1)).toFixed(2)
-                    }
-                    actualDoseUnit={inputs.doseUnit.includes('/kg') ? 'mg/kg' : 'mg/kg'}
+                    actualDose={(parseFloat(inputs.dose) || 0).toFixed(2)}
+                    actualDoseUnit={inputs.doseUnit}
                     correctDose={calculateCorrectDose()}
                   />
                 </div>
               )}
+
+              {/* Infusion Parameters Section Header */}
+              <div className="parameters-divider">
+                <Activity size={18} />
+                <h4>Infusion Parameters</h4>
+              </div>
 
               {/* Infusion Parameters Cards */}
               <div className="infusion-params-cards">
@@ -2375,47 +3416,16 @@ const RedesignedPumpCalculator = () => {
               </div>
 
               {/* Calculated Values Cards - Professional Design */}
-              {inputs.dose && inputs.patientWeight && selectedMedicationData && (
+              {inputs.dose && inputs.patientWeight && selectedMedicationData && selectedMedicationData.dosageForm !== 'oral' && (
                 <div className="infusion-params-cards">
-                  {/* Total Dose Card - Professional Design */}
-                  <div className="dose-card total-dose-calc-card">
-                    <label className="section-label">
-                      <Calculator size={16} />
-                      Total Dose
-                    </label>
-                    <div className="professional-calc-display">
-                      <div className="calc-display-container">
-                        <div className="calc-display-value">
-                          <span className="calc-value-number">
-                            {formatNumber(
-                              inputs.doseUnit.includes('/kg') ? 
-                                parseFloat(inputs.dose) * parseFloat(inputs.patientWeight) : 
-                                parseFloat(inputs.dose)
-                            )}
-                          </span>
-                          <span className="calc-value-unit">
-                            {inputs.doseUnit.replace('/kg', '')}
-                          </span>
-                        </div>
-                      </div>
-                      {/* Calculation preview */}
-                      <div className="calc-display-preview">
-                        <Calculator size={14} className="preview-icon" />
-                        <span className="preview-value">
-                          {inputs.doseUnit.includes('/kg') ? 
-                            `${inputs.dose} ${inputs.doseUnit} × ${inputs.patientWeight} kg` : 
-                            `Fixed dose calculation`}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Total Vials Card - Professional Design */}
                   <div className="dose-card total-vials-calc-card">
-                    <label className="section-label">
-                      <Package size={16} />
-                      Total Vials Required
-                    </label>
+                    <div className="section-label-with-toggle">
+                      <label className="section-label">
+                        <Package size={16} />
+                        Total Vials Required
+                      </label>
+                    </div>
                     <div className="professional-calc-display">
                       <div className="calc-display-container">
                         <div className="calc-display-value">
@@ -2428,27 +3438,19 @@ const RedesignedPumpCalculator = () => {
                           </span>
                           <span className="calc-value-unit">VIALS</span>
                         </div>
-                        {(() => {
-                          const allCombinations = calculateAllVialCombinations();
-                          const hasMultipleOptions = allCombinations && allCombinations.length > 1 && 
-                            selectedMedicationData?.vialSizes?.length > 1;
-                          
-                          if (hasMultipleOptions) {
-                            return (
-                              <button 
-                                className="calc-detail-btn"
-                                onClick={() => setShowVialCombinations(true)}
-                                type="button"
-                              >
-                                <Info size={14} />
-                                View options
-                              </button>
-                            );
-                          }
-                          return null;
-                        })()}
                       </div>
-                      {/* Vial combination preview */}
+                      
+                      {/* Days Coverage Indicator */}
+                      {inputs.daysSupply && (
+                        <div className="days-coverage-indicator">
+                          <Clock size={14} className="coverage-icon" />
+                          <span className="coverage-text">
+                            Covers {inputs.daysSupply} days supply
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* Vial combination preview with individual counts */}
                       <div className="calc-display-preview">
                         <Package size={14} className="preview-icon" />
                         <span className="preview-value">
@@ -2457,14 +3459,14 @@ const RedesignedPumpCalculator = () => {
                             if (!allCombinations || allCombinations.length === 0) return 'No vials';
                             
                             const optimalCombo = allCombinations[0];
-                            if (inputs.doseFrequency && inputs.daysSupply) {
-                              const numberOfDoses = Math.ceil(parseFloat(inputs.daysSupply) / parseFloat(inputs.doseFrequency));
-                              return `${numberOfDoses} doses × ${Math.ceil(optimalCombo.actualDose / optimalCombo.totalVials)} vial/dose`;
-                            }
                             
-                            return optimalCombo.combination.map((item, idx) => 
-                              `${idx > 0 ? ' + ' : ''}${item.count}×${item.vial.strength}${item.vial.unit}`
-                            ).join('');
+                            // Show individual vial counts
+                            return optimalCombo.combination.map((item, idx) => (
+                              <span key={idx} className="vial-count-item">
+                                {idx > 0 ? ' + ' : ''}
+                                {item.count} × {item.vial.strength}{item.vial.unit}
+                              </span>
+                            )).reduce((acc, curr) => [...acc, curr], []);
                           })()}
                         </span>
                       </div>
@@ -2544,16 +3546,68 @@ const RedesignedPumpCalculator = () => {
                       </div>
                     </div>
                   </div>
+                  {/* Drug Removal Volume Card - Professional Design */}
+                  <div className="dose-card drug-removal-calc-card">
+                    <label className="section-label">
+                      <Minus size={16} />
+                      Drug Removal Volume
+                    </label>
+                    <div className="professional-calc-display">
+                      <div className="calc-display-container">
+                        <div className="calc-display-value">
+                          <span className="calc-value-number">
+                            {calculateDrugRemovalVolume()}
+                          </span>
+                          <span className="calc-value-unit">mL</span>
+                        </div>
+                      </div>
+                      {/* Volume removal preview */}
+                      <div className="calc-display-preview">
+                        <Minus size={14} className="preview-icon" />
+                        <span className="preview-value">
+                          {(() => {
+                            if (!selectedMedicationData || !inputs.dose || !inputs.patientWeight) return 'Enter all required fields';
+                            if (selectedMedicationData.dosageForm === 'oral') return 'Not applicable for oral medications';
+                            if (inputs.infusionMode !== 'removeOverfill') return 'Only for overfill removal mode';
+                            
+                            const drugVol = calculateDrugVolume(true, volumeCalculationMethod);
+                            const bagSize = calculateSalineBagSize() || drugVol;
+                            const overfill = getOverfillValue(bagSize);
+                            const removalVol = calculateDrugRemovalVolume();
+                            
+                            const specialRule = selectedMedicationData.overfillRules?.specialRule || 
+                                               selectedMedicationData.salineBagRules?.specialInstructions;
+                            
+                            if (specialRule?.includes('DO NOT remove')) {
+                              return `DO NOT remove drug volume or overfill (special rule)`;
+                            } else if (selectedMedication === 'NAGLAZYME') {
+                              if (bagSize === 100) {
+                                return `Do not remove overfill for 100 mL bag`;
+                              } else if (bagSize === 250) {
+                                return `Remove 30 mL for 250 mL bag (special rule)`;
+                              }
+                              return `Drug (${drugVol} mL) + Overfill (${overfill} mL) = ${removalVol} mL`;
+                            } else {
+                              return `Drug (${drugVol} mL) + Overfill (${overfill} mL) = ${removalVol} mL`;
+                            }
+                          })()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
               {/* Additional Parameters Divider */}
-              <div className="parameters-divider">
-                <h4>Additional Parameters</h4>
-              </div>
+              {selectedMedicationData && selectedMedicationData.dosageForm !== 'oral' && (
+                <>
+                  <div className="parameters-divider">
+                    <Settings size={18} />
+                    <h4>Additional Parameters</h4>
+                  </div>
 
-              {/* Additional Parameters Cards */}
-              <div className="additional-params-cards">
+                  {/* Additional Parameters Cards */}
+                  <div className="additional-params-cards">
                 {/* Prime Volume Card */}
                 <div className="param-card">
                   <div className="param-card-icon">
@@ -2584,19 +3638,33 @@ const RedesignedPumpCalculator = () => {
                   />
                 </div>
 
-                {/* NS Bag Size Card (Read-only) */}
+                {/* Remove Overfill Toggle */}
                 <div className="param-card">
                   <div className="param-card-icon">
                     <Package size={20} />
-                    <label className="param-card-label">NS Bag Size (mL)</label>
+                    <label className="param-card-label">Infusion Mode</label>
                   </div>
-                  <input
-                    type="text"
-                    value={calculateSalineBagSize() || 'Enter weight'}
-                    readOnly
-                    className="supply-input"
-                    style={{ backgroundColor: 'var(--bg-tertiary)', cursor: 'not-allowed' }}
-                  />
+                  <div className="supply-input toggle-field">
+                    <div className="toggle-field-content">
+                      <span className="toggle-field-label">
+                        {inputs.infusionMode === 'removeOverfill' ? 
+                          `Remove Overfill from ${selectedMedicationData?.salineBagRules?.specialInstructions?.includes('D5W') ? 'D5W' : 'NS'} Bag` : 
+                          `Add to Empty ${selectedMedicationData?.salineBagRules?.specialInstructions?.includes('D5W') ? 'D5W' : 'NS'} Bag`}
+                      </span>
+                      <div className="infusion-mode-toggle">
+                        <input
+                          type="checkbox"
+                          id="infusion-mode-toggle-switch"
+                          className="infusion-toggle-input"
+                          checked={inputs.infusionMode === 'addToEmptyBag'}
+                          onChange={(e) => handleInputChange('infusionMode', e.target.checked ? 'addToEmptyBag' : 'removeOverfill')}
+                        />
+                        <label htmlFor="infusion-mode-toggle-switch" className="infusion-toggle-label">
+                          <span className="infusion-toggle-slider"></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Overfill Value Card (Read-only) */}
@@ -2614,114 +3682,75 @@ const RedesignedPumpCalculator = () => {
                   />
                 </div>
 
-                {/* Total Time Card (Read-only) */}
-                <div className="param-card">
+
+
+                {/* Drug Volume Card - Always shown, greyed out when required fields missing */}
+                <div className={`param-card ${(!selectedMedicationData || !inputs.dose || !inputs.patientWeight) ? 'disabled' : ''}`}>
                   <div className="param-card-icon">
-                    <Clock size={20} />
-                    <label className="param-card-label">Total Time</label>
+                    <Droplets size={20} />
+                    <label className="param-card-label">Drug Volume (mL)</label>
                   </div>
                   <input
                     type="text"
                     value={
-                      inputs.totalInfusionTime.hours || inputs.totalInfusionTime.minutes
-                        ? `${inputs.totalInfusionTime.hours || '0'}h ${inputs.totalInfusionTime.minutes || '0'}m`
-                        : 'Not set'
+                      (selectedMedicationData && inputs.dose && inputs.patientWeight && results) ? 
+                        `${results.drugVolume} mL` : 
+                        (selectedMedicationData && inputs.dose && inputs.patientWeight) ?
+                          `${calculateDrugVolume(true, volumeCalculationMethod)} mL` :
+                          '-- mL'
                     }
                     readOnly
                     className="supply-input"
-                    style={{ backgroundColor: 'var(--bg-tertiary)', cursor: 'not-allowed' }}
+                    style={{ 
+                      backgroundColor: 'var(--bg-tertiary)', 
+                      cursor: 'not-allowed',
+                      opacity: (!selectedMedicationData || !inputs.dose || !inputs.patientWeight) ? 0.5 : 1
+                    }}
                   />
                 </div>
 
-                {/* Infusion Rate Card (Read-only) */}
-                <div className="param-card">
+                {/* Volume to Remove Card - Always shown, greyed out when required fields missing */}
+                <div className={`param-card ${(!selectedMedicationData || !inputs.dose || !inputs.patientWeight) ? 'disabled' : ''}`}>
                   <div className="param-card-icon">
-                    <Activity size={20} />
-                    <label className="param-card-label">Rate (mL/hr)</label>
+                    <Minus size={20} />
+                    <label className="param-card-label">Volume to Remove (mL)</label>
                   </div>
                   <input
                     type="text"
-                    value={inputs.infusionRate ? `${inputs.infusionRate} mL/hr` : 'Not set'}
+                    value={
+                      (selectedMedicationData && inputs.dose && inputs.patientWeight && results) ? 
+                        `${results.volumeToRemove} mL` : 
+                        (selectedMedicationData && inputs.dose && inputs.patientWeight) ?
+                          `${(() => {
+                            const drugVol = calculateDrugVolume(true, volumeCalculationMethod);
+                            const bagSize = calculateSalineBagSize() || drugVol;
+                            const overfill = getOverfillValue(bagSize);
+                            let volumeToRemove = 0;
+                            
+                            if (inputs.infusionMode === 'removeOverfill') {
+                              if (selectedMedication === 'ELAPRASE') {
+                                volumeToRemove = overfill;
+                              } else {
+                                volumeToRemove = drugVol + overfill;
+                              }
+                              volumeToRemove = Math.ceil(volumeToRemove / 5) * 5;
+                            }
+                            
+                            return volumeToRemove;
+                          })()} mL` :
+                          '-- mL'
+                    }
                     readOnly
-                    className="supply-input"
-                    style={{ backgroundColor: 'var(--bg-tertiary)', cursor: 'not-allowed' }}
+                    className="supply-input volume-remove"
+                    style={{ 
+                      backgroundColor: 'var(--bg-tertiary)', 
+                      cursor: 'not-allowed',
+                      opacity: (!selectedMedicationData || !inputs.dose || !inputs.patientWeight) ? 0.5 : 1
+                    }}
                   />
                 </div>
               </div>
 
-              {/* Infusion Mode Card - Professional Medical Toggle */}
-              <div className="infusion-mode-card">
-                <div className="infusion-mode-header">
-                  <div className="param-card-icon">
-                    <Settings size={20} />
-                    <label className="param-card-label">Infusion Preparation Method</label>
-                  </div>
-                  <div className="infusion-mode-info">
-                    <Info size={14} />
-                    <span className="mode-info-text">
-                      {inputs.infusionMode === 'removeOverfill' ? 
-                        'Remove overfill from NS bag before adding drug' : 
-                        'Add drug to empty sterile container'}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="professional-toggle-container">
-                  <div className="toggle-option left">
-                    <Package size={18} />
-                    <span>Remove Overfill</span>
-                  </div>
-                  
-                  <div className="medical-toggle-switch">
-                    <input
-                      type="checkbox"
-                      id="infusion-mode-toggle"
-                      className="toggle-input"
-                      checked={inputs.infusionMode === 'addToEmptyBag'}
-                      onChange={(e) => handleInputChange('infusionMode', e.target.checked ? 'addToEmptyBag' : 'removeOverfill')}
-                    />
-                    <label htmlFor="infusion-mode-toggle" className="toggle-label">
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-                  
-                  <div className="toggle-option right">
-                    <FlaskConical size={18} />
-                    <span>Empty Container</span>
-                  </div>
-                </div>
-                
-                {/* Dynamic Volume Preview */}
-                <div className="infusion-mode-preview">
-                  <div className="preview-item">
-                    <span className="preview-label">Volume to Remove:</span>
-                    <span className="preview-value">
-                      {(() => {
-                        if (inputs.infusionMode === 'addToEmptyBag') {
-                          return '0 mL (Not applicable)';
-                        } else {
-                          const drugVolume = parseFloat(calculateDrugVolume(true)) || 0;
-                          const bagSize = calculateSalineBagSize() || 0;
-                          const overfillValue = getOverfillValue(bagSize) || 0;
-                          let volumeToRemove = 0;
-                          
-                          // Match the main calculation logic
-                          if (selectedMedication === 'ELAPRASE') {
-                            volumeToRemove = overfillValue;
-                          } else {
-                            volumeToRemove = drugVolume + overfillValue;
-                          }
-                          
-                          // Round up to nearest 5 mL for easier measurement
-                          volumeToRemove = Math.ceil(volumeToRemove / 5) * 5;
-                          
-                          return volumeToRemove > 0 ? `${volumeToRemove} mL` : '0 mL';
-                        }
-                      })()}
-                    </span>
-                  </div>
-                </div>
-              </div>
 
               {/* Removed Custom Infusion Steps Toggle - Now controlled by button */}
             </div>
@@ -2950,78 +3979,106 @@ const RedesignedPumpCalculator = () => {
             <div className="section-content">
               {/* Key Results Grid */}
               <div className="results-grid">
-                <div className="result-card">
-                  <div className="result-icon">
-                    <Calculator size={24} />
+                {!isFixedRateCalculation && (
+                  <div className="result-card">
+                    <div className="result-icon">
+                      <Calculator size={24} />
+                    </div>
+                    <div className="result-content">
+                      <div className="result-label">CURRENT DOSE RATE</div>
+                      <div className="result-value">
+                        {(() => {
+                          const weight = parseFloat(inputs.patientWeight);
+                          const dose = parseFloat(inputs.dose);
+                          if (inputs.doseUnit.includes('/kg')) {
+                            // Already in per kg format
+                            return `${formatNumber(dose)} ${inputs.doseUnit}`;
+                          } else {
+                            // Convert to per kg
+                            return `${formatNumber(dose / weight)} ${inputs.doseUnit}/kg`;
+                          }
+                        })()}
+                      </div>
+                    </div>
                   </div>
-                  <div className="result-content">
-                    <div className="result-label">PRESCRIBED DOSE</div>
-                    <div className="result-value">{formatNumber(results.prescribedDose)} {results.doseUnit.replace('/kg', '')}</div>
+                )}
+                {!isFixedRateCalculation && (
+                  <div className="result-card">
+                    <div className="result-icon">
+                      <Check size={24} />
+                    </div>
+                    <div className="result-content">
+                      <div className="result-label">ACTUAL DOSE</div>
+                      <div className="result-value">{formatNumber(results.actualDose)} {results.doseUnit.replace('/kg', '')}</div>
+                    </div>
                   </div>
-                </div>
-                <div className="result-card">
-                  <div className="result-icon">
-                    <Check size={24} />
+                )}
+                {!isFixedRateCalculation && (
+                  <div className="result-card">
+                    <div className="result-icon">
+                      <Package size={24} />
+                    </div>
+                    <div className="result-content">
+                      <div className="result-label">TOTAL VIALS</div>
+                      <div className="result-value">{results.totalVials}</div>
+                    </div>
                   </div>
-                  <div className="result-content">
-                    <div className="result-label">ACTUAL DOSE</div>
-                    <div className="result-value">{formatNumber(results.actualDose)} {results.doseUnit.replace('/kg', '')}</div>
+                )}
+                {!isFixedRateCalculation && (
+                  <div className="result-card">
+                    <div className="result-icon">
+                      <Droplets size={24} />
+                    </div>
+                    <div className="result-content">
+                      <div className="result-label">DRUG VOLUME</div>
+                      <div className="result-value">{results.drugVolume} mL</div>
+                    </div>
                   </div>
-                </div>
-                <div className="result-card">
-                  <div className="result-icon">
-                    <Package size={24} />
+                )}
+                {!isFixedRateCalculation && (
+                  <div className="result-card">
+                    <div className="result-icon">
+                      <FlaskConical size={24} />
+                    </div>
+                    <div className="result-content">
+                      <div className="result-label">SALINE BAG</div>
+                      <div className="result-value">{results.bagSize} mL</div>
+                    </div>
                   </div>
-                  <div className="result-content">
-                    <div className="result-label">TOTAL VIALS</div>
-                    <div className="result-value">{results.totalVials}</div>
+                )}
+                {!isFixedRateCalculation && (
+                  <div className="result-card">
+                    <div className="result-icon">
+                      <Minus size={24} />
+                    </div>
+                    <div className="result-content">
+                      <div className="result-label">VOLUME TO REMOVE</div>
+                      <div className="result-value volume-remove">{results.volumeToRemove} mL</div>
+                    </div>
                   </div>
-                </div>
-                <div className="result-card">
-                  <div className="result-icon">
-                    <Droplets size={24} />
+                )}
+                {!isFixedRateCalculation && (
+                  <div className="result-card">
+                    <div className="result-icon">
+                      <Activity size={24} />
+                    </div>
+                    <div className="result-content">
+                      <div className="result-label">INFUSION RATE</div>
+                      <div className="result-value">{results.infusionRate} mL/hr</div>
+                    </div>
                   </div>
-                  <div className="result-content">
-                    <div className="result-label">DRUG VOLUME</div>
-                    <div className="result-value">{results.drugVolume} mL</div>
+                )}
+                {!isFixedRateCalculation && (
+                  <div className="result-card">
+                    <div className="result-icon">
+                      <Clock size={24} />
+                    </div>
+                    <div className="result-content">
+                      <div className="result-label">TOTAL TIME</div>
+                      <div className="result-value">{results.totalTimeFormatted}</div>
+                    </div>
                   </div>
-                </div>
-                <div className="result-card">
-                  <div className="result-icon">
-                    <FlaskConical size={24} />
-                  </div>
-                  <div className="result-content">
-                    <div className="result-label">SALINE BAG</div>
-                    <div className="result-value">{results.bagSize} mL</div>
-                  </div>
-                </div>
-                <div className="result-card">
-                  <div className="result-icon">
-                    <Minus size={24} />
-                  </div>
-                  <div className="result-content">
-                    <div className="result-label">VOLUME TO REMOVE</div>
-                    <div className="result-value volume-remove">{results.volumeToRemove} mL</div>
-                  </div>
-                </div>
-                <div className="result-card">
-                  <div className="result-icon">
-                    <Activity size={24} />
-                  </div>
-                  <div className="result-content">
-                    <div className="result-label">INFUSION RATE</div>
-                    <div className="result-value">{results.infusionRate} mL/hr</div>
-                  </div>
-                </div>
-                <div className="result-card">
-                  <div className="result-icon">
-                    <Clock size={24} />
-                  </div>
-                  <div className="result-content">
-                    <div className="result-label">TOTAL TIME</div>
-                    <div className="result-value">{results.totalTimeFormatted}</div>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Detailed Infusion Plan */}
@@ -3085,95 +4142,53 @@ const RedesignedPumpCalculator = () => {
 
         {/* Professional Action Buttons Container */}
         <div className="professional-action-container">
-          <div className="action-container-header">
-            <h3>
-              <Activity size={20} />
-              Calculate Infusion Parameters
-            </h3>
-            <p className="action-container-description">
-              Choose your calculation method based on your infusion requirements
-            </p>
-          </div>
-          
           <div className="professional-action-buttons">
             {/* Reset Button */}
-            <div className="action-button-wrapper reset-wrapper">
-              <button 
-                className="professional-action-btn reset-btn"
-                onClick={resetCalculator}
-                title="Clear all inputs and start over"
-              >
-                <div className="btn-icon-wrapper">
-                  <X size={20} />
-                </div>
-                <div className="btn-content">
-                  <span className="btn-label">Reset Form</span>
-                  <span className="btn-description">Clear all inputs</span>
-                </div>
-              </button>
-            </div>
+            <button 
+              className="action-btn pump-action-btn reset-btn"
+              onClick={resetCalculator}
+              title="Clear all inputs and start over"
+            >
+              <X size={20} />
+              <span>Reset Form</span>
+            </button>
             
             {/* Calculate Fixed Infusion Button */}
-            <div className="action-button-wrapper calculate-wrapper">
-              <button 
-                className={`professional-action-btn calculate-fixed-btn ${theme === 'light' ? 'force-dark-text' : ''}`}
+            <button 
+              className="action-btn pump-action-btn fixed-rate-btn"
+              style={{ backgroundColor: '#CB6015', color: 'white' }}
                 onClick={() => {
+                  if (!selectedMedicationData || !inputs.patientWeight || !inputs.dose) {
+                    setFixedInfusionError('Please select medication, enter patient weight, and prescribed dose first');
+                    setTimeout(() => setFixedInfusionError(''), 5000);
+                    return;
+                  }
                   if (!canCalculateFixed()) {
                     setFixedInfusionError('Please fill in all required fields including infusion rate');
                     setTimeout(() => setFixedInfusionError(''), 5000);
                   } else {
                     setFixedInfusionError('');
-                    calculatePumpSettings();
+                    calculatePumpSettings(true);
                   }
                 }}
                 disabled={!selectedMedicationData || !inputs.patientWeight || !inputs.dose}
-                title="Calculate using standard infusion parameters"
+                title={!selectedMedicationData || !inputs.patientWeight || !inputs.dose ? 
+                  "Please select medication, enter patient weight, and prescribed dose first" : 
+                  "Calculate using standard infusion parameters"}
               >
-                <div className="btn-icon-wrapper icon-primary">
-                  <Calculator size={20} />
-                </div>
-                <div className="btn-content">
-                  <span 
-                    className="btn-label" 
-                    ref={el => {
-                      if (el) {
-                        el.style.setProperty('color', theme === 'light' ? '#000000' : '#ffffff', 'important');
-                      }
-                    }}
-                    key={`fixed-label-${theme}`}
-                  >
-                    Fixed Rate Infusion
-                  </span>
-                  <span 
-                    className="btn-description"
-                    ref={el => {
-                      if (el) {
-                        el.style.setProperty('color', theme === 'light' ? '#666666' : '#cccccc', 'important');
-                      }
-                    }}
-                  >
-                    Use standard protocol
-                  </span>
-                </div>
-                {!selectedMedicationData || !inputs.patientWeight || !inputs.dose ? (
-                  <div className="btn-status disabled">
-                    <Info size={14} />
-                    <span>Fill required fields</span>
-                  </div>
-                ) : (
-                  <div className="btn-status ready">
-                    <Check size={14} />
-                    <span>Ready</span>
-                  </div>
-                )}
+                <Calculator size={20} />
+                <span>Calculate Fixed Rate Infusion</span>
               </button>
-            </div>
             
             {/* Calculate Custom Infusion Button */}
-            <div className="action-button-wrapper calculate-wrapper">
-              <button 
-                className={`professional-action-btn calculate-custom-btn ${theme === 'light' ? 'force-dark-text' : ''}`}
+            <button 
+              className="action-btn pump-action-btn custom-steps-btn"
+              style={{ backgroundColor: '#CB6015', color: 'white' }}
                 onClick={() => {
+                  if (!selectedMedicationData || !inputs.patientWeight || !inputs.dose) {
+                    alert('Please select medication, enter patient weight, and prescribed dose first');
+                    return;
+                  }
                   if (!inputs.useCustomSteps) {
                     handleInputChange('useCustomSteps', true);
                     setExpandedSections(prev => ({
@@ -3185,51 +4200,13 @@ const RedesignedPumpCalculator = () => {
                   }
                 }}
                 disabled={!selectedMedicationData || !inputs.patientWeight || !inputs.dose}
-                title="Set up custom infusion steps with variable rates"
+                title={!selectedMedicationData || !inputs.patientWeight || !inputs.dose ? 
+                  "Please select medication, enter patient weight, and prescribed dose first" : 
+                  "Set up custom infusion steps with variable rates"}
               >
-                <div className="btn-icon-wrapper icon-primary">
-                  <Settings size={20} />
-                </div>
-                <div className="btn-content">
-                  <span 
-                    className="btn-label"
-                    ref={el => {
-                      if (el) {
-                        el.style.setProperty('color', theme === 'light' ? '#000000' : '#ffffff', 'important');
-                      }
-                    }}
-                  >
-                    Custom Steps Infusion
-                  </span>
-                  <span 
-                    className="btn-description"
-                    ref={el => {
-                      if (el) {
-                        el.style.setProperty('color', theme === 'light' ? '#666666' : '#cccccc', 'important');
-                      }
-                    }}
-                  >
-                    Variable rate protocol
-                  </span>
-                </div>
-                {!selectedMedicationData || !inputs.patientWeight || !inputs.dose ? (
-                  <div className="btn-status disabled">
-                    <Info size={14} />
-                    <span>Fill required fields</span>
-                  </div>
-                ) : inputs.useCustomSteps && !customStepsValidation.isAcceptable ? (
-                  <div className="btn-status warning">
-                    <AlertCircle size={14} />
-                    <span>Fix validation errors</span>
-                  </div>
-                ) : (
-                  <div className="btn-status ready">
-                    <Check size={14} />
-                    <span>{inputs.useCustomSteps ? 'Calculate' : 'Setup'}</span>
-                  </div>
-                )}
+                <Settings size={20} />
+                <span>Calculate Custom Steps Infusion</span>
               </button>
-            </div>
           </div>
           
           {/* Error Message Display */}
@@ -3272,13 +4249,27 @@ const RedesignedPumpCalculator = () => {
                     <>
                       <div className="prescribed-dose-info">
                         <strong>Prescribed Dose:</strong> {formatNumber(prescribedDose)} {inputs.doseUnit.replace('/kg', '')}
+                        {inputs.daysSupply && (
+                          <>
+                            <span className="separator">•</span>
+                            <strong>Supply for:</strong> {inputs.daysSupply} days
+                          </>
+                        )}
                       </div>
                       
                       <div className="combinations-list">
-                        {allCombinations.filter(combo => combo.isOptimal).map((combo, index) => (
+                        {allCombinations.map((combo, index) => (
                           <div 
                             key={index} 
-                            className="combination-option optimal"
+                            className={`combination-option ${combo.isOptimal ? 'optimal' : ''} ${selectedCombination?.index === index ? 'selected' : ''}`}
+                            onClick={() => {
+                              setSelectedCombination({
+                                type: 'predefined',
+                                index: index,
+                                combination: combo,
+                                totalVials: combo.totalVials
+                              });
+                            }}
                           >
                             <div className="combination-header">
                               <div className="combination-title">
@@ -3322,6 +4313,140 @@ const RedesignedPumpCalculator = () => {
                       <div className="modal-footer-info">
                         <Info size={16} />
                         <span>This combination minimizes drug waste while using the fewest vials.</span>
+                      </div>
+                      
+                      {/* Custom Vial Input Section */}
+                      <div className="custom-vial-section">
+                        <button 
+                          className="custom-vial-toggle"
+                          onClick={() => {
+                            setShowCustomInput(!showCustomInput);
+                            if (!showCustomInput && Object.keys(customVialCounts).length === 0) {
+                              // Initialize custom counts with available vial sizes
+                              const initialCounts = {};
+                              selectedMedicationData.vialSizes.forEach(vial => {
+                                initialCounts[`${vial.strength}-${vial.unit}`] = 0;
+                              });
+                              updateCustomVialCounts(initialCounts);
+                            }
+                          }}
+                        >
+                          <Settings size={16} />
+                          Custom Vial Combination
+                          <ChevronDown className={`toggle-arrow ${showCustomInput ? 'open' : ''}`} size={16} />
+                        </button>
+                        
+                        {showCustomInput && (
+                          <div className="custom-vial-inputs">
+                            <h4>Enter custom vial quantities:</h4>
+                            <div className="custom-vial-grid">
+                              {selectedMedicationData.vialSizes.map((vial) => {
+                                const vialId = `${vial.strength}-${vial.unit}`;
+                                return (
+                                  <div key={vialId} className="custom-vial-input-group">
+                                    <label>
+                                      {vial.strength} {vial.unit}
+                                      {vial.volume && ` (${vial.volume} mL)`}
+                                    </label>
+                                    <div className="custom-vial-input-wrapper">
+                                      <button 
+                                        className="vial-count-btn minus"
+                                        onClick={() => {
+                                          const current = customVialCounts[vialId] || 0;
+                                          if (current > 0) {
+                                            const newCounts = {
+                                              ...customVialCounts,
+                                              [vialId]: current - 1
+                                            };
+                                            updateCustomVialCounts(newCounts);
+                                          }
+                                        }}
+                                      >
+                                        -
+                                      </button>
+                                      <input
+                                        type="number"
+                                        value={customVialCounts[vialId] || 0}
+                                        onChange={(e) => {
+                                          const value = parseInt(e.target.value) || 0;
+                                          if (value >= 0 && value <= 999) {
+                                            const newCounts = {
+                                              ...customVialCounts,
+                                              [vialId]: value
+                                            };
+                                            updateCustomVialCounts(newCounts);
+                                          }
+                                        }}
+                                        className="custom-vial-count"
+                                        min="0"
+                                        max="999"
+                                      />
+                                      <button 
+                                        className="vial-count-btn plus"
+                                        onClick={() => {
+                                          const current = customVialCounts[vialId] || 0;
+                                          if (current < 999) {
+                                            const newCounts = {
+                                              ...customVialCounts,
+                                              [vialId]: current + 1
+                                            };
+                                            updateCustomVialCounts(newCounts);
+                                          }
+                                        }}
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            
+                            {/* Custom Combination Summary */}
+                            {(() => {
+                              const totalCustomVials = Object.values(customVialCounts).reduce((sum, count) => sum + count, 0);
+                              const daysCovered = customCalculationResults.daysCovered;
+                              
+                              if (totalCustomVials > 0) {
+                                return (
+                                  <div className="custom-combination-summary" key={forceUpdateKey}>
+                                    <div className="summary-row">
+                                      <span className="summary-label">Total vials:</span>
+                                      <span className="summary-value">{totalCustomVials}</span>
+                                    </div>
+                                    <div className="summary-row">
+                                      <span className="summary-label">Days coverage:</span>
+                                      <span className="summary-value highlight">
+                                        {daysCovered} days
+                                        {inputs.daysSupply && (
+                                          <span className={`coverage-indicator ${daysCovered >= parseInt(inputs.daysSupply) ? 'sufficient' : 'insufficient'}`}>
+                                            {daysCovered >= parseInt(inputs.daysSupply) ? ' ✓' : ` (Need ${parseInt(inputs.daysSupply) - daysCovered} more days)`}
+                                          </span>
+                                        )}
+                                      </span>
+                                    </div>
+                                    <button 
+                                      className="apply-custom-btn"
+                                      onClick={() => {
+                                        setSelectedCombination({
+                                          type: 'custom',
+                                          vials: customVialCounts,
+                                          totalVials: totalCustomVials,
+                                          daysCovered: daysCovered
+                                        });
+                                        setShowVialCombinations(false);
+                                      }}
+                                    >
+                                      Apply Custom Combination
+                                    </button>
+                                  </div>
+                                );
+                              }
+                              
+                              return null;
+                            })()}
+                          </div>
+                        )}
                       </div>
                     </>
                   );

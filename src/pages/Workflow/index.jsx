@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileText, 
   Activity,
@@ -47,6 +47,7 @@ const Workflow = () => {
     infusionChanges: false,
     maintenance: false
   });
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, emailType: 'default' });
   
 
   // Toggle section expansion
@@ -117,13 +118,69 @@ const Workflow = () => {
   // Check if card is completed
   const isCardCompleted = (cardId) => completedCards.has(cardId);
 
+  // Handle right-click context menu
+  const handleContextMenu = (e, emailType = 'default') => {
+    e.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: e.pageX,
+      y: e.pageY,
+      emailType: emailType
+    });
+  };
+
+  // Hide context menu
+  const hideContextMenu = () => {
+    setContextMenu({ visible: false, x: 0, y: 0, emailType: 'default' });
+  };
+
+  // Create email with template
+  const createEmail = (emailType = 'default') => {
+    let to, cc, subject, body;
+    
+    if (emailType === 'nursing') {
+      to = 'nursing.homecare@cvshealth.com';
+      cc = 'haelysopharmacistteam@cvshealth.com';
+      subject = 'SPOC - ACCT# - NAME - DRUG - PUMP SHEET - (SPECIFY CHANGES)';
+      body = 'Hi Team, updated pump sheet (SPECIFY CHANGES) and new Rx attached.';
+    } else if (emailType === 'infusion') {
+      // Multiple recipients for infusion changes
+      to = '8553658111@fax.cvshealth.com,_haelysopharmacytechnicianteam@cvshealth.com,holly.tucker@cvshealth.com';
+      cc = 'pumpsheetshae-lsd@cvshealth.com';
+      subject = 'SPOC - ACCT# - NAME - DRUG - PUMP SHEET - (SPECIFY CHANGES)';
+      body = 'ATTENTION INTAKE TEAM\nPlease index this as a document type PUMP PROGRAM SHEET [IRC 54915] and Rx.\n\nHI TECH TEAM\nPlease complete RX ENTRY for attached pump sheet STAO .\n\nHI HOLLY\nPlease schedule pump order.\n\nNO NEED TO RESPOND TO THIS EMAIL';
+    } else if (emailType === 'infusion-nursing') {
+      // Email for infusion changes to nursing
+      to = 'nursing.homecare@cvshealth.com';
+      cc = 'haelysopharmacistteam@cvshealth.com,hae_lyso_csr_team@cvshealth.com';
+      subject = 'SPOC - ACCT # - NAME - DRUG - PUMP SHEET (SPECIFY CHANGES)';
+      body = 'Hi Team, updated pump sheet (SPECIFY CHANGES) and new Rx attached. STAO';
+    } else if (emailType === 'maintenance') {
+      // Email for maintenance/malfunction
+      to = '8553658111@fax.cvshealth.com,_haelysopharmacytechnicianteam@cvshealth.com';
+      cc = 'pumpsheetshae-lsd@cvshealth.com';
+      subject = 'SPOC - ACCT # - NAME - DRUG - PUMP MAINTENANCE SHEET (NO CHANGES)';
+      body = 'ATTENTION INTAKE TEAM\nPlease index this as a document type PUMP PROGRAM SHEET [IRC 54915] and Rx.\n\nHI TECH\nPlease complete RX ENTRY for attached pump sheet STAO -- .\n\nNO NEED TO RESPOND TO THIS EMAIL';
+    } else {
+      to = '8553658111@fax.cvshealth.com';
+      cc = 'pumpsheetshae-lsd@cvshealth.com';
+      subject = 'SPOC - ACCT# - NAME - DRUG - PUMP SHEET - (SPECIFY CHANGES)';
+      body = 'ATTENTION INTAKE TEAM\n\nPlease index this as a document type PUMP PROGRAM SHEET [IRC 54915] and Rx.';
+    }
+    
+    const mailtoLink = `mailto:${to}?cc=${cc}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoLink;
+    hideContextMenu();
+  };
+
   // Render clickable item
-  const ClickableItem = ({ id, children, className = "", onClick }) => (
+  const ClickableItem = ({ id, children, className = "", onClick, enableContextMenu = false, emailType = 'default' }) => (
     <div 
       className={`clickable-item ${isCompleted(id) ? 'completed' : ''} ${className}`}
       onClick={(e) => {
         if (onClick) onClick(e);
       }}
+      onContextMenu={enableContextMenu ? (e) => handleContextMenu(e, emailType) : undefined}
     >
       <div className="completion-indicator">
         {isCompleted(id) ? <Check size={16} strokeWidth={3} /> : <div className="empty-circle" />}
@@ -184,6 +241,19 @@ const Workflow = () => {
     });
   };
 
+  // Effect to handle clicks outside context menu
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (contextMenu.visible) {
+        hideContextMenu();
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [contextMenu.visible]);
 
   return (
     <div className="workflow-page page-container">
@@ -421,7 +491,7 @@ const Workflow = () => {
                             <Send size={20} />
                             <h3>Step 3: Email to SPRx</h3>
                           </div>
-                          <ClickableItem id="sig-dose-2">
+                          <ClickableItem id="sig-dose-2" enableContextMenu={true}>
                             <div className="checklist-item">
                               <strong>Make sure of the following and email new Rx and pump sheet</strong>
                               <ul>
@@ -430,6 +500,7 @@ const Workflow = () => {
                                 <li>Attach word document of pump sheet</li>
                                 <li>Add your signature</li>
                               </ul>
+                              <div className="context-menu-hint">Right-click to create email</div>
                             </div>
                           </ClickableItem>
 
@@ -631,7 +702,7 @@ const Workflow = () => {
                             <Send size={20} />
                             <h3>Step 11: Email to Nursing</h3>
                           </div>
-                          <ClickableItem id="sig-dose-10">
+                          <ClickableItem id="sig-dose-10" enableContextMenu={true} emailType="nursing">
                             <div className="checklist-item">
                               <strong>Make sure of the following and email new Rx and pump sheet</strong>
                               <ul>
@@ -640,6 +711,7 @@ const Workflow = () => {
                                 <li>Attach PDF of pump sheet and new Rx</li>
                                 <li>Add your signature</li>
                               </ul>
+                              <div className="context-menu-hint">Right-click to create email</div>
                             </div>
                           </ClickableItem>
                           
@@ -778,7 +850,7 @@ const Workflow = () => {
                             <Send size={20} />
                             <h3>Step 3: Email Pump Sheet</h3>
                           </div>
-                          <ClickableItem id="infusion-2">
+                          <ClickableItem id="infusion-2" enableContextMenu={true} emailType="infusion">
                             <div className="checklist-item">
                               <strong>2) Make sure of the following and email new Rx and pump sheet</strong>
                               <ul>
@@ -787,6 +859,7 @@ const Workflow = () => {
                                 <li>Attach word document of pump sheet</li>
                                 <li>Add your signature</li>
                               </ul>
+                              <div className="context-menu-hint">Right-click to create email</div>
                             </div>
                           </ClickableItem>
 
@@ -1010,7 +1083,7 @@ const Workflow = () => {
                             <Send size={20} />
                             <h3>Step 12: Email to Nursing</h3>
                           </div>
-                          <ClickableItem id="infusion-rph-b-6">
+                          <ClickableItem id="infusion-rph-b-6" enableContextMenu={true} emailType="infusion-nursing">
                             <div className="checklist-item">
                               <strong>Make sure of the following and email new Rx and pump sheet</strong>
                               <ul>
@@ -1019,6 +1092,7 @@ const Workflow = () => {
                                 <li>Attach PDF of pump sheet and new Rx</li>
                                 <li>Add your signature</li>
                               </ul>
+                              <div className="context-menu-hint">Right-click to create email</div>
                             </div>
                           </ClickableItem>
 
@@ -1184,7 +1258,7 @@ const Workflow = () => {
                             <Send size={20} />
                             <h3>Step 4: Email Pump Sheet</h3>
                           </div>
-                          <ClickableItem id="maintenance-3">
+                          <ClickableItem id="maintenance-3" enableContextMenu={true} emailType="maintenance">
                             <div className="checklist-item">
                               <strong>3) Make sure of the following and email pump sheet</strong>
                               <ul>
@@ -1193,6 +1267,7 @@ const Workflow = () => {
                                 <li>Attach word document of pump sheet</li>
                                 <li>Add your signature</li>
                               </ul>
+                              <div className="context-menu-hint">Right-click to create email</div>
                             </div>
                           </ClickableItem>
 
@@ -1441,6 +1516,24 @@ const Workflow = () => {
           </div>
         </div>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu.visible && (
+        <div 
+          className="workflow-context-menu"
+          style={{ 
+            position: 'fixed',
+            top: contextMenu.y,
+            left: contextMenu.x,
+            zIndex: 1000
+          }}
+        >
+          <button onClick={() => createEmail(contextMenu.emailType)} className="context-menu-item">
+            <Mail size={16} />
+            <span>Create Email</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

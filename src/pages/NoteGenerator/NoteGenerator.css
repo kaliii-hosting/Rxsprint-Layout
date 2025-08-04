@@ -1,6 +1,102 @@
 /* Import Satoshi Font */
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,800,500,400&display=swap');
 
+/* Patient Information Section */
+.patient-info-card {
+  margin-bottom: 2rem;
+}
+
+.patient-info-card.full-width {
+  width: 100%;
+}
+
+.patient-info-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.patient-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.patient-info-note {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.patient-info-note h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.patient-info-note .note-output-wrapper {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.patient-info-note .note-output {
+  flex: 1;
+  background: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.patient-info-note .copy-note-btn {
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.patient-info-note .copy-note-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.patient-info-note .copy-note-btn:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .patient-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .patient-info-note .note-output-wrapper {
+    flex-direction: column;
+  }
+  
+  .patient-info-note .copy-note-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Note Generator Page Container */
 .note-generator-page {
   background: var(--bg-secondary);
@@ -285,6 +381,12 @@
 /* Compact form adjustments */
 .compact-grid .input-group {
   min-height: auto;
+}
+
+/* Toggle button adjustments in compact grid */
+.compact-grid .toggle-button-group {
+  width: 100%;
+  max-width: 180px;
 }
 
 .input-group label {
@@ -1051,4 +1153,269 @@ button:focus-visible {
   .form-section {
     border-width: 0.5px;
   }
+}
+
+/* Toggle Button Group */
+.toggle-button-group {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  position: relative;
+  min-height: 40px;
+  margin-top: 0.5rem;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 0.375rem 0.75rem;
+  background: transparent;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  min-width: 45px;
+  height: 32px;
+}
+
+.toggle-btn:hover:not(.active) {
+  color: #374151;
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.toggle-btn:focus {
+  outline: none;
+}
+
+/* YES button active state - Neon Green */
+.toggle-btn:first-child.active {
+  background: #00ff41;
+  color: #000000;
+  font-weight: 700;
+  border-color: #00ff41;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.6), 
+              0 0 40px rgba(0, 255, 65, 0.4),
+              inset 0 0 20px rgba(255, 255, 255, 0.2);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* NO button active state - Red */
+.toggle-btn:last-child.active {
+  background: #ff3b30;
+  color: #ffffff;
+  font-weight: 700;
+  border-color: #ff3b30;
+  box-shadow: 0 0 20px rgba(255, 59, 48, 0.6), 
+              0 0 40px rgba(255, 59, 48, 0.4),
+              inset 0 0 20px rgba(255, 255, 255, 0.2);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Inactive button styles */
+.toggle-btn:not(.active) {
+  background: transparent;
+  color: #6b7280;
+}
+
+/* Ensure proper spacing and no overlap */
+.input-group {
+  margin-bottom: 1.25rem;
+}
+
+.input-group .toggle-button-group {
+  margin-top: 0.375rem;
+}
+
+/* Label styling for toggle fields */
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .toggle-button-group {
+    min-height: 36px;
+    gap: 0.375rem;
+  }
+  
+  .toggle-btn {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+    min-width: 45px;
+    height: 30px;
+  }
+  
+  .input-group {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Three-way Switch Toggle Styles */
+.switch-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.5rem;
+  width: 180px;
+  height: 44px;
+  background-color: #e5e7eb;
+  border-radius: 22px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.switch-toggle-slider {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+.switch-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 33.33%;
+  height: 36px;
+  background-color: white;
+  border-radius: 18px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+
+/* Default middle position */
+.switch-toggle[data-value=""] .switch-toggle-slider::before,
+.switch-toggle[data-value="neutral"] .switch-toggle-slider::before {
+  left: 33.33%;
+}
+
+/* YES position (left) */
+.switch-toggle[data-value="yes"] .switch-toggle-slider::before {
+  left: 4px;
+}
+
+/* NO position (right) */
+.switch-toggle[data-value="no"] .switch-toggle-slider::before {
+  left: calc(66.66% - 4px);
+}
+
+/* Background colors for different states */
+.switch-toggle[data-value="yes"] {
+  background-color: #00ff41;
+}
+
+.switch-toggle[data-value="no"] {
+  background-color: #ff3b30;
+}
+
+.switch-toggle-text {
+  flex: 1;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  z-index: 3;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+/* Text colors based on state */
+.switch-toggle[data-value=""] .switch-toggle-text,
+.switch-toggle[data-value="neutral"] .switch-toggle-text {
+  color: #6b7280;
+}
+
+.switch-toggle[data-value="yes"] .switch-toggle-text.left {
+  color: black;
+}
+
+.switch-toggle[data-value="yes"] .switch-toggle-text:not(.left) {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.switch-toggle[data-value="no"] .switch-toggle-text.right {
+  color: white;
+}
+
+.switch-toggle[data-value="no"] .switch-toggle-text:not(.right) {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.switch-toggle-text.middle {
+  font-weight: 700;
+  color: #6b7280;
+}
+
+/* Toggle buttons section */
+.toggle-buttons-section {
+  background: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.toggle-buttons-section .input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.toggle-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(250px, 1fr));
+  gap: 1.25rem;
+  justify-content: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1200px) {
+  .toggle-buttons-grid {
+    grid-template-columns: repeat(3, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .toggle-buttons-grid {
+    grid-template-columns: repeat(2, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .toggle-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.toggle-button-group-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.toggle-button-group-label label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+  width: 100%;
 }
