@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { Calculator as CalculatorIcon, Grid3X3, Heart, Weight } from 'lucide-react';
 import './Calculator.css';
 
 const Calculator = () => {
   // Calculator mode state
   const [calculatorMode, setCalculatorMode] = useState('standard'); // 'standard', 'cross', 'bmi', or 'abw'
-  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
   // Standard calculator state
   const [display, setDisplay] = useState('0');
@@ -356,7 +355,7 @@ const Calculator = () => {
             break;
           case 'Tab':
             e.preventDefault();
-            const fields = ['A', 'B', 'C', 'D'];
+            const fields = ['A', 'C', 'B', 'D'];
             const currentIndex = fields.indexOf(activeField);
             const nextIndex = (currentIndex + 1) % fields.length;
             setActiveField(fields[nextIndex]);
@@ -389,62 +388,36 @@ const Calculator = () => {
       <div className="calculator-content">
         <div className="calculator-dashboard">
           {/* Mode Selector */}
-          <div className="mode-selector-container">
-              <button 
-                className="mode-selector-toggle"
-                onClick={() => setIsSelectorOpen(!isSelectorOpen)}
-              >
-                <span className="mode-label">Calculator Mode:</span>
-                <span className="mode-current">
-                  {calculatorMode === 'standard' && 'STANDARD'}
-                  {calculatorMode === 'cross' && 'CROSS MULTIPLICATION'}
-                  {calculatorMode === 'bmi' && 'BMI'}
-                  {calculatorMode === 'abw' && 'ABW'}
-                </span>
-                <ChevronDown 
-                  size={20} 
-                  className={`dropdown-icon ${isSelectorOpen ? 'open' : ''}`}
-                />
-              </button>
-              <div className={`mode-selector ${isSelectorOpen ? 'open' : ''}`}>
-                <button
-                  className={`mode-btn ${calculatorMode === 'standard' ? 'active' : ''}`}
-                  onClick={() => {
-                    setCalculatorMode('standard');
-                    setIsSelectorOpen(false);
-                  }}
-                >
-                  STANDARD
-                </button>
-                <button
-                  className={`mode-btn ${calculatorMode === 'cross' ? 'active' : ''}`}
-                  onClick={() => {
-                    setCalculatorMode('cross');
-                    setIsSelectorOpen(false);
-                  }}
-                >
-                  CROSS MULTIPLICATION
-                </button>
-                <button
-                  className={`mode-btn ${calculatorMode === 'bmi' ? 'active' : ''}`}
-                  onClick={() => {
-                    setCalculatorMode('bmi');
-                    setIsSelectorOpen(false);
-                  }}
-                >
-                  BMI
-                </button>
-                <button
-                  className={`mode-btn ${calculatorMode === 'abw' ? 'active' : ''}`}
-                  onClick={() => {
-                    setCalculatorMode('abw');
-                    setIsSelectorOpen(false);
-                  }}
-                >
-                  ABW
-                </button>
-              </div>
-            </div>
+          <div className="calculator-mode-selector">
+            <button
+              className={`calc-mode-button ${calculatorMode === 'standard' ? 'active' : ''}`}
+              onClick={() => setCalculatorMode('standard')}
+            >
+              <CalculatorIcon size={32} />
+              <span>Standard</span>
+            </button>
+            <button
+              className={`calc-mode-button ${calculatorMode === 'cross' ? 'active' : ''}`}
+              onClick={() => setCalculatorMode('cross')}
+            >
+              <Grid3X3 size={32} />
+              <span>Cross Multiply</span>
+            </button>
+            <button
+              className={`calc-mode-button ${calculatorMode === 'bmi' ? 'active' : ''}`}
+              onClick={() => setCalculatorMode('bmi')}
+            >
+              <Heart size={32} />
+              <span>BMI</span>
+            </button>
+            <button
+              className={`calc-mode-button ${calculatorMode === 'abw' ? 'active' : ''}`}
+              onClick={() => setCalculatorMode('abw')}
+            >
+              <Weight size={32} />
+              <span>ABW</span>
+            </button>
+          </div>
             
             <div className="calculator-wrapper">
             {/* Standard Calculator */}
@@ -560,7 +533,7 @@ const Calculator = () => {
             <div className="calculator-keypad">
               <button className="calc-btn function" onClick={clearCross}>AC</button>
               <button className="calc-btn function" onClick={() => {
-                const fields = ['A', 'B', 'C', 'D'];
+                const fields = ['A', 'C', 'B', 'D'];
                 const currentIndex = fields.indexOf(activeField);
                 const nextIndex = (currentIndex + 1) % fields.length;
                 setActiveField(fields[nextIndex]);
