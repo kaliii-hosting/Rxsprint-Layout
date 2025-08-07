@@ -33,12 +33,14 @@ const NoteGenerator = () => {
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [editedNote, setEditedNote] = useState('');
   const noteTextareaRef = useRef(null);
-  const [dragState, setDragState] = useState({ isDragging: false, fieldName: null, dragPosition: null });
+  const [dragState, setDragState] = useState({ isDragging: false, fieldName: null, dragPosition: null, yesValue: null, noValue: null });
   const toggleRefs = useRef({});
   const [isPatientInfoExpanded, setIsPatientInfoExpanded] = useState(false);
   const dragStartPosition = useRef(null);
   const lastUpdateTime = useRef(0);
   const animationFrameRef = useRef(null);
+  const actualDraggedRef = useRef(false);
+  const dragStartPositionRef = useRef(null);
   
   // Patient Information Form State
   const [patientInfoForm, setPatientInfoForm] = useState({
@@ -177,10 +179,14 @@ const NoteGenerator = () => {
       }
       updateInterventionField(fieldName, newValue);
     };
-    
+
     const handleMouseDown = (e) => {
       e.preventDefault();
       e.stopPropagation();
+      
+      // Store initial mouse position for drag detection
+      dragStartPositionRef.current = { x: e.clientX, y: e.clientY };
+      actualDraggedRef.current = false;
       
       // Store initial position for smooth transitions
       const rect = toggleRefs.current[fieldName]?.getBoundingClientRect();
@@ -190,21 +196,23 @@ const NoteGenerator = () => {
         dragStartPosition.current = initialPosition;
       }
       
-      setDragState({ isDragging: true, fieldName, dragPosition: null });
+      setDragState({ isDragging: true, fieldName, dragPosition: null, yesValue, noValue });
       
-      // Prevent text selection during drag
+      // Prevent text selection during potential drag
       document.body.style.userSelect = 'none';
       document.body.style.webkitUserSelect = 'none';
       document.body.style.cursor = 'grabbing';
     };
     
-    // Mouse move is now handled globally for better performance
-    
-    // Mouse up is now handled globally
-    
     // Touch events for mobile
     const handleTouchStart = (e) => {
       e.preventDefault();
+      
+      // Store initial touch position for drag detection
+      if (e.touches[0]) {
+        dragStartPositionRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        actualDraggedRef.current = false;
+      }
       
       // Store initial touch position
       const rect = toggleRefs.current[fieldName]?.getBoundingClientRect();
@@ -214,22 +222,47 @@ const NoteGenerator = () => {
         dragStartPosition.current = initialPosition;
       }
       
-      setDragState({ isDragging: true, fieldName, dragPosition: null });
+      setDragState({ isDragging: true, fieldName, dragPosition: null, yesValue, noValue });
     };
     
-    // Touch move is now handled globally
-    
-    // Touch end is now handled globally
-    
     const handleToggleClick = (e) => {
-      if (isFieldDragging) return; // Don't handle click if dragging
+      // Only handle click if user didn't actually drag
+      if (actualDraggedRef.current) return;
       
       e.preventDefault();
-      const clickX = e.nativeEvent.offsetX;
-      const width = e.currentTarget.offsetWidth;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const width = rect.width;
       const position = clickX / width;
       
       updateValueFromPosition(position);
+    };
+
+    // Simple click handler that works independently of drag system
+    const handleDirectClick = (e) => {
+      e.stopPropagation();
+      
+      // If currently dragging, let drag system handle it
+      if (dragState.isDragging && dragState.fieldName === fieldName) {
+        return;
+      }
+      
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const width = rect.width;
+      const position = clickX / width;
+      
+      // Direct position-based toggle
+      let newValue;
+      if (position < 0.33) {
+        newValue = yesValue;
+      } else if (position > 0.66) {
+        newValue = noValue;
+      } else {
+        newValue = '';
+      }
+      
+      updateInterventionField(fieldName, newValue);
     };
     
     const handleToggleKeyPress = (e) => {
@@ -293,7 +326,7 @@ const NoteGenerator = () => {
           }}
           className={`switch-toggle ${isFieldDragging ? 'dragging' : ''}`}
           data-value={dataValue}
-          onClick={handleToggleClick}
+          onClick={handleDirectClick}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onKeyPress={handleToggleKeyPress}
@@ -639,6 +672,20 @@ const NoteGenerator = () => {
     const handleGlobalMouseMove = (e) => {
       if (!dragState.isDragging || !dragState.fieldName || !toggleRefs.current[dragState.fieldName]) return;
       
+      // Check if user has moved mouse enough to count as dragging
+      const dragStartPos = dragStartPositionRef.current;
+      if (dragStartPos) {
+        const distance = Math.sqrt(
+          Math.pow(e.clientX - dragStartPos.x, 2) + 
+          Math.pow(e.clientY - dragStartPos.y, 2)
+        );
+        
+        // Lower threshold for more responsive fast drags
+        if (distance > 3) {
+          actualDraggedRef.current = true;
+        }
+      }
+      
       e.preventDefault();
       
       const rect = toggleRefs.current[dragState.fieldName].getBoundingClientRect();
@@ -649,53 +696,44 @@ const NoteGenerator = () => {
       const adjustedX = Math.max(padding, Math.min(rect.width - padding, x));
       const position = Math.max(0, Math.min(1, (adjustedX - padding) / effectiveWidth));
       
-      // Use requestAnimationFrame for smooth visual updates
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
+      // Update drag position immediately for fast response
+      setDragState(prev => ({
+        ...prev,
+        dragPosition: position
+      }));
+      
+      // Update value immediately for fast drags - don't throttle the value updates
+      let newValue;
+      if (position < 0.33) {
+        newValue = dragState.yesValue;
+      } else if (position > 0.66) {
+        newValue = dragState.noValue;
+      } else {
+        newValue = '';
       }
       
-      animationFrameRef.current = requestAnimationFrame(() => {
-        setDragState(prev => ({
-          ...prev,
-          dragPosition: position
-        }));
-      });
+      // Only update if value actually changed
+      const fieldName = dragState.fieldName;
+      const currentValue = interventionForm[fieldName];
       
-      // Throttle actual value updates to reduce re-renders
-      const now = Date.now();
-      if (now - lastUpdateTime.current > 16) { // ~60fps
-        lastUpdateTime.current = now;
-        
-        let newValue;
-        if (position < 0.33) {
-          newValue = 'yes';
-        } else if (position > 0.66) {
-          newValue = 'no';
-        } else {
-          newValue = '';
-        }
-        
-        // Only update if value actually changed
-        const fieldName = dragState.fieldName;
-        const currentValue = interventionForm[fieldName];
-        const targetValue = newValue === 'yes' ? 'YES' : newValue === 'no' ? 'NO' : '';
-        
-        if (currentValue !== targetValue) {
-          updateInterventionField(fieldName, targetValue);
-        }
+      if (currentValue !== newValue) {
+        updateInterventionField(fieldName, newValue);
       }
     };
     
-    const handleGlobalMouseUp = () => {
+    const handleGlobalMouseUp = (e) => {
       if (dragState.isDragging) {
-        // Final value update on release
-        if (dragState.dragPosition !== null && dragState.fieldName) {
-          const position = dragState.dragPosition;
+        // Final value update on release - use current mouse position for accuracy
+        if (dragState.fieldName && toggleRefs.current[dragState.fieldName]) {
+          const rect = toggleRefs.current[dragState.fieldName].getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const position = Math.max(0, Math.min(1, x / rect.width));
+          
           let finalValue;
           if (position < 0.33) {
-            finalValue = 'YES';
+            finalValue = dragState.yesValue;
           } else if (position > 0.66) {
-            finalValue = 'NO';
+            finalValue = dragState.noValue;
           } else {
             finalValue = '';
           }
@@ -708,16 +746,36 @@ const NoteGenerator = () => {
           animationFrameRef.current = null;
         }
         
-        setDragState({ isDragging: false, fieldName: null, dragPosition: null });
+        setDragState({ isDragging: false, fieldName: null, dragPosition: null, yesValue: null, noValue: null });
         document.body.style.userSelect = '';
         document.body.style.webkitUserSelect = '';
         document.body.style.cursor = '';
         dragStartPosition.current = null;
+        dragStartPositionRef.current = null;
+        
+        // Reset drag tracking after a short delay to allow click handler to check
+        setTimeout(() => {
+          actualDraggedRef.current = false;
+        }, 50);
       }
     };
     
     const handleGlobalTouchMove = (e) => {
       if (!dragState.isDragging || !dragState.fieldName || !toggleRefs.current[dragState.fieldName]) return;
+      
+      // Check if user has moved touch enough to count as dragging
+      const dragStartPos = dragStartPositionRef.current;
+      if (dragStartPos && e.touches[0]) {
+        const distance = Math.sqrt(
+          Math.pow(e.touches[0].clientX - dragStartPos.x, 2) + 
+          Math.pow(e.touches[0].clientY - dragStartPos.y, 2)
+        );
+        
+        // Lower threshold for more responsive fast drags
+        if (distance > 3) {
+          actualDraggedRef.current = true;
+        }
+      }
       
       e.preventDefault();
       
@@ -730,40 +788,27 @@ const NoteGenerator = () => {
       const adjustedX = Math.max(padding, Math.min(rect.width - padding, x));
       const position = Math.max(0, Math.min(1, (adjustedX - padding) / effectiveWidth));
       
-      // Use requestAnimationFrame for smooth visual updates on touch
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
+      // Update drag position immediately for fast touch response
+      setDragState(prev => ({
+        ...prev,
+        dragPosition: position
+      }));
+      
+      // Update value immediately for fast touch drags
+      let newValue;
+      if (position < 0.33) {
+        newValue = dragState.yesValue;
+      } else if (position > 0.66) {
+        newValue = dragState.noValue;
+      } else {
+        newValue = '';
       }
       
-      animationFrameRef.current = requestAnimationFrame(() => {
-        setDragState(prev => ({
-          ...prev,
-          dragPosition: position
-        }));
-      });
+      const fieldName = dragState.fieldName;
+      const currentValue = interventionForm[fieldName];
       
-      // Throttle value updates for touch as well
-      const now = Date.now();
-      if (now - lastUpdateTime.current > 32) {
-        lastUpdateTime.current = now;
-        
-        let newValue;
-        // More precise zone mapping for touch
-        if (position < 0.3) {
-          newValue = 'yes';
-        } else if (position > 0.7) {
-          newValue = 'no';
-        } else {
-          newValue = '';
-        }
-        
-        const fieldName = dragState.fieldName;
-        const currentValue = interventionForm[fieldName];
-        const targetValue = newValue === 'yes' ? 'YES' : newValue === 'no' ? 'NO' : '';
-        
-        if (currentValue !== targetValue) {
-          updateInterventionField(fieldName, targetValue);
-        }
+      if (currentValue !== newValue) {
+        updateInterventionField(fieldName, newValue);
       }
     };
     
@@ -774,9 +819,9 @@ const NoteGenerator = () => {
           const position = dragState.dragPosition;
           let finalValue;
           if (position < 0.33) {
-            finalValue = 'YES';
+            finalValue = dragState.yesValue;
           } else if (position > 0.66) {
-            finalValue = 'NO';
+            finalValue = dragState.noValue;
           } else {
             finalValue = '';
           }
@@ -789,8 +834,14 @@ const NoteGenerator = () => {
           animationFrameRef.current = null;
         }
         
-        setDragState({ isDragging: false, fieldName: null, dragPosition: null });
+        setDragState({ isDragging: false, fieldName: null, dragPosition: null, yesValue: null, noValue: null });
         dragStartPosition.current = null;
+        dragStartPositionRef.current = null;
+        
+        // Reset drag tracking after a short delay to allow click handler to check
+        setTimeout(() => {
+          actualDraggedRef.current = false;
+        }, 50);
       }
     };
     
