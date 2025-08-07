@@ -1,13 +1,44 @@
 /* Import Satoshi Font */
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,800,500,400&display=swap');
 
-/* Patient Information Section */
+/* Patient Information Section - Updated to match Intervention Note */
 .patient-info-card {
   margin-bottom: 2rem;
 }
 
 .patient-info-card.full-width {
   width: 100%;
+}
+
+/* Collapsible header styles */
+.collapsible-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.collapsible-header:hover {
+  background: var(--button-bg);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.collapse-indicator {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.collapse-indicator:hover {
+  color: var(--text-primary);
 }
 
 .patient-info-container {
@@ -35,51 +66,94 @@
   margin-bottom: 0.75rem;
 }
 
-.patient-info-note .note-output-wrapper {
+.patient-info-note .note-output-container {
   display: flex;
+  flex-direction: column;
   gap: 1rem;
-  align-items: stretch;
 }
 
-.patient-info-note .note-output {
-  flex: 1;
-  background: var(--bg-secondary);
+.patient-info-note .note-display {
+  min-height: 80px;
   padding: 1rem;
-  border-radius: 8px;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
+  border-radius: 8px;
   font-family: 'Monaco', 'Consolas', monospace;
   font-size: 0.875rem;
-  line-height: 1.5;
+  line-height: 1.6;
   color: var(--text-primary);
-  min-height: 50px;
-  display: flex;
-  align-items: center;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.patient-info-note .copy-note-btn {
-  padding: 0.5rem 1rem;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+.patient-info-note .note-display:hover {
+  background: var(--bg-primary);
+  border-color: var(--primary-border);
+}
+
+.patient-info-note .note-edit-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  resize: vertical;
+}
+
+.patient-info-note .note-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.patient-info-note .note-action-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.2s ease;
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 8px;
   font-size: 0.875rem;
-  white-space: nowrap;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.patient-info-note .copy-note-btn:hover:not(:disabled) {
-  background: var(--primary-hover);
+.patient-info-note .note-action-btn.edit-btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.patient-info-note .note-action-btn.edit-btn:hover:not(:disabled) {
+  background: var(--button-hover-bg);
+  border-color: var(--primary-border);
   transform: translateY(-1px);
 }
 
-.patient-info-note .copy-note-btn:disabled {
+.patient-info-note .note-action-btn.copy-btn {
+  background: var(--primary-color);
+  color: white;
+}
+
+.patient-info-note .note-action-btn.copy-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--primary-light);
+}
+
+.patient-info-note .note-action-btn:disabled {
   background: var(--bg-tertiary);
   color: var(--text-tertiary);
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 @media (max-width: 768px) {
@@ -165,6 +239,18 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Neon glow animation for YES selections */
+@keyframes neonGlow {
+  from {
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.6), 
+                inset 0 0 10px rgba(57, 255, 20, 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(57, 255, 20, 0.9), 
+                inset 0 0 20px rgba(57, 255, 20, 0.5);
   }
 }
 
@@ -440,15 +526,15 @@
 /* Neon green highlighting for filled fields */
 .note-input.filled,
 .note-dropdown.filled {
-  background: #00ff4115;
-  border-color: #00ff41;
-  box-shadow: 0 0 0 2px #00ff4130;
+  background: #FF690015;
+  border-color: #FF6900;
+  box-shadow: 0 0 0 2px #FF690030;
 }
 
 .note-input.filled:focus,
 .note-dropdown.filled:focus {
-  border-color: #00ff41;
-  box-shadow: 0 0 0 3px #00ff4150;
+  border-color: #FF6900;
+  box-shadow: 0 0 0 3px #FF690050;
 }
 
 .note-input::placeholder,
@@ -1199,14 +1285,32 @@ button:focus-visible {
 
 /* YES button active state - Neon Green */
 .toggle-btn:first-child.active {
-  background: #00ff41;
+  background: #39ff14;
+  background: linear-gradient(135deg, #39ff14, #00ff41);
   color: #000000;
   font-weight: 700;
-  border-color: #00ff41;
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.6), 
-              0 0 40px rgba(0, 255, 65, 0.4),
-              inset 0 0 20px rgba(255, 255, 255, 0.2);
+  border-color: #39ff14;
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.8), 
+              0 0 40px rgba(57, 255, 20, 0.6),
+              0 0 60px rgba(57, 255, 20, 0.4),
+              inset 0 0 20px rgba(255, 255, 255, 0.3);
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  animation: neonGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes neonGlow {
+  from {
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.8), 
+                0 0 40px rgba(57, 255, 20, 0.6),
+                0 0 60px rgba(57, 255, 20, 0.4),
+                inset 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  to {
+    box-shadow: 0 0 25px rgba(57, 255, 20, 1), 
+                0 0 50px rgba(57, 255, 20, 0.8),
+                0 0 75px rgba(57, 255, 20, 0.6),
+                inset 0 0 25px rgba(255, 255, 255, 0.4);
+  }
 }
 
 /* NO button active state - Red */
@@ -1271,10 +1375,28 @@ button:focus-visible {
   margin-top: 0.5rem;
   width: 180px;
   height: 44px;
-  background-color: #e5e7eb;
+  background-color: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
   border-radius: 22px;
   padding: 4px;
-  cursor: pointer;
+  cursor: grab;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+.switch-toggle.dragging {
+  cursor: grabbing !important;
+  transform: translateZ(0) scale(1.02);
+}
+
+.switch-toggle:hover {
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+  transform: translateZ(0) translateY(-1px);
 }
 
 .switch-toggle-slider {
@@ -1285,6 +1407,9 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   padding: 0 10px;
+  pointer-events: none;
+  contain: layout style paint;
+  transform: translateZ(0);
 }
 
 .switch-toggle-slider::before {
@@ -1294,34 +1419,57 @@ button:focus-visible {
   height: 36px;
   background-color: white;
   border-radius: 18px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: left 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
   z-index: 2;
+  pointer-events: none;
+  will-change: left;
+  transform: translateZ(0);
 }
 
-/* Default middle position */
+.switch-toggle.dragging .switch-toggle-slider::before {
+  transition: none !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Dynamic positioning using CSS custom property */
+.switch-toggle-slider::before {
+  left: var(--slider-position, 33.33%);
+}
+
+/* Fallback positions for browsers that don't support CSS custom properties */
 .switch-toggle[data-value=""] .switch-toggle-slider::before,
 .switch-toggle[data-value="neutral"] .switch-toggle-slider::before {
-  left: 33.33%;
+  left: var(--slider-position, 33.33%);
 }
 
-/* YES position (left) */
 .switch-toggle[data-value="yes"] .switch-toggle-slider::before {
-  left: 4px;
+  left: var(--slider-position, 2.22%);
 }
 
-/* NO position (right) */
 .switch-toggle[data-value="no"] .switch-toggle-slider::before {
-  left: calc(66.66% - 4px);
+  left: var(--slider-position, 64.44%);
 }
 
-/* Background colors for different states */
+/* Background colors for different states with enhanced neon effect */
 .switch-toggle[data-value="yes"] {
-  background-color: #00ff41;
+  background: #39ff14;
+  background: linear-gradient(135deg, #39ff14, #00ff41);
+  border-color: #39ff14;
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.6), 
+              inset 0 0 10px rgba(57, 255, 20, 0.3);
+  animation: neonGlow 1.5s ease-in-out infinite alternate;
 }
 
 .switch-toggle[data-value="no"] {
   background-color: #ff3b30;
+  border-color: #ff3b30;
+  box-shadow: 0 0 15px rgba(255, 59, 48, 0.4);
+}
+
+.switch-toggle[data-value=""] {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
 }
 
 .switch-toggle-text {
@@ -1365,10 +1513,84 @@ button:focus-visible {
 
 /* Toggle buttons section */
 .toggle-buttons-section {
-  background: #f9fafb;
+  background: var(--bg-tertiary, #f9fafb);
   padding: 1.5rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+/* Dark theme support for toggle section */
+/* Dark theme support for toggle buttons and switches */
+[data-theme="dark"] .toggle-buttons-section {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .toggle-buttons-section .section-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .toggle-buttons-section label {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .switch-toggle {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .switch-toggle[data-value=""] {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .switch-toggle-slider::before {
+  background-color: var(--bg-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .switch-toggle[data-value="yes"] {
+  background: #39ff14;
+  background: linear-gradient(135deg, #39ff14, #00ff41);
+  border-color: #39ff14;
+  box-shadow: 0 0 25px rgba(57, 255, 20, 0.7), 
+              inset 0 0 15px rgba(57, 255, 20, 0.4);
+}
+
+[data-theme="dark"] .switch-toggle[data-value="no"] {
+  background-color: #ff3b30;
+  border-color: #ff3b30;
+  box-shadow: 0 0 20px rgba(255, 59, 48, 0.5);
+}
+
+[data-theme="dark"] .toggle-btn {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .toggle-btn:hover:not(.active) {
+  background: var(--button-bg);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .toggle-btn:first-child.active {
+  background: #39ff14;
+  background: linear-gradient(135deg, #39ff14, #00ff41);
+  color: #000000;
+  border-color: #39ff14;
+  box-shadow: 0 0 25px rgba(57, 255, 20, 0.7), 
+              inset 0 0 15px rgba(57, 255, 20, 0.4);
+}
+
+[data-theme="dark"] .toggle-btn:last-child.active {
+  background: #ff3b30;
+  color: #ffffff;
+  border-color: #ff3b30;
+  box-shadow: 0 0 20px rgba(255, 59, 48, 0.6), 
+              inset 0 0 10px rgba(255, 59, 48, 0.3);
 }
 
 .toggle-buttons-section .input-group {

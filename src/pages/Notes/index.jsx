@@ -50,6 +50,8 @@ const Notes = () => {
   const [editingBannerText, setEditingBannerText] = useState('');
   const longPressTimer = useRef(null);
   const [isLongPress, setIsLongPress] = useState(false);
+  const [noteContextMenu, setNoteContextMenu] = useState({ visible: false, x: 0, y: 0, noteId: null });
+  const noteLongPressTimer = useRef(null);
   
   // Delete confirmation state removed - using window.confirm instead
   
@@ -324,6 +326,36 @@ const Notes = () => {
     return matchesSearch;
   }) : [];
 
+  // Handle note context menu actions
+  const handleEditNoteFromMenu = (noteId) => {
+    const note = notes.find(n => n.id === noteId);
+    if (note) {
+      handleSelectNote(note);
+      setIsEditing(true);
+    }
+    setNoteContextMenu({ visible: false, x: 0, y: 0, noteId: null });
+  };
+
+  const handleDeleteNoteFromMenu = async (noteId) => {
+    if (window.confirm('Are you sure you want to delete this note?')) {
+      await handleDelete(noteId);
+    }
+    setNoteContextMenu({ visible: false, x: 0, y: 0, noteId: null });
+  };
+
+  // Close context menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setNoteContextMenu({ visible: false, x: 0, y: 0, noteId: null });
+      setContextMenu({ visible: false, x: 0, y: 0, bannerId: null });
+    };
+
+    if (noteContextMenu.visible || contextMenu.visible) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [noteContextMenu.visible, contextMenu.visible]);
+
   // Handle drag and drop
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -586,6 +618,141 @@ const Notes = () => {
     }
   };
 
+  // Helper function to render banners directly in PDF (fast and reliable)
+  const renderBannersInPDF = (pdf, banners, leftMargin, yPosition, contentWidth) => {
+    const bannerHeight = 12; // 12mm height for excellent readability
+    const bannerPadding = 3; // Padding inside banner
+    const bannerGap = 4; // Gap between banners
+    const fontSize = 11; // 11pt font for excellent readability
+    const lineSpacing = 2; // Space between banner lines
+    
+    let currentY = yPosition;
+    let currentX = leftMargin;
+    const maxLineWidth = contentWidth;
+    
+    // Group banners into lines based on newLine property
+    const bannerLines = [];
+    let currentLine = [];
+    
+    banners.forEach((banner, index) => {
+      if (banner.newLine && index > 0 && currentLine.length > 0) {
+        bannerLines.push(currentLine);
+        currentLine = [];
+      }
+      currentLine.push(banner);
+    });
+    if (currentLine.length > 0) {
+      bannerLines.push(currentLine);
+    }
+    
+    // Render each line of banners
+    bannerLines.forEach((line, lineIndex) => {
+      if (lineIndex > 0) {
+        currentY += bannerHeight + lineSpacing;
+      }
+      
+      currentX = leftMargin;
+      
+      // Calculate banner widths based on text content
+      const bannerWidths = line.map(banner => {
+        pdf.setFontSize(fontSize);
+        const prefix = banner.isDone ? '✓ ' : '';
+        const text = prefix + banner.text;
+        const textWidth = pdf.getTextWidth(text);
+        return Math.max(textWidth + (bannerPadding * 4), 25); // Minimum 25mm width
+      });
+      
+      // Check if all banners fit on one line
+      const totalWidth = bannerWidths.reduce((sum, width) => sum + width, 0) + (bannerGap * (line.length - 1));
+      
+      if (totalWidth <= maxLineWidth) {
+        // All banners fit on one line
+        line.forEach((banner, bannerIndex) => {
+          const width = bannerWidths[bannerIndex];
+          
+          // Set banner color
+          if (banner.isDone) {
+            pdf.setFillColor(0, 255, 136); // Bright green
+          } else if (banner.isOrange) {
+            pdf.setFillColor(255, 105, 0); // Orange
+          } else {
+            pdf.setFillColor(59, 130, 246); // Blue
+          }
+          
+          // Draw banner background
+          pdf.roundedRect(currentX, currentY, width, bannerHeight, 2, 2, 'F');
+          
+          // Set text properties
+          pdf.setFontSize(fontSize);
+          pdf.setFont('helvetica', 'normal');
+          if (banner.isDone) {
+            pdf.setTextColor(0, 100, 0); // Dark green text for done banners
+          } else {
+            pdf.setTextColor(255, 255, 255); // White text
+          }
+          
+          // Add text centered in banner
+          const prefix = banner.isDone ? '✓ ' : '';
+          const text = prefix + banner.text;
+          const textY = currentY + (bannerHeight / 2) + (fontSize / 3);
+          pdf.text(text, currentX + bannerPadding * 2, textY);
+          
+          currentX += width + bannerGap;
+        });
+      } else {
+        // Banners don't fit, scale them down proportionally
+        const scaleFactor = maxLineWidth / totalWidth;
+        
+        line.forEach((banner, bannerIndex) => {
+          const width = bannerWidths[bannerIndex] * scaleFactor;
+          
+          // Set banner color
+          if (banner.isDone) {
+            pdf.setFillColor(0, 255, 136); // Bright green
+          } else if (banner.isOrange) {
+            pdf.setFillColor(255, 105, 0); // Orange
+          } else {
+            pdf.setFillColor(59, 130, 246); // Blue
+          }
+          
+          // Draw banner background
+          pdf.roundedRect(currentX, currentY, width, bannerHeight, 2, 2, 'F');
+          
+          // Set text properties
+          pdf.setFontSize(fontSize);
+          pdf.setFont('helvetica', 'normal');
+          if (banner.isDone) {
+            pdf.setTextColor(0, 100, 0); // Dark green text for done banners
+          } else {
+            pdf.setTextColor(255, 255, 255); // White text
+          }
+          
+          // Add text with intelligent truncation if needed
+          const prefix = banner.isDone ? '✓ ' : '';
+          let text = prefix + banner.text;
+          const maxTextWidth = width - (bannerPadding * 4);
+          
+          if (pdf.getTextWidth(text) > maxTextWidth) {
+            // Truncate text to fit
+            while (pdf.getTextWidth(text + '...') > maxTextWidth && text.length > 3) {
+              text = text.substring(0, text.length - 1);
+            }
+            text += '...';
+          }
+          
+          const textY = currentY + (bannerHeight / 2) + (fontSize / 3);
+          pdf.text(text, currentX + bannerPadding * 2, textY);
+          
+          currentX += width + (bannerGap * scaleFactor);
+        });
+      }
+      
+      currentY += bannerHeight;
+    });
+    
+    return currentY - yPosition + lineSpacing * 2; // Return total height used
+  };
+
   // Helper function to convert image URL to base64
   const getImageAsBase64 = async (url) => {
     try {
@@ -622,6 +789,7 @@ const Notes = () => {
     }
   };
 
+
   // Export note to PDF
   const exportToPDF = async () => {
     if (!selectedNote && !isCreating) return;
@@ -638,275 +806,302 @@ const Notes = () => {
         unit: 'mm',
         format: 'a4'
       });
+      
+      // Load logo image
+      const logoUrl = 'https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii//rxsprint%20logo%20IIII.png';
+      const logoImg = new Image();
+      logoImg.crossOrigin = 'anonymous';
+      logoImg.src = logoUrl;
     
-    // A4 dimensions: 210mm x 297mm
-    const pageWidth = 210;
-    const pageHeight = 297;
-    const leftMargin = 20;
-    const rightMargin = 20;
-    const topMargin = 50; // Space for header
-    const bottomMargin = 30; // Space for footer
-    const contentWidth = pageWidth - leftMargin - rightMargin;
-    const maxY = pageHeight - bottomMargin;
-    
-    // Typography settings
-    const titleSize = 18;
-    const headingSize = 14;
-    const bodySize = 11;
-    const metaSize = 9;
-    const lineSpacing = 1.5;
-    const paragraphSpacing = 8;
-    const sectionSpacing = 12;
-    
-    let yPosition = topMargin;
-    let pageNumber = 1;
-    const totalPages = 1; // Will be updated after content is added
-    
-    // Helper function to draw header and footer
-    const drawHeaderFooter = (pageNum) => {
-      // Professional light theme header
-      pdf.setFillColor(255, 255, 255);
-      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+      // A4 dimensions: 210mm x 297mm
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const leftMargin = 20;
+      const rightMargin = 25; // Increased right margin to prevent overflow
+      const topMargin = 50; // Space for header
+      const bottomMargin = 30; // Space for footer
+      const contentWidth = pageWidth - leftMargin - rightMargin - 5; // Extra safety buffer
+      const maxY = pageHeight - bottomMargin;
       
-      // Light header section
-      pdf.setFillColor(248, 250, 252);
-      pdf.rect(0, 0, pageWidth, 45, 'F');
+      // Typography settings
+      const titleSize = 18;
+      const headingSize = 14;
+      const bodySize = 11;
+      const metaSize = 9;
+      const lineSpacing = 1.5;
+      const paragraphSpacing = 4; // Reduced from 8 to avoid excessive white space
+      const sectionSpacing = 8; // Reduced from 12
       
-      // Orange accent line
-      pdf.setFillColor(255, 85, 0);
-      pdf.rect(0, 45, pageWidth, 2, 'F');
+      let yPosition = topMargin;
+      let pageNumber = 1;
+      const totalPages = 1; // Will be updated after content is added
       
-      // Logo - RX SPRINT text
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(18);
-      pdf.setTextColor(255, 85, 0);
-      pdf.text('RX SPRINT', 20, 25);
+      // Logo loading
+      logoImg.onload = function() {
+        generatePDFContent(true);
+      };
       
-      // Date and note info
-      const currentDate = new Date();
-      const formattedDate = currentDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-      const formattedTime = currentDate.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      logoImg.onerror = function() {
+        generatePDFContent(false);
+      };
       
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(71, 85, 105);
-      pdf.text(`Generated: ${formattedDate} at ${formattedTime}`, pageWidth - 20, 20, { align: 'right' });
-      pdf.text(`Note ID: NOTE-${Date.now().toString().slice(-6)}`, pageWidth - 20, 30, { align: 'right' });
-      
-      // Professional footer
-      pdf.setFillColor(248, 250, 252);
-      pdf.rect(0, pageHeight - 25, pageWidth, 25, 'F');
-      pdf.setDrawColor(226, 232, 240);
-      pdf.line(0, pageHeight - 25, pageWidth, pageHeight - 25);
-      
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(8);
-      pdf.setTextColor(100, 116, 139);
-      pdf.text('RX Sprint Medical Supplies', 20, pageHeight - 12);
-      pdf.text(`Page ${pageNum}`, pageWidth - 20, pageHeight - 12, { align: 'right' });
-    };
-    
-    // Draw header and footer for first page
-    drawHeaderFooter(pageNumber);
-    
-    // Helper function to add a new page
-    const addNewPage = () => {
-      // Add new page
-      pdf.addPage();
-      pageNumber++;
-      drawHeaderFooter(pageNumber);
-      yPosition = topMargin + 5; // Start below header
-      pdf.setTextColor(0);
-    };
+      // Function to generate PDF content
+      const generatePDFContent = async (withLogo = false) => {
+        // Reset variables for fresh generation
+        yPosition = topMargin;
+        pageNumber = 1;
+        
+        // Helper function to draw header and footer
+        const drawHeaderFooter = (pageNum, hasLogo = withLogo) => {
+          // Professional light theme header
+          pdf.setFillColor(255, 255, 255);
+          pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+          
+          // Light header section
+          pdf.setFillColor(248, 250, 252);
+          pdf.rect(0, 0, pageWidth, 45, 'F');
+          
+          // Orange accent line
+          pdf.setFillColor(255, 85, 0);
+          pdf.rect(0, 45, pageWidth, 2, 'F');
+          
+          // Logo or text fallback
+          if (hasLogo && logoImg.complete) {
+            // Logo - maintain aspect ratio
+            const logoMaxWidth = 50;
+            const logoMaxHeight = 25;
+            const imgRatio = logoImg.width / logoImg.height;
+            let logoWidth = logoMaxWidth;
+            let logoHeight = logoMaxWidth / imgRatio;
+            
+            if (logoHeight > logoMaxHeight) {
+              logoHeight = logoMaxHeight;
+              logoWidth = logoMaxHeight * imgRatio;
+            }
+            
+            pdf.addImage(logoImg, 'PNG', 20, 10, logoWidth, logoHeight);
+          } else {
+            // Fallback to text
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(18);
+            pdf.setTextColor(255, 85, 0);
+            pdf.text('RX SPRINT', 20, 25);
+          }
+          
+          // Date and note info
+          const currentDate = new Date();
+          const formattedDate = currentDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+          const formattedTime = currentDate.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(10);
+          pdf.setTextColor(71, 85, 105);
+          pdf.text(`Generated: ${formattedDate} at ${formattedTime}`, pageWidth - 20, 20, { align: 'right' });
+          pdf.text(`Note ID: NOTE-${Date.now().toString().slice(-6)}`, pageWidth - 20, 30, { align: 'right' });
+          
+          // Add note title under the note ID
+          const noteTitle = formData.title || 'Untitled Note';
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'italic');
+          pdf.text(noteTitle, pageWidth - 20, 38, { align: 'right' });
+          
+          // Professional footer
+          pdf.setFillColor(248, 250, 252);
+          pdf.rect(0, pageHeight - 25, pageWidth, 25, 'F');
+          pdf.setDrawColor(226, 232, 240);
+          pdf.line(0, pageHeight - 25, pageWidth, pageHeight - 25);
+          
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(8);
+          pdf.setTextColor(100, 116, 139);
+          const footerTitle = formData.title || 'Untitled Note';
+          pdf.text(footerTitle, 20, pageHeight - 12);
+          // Page number will be updated after total pages are known
+          pdf.text(`Page ${pageNum}`, pageWidth - 20, pageHeight - 12, { align: 'right' });
+        };
+        
+        // Draw header and footer for first page
+        drawHeaderFooter(pageNumber);
+        
+        // Helper function to add a new page
+        const addNewPage = () => {
+          // Add new page
+          pdf.addPage();
+          pageNumber++;
+          drawHeaderFooter(pageNumber);
+          yPosition = 55; // Consistent spacing with first page
+          // Reset font to ensure consistency on new page
+          try {
+            pdf.setFont('Roboto', 'normal');
+          } catch (e) {
+            pdf.setFont('helvetica', 'normal');
+          }
+          pdf.setFontSize(bodySize);
+          pdf.setTextColor(0);
+        };
     
     // Helper function to check and add new page if needed
     const checkPageBreak = (requiredSpace = bodySize * lineSpacing) => {
-      if (yPosition + requiredSpace > maxY) {
+      // Ensure we have enough space, considering the footer area
+      if (yPosition + requiredSpace > maxY - 15) { // Increased safety margin to prevent footer overlap
         addNewPage();
       }
     };
     
-    // Start content below header
-    yPosition = 65;
+    // Start content below header with appropriate spacing
+    yPosition = 55; // Reduced from 65 to avoid empty first page
     
-    // Add title
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(51, 65, 85);
-    const title = formData.title || 'Untitled Note';
-    const titleLines = pdf.splitTextToSize(title, contentWidth);
-    titleLines.forEach((line, index) => {
-      checkPageBreak(16 * lineSpacing);
-      pdf.text(line, leftMargin, yPosition);
-      yPosition += 16 * lineSpacing;
-    });
-    yPosition += sectionSpacing;
-    
-    // Add metadata subtitle
-    checkPageBreak(metaSize * lineSpacing);
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(71, 85, 105);
-    const dateStr = selectedNote ? 
-      `Last updated: ${selectedNote.updatedAt.toLocaleDateString()} at ${selectedNote.updatedAt.toLocaleTimeString()}` :
-      `Created: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`;
-    pdf.text(dateStr, leftMargin, yPosition);
-    yPosition += 12 * lineSpacing + sectionSpacing;
+    // Reset text formatting with Roboto font
     pdf.setTextColor(0);
+    try {
+      pdf.setFont('Roboto', 'normal');
+    } catch (e) {
+      pdf.setFont('helvetica', 'normal');
+    }
+    pdf.setFontSize(bodySize);
     
-    // Add banners if any
+    // Add banners if any using direct PDF rendering for fast performance
     if (formData.banners && formData.banners.length > 0) {
-      checkPageBreak(headingSize * lineSpacing);
-      pdf.setFontSize(headingSize);
-      pdf.setFont(undefined, 'bold');
-      pdf.setTextColor(0);
-      pdf.text('Banners', leftMargin, yPosition);
-      yPosition += headingSize * lineSpacing + paragraphSpacing;
+      const bannerPadding = 3;
+      const bannerGap = 3;
+      const bannerFontSize = 11;
+      const lineHeight = 4;
+      const minBannerHeight = 10;
       
-      pdf.setFont(undefined, 'normal');
+      let currentX = leftMargin;
+      let lineStartY = yPosition;
+      const maxLineWidth = contentWidth;
+      let maxHeightInRow = minBannerHeight;
       
-      // Banner styling constants to match UI
-      const bannerPadding = 3; // 0.75rem ≈ 3mm
-      const bannerPaddingX = 5; // 1.25rem ≈ 5mm
-      const bannerGap = 3; // 0.75rem ≈ 3mm
-      const bannerRadius = 2.5; // 10px ≈ 2.5mm
-      const bannerFontSize = 10; // 0.9375rem ≈ 10pt
-      const bannerHeight = 14; // Calculated height with padding
-      
-      // Group banners by line
-      const bannerLines = [];
-      let currentLine = [];
-      
+      // Process banners with dynamic height
       formData.banners.forEach((banner, index) => {
-        if (banner.newLine && index > 0 && currentLine.length > 0) {
-          bannerLines.push(currentLine);
-          currentLine = [];
-        }
-        currentLine.push(banner);
-      });
-      if (currentLine.length > 0) {
-        bannerLines.push(currentLine);
-      }
-      
-      // Render each line of banners
-      bannerLines.forEach((line, lineIndex) => {
-        // Add line spacing for new lines (except first)
-        if (lineIndex > 0) {
-          yPosition += 2; // Small gap between lines
+        // Check for new line
+        if (banner.newLine && index > 0) {
+          yPosition += maxHeightInRow + bannerGap;
+          currentX = leftMargin;
+          lineStartY = yPosition;
+          maxHeightInRow = minBannerHeight;
         }
         
-        // Check if the line fits on current page
-        checkPageBreak(bannerHeight + 5);
+        // Calculate banner content
+        pdf.setFontSize(bannerFontSize);
+        // Set font early for accurate text measurement - using helvetica bold for reliability
+        pdf.setFont('helvetica', 'bold');
         
-        // Calculate banner widths for this line
-        let xPosition = leftMargin;
-        const maxLineWidth = contentWidth;
+        const prefix = banner.isDone ? '✓ ' : '';
+        const fullText = prefix + banner.text;
         
-        // Measure each banner's text width
-        const bannerMeasurements = line.map(banner => {
-          pdf.setFontSize(bannerFontSize);
-          const prefix = banner.isDone ? '✓ ' : '';
-          const text = prefix + banner.text;
-          const textWidth = pdf.getTextWidth(text);
-          return {
-            banner,
-            text,
-            width: Math.min(textWidth + (bannerPaddingX * 2), maxLineWidth / line.length - bannerGap)
-          };
+        // Calculate banner width and handle text wrapping
+        const maxBannerWidth = maxLineWidth; // Full width for multi-line
+        const minBannerWidth = 30; // Min 30mm
+        
+        // Split text into lines if needed with proper padding
+        const textMaxWidth = maxBannerWidth - (bannerPadding * 3); // Extra padding for done banners
+        const textLines = pdf.splitTextToSize(fullText, textMaxWidth);
+        const numLines = textLines.length;
+        const bannerHeight = Math.max(minBannerHeight, (numLines * lineHeight) + (bannerPadding * 2));
+        
+        // Calculate actual banner width
+        let bannerWidth;
+        if (numLines > 1) {
+          // Multi-line banners always use full width
+          bannerWidth = maxBannerWidth;
+        } else {
+          // Single line banners size to content
+          const lineWidth = pdf.getTextWidth(fullText) + (bannerPadding * 4);
+          bannerWidth = Math.max(minBannerWidth, Math.min(lineWidth, maxBannerWidth * 0.9));
+        }
+        
+        // Multi-line banners always go on new line and center
+        if (numLines > 1 || currentX + bannerWidth > leftMargin + maxLineWidth) {
+          if (currentX > leftMargin) {
+            // Move to next line if not at start
+            yPosition += maxHeightInRow + bannerGap;
+          }
+          currentX = leftMargin;
+          // Center multi-line banners
+          if (numLines > 1) {
+            currentX = leftMargin + (maxLineWidth - bannerWidth) / 2;
+          }
+          lineStartY = yPosition;
+          maxHeightInRow = bannerHeight;
+        } else {
+          maxHeightInRow = Math.max(maxHeightInRow, bannerHeight);
+        }
+        
+        // Check page break
+        checkPageBreak(bannerHeight + bannerGap);
+        
+        // Set banner color
+        if (banner.isDone) {
+          pdf.setFillColor(0, 255, 136); // Bright green
+        } else if (banner.isOrange) {
+          pdf.setFillColor(255, 105, 0); // Orange
+        } else {
+          pdf.setFillColor(59, 130, 246); // Blue
+        }
+        
+        // Draw banner background
+        pdf.roundedRect(currentX, yPosition, bannerWidth, bannerHeight, 2, 2, 'F');
+        
+        // Set text color and font
+        pdf.setFontSize(bannerFontSize);
+        pdf.setFont('helvetica', 'bold');
+        
+        if (banner.isDone) {
+          pdf.setTextColor(0, 100, 0); // Dark green for done
+        } else {
+          pdf.setTextColor(255, 255, 255); // White
+        }
+        
+        // Add text - left aligned for multi-line, centered for single line
+        const textStartY = yPosition + (bannerHeight - (numLines * lineHeight)) / 2 + lineHeight;
+        textLines.forEach((line, lineIndex) => {
+          let textX;
+          if (numLines > 1) {
+            // Left align text in multi-line banners
+            textX = currentX + bannerPadding;
+          } else {
+            // Center text in single-line banners
+            const textWidth = pdf.getTextWidth(line);
+            textX = currentX + (bannerWidth - textWidth) / 2;
+          }
+          const textY = textStartY + (lineIndex * lineHeight);
+          pdf.text(line, textX, textY);
         });
         
-        // Render each banner in the line
-        bannerMeasurements.forEach((measurement, bannerIndex) => {
-          const { banner, text, width } = measurement;
-          
-          // Set colors based on banner state
-          if (banner.isDone) {
-            // Neon green for done banners
-            pdf.setFillColor(0, 255, 136);
-            pdf.setDrawColor(0, 204, 106);
-          } else if (banner.isOrange) {
-            // Orange for new line banners
-            pdf.setFillColor(203, 96, 21);
-            pdf.setDrawColor(160, 78, 17);
-          } else {
-            // Blue for regular banners
-            pdf.setFillColor(59, 130, 246);
-            pdf.setDrawColor(37, 99, 235);
-          }
-          
-          // Draw shadow
-          pdf.setFillColor(220, 220, 220);
-          pdf.roundedRect(xPosition + 1, yPosition + 1, width, bannerHeight, bannerRadius, bannerRadius, 'F');
-          
-          // Reset fill color
-          if (banner.isDone) {
-            pdf.setFillColor(0, 255, 136);
-          } else if (banner.isOrange) {
-            pdf.setFillColor(203, 96, 21);
-          } else {
-            pdf.setFillColor(59, 130, 246);
-          }
-          
-          // Draw banner background
-          pdf.roundedRect(xPosition, yPosition, width, bannerHeight, bannerRadius, bannerRadius, 'FD');
-          
-          // Set text style
-          pdf.setFontSize(bannerFontSize);
-          if (banner.isDone) {
-            pdf.setTextColor(0, 61, 31); // Dark green text
-            pdf.setFont(undefined, 'bold');
-          } else {
-            pdf.setTextColor(255, 255, 255); // White text
-            pdf.setFont(undefined, 'normal');
-          }
-          
-          // Add text (centered vertically in banner)
-          const textY = yPosition + (bannerHeight / 2) + (bannerFontSize / 3);
-          
-          // Check if text fits, otherwise truncate with ellipsis
-          let displayText = text;
-          const maxTextWidth = width - (bannerPaddingX * 2);
-          if (pdf.getTextWidth(text) > maxTextWidth) {
-            while (pdf.getTextWidth(displayText + '...') > maxTextWidth && displayText.length > 0) {
-              displayText = displayText.substring(0, displayText.length - 1);
-            }
-            displayText += '...';
-          }
-          
-          pdf.text(displayText, xPosition + bannerPaddingX, textY);
-          
-          // Move x position for next banner
-          xPosition += width + bannerGap;
-          
-          // Reset font
-          pdf.setFont(undefined, 'normal');
-        });
-        
-        // Move y position for next line
-        yPosition += bannerHeight + bannerGap;
+        // Move to next position
+        currentX += bannerWidth + bannerGap;
       });
       
-      yPosition += sectionSpacing;
+      // Update final Y position and add spacing
+      yPosition += maxHeightInRow + sectionSpacing;
+      
+      // Reset text formatting
       pdf.setTextColor(0);
-      pdf.setFont(undefined, 'normal');
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(bodySize);
     }
     
-    // Add content
+    // Add content with proper spacing
     if (formData.content) {
-      checkPageBreak(headingSize * lineSpacing);
-      pdf.setFontSize(headingSize);
-      pdf.setFont(undefined, 'bold');
-      pdf.text('Content', leftMargin, yPosition);
-      yPosition += headingSize * lineSpacing + paragraphSpacing;
+      // Add spacing before content if there were banners
+      if (formData.banners && formData.banners.length > 0) {
+        yPosition += sectionSpacing;
+      }
       
-      pdf.setFont(undefined, 'normal');
+      try {
+        pdf.setFont('Roboto', 'normal');
+      } catch (e) {
+        pdf.setFont('helvetica', 'normal');
+      }
       pdf.setFontSize(bodySize);
       
       // Create a temporary div to parse HTML content
@@ -919,7 +1114,18 @@ const Notes = () => {
           // Handle text nodes
           const text = node.textContent.trim();
           if (text) {
-            const lines = pdf.splitTextToSize(text, contentWidth);
+            // Ensure consistent Roboto font for all text nodes
+            try {
+              pdf.setFont('Roboto', 'normal');
+            } catch (e) {
+              pdf.setFont('helvetica', 'normal');
+            }
+            pdf.setFontSize(bodySize);
+            pdf.setTextColor(0);
+            
+            // Ensure text fits within A4 boundaries with proper margins
+            const maxTextWidth = contentWidth - 5; // Small buffer for edge cases
+            const lines = pdf.splitTextToSize(text, maxTextWidth);
             lines.forEach(line => {
               checkPageBreak(bodySize * lineSpacing);
               pdf.text(line, leftMargin, yPosition);
@@ -990,12 +1196,14 @@ const Notes = () => {
                   startY: yPosition,
                   margin: { left: leftMargin, right: rightMargin },
                   styles: {
+                    font: 'Roboto',
                     fontSize: bodySize - 1,
                     cellPadding: 3,
                     lineColor: [200, 200, 200],
                     lineWidth: 0.5,
                   },
                   headStyles: {
+                    font: 'Roboto',
                     fillColor: [59, 130, 246],
                     textColor: [255, 255, 255],
                     fontStyle: 'bold',
@@ -1034,13 +1242,17 @@ const Notes = () => {
             // Handle paragraphs
             const text = node.textContent.trim();
             if (text) {
-              const lines = pdf.splitTextToSize(text, contentWidth);
+              const maxTextWidth = contentWidth - 5; // Small buffer for edge cases
+              const lines = pdf.splitTextToSize(text, maxTextWidth);
               lines.forEach(line => {
                 checkPageBreak(bodySize * lineSpacing);
                 pdf.text(line, leftMargin, yPosition);
                 yPosition += bodySize * lineSpacing;
               });
               yPosition += paragraphSpacing;
+            } else {
+              // Empty paragraph - add minimal spacing, not full paragraph spacing
+              yPosition += bodySize * 0.5;
             }
           } else if (tagName === 'br') {
             // Handle line breaks
@@ -1051,27 +1263,56 @@ const Notes = () => {
             if (text) {
               const fontSize = tagName === 'h1' ? 16 : tagName === 'h2' ? 14 : 12;
               pdf.setFontSize(fontSize);
-              pdf.setFont(undefined, 'bold');
+              try {
+                pdf.setFont('Roboto', 'bold');
+              } catch (e) {
+                pdf.setFont('helvetica', 'bold');
+              }
               
               checkPageBreak(fontSize * lineSpacing);
               pdf.text(text, leftMargin, yPosition);
               yPosition += fontSize * lineSpacing + paragraphSpacing;
               
-              pdf.setFont(undefined, 'normal');
+              try {
+                pdf.setFont('Roboto', 'normal');
+              } catch (e) {
+                pdf.setFont('helvetica', 'normal');
+              }
               pdf.setFontSize(bodySize);
             }
           } else if (tagName === 'ul' || tagName === 'ol') {
-            // Handle lists
+            // Handle lists with proper font and wrapping
             const listItems = node.querySelectorAll('li');
             listItems.forEach((li, index) => {
+              // Ensure Roboto font for lists
+              try {
+                pdf.setFont('Roboto', 'normal');
+              } catch (e) {
+                pdf.setFont('helvetica', 'normal');
+              }
+              pdf.setFontSize(bodySize);
+              pdf.setTextColor(0);
+              
               const prefix = tagName === 'ul' ? '• ' : `${index + 1}. `;
-              const text = prefix + li.textContent.trim();
-              const lines = pdf.splitTextToSize(text, contentWidth - 10);
+              const listItemText = li.textContent.trim();
+              
+              // Calculate indent for wrapped lines
+              const prefixWidth = pdf.getTextWidth(prefix);
+              const indentX = leftMargin + prefixWidth;
+              
+              // Split text to fit within margins
+              const maxTextWidth = contentWidth - prefixWidth - 10;
+              const lines = pdf.splitTextToSize(listItemText, maxTextWidth);
               
               lines.forEach((line, lineIndex) => {
                 checkPageBreak(bodySize * lineSpacing);
-                const xPos = lineIndex === 0 ? leftMargin : leftMargin + 10;
-                pdf.text(line, xPos, yPosition);
+                if (lineIndex === 0) {
+                  // First line with prefix
+                  pdf.text(prefix + line, leftMargin, yPosition);
+                } else {
+                  // Subsequent lines indented
+                  pdf.text(line, indentX, yPosition);
+                }
                 yPosition += bodySize * lineSpacing;
               });
             });
@@ -1080,7 +1321,11 @@ const Notes = () => {
             // Handle blockquotes
             const text = node.textContent.trim();
             if (text) {
-              pdf.setFont(undefined, 'italic');
+              try {
+                pdf.setFont('Roboto', 'italic');
+              } catch (e) {
+                pdf.setFont('helvetica', 'italic');
+              }
               pdf.setTextColor(100);
               
               const lines = pdf.splitTextToSize(text, contentWidth - 20);
@@ -1091,7 +1336,7 @@ const Notes = () => {
               });
               yPosition += paragraphSpacing;
               
-              pdf.setFont(undefined, 'normal');
+              pdf.setFont('arial', 'normal');
               pdf.setTextColor(0);
             }
           } else if (tagName === 'img') {
@@ -1213,7 +1458,15 @@ const Notes = () => {
               await processNode(table);
             }
           } else {
-            // For other elements, process their children
+            // For other elements, ensure font is set and process their children
+            try {
+              pdf.setFont('Roboto', 'normal');
+            } catch (e) {
+              pdf.setFont('helvetica', 'normal');
+            }
+            pdf.setFontSize(bodySize);
+            pdf.setTextColor(0);
+            
             for (const child of Array.from(node.childNodes)) {
               await processNode(child);
             }
@@ -1225,12 +1478,30 @@ const Notes = () => {
       for (const child of Array.from(tempDiv.childNodes)) {
         await processNode(child);
       }
-    }
-    
-    // Save the PDF
-    const filename = `RX-Sprint-Note-${formData.title || 'note'}_${new Date().toISOString().split('T')[0]}.pdf`;
-    pdf.save(filename);
-    
+        }
+        
+        // Update all page footers with total page count
+        const totalPages = pdf.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+          pdf.setPage(i);
+          // Cover the old page number with a white rectangle
+          pdf.setFillColor(248, 250, 252);
+          pdf.rect(pageWidth - 60, pageHeight - 20, 50, 15, 'F');
+          // Add new page number with total
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(8);
+          pdf.setTextColor(100, 116, 139);
+          pdf.text(`Page ${i} of ${totalPages}`, pageWidth - 20, pageHeight - 12, { align: 'right' });
+        }
+        
+        // Save the PDF
+        const filename = `RX-Sprint-Note-${formData.title || 'note'}_${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(filename);
+      };
+      
+      // Start loading the image, which will trigger PDF generation
+      // If logo fails to load, the onerror handler will still generate PDF without logo
+      
     } catch (error) {
       console.error('Error generating PDF:', error);
       console.error('Error details:', error.message, error.stack);
@@ -1316,17 +1587,6 @@ const Notes = () => {
               ) : (
                 <>
                   <button
-                    className="action-btn-compact"
-                    onClick={() => {
-                      setShowBannerInput(true);
-                      setBannerLineBreak(false);
-                      setBannerColorOrange(false);
-                    }}
-                  >
-                    <Tag size={16} />
-                    <span>Add Banner</span>
-                  </button>
-                  <button
                     className={`star-btn-compact ${formData.starred ? 'starred' : ''}`}
                     onClick={(e) => selectedNote && toggleStar(selectedNote, e)}
                     title={formData.starred ? 'Remove star' : 'Add star'}
@@ -1361,13 +1621,28 @@ const Notes = () => {
             <button 
               className="toggle-btn"
               onClick={() => {
-                if (selectedNote) {
-                  setShowBannerInput(true);
-                  setBannerLineBreak(false);
-                  setBannerColorOrange(false);
-                }
+                setIsCreating(true);
+                setIsEditing(true);
+                setSelectedNote(null);
+                setFormData({
+                  title: 'New Note',
+                  content: '',
+                  starred: false,
+                  images: [],
+                  banners: []
+                });
+                // Reset line tracking for new note
+                setCurrentLineNumber(0);
+                setBannerLineBreak(false);
+                setBannerColorOrange(false);
+                // Activate banner field after creating note
+                setTimeout(() => {
+                  if (bannerInputRef.current) {
+                    bannerInputRef.current.focus();
+                  }
+                }, 100);
               }}
-              disabled={!selectedNote}
+              title="Create new note with banner"
             >
               <Tag size={16} />
               <span>Add Banner</span>
@@ -1389,9 +1664,9 @@ const Notes = () => {
               >
                 {isEditing || isCreating ? (
                   <>
-                    {/* Add Banner Controls - Always visible */}
-                    <div className="editor-banner-controls">
-                      <div className="banner-input-wrapper">
+                    {/* Add Banner Controls - Redesigned Layout */}
+                    <div className="editor-banner-controls-container">
+                      <div className="banner-input-row">
                         <textarea
                           ref={bannerInputRef}
                           className="banner-input"
@@ -1411,6 +1686,8 @@ const Notes = () => {
                           }}
                           rows={1}
                         />
+                      </div>
+                      <div className="banner-controls-row">
                         <button
                           className="add-banner-btn"
                           onClick={addBanner}
@@ -1586,8 +1863,10 @@ const Notes = () => {
           ) : (
             <div className="notes-main-list">
               <div className="notes-list-header">
-                <h2>All Notes</h2>
-                <span className="notes-count">{filteredNotes.length} notes</span>
+                <div className="notes-list-title">
+                  <h2>All Notes</h2>
+                  <span className="notes-count">{filteredNotes.length} notes</span>
+                </div>
               </div>
               
               <div className="notes-search-bar">
@@ -1607,51 +1886,91 @@ const Notes = () => {
                   <p>Loading notes...</p>
                 </div>
               ) : filteredNotes.length > 0 ? (
-                <div className="notes-main-grid">
-                  {filteredNotes.map(note => (
-                    <div
-                      key={note.id}
-                      className="main-note-card"
-                      onClick={() => {
-                        handleSelectNote(note);
-                      }}
-                    >
-                      <div className="main-note-header">
-                        <h3>{note.title || 'Untitled'}</h3>
-                        <div className="main-note-actions">
-                          {note.starred && (
-                            <Star size={16} fill="currentColor" className="starred-icon" />
+                <div className="notes-masonry-grid">
+                  {filteredNotes.map((note, index) => {
+                    // Generate pastel colors matching the screenshot
+                    const colors = [
+                      '#FFB5A7', // Coral/Pink (like the first card)
+                      '#FFE5B4', // Peach/Yellow (like the second card)
+                      '#C8E6C9', // Mint green (like the third card)
+                      '#B3E5FC', // Light cyan (like Spotify card)
+                      '#E1BEE7', // Light purple (like the mobile wallpaper card)
+                      '#FFCCBC', // Light orange/salmon (like Design for Good)
+                      '#F8BBD0', // Light pink
+                      '#DCEDC8', // Light green
+                    ];
+                    
+                    const backgroundColor = colors[index % colors.length];
+                    
+                    // Extract plain text from HTML content for preview
+                    const getPlainTextPreview = (htmlContent) => {
+                      if (!htmlContent) return '';
+                      const temp = document.createElement('div');
+                      temp.innerHTML = htmlContent;
+                      const text = temp.textContent || temp.innerText || '';
+                      return text.substring(0, 150) + (text.length > 150 ? '...' : '');
+                    };
+                    
+                    const contentPreview = getPlainTextPreview(note.content);
+                    
+                    return (
+                      <div
+                        key={note.id}
+                        className="modern-note-card"
+                        style={{ backgroundColor }}
+                        onClick={() => handleSelectNote(note)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          setNoteContextMenu({
+                            visible: true,
+                            x: e.clientX,
+                            y: e.clientY,
+                            noteId: note.id
+                          });
+                        }}
+                        onTouchStart={(e) => {
+                          noteLongPressTimer.current = setTimeout(() => {
+                            e.preventDefault();
+                            const touch = e.touches[0];
+                            setNoteContextMenu({
+                              visible: true,
+                              x: touch.clientX,
+                              y: touch.clientY,
+                              noteId: note.id
+                            });
+                          }, 500);
+                        }}
+                        onTouchEnd={() => {
+                          if (noteLongPressTimer.current) {
+                            clearTimeout(noteLongPressTimer.current);
+                          }
+                        }}
+                        onTouchMove={() => {
+                          if (noteLongPressTimer.current) {
+                            clearTimeout(noteLongPressTimer.current);
+                          }
+                        }}
+                      >
+                        {note.starred && (
+                          <div className="modern-note-star">
+                            <Star size={16} fill="currentColor" />
+                          </div>
+                        )}
+                        <h3 className="modern-note-title">{note.title || 'Untitled'}</h3>
+                        {contentPreview && (
+                          <p className="modern-note-preview">{contentPreview}</p>
+                        )}
+                        <div className="modern-note-footer">
+                          <span className="modern-note-date">
+                            {formatDate(note.updatedAt)}
+                          </span>
+                          {note.images && note.images.length > 0 && (
+                            <ImageIcon size={14} className="modern-note-icon" />
                           )}
-                          <button
-                            className="star-btn-card"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleStar(note, e);
-                            }}
-                            title={note.starred ? 'Remove star' : 'Add star'}
-                          >
-                            <Star 
-                              size={14} 
-                              fill={note.starred ? 'currentColor' : 'none'} 
-                              className={note.starred ? 'starred' : ''}
-                            />
-                          </button>
                         </div>
                       </div>
-                      <div className="main-note-footer">
-                        <span className="main-note-date">
-                          <Clock size={14} />
-                          {formatDate(note.updatedAt)}
-                        </span>
-                        {note.images && note.images.length > 0 && (
-                          <span className="main-note-images">
-                            <ImageIcon size={14} />
-                            {note.images.length}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="empty-notes-state">
@@ -1699,6 +2018,36 @@ const Notes = () => {
             <span>
               {formData.banners.find(b => b.id === contextMenu.bannerId)?.isDone ? 'Mark as Undone' : 'Mark as Done'}
             </span>
+          </button>
+        </div>,
+        document.body
+      )}
+
+      {/* Note Card Context Menu */}
+      {noteContextMenu.visible && ReactDOM.createPortal(
+        <div 
+          className="note-context-menu"
+          style={{ 
+            position: 'fixed',
+            left: noteContextMenu.x, 
+            top: noteContextMenu.y,
+            zIndex: 2147483648
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="context-menu-item"
+            onClick={() => handleEditNoteFromMenu(noteContextMenu.noteId)}
+          >
+            <Edit3 size={16} />
+            <span>Edit</span>
+          </button>
+          <button
+            className="context-menu-item delete"
+            onClick={() => handleDeleteNoteFromMenu(noteContextMenu.noteId)}
+          >
+            <Trash2 size={16} />
+            <span>Delete</span>
           </button>
         </div>,
         document.body

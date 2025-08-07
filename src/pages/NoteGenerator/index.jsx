@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   FileText, 
   Copy, 
@@ -17,6 +17,7 @@ import {
   Clock,
   Package,
   ChevronDown,
+  ChevronRight,
   Edit,
   Save,
   X
@@ -32,6 +33,12 @@ const NoteGenerator = () => {
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [editedNote, setEditedNote] = useState('');
   const noteTextareaRef = useRef(null);
+  const [dragState, setDragState] = useState({ isDragging: false, fieldName: null, dragPosition: null });
+  const toggleRefs = useRef({});
+  const [isPatientInfoExpanded, setIsPatientInfoExpanded] = useState(false);
+  const dragStartPosition = useRef(null);
+  const lastUpdateTime = useRef(0);
+  const animationFrameRef = useRef(null);
   
   // Patient Information Form State
   const [patientInfoForm, setPatientInfoForm] = useState({
@@ -144,9 +151,11 @@ const NoteGenerator = () => {
     }
   };
 
-  // Render three-way switch toggle component
+  // Render three-way switch toggle component with drag support
   const renderSwitchToggle = (fieldName, yesValue, noValue, yesLabel = 'Yes', noLabel = 'No') => {
     const currentValue = interventionForm[fieldName];
+    const isFieldDragging = dragState.isDragging && dragState.fieldName === fieldName;
+    
     let dataValue = '';
     
     if (currentValue === yesValue) {
@@ -157,12 +166,7 @@ const NoteGenerator = () => {
       dataValue = '';
     }
     
-    const handleToggleClick = (e) => {
-      e.preventDefault();
-      const clickX = e.nativeEvent.offsetX;
-      const width = e.currentTarget.offsetWidth;
-      const position = clickX / width;
-      
+    const updateValueFromPosition = (position) => {
       let newValue;
       if (position < 0.33) {
         newValue = yesValue;
@@ -171,8 +175,61 @@ const NoteGenerator = () => {
       } else {
         newValue = '';
       }
-      
       updateInterventionField(fieldName, newValue);
+    };
+    
+    const handleMouseDown = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Store initial position for smooth transitions
+      const rect = toggleRefs.current[fieldName]?.getBoundingClientRect();
+      if (rect) {
+        const initialX = e.clientX - rect.left;
+        const initialPosition = Math.max(0, Math.min(1, initialX / rect.width));
+        dragStartPosition.current = initialPosition;
+      }
+      
+      setDragState({ isDragging: true, fieldName, dragPosition: null });
+      
+      // Prevent text selection during drag
+      document.body.style.userSelect = 'none';
+      document.body.style.webkitUserSelect = 'none';
+      document.body.style.cursor = 'grabbing';
+    };
+    
+    // Mouse move is now handled globally for better performance
+    
+    // Mouse up is now handled globally
+    
+    // Touch events for mobile
+    const handleTouchStart = (e) => {
+      e.preventDefault();
+      
+      // Store initial touch position
+      const rect = toggleRefs.current[fieldName]?.getBoundingClientRect();
+      if (rect && e.touches[0]) {
+        const initialX = e.touches[0].clientX - rect.left;
+        const initialPosition = Math.max(0, Math.min(1, initialX / rect.width));
+        dragStartPosition.current = initialPosition;
+      }
+      
+      setDragState({ isDragging: true, fieldName, dragPosition: null });
+    };
+    
+    // Touch move is now handled globally
+    
+    // Touch end is now handled globally
+    
+    const handleToggleClick = (e) => {
+      if (isFieldDragging) return; // Don't handle click if dragging
+      
+      e.preventDefault();
+      const clickX = e.nativeEvent.offsetX;
+      const width = e.currentTarget.offsetWidth;
+      const position = clickX / width;
+      
+      updateValueFromPosition(position);
     };
     
     const handleToggleKeyPress = (e) => {
@@ -192,19 +249,64 @@ const NoteGenerator = () => {
       }
     };
     
+    // Calculate visual position for smooth slider movement
+    const getVisualPosition = () => {
+      if (isFieldDragging && dragState.dragPosition !== null) {
+        // Direct mapping of drag position to visual position for smooth movement
+        const position = Math.max(0, Math.min(1, dragState.dragPosition));
+        
+        // Convert 0-1 drag position to percentage position
+        // Switch toggle width is 180px with 4px padding on each side
+        // Slider button is 60px wide (33.33% of 180px)
+        // Left position: 4px (2.22%), Center: 60px (33.33%), Right: 116px (64.44%)
+        
+        if (position <= 0.33) {
+          // Interpolate from left position to center
+          const localPos = position / 0.33;
+          return 2.22 + (localPos * (33.33 - 2.22)); // 2.22% to 33.33%
+        } else if (position >= 0.67) {
+          // Interpolate from center to right position  
+          const localPos = (position - 0.67) / 0.33;
+          return 33.33 + (localPos * (64.44 - 33.33)); // 33.33% to 64.44%
+        } else {
+          // Stay in center zone
+          return 33.33;
+        }
+      }
+      
+      // Return static positions based on current value
+      if (currentValue === yesValue) {
+        return 2.22; // Left position (4px from edge = 2.22% of 180px)
+      } else if (currentValue === noValue) {
+        return 64.44; // Right position (116px = 64.44% of 180px)
+      } else {
+        return 33.33; // Center position
+      }
+    };
+    
     return (
       <div className="toggle-button-group-label">
         <div
-          ref={el => formRefs.current[fieldName] = el}
-          className="switch-toggle"
+          ref={(el) => {
+            formRefs.current[fieldName] = el;
+            toggleRefs.current[fieldName] = el;
+          }}
+          className={`switch-toggle ${isFieldDragging ? 'dragging' : ''}`}
           data-value={dataValue}
           onClick={handleToggleClick}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
           onKeyPress={handleToggleKeyPress}
           tabIndex={0}
           role="switch"
           aria-checked={dataValue === 'yes' ? 'true' : dataValue === 'no' ? 'false' : 'mixed'}
         >
-          <div className="switch-toggle-slider">
+          <div 
+            className="switch-toggle-slider"
+            style={{
+              '--slider-position': `${getVisualPosition()}%`
+            }}
+          >
             <span className="switch-toggle-text left">{yesLabel}</span>
             <span className="switch-toggle-text middle">-</span>
             <span className="switch-toggle-text right">{noLabel}</span>
@@ -435,11 +537,11 @@ const NoteGenerator = () => {
   };
 
   // Copy to clipboard
-  const copyToClipboard = async (text) => {
+  const copyToClipboard = async (text, section = 'intervention') => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopiedNote(true);
-      setTimeout(() => setCopiedNote(false), 2000);
+      setCopiedNote(section);
+      setTimeout(() => setCopiedNote(null), 2000);
     } catch (error) {
       console.error('Error copying to clipboard:', error);
     }
@@ -532,18 +634,199 @@ const NoteGenerator = () => {
     setEditedNote('');
   };
 
+  // Global event listeners for drag functionality
+  useEffect(() => {
+    const handleGlobalMouseMove = (e) => {
+      if (!dragState.isDragging || !dragState.fieldName || !toggleRefs.current[dragState.fieldName]) return;
+      
+      e.preventDefault();
+      
+      const rect = toggleRefs.current[dragState.fieldName].getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      // Improved boundary handling
+      const padding = 2;
+      const effectiveWidth = rect.width - (padding * 2);
+      const adjustedX = Math.max(padding, Math.min(rect.width - padding, x));
+      const position = Math.max(0, Math.min(1, (adjustedX - padding) / effectiveWidth));
+      
+      // Use requestAnimationFrame for smooth visual updates
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(() => {
+        setDragState(prev => ({
+          ...prev,
+          dragPosition: position
+        }));
+      });
+      
+      // Throttle actual value updates to reduce re-renders
+      const now = Date.now();
+      if (now - lastUpdateTime.current > 16) { // ~60fps
+        lastUpdateTime.current = now;
+        
+        let newValue;
+        if (position < 0.33) {
+          newValue = 'yes';
+        } else if (position > 0.66) {
+          newValue = 'no';
+        } else {
+          newValue = '';
+        }
+        
+        // Only update if value actually changed
+        const fieldName = dragState.fieldName;
+        const currentValue = interventionForm[fieldName];
+        const targetValue = newValue === 'yes' ? 'YES' : newValue === 'no' ? 'NO' : '';
+        
+        if (currentValue !== targetValue) {
+          updateInterventionField(fieldName, targetValue);
+        }
+      }
+    };
+    
+    const handleGlobalMouseUp = () => {
+      if (dragState.isDragging) {
+        // Final value update on release
+        if (dragState.dragPosition !== null && dragState.fieldName) {
+          const position = dragState.dragPosition;
+          let finalValue;
+          if (position < 0.33) {
+            finalValue = 'YES';
+          } else if (position > 0.66) {
+            finalValue = 'NO';
+          } else {
+            finalValue = '';
+          }
+          updateInterventionField(dragState.fieldName, finalValue);
+        }
+        
+        // Cleanup animation frame
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+          animationFrameRef.current = null;
+        }
+        
+        setDragState({ isDragging: false, fieldName: null, dragPosition: null });
+        document.body.style.userSelect = '';
+        document.body.style.webkitUserSelect = '';
+        document.body.style.cursor = '';
+        dragStartPosition.current = null;
+      }
+    };
+    
+    const handleGlobalTouchMove = (e) => {
+      if (!dragState.isDragging || !dragState.fieldName || !toggleRefs.current[dragState.fieldName]) return;
+      
+      e.preventDefault();
+      
+      const touch = e.touches[0];
+      const rect = toggleRefs.current[dragState.fieldName].getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      // Improved boundary handling
+      const padding = 2;
+      const effectiveWidth = rect.width - (padding * 2);
+      const adjustedX = Math.max(padding, Math.min(rect.width - padding, x));
+      const position = Math.max(0, Math.min(1, (adjustedX - padding) / effectiveWidth));
+      
+      // Use requestAnimationFrame for smooth visual updates on touch
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(() => {
+        setDragState(prev => ({
+          ...prev,
+          dragPosition: position
+        }));
+      });
+      
+      // Throttle value updates for touch as well
+      const now = Date.now();
+      if (now - lastUpdateTime.current > 32) {
+        lastUpdateTime.current = now;
+        
+        let newValue;
+        // More precise zone mapping for touch
+        if (position < 0.3) {
+          newValue = 'yes';
+        } else if (position > 0.7) {
+          newValue = 'no';
+        } else {
+          newValue = '';
+        }
+        
+        const fieldName = dragState.fieldName;
+        const currentValue = interventionForm[fieldName];
+        const targetValue = newValue === 'yes' ? 'YES' : newValue === 'no' ? 'NO' : '';
+        
+        if (currentValue !== targetValue) {
+          updateInterventionField(fieldName, targetValue);
+        }
+      }
+    };
+    
+    const handleGlobalTouchEnd = () => {
+      if (dragState.isDragging) {
+        // Final value update on touch end
+        if (dragState.dragPosition !== null && dragState.fieldName) {
+          const position = dragState.dragPosition;
+          let finalValue;
+          if (position < 0.33) {
+            finalValue = 'YES';
+          } else if (position > 0.66) {
+            finalValue = 'NO';
+          } else {
+            finalValue = '';
+          }
+          updateInterventionField(dragState.fieldName, finalValue);
+        }
+        
+        // Cleanup animation frame
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+          animationFrameRef.current = null;
+        }
+        
+        setDragState({ isDragging: false, fieldName: null, dragPosition: null });
+        dragStartPosition.current = null;
+      }
+    };
+    
+    if (dragState.isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener('touchmove', handleGlobalTouchMove);
+      document.addEventListener('touchend', handleGlobalTouchEnd);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleGlobalMouseMove);
+        document.removeEventListener('mouseup', handleGlobalMouseUp);
+        document.removeEventListener('touchmove', handleGlobalTouchMove);
+        document.removeEventListener('touchend', handleGlobalTouchEnd);
+      };
+    }
+  }, [dragState, interventionForm]);
+
   return (
     <div className="note-generator-page page-container">
       <div className="note-generator-content">
         <div className="note-generator-dashboard">
 
-          {/* Patient Information Section */}
+          {/* Patient Information Section - Collapsible Dropdown */}
           <div className="dashboard-card patient-info-card full-width">
-            <div className="card-header">
-              <h3>Patient Information</h3>
-              <User size={20} />
+            <div className="card-header collapsible-header" onClick={() => setIsPatientInfoExpanded(!isPatientInfoExpanded)}>
+              <div className="header-left">
+                <h3>Patient Information</h3>
+                <User size={20} />
+              </div>
+              <div className="collapse-indicator">
+                {isPatientInfoExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+              </div>
             </div>
-            <div className="card-body">
+            {isPatientInfoExpanded && (
+              <div className="card-body">
               <div className="patient-info-container">
                 <div className="input-grid patient-info-grid">
                   <div className="input-group">
@@ -598,34 +881,75 @@ const NoteGenerator = () => {
                   </div>
                 </div>
                 
-                {/* Generated Patient Info Note */}
-                <div className="generated-note-section patient-info-note">
-                  <h4>Generated Patient Information Note</h4>
-                  <div className="note-output-wrapper">
-                    <div className="note-output">
-                      {generatePatientInfoNote() || 'Fill in the fields above to generate the note'}
+                {/* Generated Patient Info Note - Matching Intervention Note Design */}
+                <div className="generated-note-section intervention-style">
+                  <h4 className="section-title">
+                    <FileText size={16} />
+                    Generated Patient Information Note
+                  </h4>
+                  <div className="note-output-container">
+                    {isEditingNote ? (
+                      <textarea
+                        ref={noteTextareaRef}
+                        className="note-edit-textarea"
+                        value={editedNote}
+                        onChange={(e) => setEditedNote(e.target.value)}
+                        onBlur={() => {
+                          setIsEditingNote(false);
+                          setEditedNote('');
+                        }}
+                      />
+                    ) : (
+                      <div className="note-display" onClick={() => {
+                        const note = generatePatientInfoNote();
+                        if (note) {
+                          setEditedNote(note);
+                          setIsEditingNote(true);
+                          setTimeout(() => noteTextareaRef.current?.focus(), 0);
+                        }
+                      }}>
+                        {generatePatientInfoNote() || 'Fill in the fields above to generate the note'}
+                      </div>
+                    )}
+                    <div className="note-actions">
+                      <button
+                        className="edit-note-btn"
+                        onClick={() => {
+                          const note = generatePatientInfoNote();
+                          if (note) {
+                            setEditedNote(note);
+                            setIsEditingNote(true);
+                            setTimeout(() => noteTextareaRef.current?.focus(), 0);
+                          }
+                        }}
+                        disabled={!generatePatientInfoNote()}
+                      >
+                        <Edit size={16} />
+                        Edit Note
+                      </button>
+                      <button
+                        className="copy-note-btn primary"
+                        onClick={() => copyToClipboard(editedNote || generatePatientInfoNote(), 'patient')}
+                        disabled={!generatePatientInfoNote()}
+                      >
+                        {copiedNote === 'patient' ? (
+                          <>
+                            <Check size={16} />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={16} />
+                            Copy Note to Clipboard
+                          </>
+                        )}
+                      </button>
                     </div>
-                    <button 
-                      className="copy-note-btn"
-                      onClick={() => copyToClipboard(generatePatientInfoNote())}
-                      disabled={!generatePatientInfoNote()}
-                    >
-                      {copiedNote ? (
-                        <>
-                          <Check size={16} />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy size={16} />
-                          Copy
-                        </>
-                      )}
-                    </button>
                   </div>
                 </div>
               </div>
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Intervention Note Form */}

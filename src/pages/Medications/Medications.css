@@ -111,8 +111,8 @@
 }
 
 .toggle-btn:hover {
-  background: #ff5400;
-  border-color: #ff5400;
+  background: #FF6900;
+  border-color: #FF6900;
   color: white !important;
   transform: translateY(-1px);
 }
@@ -127,9 +127,9 @@
 }
 
 .toggle-btn.active {
-  background: #ff5400;
+  background: #FF6900;
   color: white !important;
-  border-color: #ff5400;
+  border-color: #FF6900;
   box-shadow: 0 4px 12px rgba(255, 84, 0, 0.3);
 }
 
@@ -178,8 +178,8 @@
 /* Enhanced mobile touch feedback */
 @media (hover: none) and (pointer: coarse) {
   .toggle-btn:active {
-    background: #ff5400;
-    border-color: #ff5400;
+    background: #FF6900;
+    border-color: #FF6900;
     color: white !important;
   }
 }
@@ -213,6 +213,67 @@
 .medications-page > .modal-prescription-profile {
   flex: 1;
   height: 100%;
+}
+
+/* Force all filter buttons to use FF6900 color scheme */
+.medications-page .toggle-btn {
+  background: #FF6900 !important;
+  color: white !important;
+  border-color: #FF6900 !important;
+}
+
+.medications-page .toggle-btn span,
+.medications-page .toggle-btn .mobile-abbr,
+.medications-page .toggle-btn .desktop-text {
+  color: white !important;
+}
+
+.medications-page .toggle-btn:hover {
+  background: #E55D00 !important;
+  border-color: #E55D00 !important;
+  color: white !important;
+}
+
+.medications-page .toggle-btn:hover span,
+.medications-page .toggle-btn:hover .mobile-abbr,
+.medications-page .toggle-btn:hover .desktop-text {
+  color: white !important;
+}
+
+.medications-page .toggle-btn.active {
+  background: #E55D00 !important;
+  color: white !important;
+  border-color: #E55D00 !important;
+  box-shadow: 0 4px 12px rgba(255, 105, 0, 0.3) !important;
+}
+
+.medications-page .toggle-btn.active span,
+.medications-page .toggle-btn.active .mobile-abbr,
+.medications-page .toggle-btn.active .desktop-text {
+  color: white !important;
+}
+
+/* Ensure white text and icons in both themes */
+[data-theme="light"] .medications-page .toggle-btn,
+[data-theme="dark"] .medications-page .toggle-btn {
+  color: white !important;
+}
+
+[data-theme="light"] .medications-page .toggle-btn span,
+[data-theme="dark"] .medications-page .toggle-btn span,
+[data-theme="light"] .medications-page .toggle-btn .mobile-abbr,
+[data-theme="dark"] .medications-page .toggle-btn .mobile-abbr,
+[data-theme="light"] .medications-page .toggle-btn .desktop-text,
+[data-theme="dark"] .medications-page .toggle-btn .desktop-text {
+  color: white !important;
+}
+
+[data-theme="light"] .medications-page .toggle-btn svg,
+[data-theme="dark"] .medications-page .toggle-btn svg,
+[data-theme="light"] .medications-page .toggle-btn .desktop-icon,
+[data-theme="dark"] .medications-page .toggle-btn .desktop-icon {
+  color: white !important;
+  fill: white !important;
 }
 
 /* Content Container - matching supplies-content */

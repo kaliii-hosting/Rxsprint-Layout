@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Bot, Send, User, Search, AlertTriangle, CheckCircle, XCircle, AlertCircle, Pill, ArrowRightLeft } from 'lucide-react';
+import { Bot, Send, User, Search, AlertTriangle, CheckCircle, XCircle, AlertCircle, Pill, ArrowRightLeft, Sparkles } from 'lucide-react';
 import './GPT.css';
 
 const GPT = () => {
@@ -23,7 +23,7 @@ const GPT = () => {
   // API Configuration
   const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
   const ENDPOINT = "https://models.inference.ai.azure.com";
-  const MODEL = "gpt-4o-mini"; // or "gpt-4o" for better results
+  const MODEL = "gpt-4o-mini"; // Using fastest model for quick responses
 
   // Function to call AI API
   const callAIAPI = async (prompt, systemPrompt) => {
@@ -50,8 +50,9 @@ const GPT = () => {
               content: prompt
             }
           ],
-          temperature: 0.1, // Low temperature for factual medical information
-          max_tokens: 2000
+          temperature: 0.3, // Slightly higher for faster processing
+          max_tokens: 600, // Reduced for faster responses
+          top_p: 0.9
         })
       });
 
@@ -76,39 +77,28 @@ const GPT = () => {
     setSearchError(null);
     setSearchResults(null);
 
-    const systemPrompt = `You are a medical information assistant. Provide accurate, comprehensive medication information based on current medical guidelines and FDA-approved information. Always include warnings and contraindications. Format your response as a structured JSON object.`;
+    const systemPrompt = `You are a medical AI. Return ONLY valid JSON, no markdown or explanations.`;
 
-    const prompt = `Provide detailed medical information for the medication: ${searchQuery}
-
-Return ONLY a valid JSON object with this exact structure (no markdown, no code blocks, just the JSON):
+    const prompt = `Drug info for ${searchQuery}. Return JSON:
 {
-  "medicationOverview": "Brief overview of the medication",
-  "brandNames": ["Brand1", "Brand2"],
-  "genericName": "Generic name",
-  "moa": "Mechanism of action explained clearly",
-  "indications": [
-    {
-      "condition": "Condition name",
-      "icd10": "ICD-10 code",
-      "dosing": "Dosing information"
-    }
-  ],
-  "dosingAdjustments": "Renal/hepatic adjustments",
-  "routes": ["Route1", "Route2"],
-  "pretests": ["Test1", "Test2"],
-  "premedications": "Required premedications or 'None'",
-  "sideEffects": ["Common side effect 1", "Side effect 2"],
-  "blackBoxWarning": "FDA black box warning if any, or 'None'",
-  "contraindications": ["Contraindication1", "Contraindication2"],
-  "storage": "Storage requirements",
-  "strengthsPackages": ["Strength1", "Strength2"],
-  "remsProgram": "REMS requirements or 'None'",
-  "vaccineInteractions": "Vaccine interaction information",
-  "patientCounseling": {
-    "missedDose": "Instructions for missed doses",
-    "therapyGaps": "Information about therapy interruptions"
-  },
-  "similarTreatments": ["Alternative1", "Alternative2"]
+  "medicationOverview": "Brief overview",
+  "brandNames": ["list"],
+  "genericName": "name",
+  "moa": "mechanism of action",
+  "indications": [{"condition": "name", "icd10": "code", "dosing": "info"}],
+  "dosingAdjustments": "renal/hepatic",
+  "routes": ["list"],
+  "pretests": ["list or empty"],
+  "premedications": "text or None",
+  "sideEffects": ["top 5 common"],
+  "blackBoxWarning": "warning or None",
+  "contraindications": ["list"],
+  "storage": "requirements",
+  "strengthsPackages": ["common strengths"],
+  "remsProgram": "info or None",
+  "vaccineInteractions": "info",
+  "patientCounseling": {"missedDose": "instructions", "therapyGaps": "info"},
+  "similarTreatments": ["2-3 alternatives"]
 }`;
 
     try {
@@ -138,19 +128,17 @@ Return ONLY a valid JSON object with this exact structure (no markdown, no code 
     setInteractionResult(null);
     setMedicationSafety(null);
 
-    const systemPrompt = `You are a clinical pharmacist assistant specializing in drug-drug interactions. Provide evidence-based information about drug interactions, their clinical significance, and management recommendations. Always err on the side of caution for patient safety.`;
+    const systemPrompt = `You are a pharmacist AI. Return ONLY valid JSON for drug interactions.`;
 
-    const prompt = `Analyze the drug interaction between ${drug1} and ${drug2}.
-
-Return ONLY a valid JSON object with this structure (no markdown, no code blocks):
+    const prompt = `Check interaction: ${drug1} with ${drug2}. Return JSON:
 {
   "drug1": "${drug1}",
   "drug2": "${drug2}",
   "interactionSeverity": "none|mild|moderate|severe",
-  "clinicalRationale": "Detailed explanation of the interaction mechanism and clinical significance",
-  "recommendation": "Specific clinical recommendations for managing this interaction",
-  "monitoringRequired": ["Parameter to monitor 1", "Parameter 2"],
-  "alternativeOptions": ["Alternative medication 1", "Alternative 2"]
+  "clinicalRationale": "brief mechanism and significance",
+  "recommendation": "management advice",
+  "monitoringRequired": ["key parameters"],
+  "alternativeOptions": ["1-2 alternatives"]
 }`;
 
     try {
@@ -255,13 +243,13 @@ Return ONLY a valid JSON object with this structure (no markdown, no code blocks
                 />
                 <button 
                   onClick={handleMedicationSearch}
-                  disabled={!searchQuery.trim() || searchLoading}
-                  className="search-button"
+                  disabled={searchLoading}
+                  className="search-button medication-search-btn"
                 >
                   {searchLoading ? (
                     <div className="spinner"></div>
                   ) : (
-                    <Search size={20} />
+                    <Sparkles size={20} />
                   )}
                 </button>
               </div>

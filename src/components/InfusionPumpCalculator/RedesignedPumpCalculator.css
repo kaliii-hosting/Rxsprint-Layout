@@ -20,7 +20,7 @@
 .pump-calculator-container {
   width: 100%;
   height: 100%;
-  background: var(--bg-secondary);
+  background: var(--bg-secondary, #f5f5f5);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   padding: 0;
   overflow-y: auto;
@@ -29,6 +29,7 @@
   flex-direction: column;
   -webkit-overflow-scrolling: touch;
   position: relative;
+  color: var(--text-primary, #1f2937);
 }
 
 .pump-calculator-container * {
@@ -37,6 +38,7 @@
 
 .pump-calculator-full-width {
   width: 100%;
+  max-width: 100%;
   margin: 0;
   padding: 1rem;
   padding-bottom: 6rem;
@@ -44,6 +46,7 @@
   flex-direction: column;
   gap: 1rem;
   min-height: 100%;
+  box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
@@ -55,14 +58,15 @@
 
 .calculator-section {
   width: 100%;
-  background: white;
-  border: none;
+  background: var(--bg-tertiary, white);
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 12px;
   margin-bottom: 1rem;
   overflow: visible;
   transition: all 0.3s ease;
   animation: fadeInUp 0.5s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
@@ -74,20 +78,21 @@
 
 @media (min-width: 768px) {
   .calculator-section:hover {
-    border-color: var(--primary-border);
-    box-shadow: 0 8px 32px var(--primary-shadow);
+    border-color: rgba(255, 85, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(255, 85, 0, 0.1);
   }
 }
 
 .section-header {
-  background: #f8f9fa;
+  background: var(--bg-primary, #f8f9fa);
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--border-color, #e9ecef);
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 0.5rem;
   border-radius: 12px 12px 0 0;
+  color: var(--text-primary);
 }
 
 /* Reset button in section header */
@@ -161,7 +166,7 @@
 .close-section-btn {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: #666666;
   cursor: pointer;
   padding: 0.5rem;
   margin-left: auto;
@@ -173,8 +178,8 @@
 }
 
 .close-section-btn:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: #ffffff;
+  color: #000000;
 }
 
 .close-section-btn svg {
@@ -191,10 +196,11 @@
   min-height: auto;
   height: auto;
   border-radius: 0 0 12px 12px;
+  box-sizing: border-box;
 }
 
 .section-description {
-  color: var(--text-secondary);
+  color: #666666;
   font-size: 0.875rem;
   margin-bottom: 1.5rem;
 }
@@ -270,7 +276,6 @@
   font-weight: 500;
 }
 
-
 /* Medication Info Cards Row - All cards in same row */
 .medication-info-cards-row {
   display: grid;
@@ -301,7 +306,7 @@
   border: none;
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 /* Primary inputs row */
@@ -330,8 +335,8 @@
 
 /* Card style for medication info */
 .medication-info-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 12px;
   padding: 1.25rem;
   display: flex;
@@ -344,14 +349,14 @@
 
 .medication-info-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow-sm);
-  border-color: var(--primary-border);
+  box-shadow: 0 4px 12px 0 1px 2px rgba(0, 0, 0, 0.05);
+  border-color: rgba(255, 85, 0, 0.2);
 }
 
 .medication-info-card .card-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -362,11 +367,11 @@
   gap: 0.5rem;
   font-size: 1rem;
   font-weight: 500;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 .medication-info-card svg {
-  color: var(--primary-color);
+  color: #ff5500;
   flex-shrink: 0;
 }
 
@@ -463,10 +468,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1rem;
-  background: var(--button-bg);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
-  color: var(--text-primary);
+  color: #000000;
   font-weight: 500;
   width: 100%;
   min-height: 44px;
@@ -474,7 +479,7 @@
 }
 
 .info-display svg {
-  color: var(--primary-color);
+  color: #ff5500;
   flex-shrink: 0;
 }
 
@@ -617,8 +622,8 @@
 
 .calculated-values {
   grid-column: 1 / -1;
-  background: var(--button-bg);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
   padding: 1rem;
   display: flex;
@@ -633,13 +638,13 @@
 }
 
 .calc-label {
-  color: var(--text-secondary);
+  color: #666666;
   font-size: 0.875rem;
   font-weight: 500;
 }
 
 .calc-value {
-  color: var(--primary-color);
+  color: #ff5500;
   font-size: 1rem;
   font-weight: 700;
 }
@@ -706,7 +711,7 @@
 }
 
 .supply-input.error {
-  border-color: var(--error-color);
+  border-color: #ef4444;
 }
 
 /* Custom Dropdown */
@@ -1139,8 +1144,8 @@
 }
 
 .supply-dropdown option {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.03);
+  color: #000000;
 }
 
 .dropdown-icon {
@@ -1237,8 +1242,8 @@
 }
 
 .dose-frequency-row .dose-item {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 12px;
   padding: 1rem;
 }
@@ -1250,7 +1255,7 @@
 }
 
 .dose-frequency-row .input-suffix {
-  color: var(--text-secondary);
+  color: #666666;
   font-size: 0.875rem;
   font-weight: 500;
   white-space: nowrap;
@@ -1276,7 +1281,7 @@
 
 .time-label {
   font-size: clamp(0.75rem, 1.2vw, 0.875rem);
-  color: var(--text-secondary);
+  color: #666666;
   font-weight: 500;
 }
 
@@ -1297,19 +1302,19 @@
 .radio-option input[type="radio"] {
   width: 18px;
   height: 18px;
-  accent-color: var(--primary-color);
+  accent-color: #ff5500;
   cursor: pointer;
 }
 
 .radio-label {
   font-size: clamp(0.875rem, 1.5vw, 1rem);
-  color: var(--text-primary);
+  color: #000000;
 }
 
 /* Helper Text */
 .helper-text {
   font-size: 0.75rem;
-  color: var(--text-tertiary);
+  color: #999999;
   margin-top: 0.25rem;
 }
 
@@ -1327,13 +1332,13 @@
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.875rem;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 .radio-option input[type="radio"] {
   width: 18px;
   height: 18px;
-  accent-color: var(--primary-color);
+  accent-color: #ff5500;
   cursor: pointer;
 }
 
@@ -1351,7 +1356,7 @@
 
 /* Error Text - Matching Dose Calculation Style */
 .error-text {
-  color: var(--error-color);
+  color: #ef4444;
   font-size: 0.875rem;
   margin-top: 0.5rem;
   font-weight: 500;
@@ -1360,8 +1365,8 @@
 /* Dose Safety Indicator - Modern Clean Design */
 .dose-safety-indicator {
   width: 100%;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid #d0d0d0;
   border-radius: 12px;
   padding: 1.25rem;
   margin-top: 0.5rem;
@@ -1373,7 +1378,7 @@
 .dose-safety-title {
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: #666666;
   text-align: center;
   margin-bottom: 1rem;
   letter-spacing: 1.5px;
@@ -1386,7 +1391,7 @@
   height: 60px;
   border-radius: 8px;
   overflow: visible;
-  background: var(--bg-secondary);
+  background: #ffffff;
   margin-bottom: 1rem;
   gap: 4px;
   padding: 4px;
@@ -1405,7 +1410,7 @@
   overflow: hidden;
   border-radius: 6px;
   /* Default inactive state */
-  background: var(--bg-tertiary);
+  background: rgba(0, 0, 0, 0.03);
   border: 2px solid transparent;
   opacity: 1;
 }
@@ -1504,11 +1509,11 @@
   flex-direction: column;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: var(--text-primary);
-  background: var(--bg-secondary);
+  color: #000000;
+  background: #ffffff;
   padding: 0.75rem 1rem;
   border-radius: 6px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #d0d0d0;
 }
 
 .dose-info-row {
@@ -1521,29 +1526,29 @@
 .dose-percentage {
   font-weight: 600;
   font-size: 1rem;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 .standard-dose {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: #666666;
   font-weight: 400;
 }
 
 .dose-range {
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: #666666;
   font-weight: 400;
 }
 
 .dose-range-info {
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: #666666;
   font-style: italic;
   padding: 0.5rem;
-  background: var(--bg-tertiary);
+  background: rgba(0, 0, 0, 0.03);
   border-radius: 4px;
-  border-left: 3px solid var(--primary-color);
+  border-left: 3px solid #ff5500;
 }
 
 /* Incorrect Dose Display */
@@ -1578,8 +1583,8 @@
 }
 
 .correct-dose-info {
-  background: var(--bg-secondary);
-  border: 1px solid var(--primary-border);
+  background: #ffffff;
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 8px;
   padding: 1rem;
   margin-top: 0.5rem;
@@ -1599,12 +1604,12 @@
 .dose-number {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 .dose-unit {
   font-size: 1rem;
-  color: var(--text-secondary);
+  color: #666666;
   font-weight: 500;
   position: relative;
   z-index: 1;
@@ -1619,28 +1624,28 @@
 
 .total-label {
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .total-number {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 .total-unit {
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .dose-note {
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: #666666;
   font-style: italic;
 }
 
 .no-data {
-  color: var(--text-tertiary);
+  color: #999999;
   font-style: italic;
   font-size: 0.875rem;
 }
@@ -1650,7 +1655,7 @@
   grid-column: 1 / -1;
   margin: 1.5rem 0 0.5rem;
   padding-top: 1.5rem;
-  border-top: 2px solid var(--border-color);
+  border-top: 2px solid #d0d0d0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1675,12 +1680,12 @@
 .custom-steps-button {
   width: 100%;
   padding: 0.875rem 1.5rem;
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -1693,18 +1698,18 @@
 }
 
 .custom-steps-button:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--primary-border);
-  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(255, 85, 0, 0.2);
+  color: #000000;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--primary-shadow);
+  box-shadow: 0 4px 12px rgba(255, 85, 0, 0.1);
 }
 
 .custom-steps-button.active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
+  background: #ff5500;
+  border-color: #ff5500;
   color: white;
-  box-shadow: 0 4px 16px var(--primary-shadow);
+  box-shadow: 0 4px 16px rgba(255, 85, 0, 0.1);
 }
 
 .custom-steps-button.active:hover {
@@ -1715,12 +1720,6 @@
 }
 
 /* Dark theme override for active button hover */
-[data-theme="dark"] .custom-steps-button.active:hover {
-  background: var(--primary-dark);
-  border-color: var(--primary-dark);
-  color: white;
-}
-
 
 /* Action Buttons */
 .action-buttons {
@@ -1748,15 +1747,15 @@
 }
 
 .calculate-btn {
-  background: var(--primary-color);
-  border: 1px solid var(--primary-color);
-  color: var(--text-primary);
+  background: #ff5500;
+  border: 1px solid #ff5500;
+  color: #000000;
 }
 
 .calculate-btn:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: #e64a00;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--primary-light);
+  box-shadow: 0 6px 20px rgba(255, 85, 0, 0.1);
 }
 
 .calculate-btn:disabled {
@@ -1766,21 +1765,21 @@
 
 /* Style for disabled buttons that are not active */
 .calculate-btn:disabled:not(.active-mode) {
-  background: var(--button-bg);
-  border: 1px solid var(--border-color);
-  color: var(--text-tertiary);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid #d0d0d0;
+  color: #999999;
 }
 
 .reset-btn {
   background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
+  border: 1px solid #d0d0d0;
+  color: #666666;
 }
 
 .reset-btn:hover {
-  border-color: var(--text-primary);
-  color: var(--text-primary);
-  background: var(--button-bg);
+  border-color: #000000;
+  color: #000000;
+  background: rgba(0, 0, 0, 0.05);
 }
 
 /* Orange Banner Styles */
@@ -1823,10 +1822,6 @@
 }
 
 /* Dark theme support */
-[data-theme="dark"] .param-banner.orange-banner {
-  background: linear-gradient(135deg, #ff6847 0%, #ff5722 100%);
-}
-
 
 /* Action Section */
 .action-section {
@@ -1883,12 +1878,12 @@
 
 /* Results Section */
 .results-section {
-  background: var(--bg-tertiary);
-  border: 2px solid var(--primary-border);
+  background: rgba(0, 0, 0, 0.03);
+  border: 2px solid rgba(255, 85, 0, 0.2);
 }
 
 .results-section .section-header {
-  background: var(--primary-light);
+  background: rgba(255, 85, 0, 0.1);
 }
 
 /* Results Grid */
@@ -1900,8 +1895,8 @@
 }
 
 .result-card {
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 12px;
   padding: 1.5rem;
   min-height: 140px;
@@ -1921,15 +1916,15 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+  background: linear-gradient(90deg, #ff5500, rgba(255, 85, 0, 0.1));
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .result-card:hover {
   transform: translateY(-4px);
-  border-color: var(--primary-border);
-  box-shadow: 0 8px 24px var(--primary-shadow);
+  border-color: rgba(255, 85, 0, 0.2);
+  box-shadow: 0 8px 24px rgba(255, 85, 0, 0.1);
 }
 
 .result-card:hover::before {
@@ -1941,18 +1936,18 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: var(--primary-light);
-  border: 2px solid var(--primary-border);
+  background: rgba(255, 85, 0, 0.1);
+  border: 2px solid rgba(255, 85, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary-color);
+  color: #ff5500;
   transition: all 0.3s ease;
 }
 
 .result-card:hover .result-icon {
   transform: scale(1.1);
-  background: var(--primary-color);
+  background: #ff5500;
   color: white;
 }
 
@@ -1969,7 +1964,7 @@
 .result-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -1977,7 +1972,7 @@
 .result-value {
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--primary-color);
+  color: #ff5500;
   line-height: 1;
 }
 
@@ -1986,36 +1981,36 @@
 }
 
 /* Light Theme Result Cards */
-[data-theme="light"] .result-card {
+.result-card {
   background: #ffffff;
   border-color: #e5e5e5;
 }
 
-[data-theme="light"] .result-card:hover {
-  border-color: var(--primary-color);
+.result-card:hover {
+  border-color: #ff5500;
   box-shadow: 0 8px 24px rgba(255, 85, 0, 0.15);
 }
 
-[data-theme="light"] .result-icon {
+.result-icon {
   background: rgba(255, 85, 0, 0.1);
   border-color: rgba(255, 85, 0, 0.2);
   color: #ff5500;
 }
 
-[data-theme="light"] .result-card:hover .result-icon {
+.result-card:hover .result-icon {
   background: #ff5500;
   color: white;
 }
 
-[data-theme="light"] .result-label {
+.result-label {
   color: #666666;
 }
 
-[data-theme="light"] .result-value {
+.result-value {
   color: #ff5500;
 }
 
-[data-theme="light"] .result-value.volume-remove {
+.result-value.volume-remove {
   color: #ef4444;
 }
 
@@ -2036,33 +2031,33 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 1rem;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 .vial-count {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #ff5500;
   min-width: 2rem;
   text-align: center;
 }
 
 .vial-multiplier {
   font-size: 1rem;
-  color: var(--text-secondary);
+  color: #666666;
   font-weight: 400;
 }
 
 .vial-strength {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 /* Infusion Table */
 .infusion-plan-section {
-  background: var(--button-bg);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid #d0d0d0;
   border-radius: 12px;
   padding: 1.5rem;
 }
@@ -2070,7 +2065,7 @@
 .infusion-plan-section h4 {
   font-size: clamp(0.875rem, 1.5vw, 1rem);
   font-weight: 700;
-  color: var(--text-primary);
+  color: #000000;
   margin: 0 0 1rem 0;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -2082,14 +2077,14 @@
 
 .manual-rate-indicator {
   font-size: 0.75rem;
-  color: var(--primary-color);
+  color: #ff5500;
   text-transform: none;
   font-weight: 500;
   margin-left: auto;
-  background: var(--primary-light);
+  background: rgba(255, 85, 0, 0.1);
   padding: 0.25rem 0.75rem;
   border-radius: 4px;
-  border: 1px solid var(--primary-border);
+  border: 1px solid rgba(255, 85, 0, 0.2);
 }
 
 .infusion-table {
@@ -2101,11 +2096,11 @@
   display: grid;
   grid-template-columns: 60px 100px 100px 100px 1fr;
   padding: 0.75rem 1rem;
-  background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid #d0d0d0;
   font-size: clamp(0.625rem, 1vw, 0.75rem);
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -2118,7 +2113,7 @@
   display: grid;
   grid-template-columns: 60px 100px 100px 100px 1fr;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #d0d0d0;
   transition: all 0.15s ease;
   align-items: center;
 }
@@ -2128,12 +2123,12 @@
 }
 
 .infusion-table .table-row:hover {
-  background: var(--bg-tertiary);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .infusion-table .table-row.flush-step {
-  background: var(--primary-light);
-  border-color: var(--primary-border);
+  background: rgba(255, 85, 0, 0.1);
+  border-color: rgba(255, 85, 0, 0.2);
 }
 
 /* Table Cells */
@@ -2162,28 +2157,28 @@
 
 .cell-step {
   font-size: clamp(0.75rem, 1.2vw, 0.875rem);
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 .cell-rate,
 .cell-duration,
 .cell-volume {
   font-size: clamp(0.875rem, 1.5vw, 1rem);
-  color: var(--text-primary);
+  color: #000000;
   font-weight: 600;
 }
 
 .cell-description {
   font-size: clamp(0.75rem, 1.2vw, 0.875rem);
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 /* Infusion Summary */
 .infusion-summary {
   margin-top: 1rem;
   padding: 1rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
 }
 
@@ -2195,12 +2190,12 @@
 }
 
 .summary-row:not(:last-child) {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #d0d0d0;
 }
 
 .summary-label {
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -2208,7 +2203,7 @@
 
 .summary-value {
   font-weight: 700;
-  color: var(--primary-color);
+  color: #ff5500;
   font-size: 1rem;
 }
 
@@ -2218,16 +2213,16 @@
 }
 
 .pump-calculator-container::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: #ffffff;
 }
 
 .pump-calculator-container::-webkit-scrollbar-thumb {
-  background: var(--primary-light);
+  background: rgba(255, 85, 0, 0.1);
   border-radius: 4px;
 }
 
 .pump-calculator-container::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-color);
+  background: #ff5500;
 }
 
 /* Responsive Design */
@@ -2401,7 +2396,7 @@
   .infusion-table .table-row > div:before {
     content: attr(data-label);
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #666666;
     display: inline-block;
     width: 100px;
     text-transform: uppercase;
@@ -2448,7 +2443,7 @@
 
 .checkbox-label {
   font-size: 0.875rem;
-  color: var(--text-primary);
+  color: #000000;
   font-weight: 500;
 }
 
@@ -2490,8 +2485,8 @@
   grid-template-columns: 60px 1fr 80px;
   gap: 1rem;
   padding: 1rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 12px;
   transition: all 0.3s ease;
   position: relative;
@@ -2527,8 +2522,8 @@
 }
 
 .custom-step-row:hover {
-  border-color: var(--primary-border);
-  box-shadow: 0 4px 12px var(--primary-light);
+  border-color: rgba(255, 85, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(255, 85, 0, 0.1);
 }
 
 .step-number {
@@ -2537,11 +2532,11 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: var(--primary-light);
-  border: 1px solid var(--primary-border);
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 50%;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #ff5500;
   font-size: 0.875rem;
   flex-shrink: 0;
   margin: auto;
@@ -2565,7 +2560,7 @@
 .step-input-group label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -2591,16 +2586,16 @@
 
 .duration-input-wrapper span {
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: #666666;
   font-weight: 500;
 }
 
 .step-input-group .supply-dropdown {
   padding: 0.625rem 1rem;
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
-  color: var(--text-primary);
+  color: #000000;
   font-size: 0.875rem;
   cursor: pointer;
   appearance: none;
@@ -2665,11 +2660,11 @@
 .step-formula-reminder {
   grid-column: 1 / -1;
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: #666666;
   font-style: italic;
   text-align: center;
   padding: 0.25rem 0.5rem;
-  background: var(--bg-secondary);
+  background: #ffffff;
   border-radius: 4px;
   margin-bottom: 0.5rem;
 }
@@ -2680,10 +2675,10 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: var(--button-bg);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid #d0d0d0;
   border-radius: 6px;
-  color: var(--text-secondary);
+  color: #666666;
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -2707,10 +2702,10 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.75rem 1.5rem;
-  background: var(--button-bg);
-  border: 2px dashed var(--border-color);
+  background: rgba(0, 0, 0, 0.05);
+  border: 2px dashed #d0d0d0;
   border-radius: 8px;
-  color: var(--text-primary);
+  color: #000000;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -2718,9 +2713,9 @@
 }
 
 .add-step-btn:hover {
-  background: var(--primary-light);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
+  background: rgba(255, 85, 0, 0.1);
+  border-color: #ff5500;
+  color: #ff5500;
 }
 
 .custom-steps-error {
@@ -2785,7 +2780,7 @@
 
 .validation-method {
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: #666666;
   font-style: italic;
 }
 
@@ -2825,7 +2820,7 @@
   .step-number {
     text-align: left;
     padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #d0d0d0;
   }
 
   .step-inputs {
@@ -2836,7 +2831,7 @@
     flex-direction: row;
     justify-content: space-between;
     padding-top: 0.75rem;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid #d0d0d0;
   }
 }
 
@@ -2862,7 +2857,7 @@
 /* Helper text for optional fields */
 .helper-text {
   font-size: 0.75rem;
-  color: var(--text-tertiary);
+  color: #999999;
   font-style: italic;
   margin-top: 0.25rem;
 }
@@ -2870,10 +2865,10 @@
 /* Calculated value display in custom steps */
 .calculated-value {
   padding: 0.625rem 1rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
-  color: var(--primary-color);
+  color: #ff5500;
   font-weight: 600;
   font-size: 1rem;
   text-align: center;
@@ -2886,10 +2881,10 @@
 /* Until infusion complete label */
 .until-infusion-complete-label {
   padding: 0.625rem 1rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
-  color: var(--text-secondary);
+  color: #666666;
   font-weight: 500;
   font-size: 0.875rem;
   text-align: center;
@@ -2903,10 +2898,10 @@
 /* Calculated value display for "Until infusion is complete" step */
 .calculated-value-display {
   padding: 0.625rem 1rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--primary-border);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 8px;
-  color: var(--primary-color);
+  color: #ff5500;
   font-weight: 600;
   font-size: 1rem;
   text-align: center;
@@ -2919,8 +2914,8 @@
 /* Flush calculated duration styling */
 .calculated-value-display.flush-calculated {
   background: rgba(57, 255, 20, 0.08);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
+  border-color: #ff5500;
+  color: #ff5500;
   position: relative;
 }
 
@@ -2929,7 +2924,7 @@
   position: absolute;
   top: -8px;
   right: 8px;
-  background: var(--primary-color);
+  background: #ff5500;
   color: #000;
   font-size: 0.625rem;
   font-weight: 700;
@@ -2941,10 +2936,10 @@
 /* Flush label */
 .flush-label {
   padding: 0.625rem 1rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--primary-border);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 8px;
-  color: var(--primary-color);
+  color: #ff5500;
   font-weight: 600;
   font-size: 0.875rem;
   text-align: center;
@@ -2960,26 +2955,47 @@
 
 /* Additional Parameters Cards */
 .additional-params-cards {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-top: 1.5rem;
   align-items: stretch; /* Ensure all cards stretch to same height */
   overflow: visible; /* Allow dropdowns to overflow */
   position: relative;
+  width: 100%;
+}
+
+/* Medium screens - 2 columns */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .additional-params-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Large screens - 4 columns */
+@media (min-width: 1200px) {
+  .additional-params-cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Extra large screens - auto-fit with max 4 columns */
+@media (min-width: 1400px) {
+  .additional-params-cards {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    max-width: 100%;
+  }
 }
 
 .param-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 12px;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   transition: all 0.3s ease;
-  flex: 1 0 auto; /* Allow cards to grow/shrink but maintain minimum width */
-  min-width: 200px; /* Set minimum width for each card */
   height: 100%; /* Ensure all cards same height */
   position: relative;
   overflow: visible;
@@ -2989,15 +3005,15 @@
 
 .param-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow-sm);
-  border-color: var(--primary-border);
+  box-shadow: 0 4px 12px 0 1px 2px rgba(0, 0, 0, 0.05);
+  border-color: rgba(255, 85, 0, 0.2);
 }
 
 .param-card-icon {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  color: var(--primary-color);
+  color: #ff5500;
   min-height: 45px; /* Fixed height for label area */
   margin-bottom: 0.75rem;
 }
@@ -3012,7 +3028,7 @@
 .param-card-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   line-height: 1.4;
@@ -3026,8 +3042,8 @@
 /* Infusion Mode Card */
 .infusion-mode-card {
   grid-column: 1 / -1;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 12px;
   padding: 1.5rem;
   margin-top: 1rem;
@@ -3041,8 +3057,8 @@
 }
 
 .mode-option {
-  background: var(--bg-tertiary);
-  border: 2px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 2px solid #d0d0d0;
   border-radius: 8px;
   padding: 1rem;
   cursor: pointer;
@@ -3051,14 +3067,14 @@
 }
 
 .mode-option:hover {
-  border-color: var(--primary-border);
+  border-color: rgba(255, 85, 0, 0.2);
   transform: translateY(-1px);
 }
 
 .mode-option.active {
-  background: var(--primary-light);
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-light);
+  background: rgba(255, 85, 0, 0.1);
+  border-color: #ff5500;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
 }
 
 .mode-option-icon {
@@ -3069,7 +3085,7 @@
 .mode-option-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 /* Calculated Values Cards */
@@ -3081,8 +3097,8 @@
 }
 
 .calc-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--primary-border);
+  background: #ffffff;
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 8px;
   padding: 1rem;
   text-align: center;
@@ -3091,7 +3107,7 @@
 .calc-card-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.5rem;
@@ -3100,7 +3116,7 @@
 .calc-card-note {
   font-size: 0.7rem;
   font-weight: 400;
-  color: var(--text-tertiary);
+  color: #999999;
   text-transform: none;
   font-style: italic;
 }
@@ -3108,13 +3124,13 @@
 .calc-card-value {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 .calc-card-detail {
   font-size: 0.75rem;
   font-weight: 400;
-  color: var(--text-secondary);
+  color: #666666;
   margin-top: 0.25rem;
 }
 
@@ -3219,20 +3235,12 @@
 }
 
 /* Dark theme support for inactive cards */
-.theme-dark .dose-safety-card.low-dose:not(.active) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #fbbf24;
-}
 
-.theme-dark .dose-safety-card.correct-dose:not(.active) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #10b981;
-}
+/* Dark theme active cards - Illuminating with vibrant glow */
 
-.theme-dark .dose-safety-card.high-dose:not(.active) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #ef4444;
-}
+/* Ensure text is visible on illuminated cards in dark theme */
+
+/* Add overlay effect for better text readability in dark theme */
 
 .dose-card-header {
   display: flex;
@@ -3269,6 +3277,13 @@
   transform: translateY(-50%);
   z-index: 2;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Hide active indicator for all dose safety cards to prevent overlap with dropdown */
+.dose-safety-card.correct-dose .active-indicator,
+.dose-safety-card.low-dose .active-indicator,
+.dose-safety-card.high-dose .active-indicator {
+  display: none;
 }
 
 .dose-card-content {
@@ -3470,7 +3485,6 @@
   }
 }
 
-
 /* Special Dosing Options - Full Width Button Style */
 .special-dosing-section {
   margin-top: 1.5rem;
@@ -3483,7 +3497,7 @@
 .special-dosing-title {
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.25rem;
@@ -3491,7 +3505,7 @@
 
 .special-dosing-subtitle {
   font-size: 0.813rem;
-  color: var(--text-tertiary);
+  color: #999999;
 }
 
 .special-dosing-cards {
@@ -3504,8 +3518,8 @@
 .special-dosing-button {
   display: flex;
   width: 100%;
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
   cursor: pointer;
@@ -3518,10 +3532,10 @@
 }
 
 .special-dosing-button:hover:not(.disabled) {
-  border-color: var(--primary-border);
-  box-shadow: 0 6px 20px var(--primary-shadow);
+  border-color: rgba(255, 85, 0, 0.2);
+  box-shadow: 0 6px 20px rgba(255, 85, 0, 0.1);
   transform: translateY(-2px);
-  background: var(--bg-tertiary);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .special-dosing-button:active:not(.disabled) {
@@ -3530,7 +3544,7 @@
 }
 
 .special-dosing-button:focus {
-  outline: 3px solid var(--primary-color);
+  outline: 3px solid #ff5500;
   outline-offset: 2px;
 }
 
@@ -3539,9 +3553,9 @@
 }
 
 .special-dosing-button.selected {
-  background: var(--primary-light);
-  border-color: var(--primary-color);
-  box-shadow: 0 6px 24px var(--primary-shadow);
+  background: rgba(255, 85, 0, 0.1);
+  border-color: #ff5500;
+  box-shadow: 0 6px 24px rgba(255, 85, 0, 0.1);
 }
 
 .special-dosing-button.disabled {
@@ -3552,8 +3566,8 @@
 .special-dosing-button.disabled:hover {
   transform: none;
   box-shadow: none;
-  border-color: var(--border-color);
-  background: var(--bg-secondary);
+  border-color: #d0d0d0;
+  background: #ffffff;
 }
 
 .dosing-button-content {
@@ -3581,23 +3595,23 @@
 .dosing-value .dose-number {
   font-size: 1.75rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #000000;
   line-height: 1;
 }
 
 .special-dosing-button.selected .dose-number {
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 .dosing-value .dose-unit {
   font-size: 1.125rem;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .dosing-value .dose-frequency {
   font-size: 1rem;
-  color: var(--text-tertiary);
+  color: #999999;
   margin-left: 0.25rem;
 }
 
@@ -3610,13 +3624,13 @@
 .dosing-label {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #000000;
   line-height: 1.4;
 }
 
 .dosing-condition {
   font-size: 0.875rem;
-  color: var(--text-tertiary);
+  color: #999999;
   font-style: italic;
 }
 
@@ -3632,23 +3646,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 .selection-indicator .empty-circle {
   width: 24px;
   height: 24px;
-  border: 2px solid var(--border-color);
+  border: 2px solid #d0d0d0;
   border-radius: 50%;
   transition: all 0.3s ease;
 }
 
 .special-dosing-button:hover:not(.disabled) .empty-circle {
-  border-color: var(--primary-border);
+  border-color: rgba(255, 85, 0, 0.2);
 }
 
 .special-dosing-button.selected .empty-circle {
-  border-color: var(--primary-color);
+  border-color: #ff5500;
 }
 
 /* Professional Card Display Styles */
@@ -3706,7 +3720,7 @@
 }
 
 .card-value-container:hover {
-  border-color: var(--primary-border);
+  border-color: rgba(255, 85, 0, 0.2);
 }
 
 .calc-display-value {
@@ -3785,22 +3799,22 @@
 /* Volume Method Toggle Styles */
 .volume-method-toggle {
   display: flex;
-  gap: 0.5rem;
-  background: var(--bg-primary);
-  padding: 0.25rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
+  gap: 0.25rem;
+  background: #ffffff;
+  padding: 0.125rem;
+  border-radius: 6px;
+  border: 1px solid #d0d0d0;
 }
 
 .volume-method-toggle .toggle-option {
   flex: 1;
-  padding: 0.5rem 0.75rem;
+  padding: 0.25rem 0.5rem;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
-  font-size: 0.8125rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: #666666;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
@@ -3808,24 +3822,42 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
+  gap: 0.25rem;
 }
 
 .volume-method-toggle .toggle-option span {
   display: inline-block;
+  font-size: 0.75rem;
+}
+
+.volume-method-toggle .toggle-option svg {
+  width: 12px;
+  height: 12px;
 }
 
 .volume-method-toggle .toggle-option:hover:not(.active) {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: #ffffff;
+  color: #000000;
 }
 
 .volume-method-toggle .toggle-option.active {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
+  background: #FF6900 !important;
+  color: white !important;
+  border-color: #FF6900 !important;
   font-weight: 600;
 }
+
+.volume-method-toggle .toggle-option.active svg {
+  color: white !important;
+  fill: white !important;
+}
+
+/* Ensure active toggle has white text and icons in both themes */
+.volume-method-toggle .toggle-option.active,
+
+.volume-method-toggle .toggle-option.active svg,
+
+.volume-method-toggle .toggle-option.active *,
 
 .volume-method-toggle .toggle-option:disabled {
   opacity: 0.5;
@@ -3845,12 +3877,12 @@
   }
   
   .volume-method-toggle .toggle-option {
-    font-size: 0.75rem;
-    padding: 0.5rem;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.375rem;
   }
   
   .volume-method-toggle .toggle-option span {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 }
 
@@ -4134,7 +4166,7 @@
 }
 
 .view-combinations-btn {
-  background: var(--primary-color);
+  background: #ff5500;
   color: white;
   border: none;
   padding: 6px 12px;
@@ -4146,7 +4178,7 @@
 }
 
 .view-combinations-btn:hover {
-  background: var(--primary-hover);
+  background: #e64a00;
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -4254,12 +4286,12 @@
 }
 
 .combination-option.optimal {
-  border-color: var(--primary-color);
-  background: var(--primary-light);
+  border-color: #ff5500;
+  background: rgba(255, 85, 0, 0.1);
 }
 
 .combination-option.selected {
-  border-color: #CB6015;
+  border-color: #FF6900;
   background: rgba(203, 96, 21, 0.1);
   box-shadow: 0 0 0 2px rgba(203, 96, 21, 0.2);
 }
@@ -4284,7 +4316,7 @@
 }
 
 .optimal-badge {
-  background: var(--primary-color);
+  background: #ff5500;
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
@@ -4328,7 +4360,7 @@
 
 .vial-count {
   font-weight: 700;
-  color: var(--primary-color);
+  color: #ff5500;
   min-width: 24px;
 }
 
@@ -4387,14 +4419,14 @@
 .vial-calculation-info {
   margin-top: 0.5rem;
   padding: 0.75rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 6px;
 }
 
 .calculation-breakdown {
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: #666666;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -4403,20 +4435,19 @@
 
 .calculation-breakdown .formula {
   font-weight: 500;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 .calculation-breakdown .equals {
   font-weight: 600;
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 .calculation-breakdown .result {
   font-weight: 700;
-  color: var(--primary-color);
+  color: #ff5500;
   font-size: 1rem;
 }
-
 
 /* Additional Mobile-Specific Fixes */
 @media (max-width: 768px) {
@@ -4634,14 +4665,10 @@
     gap: 0.75rem !important;
   }
   
-  /* Additional Parameters - Keep horizontal on mobile with scroll */
+  /* Additional Parameters - Responsive grid on mobile */
   .additional-params-cards {
-    display: flex !important;
-    flex-direction: row !important;
+    grid-template-columns: 1fr !important;
     gap: 0.75rem !important;
-    overflow-x: auto !important;
-    overflow-y: visible !important;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   }
   
   /* Ensure vial dropdown is visible on mobile */
@@ -4847,13 +4874,13 @@
   
   /* Remove hover effects */
   .calculator-section:hover {
-    border-color: var(--border-color);
+    border-color: #d0d0d0;
     box-shadow: none;
   }
   
   .param-card:hover,
   .info-card:hover {
-    border-color: var(--border-color);
+    border-color: #d0d0d0;
     box-shadow: none;
   }
   
@@ -4877,8 +4904,8 @@
 
 /* Professional Action Container */
 .professional-action-container {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 16px;
   padding: 2rem;
   margin: 2rem 0;
@@ -4886,8 +4913,8 @@
 }
 
 .professional-action-container:hover {
-  border-color: var(--primary-border);
-  box-shadow: 0 8px 32px var(--primary-light);
+  border-color: rgba(255, 85, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(255, 85, 0, 0.1);
 }
 
 .action-container-header {
@@ -4902,17 +4929,17 @@
   gap: 0.75rem;
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #000000;
   margin: 0 0 0.5rem 0;
 }
 
 .action-container-header svg {
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 .action-container-description {
   font-size: 1rem;
-  color: var(--text-secondary);
+  color: #666666;
   margin: 0;
 }
 
@@ -4932,8 +4959,8 @@
   width: 100%;
   min-height: 80px;
   padding: 1.25rem 2rem;
-  background: white;
-  border: 2px solid #e5e7eb;
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -4942,7 +4969,7 @@
   gap: 1.5rem;
   position: relative;
   overflow: hidden;
-  color: var(--text-primary);
+  color: #000000;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   font-weight: 500;
 }
@@ -4961,7 +4988,7 @@
 
 .professional-action-btn:disabled:hover {
   transform: none;
-  border-color: var(--border-color);
+  border-color: #d0d0d0;
   box-shadow: none;
 }
 
@@ -4979,9 +5006,9 @@
 }
 
 .btn-icon-wrapper.icon-primary {
-  background: var(--primary-light);
-  border-color: var(--primary-border);
-  color: var(--primary-color);
+  background: rgba(255, 85, 0, 0.1);
+  border-color: rgba(255, 85, 0, 0.2);
+  color: #ff5500;
 }
 
 .professional-action-btn:hover:not(:disabled) .btn-icon-wrapper {
@@ -4989,7 +5016,7 @@
 }
 
 .professional-action-btn:hover:not(:disabled) .btn-icon-wrapper.icon-primary {
-  background: var(--primary-color);
+  background: #ff5500;
   color: white;
 }
 
@@ -5044,7 +5071,7 @@
 .btn-description {
   display: block;
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 /* Button Status */
@@ -5054,8 +5081,8 @@
   left: 0;
   right: 0;
   padding: 0.5rem;
-  background: var(--bg-tertiary);
-  border-top: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border-top: 1px solid #d0d0d0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5073,8 +5100,8 @@
 }
 
 .btn-status.disabled {
-  background: var(--bg-tertiary);
-  color: var(--text-tertiary);
+  background: rgba(0, 0, 0, 0.03);
+  color: #999999;
 }
 
 .btn-status.warning {
@@ -5116,137 +5143,137 @@
 }
 
 /* Light Theme Fixes for Action Buttons */
-[data-theme="light"] .professional-action-container {
+.professional-action-container {
   background: #fafafa;
   border-color: #e0e0e0;
 }
 
-[data-theme="light"] .action-container-header h3 {
+.action-container-header h3 {
   color: #1a1a1a;
 }
 
-[data-theme="light"] .action-container-description {
+.action-container-description {
   color: #666666;
 }
 
-[data-theme="light"] .professional-action-btn {
+.professional-action-btn:not(.calculate-fixed-btn):not(.calculate-custom-btn):not(.calculate-days-coverage-btn) {
   background: #ffffff;
   border-color: #e5e5e5;
   color: #1a1a1a !important;
 }
 
-[data-theme="light"] .professional-action-btn:hover:not(:disabled) {
-  border-color: var(--primary-color);
+.professional-action-btn:hover:not(:disabled) {
+  border-color: #ff5500;
   box-shadow: 0 12px 24px rgba(255, 85, 0, 0.15);
 }
 
-[data-theme="light"] .professional-action-btn .btn-label {
+.professional-action-btn .btn-label {
   color: #1a1a1a !important;
 }
 
-[data-theme="light"] .professional-action-btn .btn-description {
+.professional-action-btn .btn-description {
   color: #666666 !important;
 }
 
 /* Specifically target the calculate buttons in light theme */
 /* Override any potential white text from other styles */
-[data-theme="light"] button.professional-action-btn.calculate-fixed-btn,
-[data-theme="light"] button.professional-action-btn.calculate-custom-btn {
+button.professional-action-btn.calculate-fixed-btn,
+button.professional-action-btn.calculate-custom-btn {
   color: #1a1a1a !important;
 }
 
 /* Ensure all child elements inherit proper colors */
-[data-theme="light"] .professional-action-btn.calculate-fixed-btn span,
-[data-theme="light"] .professional-action-btn.calculate-custom-btn span,
-[data-theme="light"] .professional-action-btn.calculate-fixed-btn div:not(.btn-icon-wrapper),
-[data-theme="light"] .professional-action-btn.calculate-custom-btn div:not(.btn-icon-wrapper) {
+.professional-action-btn.calculate-fixed-btn span,
+.professional-action-btn.calculate-custom-btn span,
+.professional-action-btn.calculate-fixed-btn div:not(.btn-icon-wrapper),
+.professional-action-btn.calculate-custom-btn div:not(.btn-icon-wrapper) {
   color: inherit !important;
 }
 
-[data-theme="light"] .professional-action-btn.calculate-fixed-btn .btn-label,
-[data-theme="light"] .professional-action-btn.calculate-custom-btn .btn-label {
+.professional-action-btn.calculate-fixed-btn .btn-label,
+.professional-action-btn.calculate-custom-btn .btn-label {
   color: #1a1a1a !important;
 }
 
-[data-theme="light"] .professional-action-btn.calculate-fixed-btn .btn-description,
-[data-theme="light"] .professional-action-btn.calculate-custom-btn .btn-description {
+.professional-action-btn.calculate-fixed-btn .btn-description,
+.professional-action-btn.calculate-custom-btn .btn-description {
   color: #666666 !important;
 }
 
 /* Remove any white color that might be inherited */
-[data-theme="light"] .calculate-wrapper button {
+.calculate-wrapper button {
   color: inherit !important;
 }
 
 /* AGGRESSIVE FIX - Override ALL possible white text sources */
-[data-theme="light"] .professional-action-container button[class*="calculate"] {
+.professional-action-container button[class*="calculate"] {
   color: #1a1a1a !important;
 }
 
-[data-theme="light"] .professional-action-container button[class*="calculate"] * {
+.professional-action-container button[class*="calculate"] * {
   color: inherit !important;
 }
 
-[data-theme="light"] .professional-action-container button[class*="calculate"] .btn-content span {
+.professional-action-container button[class*="calculate"] .btn-content span {
   color: inherit !important;
 }
 
 /* Nuclear option - force all text in these specific buttons */
-[data-theme="light"] .action-button-wrapper:nth-child(2) button,
-[data-theme="light"] .action-button-wrapper:nth-child(3) button {
+.action-button-wrapper:nth-child(2) button,
+.action-button-wrapper:nth-child(3) button {
   color: #1a1a1a !important;
 }
 
-[data-theme="light"] .action-button-wrapper:nth-child(2) button *:not(.btn-icon-wrapper *),
-[data-theme="light"] .action-button-wrapper:nth-child(3) button *:not(.btn-icon-wrapper *) {
+.action-button-wrapper:nth-child(2) button *:not(.btn-icon-wrapper *),
+.action-button-wrapper:nth-child(3) button *:not(.btn-icon-wrapper *) {
   color: inherit !important;
 }
 
-[data-theme="light"] .btn-icon-wrapper {
-  background: #f5f5f5;
+.btn-icon-wrapper {
+  background: #ffffff;
   border-color: #e0e0e0;
 }
 
-[data-theme="light"] .btn-icon-wrapper.icon-primary {
+.btn-icon-wrapper.icon-primary {
   background: rgba(255, 85, 0, 0.1);
   border-color: rgba(255, 85, 0, 0.2);
   color: #ff5500;
 }
 
-[data-theme="light"] .professional-action-btn:hover:not(:disabled) .btn-icon-wrapper.icon-primary {
+.professional-action-btn:hover:not(:disabled) .btn-icon-wrapper.icon-primary {
   background: #ff5500;
   color: white;
 }
 
-[data-theme="light"] .btn-status {
+.btn-status {
   background: #fafafa;
   border-color: #e5e5e5;
 }
 
-[data-theme="light"] .btn-status.ready {
+.btn-status.ready {
   background: rgba(34, 197, 94, 0.1);
   border-color: rgba(34, 197, 94, 0.3);
   color: #22c55e;
 }
 
-[data-theme="light"] .btn-status.disabled {
-  background: #f5f5f5;
+.btn-status.disabled {
+  background: #ffffff;
   color: #999999;
 }
 
-[data-theme="light"] .btn-status.warning {
+.btn-status.warning {
   background: rgba(245, 158, 11, 0.1);
   border-color: rgba(245, 158, 11, 0.3);
   color: #f59e0b;
 }
 
-[data-theme="light"] .reset-wrapper .btn-icon-wrapper {
+.reset-wrapper .btn-icon-wrapper {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.3);
   color: #ef4444;
 }
 
-[data-theme="light"] .reset-wrapper .professional-action-btn:hover .btn-icon-wrapper {
+.reset-wrapper .professional-action-btn:hover .btn-icon-wrapper {
   background: #ef4444;
   color: white;
 }
@@ -5349,11 +5376,10 @@
   }
 }
 
-
 /* Professional Medical Toggle - Infusion Mode */
 .infusion-mode-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 16px;
   padding: 1.5rem;
   margin-top: 1.5rem;
@@ -5361,8 +5387,8 @@
 }
 
 .infusion-mode-card:hover {
-  border-color: var(--primary-border);
-  box-shadow: 0 4px 16px var(--primary-light);
+  border-color: rgba(255, 85, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(255, 85, 0, 0.1);
 }
 
 .infusion-mode-header {
@@ -5378,12 +5404,12 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--text-secondary);
+  color: #666666;
   font-size: 0.875rem;
-  background: var(--bg-tertiary);
+  background: rgba(0, 0, 0, 0.03);
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #d0d0d0;
 }
 
 .mode-info-text {
@@ -5398,9 +5424,9 @@
   gap: 2rem;
   margin: 1.5rem 0;
   padding: 1.5rem;
-  background: var(--bg-primary);
+  background: #ffffff;
   border-radius: 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #d0d0d0;
 }
 
 .toggle-option {
@@ -5409,7 +5435,7 @@
   gap: 0.75rem;
   font-weight: 600;
   font-size: 1rem;
-  color: var(--text-primary);
+  color: #000000;
   transition: all 0.3s ease;
 }
 
@@ -5426,7 +5452,7 @@
 }
 
 .toggle-option svg {
-  color: var(--text-secondary);
+  color: #666666;
   transition: color 0.3s ease;
 }
 
@@ -5452,8 +5478,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--bg-tertiary);
-  border: 2px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 2px solid #d0d0d0;
   border-radius: 40px;
   transition: all 0.4s ease;
   overflow: hidden;
@@ -5474,8 +5500,8 @@
 
 /* Active state */
 .toggle-input:checked + .toggle-label {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
+  background: #ff5500;
+  border-color: #ff5500;
 }
 
 .toggle-input:checked + .toggle-label .toggle-slider {
@@ -5485,36 +5511,36 @@
 
 /* Focus state */
 .toggle-input:focus + .toggle-label {
-  box-shadow: 0 0 0 3px var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
 }
 
 /* Hover effects */
 .medical-toggle-switch:hover .toggle-label {
-  border-color: var(--primary-border);
+  border-color: rgba(255, 85, 0, 0.2);
 }
 
 /* Active option highlighting - When Remove Overfill is selected */
 .infusion-mode-card:has(.toggle-input:not(:checked)) .toggle-option.left {
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 .infusion-mode-card:has(.toggle-input:not(:checked)) .toggle-option.left svg {
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 /* Active option highlighting - When Empty Container is selected */
 .infusion-mode-card:has(.toggle-input:checked) .toggle-option.right {
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 .infusion-mode-card:has(.toggle-input:checked) .toggle-option.right svg {
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 /* Infusion Mode Preview */
 .infusion-mode-preview {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
   padding: 1rem;
   margin-top: 1rem;
@@ -5530,7 +5556,7 @@
 .preview-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -5538,7 +5564,7 @@
 .preview-value {
   font-size: 1.125rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 /* Mobile Responsive Toggle */
@@ -5584,23 +5610,24 @@
   flex-direction: column;
   gap: 1rem;
   width: 100%;
+  margin-top: 1rem;
 }
 
 .calc-display-container {
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.25rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  min-height: 80px;
+  justify-content: center;
+  min-height: 90px;
   transition: all 0.3s ease;
 }
 
 .calc-display-container:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
+  border-color: #ff5500;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
 }
 
 .calc-display-value {
@@ -5631,9 +5658,9 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.5rem 0.875rem;
-  background: var(--primary-light);
-  color: var(--primary-color);
-  border: 1px solid var(--primary-border);
+  background: rgba(255, 85, 0, 0.1);
+  color: #ff5500;
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -5643,10 +5670,10 @@
 }
 
 .calc-detail-btn:hover {
-  background: var(--primary-color);
+  background: #ff5500;
   color: white;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px var(--primary-shadow);
+  box-shadow: 0 2px 8px rgba(255, 85, 0, 0.1);
 }
 
 .calc-display-preview {
@@ -5654,11 +5681,11 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .calc-display-preview .preview-icon {
@@ -5675,7 +5702,7 @@
 
 .calc-label-note {
   font-size: 0.7rem;
-  color: var(--text-tertiary);
+  color: #999999;
   font-weight: 400;
   text-transform: none;
   font-style: italic;
@@ -5686,7 +5713,7 @@
 .total-vials-calc-card .calc-value-number,
 .drug-volume-calc-card .calc-value-number,
 .drug-removal-calc-card .calc-value-number {
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 /* Mobile responsive calc display */
@@ -5741,8 +5768,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 12px;
   padding: 1rem;
   transition: all 0.3s ease;
@@ -5751,8 +5778,8 @@
 }
 
 .professional-input-container:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
+  border-color: #ff5500;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
 }
 
 /* Professional Time Input Styles */
@@ -5772,8 +5799,8 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 12px;
   padding: 1rem;
   transition: all 0.3s ease;
@@ -5782,8 +5809,8 @@
 }
 
 .time-input-container:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
+  border-color: #ff5500;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
 }
 
 .time-input-field {
@@ -5799,10 +5826,10 @@
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
-  background: var(--bg-tertiary);
-  border: 2px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 2px solid #d0d0d0;
   border-radius: 8px;
-  color: var(--text-primary);
+  color: #000000;
   transition: all 0.2s ease;
   -moz-appearance: textfield;
 }
@@ -5815,24 +5842,24 @@
 
 .time-value-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  background: var(--bg-primary);
+  border-color: #ff5500;
+  background: #ffffff;
   transform: scale(1.05);
 }
 
 .time-value-input.error {
-  border-color: var(--error-color);
+  border-color: #ef4444;
 }
 
 .time-value-input::placeholder {
-  color: var(--text-tertiary);
+  color: #999999;
   opacity: 0.5;
 }
 
 .time-unit {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -5849,7 +5876,7 @@
 .separator-dot {
   width: 6px;
   height: 6px;
-  background: var(--text-secondary);
+  background: #666666;
   border-radius: 50%;
   opacity: 0.6;
 }
@@ -5861,8 +5888,8 @@
   justify-content: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: var(--primary-light);
-  border: 1px solid var(--primary-border);
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 8px;
   transition: all 0.2s ease;
   min-height: 48px;
@@ -5875,8 +5902,8 @@
   justify-content: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: var(--primary-light);
-  border: 1px solid var(--primary-border);
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 8px;
   transition: all 0.2s ease;
   min-height: 48px;
@@ -5885,20 +5912,20 @@
 .preview-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .preview-value {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #ff5500;
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
   letter-spacing: 0.05em;
 }
 
 /* Dark theme adjustments */
 .theme-dark .time-input-container {
-  background: var(--bg-tertiary);
+  background: rgba(0, 0, 0, 0.03);
   border-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -5909,7 +5936,7 @@
 
 .theme-dark .time-value-input:focus {
   background: rgba(255, 255, 255, 0.1);
-  border-color: var(--primary-color);
+  border-color: #ff5500;
 }
 
 .theme-dark .separator-dot {
@@ -6033,7 +6060,7 @@
 
 .time-input-container.error {
   animation: shake 0.4s ease-in-out;
-  border-color: var(--error-color);
+  border-color: #ef4444;
 }
 
 /* Touch device optimizations */
@@ -6063,8 +6090,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 12px;
   padding: 1rem;
   transition: all 0.3s ease;
@@ -6073,8 +6100,8 @@
 }
 
 .volume-input-container:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
+  border-color: #ff5500;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
 }
 
 .volume-input-field {
@@ -6090,10 +6117,10 @@
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
-  background: var(--bg-tertiary);
-  border: 2px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 2px solid #d0d0d0;
   border-radius: 8px;
-  color: var(--text-primary);
+  color: #000000;
   transition: all 0.2s ease;
   -moz-appearance: textfield;
 }
@@ -6106,19 +6133,19 @@
 
 .volume-value-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  background: var(--bg-primary);
+  border-color: #ff5500;
+  background: #ffffff;
   transform: scale(1.02);
 }
 
 .volume-value-input.error {
-  border-color: var(--error-color);
+  border-color: #ef4444;
 }
 
 .volume-unit {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -6129,8 +6156,8 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--primary-light);
-  border: 1px solid var(--primary-border);
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 8px;
   min-height: 48px;
 }
@@ -6151,8 +6178,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 12px;
   padding: 1rem;
   transition: all 0.3s ease;
@@ -6161,8 +6188,8 @@
 }
 
 .rate-input-container:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
+  border-color: #ff5500;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
 }
 
 .rate-input-field {
@@ -6178,10 +6205,10 @@
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
-  background: var(--bg-tertiary);
-  border: 2px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 2px solid #d0d0d0;
   border-radius: 8px;
-  color: var(--text-primary);
+  color: #000000;
   transition: all 0.2s ease;
   -moz-appearance: textfield;
 }
@@ -6194,13 +6221,13 @@
 
 .rate-value-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  background: var(--bg-primary);
+  border-color: #ff5500;
+  background: #ffffff;
   transform: scale(1.02);
 }
 
 .rate-value-input.error {
-  border-color: var(--error-color);
+  border-color: #ef4444;
 }
 
 .rate-unit-container {
@@ -6214,20 +6241,20 @@
 .rate-unit-primary {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .rate-unit-divider {
   width: 100%;
   height: 2px;
-  background: var(--text-secondary);
+  background: #666666;
   opacity: 0.3;
 }
 
 .rate-unit-secondary {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .rate-display-preview {
@@ -6236,27 +6263,27 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--primary-light);
-  border: 1px solid var(--primary-border);
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 8px;
   min-height: 48px;
 }
 
 /* Common preview styles */
 .preview-icon {
-  color: var(--primary-color);
+  color: #ff5500;
   opacity: 0.8;
 }
 
 .preview-value {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 /* Required asterisk */
 .required-asterisk {
-  color: var(--error-color);
+  color: #ef4444;
   font-weight: 700;
   margin-left: 0.25rem;
 }
@@ -6264,7 +6291,7 @@
 /* Dark theme adjustments */
 .theme-dark .volume-input-container,
 .theme-dark .rate-input-container {
-  background: var(--bg-tertiary);
+  background: rgba(0, 0, 0, 0.03);
   border-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -6507,8 +6534,8 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 12px;
   padding: 1rem;
   transition: all 0.3s ease;
@@ -6517,8 +6544,8 @@
 }
 
 .frequency-input-container:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
+  border-color: #ff5500;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
 }
 
 .frequency-input-field {
@@ -6534,10 +6561,10 @@
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
-  color: var(--text-primary);
+  color: #000000;
   transition: all 0.2s ease;
   -moz-appearance: textfield;
 }
@@ -6550,18 +6577,18 @@
 
 .frequency-value-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  background: var(--bg-primary);
+  border-color: #ff5500;
+  background: #ffffff;
 }
 
 .frequency-value-input.error {
-  border-color: var(--error-color);
+  border-color: #ef4444;
 }
 
 .frequency-unit {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -6571,8 +6598,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--primary-light);
-  border: 1px solid var(--primary-border);
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 8px;
   min-height: 48px;
   justify-content: center;
@@ -6580,7 +6607,7 @@
 }
 
 .frequency-display-preview .preview-icon {
-  color: var(--primary-color);
+  color: #ff5500;
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -6588,7 +6615,7 @@
 
 .frequency-display-preview .preview-value {
   font-size: 1.125rem;
-  color: var(--text-primary);
+  color: #000000;
   font-weight: 600;
 }
 
@@ -6605,8 +6632,8 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 12px;
   padding: 1rem;
   transition: all 0.3s ease;
@@ -6615,8 +6642,8 @@
 }
 
 .days-input-container:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
+  border-color: #ff5500;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
 }
 
 .days-input-field {
@@ -6632,10 +6659,10 @@
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
-  color: var(--text-primary);
+  color: #000000;
   transition: all 0.2s ease;
   -moz-appearance: textfield;
 }
@@ -6648,18 +6675,18 @@
 
 .days-value-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  background: var(--bg-primary);
+  border-color: #ff5500;
+  background: #ffffff;
 }
 
 .days-value-input.error {
-  border-color: var(--error-color);
+  border-color: #ef4444;
 }
 
 .days-unit {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -6669,8 +6696,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--primary-light);
-  border: 1px solid var(--primary-border);
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 8px;
   min-height: 48px;
   justify-content: center;
@@ -6678,7 +6705,7 @@
 }
 
 .days-display-preview .preview-icon {
-  color: var(--primary-color);
+  color: #ff5500;
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -6686,7 +6713,7 @@
 
 .days-display-preview .preview-value {
   font-size: 1.125rem;
-  color: var(--text-primary);
+  color: #000000;
   font-weight: 600;
 }
 
@@ -6703,8 +6730,8 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
   border-radius: 12px;
   padding: 1rem;
   transition: all 0.3s ease;
@@ -6713,8 +6740,8 @@
 }
 
 .dose-input-container:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
+  border-color: #ff5500;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
 }
 
 .dose-input-field {
@@ -6731,10 +6758,10 @@
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
-  color: var(--text-primary);
+  color: #000000;
   transition: all 0.2s ease;
   -moz-appearance: textfield;
 }
@@ -6747,12 +6774,12 @@
 
 .dose-value-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  background: var(--bg-primary);
+  border-color: #ff5500;
+  background: #ffffff;
 }
 
 .dose-value-input.error {
-  border-color: var(--error-color);
+  border-color: #ef4444;
 }
 
 .dose-unit-selector {
@@ -6763,34 +6790,34 @@
 
 .dose-unit-dropdown {
   appearance: none;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
   padding: 0.75rem 2.5rem 0.75rem 1rem;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #000000;
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 120px;
 }
 
 .dose-unit-dropdown:hover {
-  border-color: var(--primary-color);
-  background: var(--bg-primary);
+  border-color: #ff5500;
+  background: #ffffff;
 }
 
 .dose-unit-dropdown:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
+  border-color: #ff5500;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
 }
 
 .unit-dropdown-icon {
   position: absolute;
   right: 0.75rem;
   pointer-events: none;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .dose-display-preview {
@@ -6798,8 +6825,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--primary-light);
-  border: 1px solid var(--primary-border);
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid rgba(255, 85, 0, 0.2);
   border-radius: 8px;
   min-height: 48px;
   justify-content: center;
@@ -6807,7 +6834,7 @@
 }
 
 .dose-display-preview .preview-icon {
-  color: var(--primary-color);
+  color: #ff5500;
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -6815,7 +6842,7 @@
 
 .dose-display-preview .preview-value {
   font-size: 1.125rem;
-  color: var(--text-primary);
+  color: #000000;
   font-weight: 600;
 }
 
@@ -6857,7 +6884,7 @@
 .volume-unit {
   font-size: 0.875rem !important;
   font-weight: 600 !important;
-  color: var(--text-secondary) !important;
+  color: #666666 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   margin-top: 0.25rem;
@@ -6899,7 +6926,7 @@
 .rate-unit {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -6963,6 +6990,67 @@
 .drug-volume-calc-card,
 .drug-removal-calc-card {
   min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Calc value display for the new layout */
+.calc-value-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.75rem 0;
+}
+
+.calc-value-display .calc-value-number {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ff5500;
+  line-height: 1;
+}
+
+/* Days coverage note styling */
+.days-coverage-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  font-size: 0.813rem;
+  color: #666666;
+}
+
+.days-coverage-note svg {
+  flex-shrink: 0;
+  color: #ff5500;
+}
+
+/* Inline days coverage display */
+.days-coverage-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #666666;
+  opacity: 0.8;
+}
+
+.days-coverage-inline svg {
+  flex-shrink: 0;
+  color: #ff5500;
+  opacity: 0.7;
+}
+
+/* Ensure volume-input-field can contain both elements */
+.volume-input-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Custom vial selection styles */
@@ -6978,9 +7066,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  background: var(--bg-tertiary);
+  background: rgba(0, 0, 0, 0.03);
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #d0d0d0;
 }
 
 .vial-info {
@@ -6991,12 +7079,12 @@
 
 .vial-strength {
   font-weight: 600;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 .vial-volume {
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .vial-count-controls {
@@ -7008,8 +7096,8 @@
 .vial-count-btn {
   width: 32px;
   height: 32px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  border: 1px solid #d0d0d0;
+  background: #ffffff;
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -7020,7 +7108,7 @@
 
 .vial-count-btn:hover:not(:disabled) {
   background: var(--bg-hover);
-  border-color: var(--primary-color);
+  border-color: #ff5500;
 }
 
 .vial-count-btn:disabled {
@@ -7032,17 +7120,17 @@
   width: 60px;
   height: 32px;
   text-align: center;
-  border: 1px solid var(--border-color);
+  border: 1px solid #d0d0d0;
   border-radius: 6px;
   font-weight: 600;
-  background: var(--bg-primary);
+  background: #ffffff;
 }
 
 /* Custom combination summary */
 .custom-combination-summary {
   margin-top: 1rem;
   padding: 1rem;
-  background: var(--bg-tertiary);
+  background: rgba(0, 0, 0, 0.03);
   border-radius: 8px;
 }
 
@@ -7059,13 +7147,13 @@
 }
 
 .metric-label {
-  color: var(--text-secondary);
+  color: #666666;
   font-size: 0.875rem;
 }
 
 .metric-value {
   font-weight: 600;
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 /* Waste indicator */
@@ -7143,7 +7231,7 @@
 .custom-placeholder {
   text-align: center;
   padding: 2rem;
-  color: var(--text-secondary);
+  color: #666666;
   font-style: italic;
 }
 
@@ -7244,8 +7332,8 @@
   font-weight: 700 !important;
   text-align: center !important;
   padding: 0 !important;
-  background: var(--bg-tertiary) !important;
-  border: 2px solid var(--border-color) !important;
+  background: rgba(0, 0, 0, 0.03) !important;
+  border: 2px solid #d0d0d0 !important;
   border-radius: 8px !important;
 }
 
@@ -7258,8 +7346,8 @@
   font-weight: 700 !important;
   text-align: center !important;
   padding: 0 0.5rem !important;
-  background: var(--bg-tertiary) !important;
-  border: 2px solid var(--border-color) !important;
+  background: rgba(0, 0, 0, 0.03) !important;
+  border: 2px solid #d0d0d0 !important;
   border-radius: 8px !important;
 }
 
@@ -7770,9 +7858,9 @@
   justify-content: center;
   gap: 0.75rem;
   padding: 1rem 2rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  color: #666666;
   border-radius: 12px;
   font-size: 1rem;
   font-weight: 600;
@@ -7785,9 +7873,9 @@
 }
 
 .action-btn:hover {
-  border-color: var(--primary-color);
-  color: var(--text-primary);
-  background: var(--bg-tertiary);
+  border-color: #ff5500;
+  color: #000000;
+  background: rgba(0, 0, 0, 0.03);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
@@ -7810,7 +7898,7 @@
   min-width: 200px;
   min-height: 60px;
   padding: 1.25rem 2rem;
-  background: #CB6015;
+  background: #FF6900;
   color: white !important;
   border: none;
   border-radius: 12px;
@@ -7826,7 +7914,7 @@
 }
 
 .pump-action-btn:hover {
-  background: #B55013;
+  background: #E65F00;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(203, 96, 21, 0.3);
 }
@@ -7858,84 +7946,7 @@
   box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
 }
 
-/* Fixed Rate and Custom Steps buttons - Force CB6015 color */
-.pump-action-btn.fixed-rate-btn,
-.pump-action-btn.custom-steps-btn {
-  background: #CB6015 !important;
-  color: white !important;
-}
-
-.pump-action-btn.fixed-rate-btn:hover,
-.pump-action-btn.custom-steps-btn:hover {
-  background: #B55013 !important;
-  box-shadow: 0 6px 20px rgba(203, 96, 21, 0.3);
-}
-
-.pump-action-btn.fixed-rate-btn span,
-.pump-action-btn.custom-steps-btn span {
-  color: white !important;
-}
-
-.pump-action-btn.fixed-rate-btn svg,
-.pump-action-btn.custom-steps-btn svg {
-  color: white !important;
-}
-
-/* Disabled state */
-.pump-action-btn:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.pump-action-btn:disabled:hover {
-  background: #9ca3af;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Force CB6015 color for all themes with maximum specificity */
-.pump-calculator-container .professional-action-container .professional-action-buttons .pump-action-btn.fixed-rate-btn,
-.pump-calculator-container .professional-action-container .professional-action-buttons .pump-action-btn.custom-steps-btn,
-[data-theme="light"] .pump-action-btn.fixed-rate-btn,
-[data-theme="light"] .pump-action-btn.custom-steps-btn,
-[data-theme="dark"] .pump-action-btn.fixed-rate-btn,
-[data-theme="dark"] .pump-action-btn.custom-steps-btn,
-html body .pump-action-btn.fixed-rate-btn,
-html body .pump-action-btn.custom-steps-btn {
-  background: #CB6015 !important;
-  background-color: #CB6015 !important;
-  color: white !important;
-  border: none !important;
-}
-
-.pump-calculator-container .professional-action-container .professional-action-buttons .pump-action-btn.fixed-rate-btn:hover,
-.pump-calculator-container .professional-action-container .professional-action-buttons .pump-action-btn.custom-steps-btn:hover,
-[data-theme="light"] .pump-action-btn.fixed-rate-btn:hover,
-[data-theme="light"] .pump-action-btn.custom-steps-btn:hover,
-[data-theme="dark"] .pump-action-btn.fixed-rate-btn:hover,
-[data-theme="dark"] .pump-action-btn.custom-steps-btn:hover,
-html body .pump-action-btn.fixed-rate-btn:hover,
-html body .pump-action-btn.custom-steps-btn:hover {
-  background: #B55013 !important;
-  background-color: #B55013 !important;
-}
-
-[data-theme="light"] .pump-action-btn.fixed-rate-btn span,
-[data-theme="light"] .pump-action-btn.custom-steps-btn span,
-[data-theme="dark"] .pump-action-btn.fixed-rate-btn span,
-[data-theme="dark"] .pump-action-btn.custom-steps-btn span,
-[data-theme="light"] .pump-action-btn.fixed-rate-btn svg,
-[data-theme="light"] .pump-action-btn.custom-steps-btn svg,
-[data-theme="dark"] .pump-action-btn.fixed-rate-btn svg,
-[data-theme="dark"] .pump-action-btn.custom-steps-btn svg,
-.pump-action-btn.fixed-rate-btn span,
-.pump-action-btn.custom-steps-btn span,
-.pump-action-btn.fixed-rate-btn svg,
-.pump-action-btn.custom-steps-btn svg {
-  color: white !important;
-  fill: white !important;
-}
+/* Removed duplicate orange button styling - see DEFINITIVE ORANGE BUTTON STYLES section */
 
 /* Responsive styles for pump action buttons */
 @media (max-width: 768px) {
@@ -7963,7 +7974,7 @@ html body .pump-action-btn.custom-steps-btn:hover {
   gap: 8px;
   width: 100%;
   padding: 12px 16px;
-  background: #f5f5f5;
+  background: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   font-size: 0.9375rem;
@@ -8109,7 +8120,7 @@ html body .pump-action-btn.custom-steps-btn:hover {
 }
 
 .summary-value.highlight {
-  color: #CB6015;
+  color: #FF6900;
 }
 
 .coverage-indicator {
@@ -8130,7 +8141,7 @@ html body .pump-action-btn.custom-steps-btn:hover {
   width: 100%;
   margin-top: 16px;
   padding: 12px 20px;
-  background: #CB6015;
+  background: #FF6900;
   color: white;
   border: none;
   border-radius: 8px;
@@ -8141,7 +8152,7 @@ html body .pump-action-btn.custom-steps-btn:hover {
 }
 
 .apply-custom-btn:hover {
-  background: #B55013;
+  background: #E65F00;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(203, 96, 21, 0.3);
 }
@@ -8163,8 +8174,8 @@ html body .pump-action-btn.custom-steps-btn:hover {
 }
 
 .action-btn.primary {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
+  background: #ff5500;
+  border-color: #ff5500;
   color: white;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(255, 85, 0, 0.15);
@@ -8176,10 +8187,10 @@ html body .pump-action-btn.custom-steps-btn:hover {
 }
 
 .action-btn.primary:hover {
-  background: var(--primary-hover);
+  background: #e64a00;
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(255, 85, 0, 0.25);
-  border-color: var(--primary-hover);
+  border-color: #e64a00;
 }
 
 .action-btn.danger {
@@ -8213,14 +8224,14 @@ html body .pump-action-btn.custom-steps-btn:hover {
 .action-btn:disabled:hover {
   transform: none;
   box-shadow: none;
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-  color: var(--text-secondary);
+  background: #ffffff;
+  border-color: #d0d0d0;
+  color: #666666;
 }
 
 .action-btn.primary:disabled:hover {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
+  background: #ff5500;
+  border-color: #ff5500;
   color: white;
 }
 
@@ -8408,256 +8419,7 @@ html body .pump-action-btn.custom-steps-btn:hover {
   }
 }
 
-/* ============================================
-   CRITICAL FIX: Light Theme Text Color Override
-   Must be at end of file for maximum specificity
-   ============================================ */
-/* First, reset any button text color */
-[data-theme="light"] button {
-  color: inherit;
-}
-
-[data-theme="light"] button span {
-  color: inherit;
-}
-[data-theme="light"] .professional-action-buttons .calculate-fixed-btn,
-[data-theme="light"] .professional-action-buttons .calculate-custom-btn {
-  color: #1a1a1a !important;
-}
-
-[data-theme="light"] .professional-action-buttons .calculate-fixed-btn .btn-label,
-[data-theme="light"] .professional-action-buttons .calculate-custom-btn .btn-label {
-  color: #1a1a1a !important;
-}
-
-[data-theme="light"] .professional-action-buttons .calculate-fixed-btn .btn-description,
-[data-theme="light"] .professional-action-buttons .calculate-custom-btn .btn-description {
-  color: #666666 !important;
-}
-
-/* Override any inherited white from button or parent elements */
-html[data-theme="light"] .professional-action-btn.calculate-fixed-btn,
-html[data-theme="light"] .professional-action-btn.calculate-custom-btn {
-  color: #1a1a1a !important;
-}
-
-html[data-theme="light"] .professional-action-btn.calculate-fixed-btn span,
-html[data-theme="light"] .professional-action-btn.calculate-custom-btn span {
-  color: inherit !important;
-}
-
-/* Override CSS variables for these specific buttons in light theme */
-[data-theme="light"] .calculate-fixed-btn,
-[data-theme="light"] .calculate-custom-btn {
-  --text-primary: #1a1a1a !important;
-  --text-secondary: #666666 !important;
-}
-
-/* Force black text with maximum specificity possible */
-body[data-theme="light"] .pump-calculator-container .professional-action-container .professional-action-buttons .action-button-wrapper .professional-action-btn.calculate-fixed-btn .btn-content .btn-label,
-body[data-theme="light"] .pump-calculator-container .professional-action-container .professional-action-buttons .action-button-wrapper .professional-action-btn.calculate-custom-btn .btn-content .btn-label {
-  color: #000000 !important;
-}
-
-body[data-theme="light"] .pump-calculator-container .professional-action-container .professional-action-buttons .action-button-wrapper .professional-action-btn.calculate-fixed-btn .btn-content .btn-description,
-body[data-theme="light"] .pump-calculator-container .professional-action-container .professional-action-buttons .action-button-wrapper .professional-action-btn.calculate-custom-btn .btn-content .btn-description {
-  color: #666666 !important;
-}
-
-/* FINAL OVERRIDE - Remove ALL white color from these buttons */
-[data-theme="light"] .professional-action-btn[class*="calculate"]:not(.reset-btn),
-[data-theme="light"] .professional-action-btn[class*="calculate"]:not(.reset-btn) * {
-  color: initial !important;
-}
-
-[data-theme="light"] .professional-action-btn[class*="calculate"]:not(.reset-btn) .btn-label {
-  color: #000000 !important;
-}
-
-[data-theme="light"] .professional-action-btn[class*="calculate"]:not(.reset-btn) .btn-description {
-  color: #666666 !important;
-}
-
-/* COMPREHENSIVE FIX FOR CALCULATE CARD TEXT VISIBILITY */
-/* Fixed Rate and Custom Steps buttons in light theme */
-[data-theme="light"] .calculate-fixed-btn,
-[data-theme="light"] .calculate-custom-btn,
-[data-theme="light"] .professional-action-btn.calculate-fixed-btn,
-[data-theme="light"] .professional-action-btn.calculate-custom-btn {
-  color: var(--text-primary) !important;
-}
-
-/* All text elements inside calculate buttons */
-[data-theme="light"] .calculate-fixed-btn *,
-[data-theme="light"] .calculate-custom-btn *,
-[data-theme="light"] .professional-action-btn.calculate-fixed-btn *,
-[data-theme="light"] .professional-action-btn.calculate-custom-btn * {
-  color: inherit !important;
-}
-
-/* Specific overrides for labels and descriptions */
-[data-theme="light"] .calculate-fixed-btn .btn-label,
-[data-theme="light"] .calculate-custom-btn .btn-label,
-[data-theme="light"] .professional-action-btn.calculate-fixed-btn .btn-label,
-[data-theme="light"] .professional-action-btn.calculate-custom-btn .btn-label {
-  color: #333333 !important;
-  opacity: 1 !important;
-}
-
-[data-theme="light"] .calculate-fixed-btn .btn-description,
-[data-theme="light"] .calculate-custom-btn .btn-description,
-[data-theme="light"] .professional-action-btn.calculate-fixed-btn .btn-description,
-[data-theme="light"] .professional-action-btn.calculate-custom-btn .btn-description {
-  color: #666666 !important;
-  opacity: 1 !important;
-}
-
-/* Dark theme - ensure proper contrast */
-[data-theme="dark"] .calculate-fixed-btn,
-[data-theme="dark"] .calculate-custom-btn,
-[data-theme="dark"] .professional-action-btn.calculate-fixed-btn,
-[data-theme="dark"] .professional-action-btn.calculate-custom-btn {
-  color: var(--text-primary) !important;
-}
-
-[data-theme="dark"] .calculate-fixed-btn .btn-label,
-[data-theme="dark"] .calculate-custom-btn .btn-label,
-[data-theme="dark"] .professional-action-btn.calculate-fixed-btn .btn-label,
-[data-theme="dark"] .professional-action-btn.calculate-custom-btn .btn-label {
-  color: var(--text-primary) !important;
-  opacity: 1 !important;
-}
-
-[data-theme="dark"] .calculate-fixed-btn .btn-description,
-[data-theme="dark"] .calculate-custom-btn .btn-description,
-[data-theme="dark"] .professional-action-btn.calculate-fixed-btn .btn-description,
-[data-theme="dark"] .professional-action-btn.calculate-custom-btn .btn-description {
-  color: var(--text-secondary) !important;
-  opacity: 1 !important;
-}
-
-/* Additional overrides for btn-content wrapper */
-[data-theme="light"] .calculate-fixed-btn .btn-content,
-[data-theme="light"] .calculate-custom-btn .btn-content,
-[data-theme="light"] .professional-action-btn.calculate-fixed-btn .btn-content,
-[data-theme="light"] .professional-action-btn.calculate-custom-btn .btn-content {
-  color: #333333 !important;
-}
-
-/* Ensure all text inside action buttons is visible */
-[data-theme="light"] .action-button-wrapper .calculate-fixed-btn,
-[data-theme="light"] .action-button-wrapper .calculate-custom-btn,
-[data-theme="light"] .action-button-wrapper .calculate-fixed-btn *,
-[data-theme="light"] .action-button-wrapper .calculate-custom-btn * {
-  color: var(--text-primary) !important;
-}
-
-/* Override any inherited white color */
-html[data-theme="light"] body .calculate-fixed-btn,
-html[data-theme="light"] body .calculate-custom-btn,
-html[data-theme="light"] body .calculate-fixed-btn span,
-html[data-theme="light"] body .calculate-custom-btn span,
-html[data-theme="light"] body .calculate-fixed-btn div,
-html[data-theme="light"] body .calculate-custom-btn div {
-  color: #333333 !important;
-}
-
-/* ULTIMATE FIX - Force calculate buttons to use same colors as reset button */
-[data-theme="light"] .calculate-wrapper .professional-action-btn {
-  color: var(--text-secondary) !important;
-}
-
-[data-theme="light"] .calculate-wrapper .professional-action-btn .btn-content {
-  color: inherit !important;
-}
-
-[data-theme="light"] .calculate-wrapper .professional-action-btn .btn-label {
-  color: var(--text-primary) !important;
-  font-weight: 600;
-}
-
-[data-theme="light"] .calculate-wrapper .professional-action-btn .btn-description {
-  color: var(--text-secondary) !important;
-}
-
-/* Ensure calculate buttons match reset button styling exactly */
-[data-theme="light"] .calculate-fixed-btn,
-[data-theme="light"] .calculate-custom-btn {
-  background: transparent !important;
-  border: 1px solid var(--border-color) !important;
-  color: var(--text-secondary) !important;
-}
-
-[data-theme="light"] .calculate-fixed-btn:hover:not(:disabled),
-[data-theme="light"] .calculate-custom-btn:hover:not(:disabled) {
-  border-color: var(--text-primary) !important;
-  color: var(--text-primary) !important;
-  background: var(--button-bg) !important;
-}
-
-/* Fix any text that might still be white */
-[data-theme="light"] .pump-calculator-container .calculate-wrapper button,
-[data-theme="light"] .pump-calculator-container .calculate-wrapper button * {
-  color: inherit !important;
-}
-
-[data-theme="light"] .pump-calculator-container .calculate-wrapper .btn-label {
-  color: var(--text-primary) !important;
-}
-
-[data-theme="light"] .pump-calculator-container .calculate-wrapper .btn-description {
-  color: var(--text-secondary) !important;
-}
-
-/* SIMPLE FIX - Make calculate buttons match reset button exactly */
-.calculate-fixed-btn,
-.calculate-custom-btn {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-}
-
-.calculate-fixed-btn .btn-label,
-.calculate-custom-btn .btn-label {
-  color: var(--text-primary);
-}
-
-.calculate-fixed-btn .btn-description,
-.calculate-custom-btn .btn-description {
-  color: var(--text-secondary);
-}
-
-.calculate-fixed-btn:hover:not(:disabled),
-.calculate-custom-btn:hover:not(:disabled) {
-  border-color: var(--text-primary);
-  color: var(--text-primary);
-  background: var(--button-bg);
-}
-
-/* ABSOLUTE FINAL FIX - Maximum specificity override for light theme */
-html[data-theme="light"] body .pump-calculator-container .professional-action-container .professional-action-buttons .action-button-wrapper button.professional-action-btn.calculate-fixed-btn span.btn-label,
-html[data-theme="light"] body .pump-calculator-container .professional-action-container .professional-action-buttons .action-button-wrapper button.professional-action-btn.calculate-custom-btn span.btn-label {
-  color: #000000 !important;
-}
-
-html[data-theme="light"] body .pump-calculator-container .professional-action-container .professional-action-buttons .action-button-wrapper button.professional-action-btn.calculate-fixed-btn span.btn-description,
-html[data-theme="light"] body .pump-calculator-container .professional-action-container .professional-action-buttons .action-button-wrapper button.professional-action-btn.calculate-custom-btn span.btn-description {
-  color: #666666 !important;
-}
-
-/* Force dark text class - Nuclear option */
-.force-dark-text,
-.force-dark-text *,
-.force-dark-text .btn-label,
-.force-dark-text .btn-description,
-.force-dark-text .btn-content,
-.force-dark-text .btn-content * {
-  color: #000000 !important;
-}
-
-.force-dark-text .btn-description {
-  color: #666666 !important;
-}
+/* Removed conflicting text color overrides - no longer needed with orange buttons */
 
 /* Xenpozyme Weight Adjustment Notice */
 .xenpozyme-weight-notice {
@@ -8746,43 +8508,6 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 /* Dark theme styles for Xenpozyme notice */
-[data-theme="dark"] .xenpozyme-weight-notice {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(2, 132, 199, 0.15) 100%);
-  border-color: #0891b2;
-}
-
-[data-theme="dark"] .weight-adjustment-header {
-  color: #7dd3fc;
-}
-
-[data-theme="dark"] .weight-adjustment-header svg {
-  color: #38bdf8;
-}
-
-[data-theme="dark"] .weight-status {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(56, 189, 248, 0.3);
-}
-
-[data-theme="dark"] .weight-label {
-  color: #94a3b8;
-}
-
-[data-theme="dark"] .weight-value {
-  color: #38bdf8;
-}
-
-[data-theme="dark"] .rule-item {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-[data-theme="dark"] .rule-condition {
-  color: #94a3b8;
-}
-
-[data-theme="dark"] .rule-action {
-  color: #7dd3fc;
-}
 
 /* Mobile styles for Xenpozyme notice */
 @media (max-width: 768px) {
@@ -8910,40 +8635,6 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 /* Dark theme prescribed dose card */
-[data-theme="dark"] .prescribed-dose-card {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%);
-  border-color: #475569;
-}
-
-[data-theme="dark"] .prescribed-dose-title {
-  color: #e2e8f0;
-}
-
-[data-theme="dark"] .prescribed-dose-value .dose-number {
-  color: #f1f5f9;
-}
-
-[data-theme="dark"] .prescribed-dose-value .dose-unit {
-  color: #94a3b8;
-}
-
-[data-theme="dark"] .status-indicator.low {
-  background: rgba(254, 243, 199, 0.1);
-  color: #fbbf24;
-  border-color: rgba(251, 191, 36, 0.3);
-}
-
-[data-theme="dark"] .status-indicator.correct {
-  background: rgba(209, 250, 229, 0.1);
-  color: #34d399;
-  border-color: rgba(52, 211, 153, 0.3);
-}
-
-[data-theme="dark"] .status-indicator.high {
-  background: rgba(254, 226, 226, 0.1);
-  color: #f87171;
-  border-color: rgba(248, 113, 113, 0.3);
-}
 
 /* Dose Card Explanation Styles */
 .dose-card-header {
@@ -9066,32 +8757,6 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 /* Dark theme explanation styles */
-[data-theme="dark"] .explanation-toggle {
-  color: #94a3b8;
-}
-
-[data-theme="dark"] .explanation-toggle:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #60a5fa;
-}
-
-[data-theme="dark"] .dose-safety-card.active .explanation-toggle {
-  color: rgba(0, 0, 0, 0.7);
-}
-
-[data-theme="dark"] .dose-safety-card.active .explanation-toggle:hover {
-  background: rgba(0, 0, 0, 0.2);
-  color: rgba(0, 0, 0, 0.9);
-}
-
-[data-theme="dark"] .card-explanation {
-  background: rgba(255, 255, 255, 0.03);
-  border-top-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .card-explanation p {
-  color: #94a3b8;
-}
 
 /* Adjust active indicator position */
 .dose-card-header .active-indicator {
@@ -9398,7 +9063,7 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--primary-color);
+  background: #ff5500;
   color: white;
   font-size: 0.75rem;
   font-weight: 600;
@@ -9418,36 +9083,36 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: #666666;
   transition: all 0.2s ease;
   padding: 4px;
   border-radius: 4px;
 }
 
 .vial-dropdown-arrow:hover {
-  color: var(--primary-color);
+  color: #ff5500;
   background: rgba(255, 107, 53, 0.1);
 }
 
 .vial-dropdown-arrow.open {
   transform: translateY(-50%) rotate(180deg);
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 /* Visual indicator for inputs with dropdown */
 .supply-input.has-dropdown {
-  border: 1px solid var(--border-color);
+  border: 1px solid #d0d0d0;
   transition: all 0.2s ease;
 }
 
 .supply-input.has-dropdown:hover {
-  border-color: var(--primary-color);
+  border-color: #ff5500;
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
 }
 
 .supply-input.has-dropdown:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: #ff5500;
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
 }
 
@@ -9457,8 +9122,8 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
   left: 0;
   right: 0;
   min-width: 250px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   z-index: 99999;
@@ -9483,7 +9148,7 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
   padding: 12px 16px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #d0d0d0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -9494,12 +9159,12 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 .vial-option:hover {
-  background: var(--bg-secondary);
+  background: #ffffff;
 }
 
 .vial-option.selected {
   background: rgba(255, 107, 53, 0.1);
-  border-left: 3px solid var(--primary-color);
+  border-left: 3px solid #ff5500;
   padding-left: 13px;
 }
 
@@ -9511,41 +9176,29 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 
 .vial-option .vial-strength {
   font-weight: 600;
-  color: var(--text-primary);
+  color: #000000;
   font-size: 0.9375rem;
 }
 
 .vial-option .vial-volume {
   font-size: 0.8125rem;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .vial-selected-icon {
-  color: var(--primary-color);
+  color: #ff5500;
   flex-shrink: 0;
 }
 
 /* Dark theme vial dropdown */
-[data-theme="dark"] .vial-size-dropdown {
-  background: var(--bg-secondary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="dark"] .vial-option:hover {
-  background: var(--bg-tertiary);
-}
-
-[data-theme="dark"] .vial-option.selected {
-  background: rgba(255, 107, 53, 0.15);
-}
 
 /* Custom Medication Dropdown Styles */
 .medication-custom-dropdown {
   position: relative;
   width: 100%;
   padding: 0.75rem 1rem;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
   cursor: pointer;
   display: flex;
@@ -9556,17 +9209,17 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 .medication-custom-dropdown:hover {
-  border-color: var(--primary-color);
+  border-color: #ff5500;
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
 }
 
 .medication-custom-dropdown.open {
-  border-color: var(--primary-color);
+  border-color: #ff5500;
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
 }
 
 .medication-custom-dropdown.error {
-  border-color: var(--error-color);
+  border-color: #ef4444;
 }
 
 .medication-dropdown-display {
@@ -9577,18 +9230,18 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 .medication-dropdown-display .placeholder {
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .dropdown-chevron {
-  color: var(--text-secondary);
+  color: #666666;
   transition: transform 0.2s ease;
   flex-shrink: 0;
 }
 
 .dropdown-chevron.open {
   transform: rotate(180deg);
-  color: var(--primary-color);
+  color: #ff5500;
 }
 
 .medication-dropdown-menu {
@@ -9596,8 +9249,8 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 9999999;
@@ -9610,24 +9263,24 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 .medication-search-wrapper {
   position: sticky;
   top: 0;
-  background: var(--bg-primary);
+  background: #ffffff;
   padding: 12px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #d0d0d0;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .medication-search-wrapper svg {
-  color: var(--text-secondary);
+  color: #666666;
   flex-shrink: 0;
 }
 
 .medication-search-input {
   flex: 1;
   padding: 8px 12px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
   border-radius: 6px;
   font-size: 0.875rem;
   outline: none;
@@ -9635,8 +9288,8 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 .medication-search-input:focus {
-  border-color: var(--primary-color);
-  background: var(--bg-primary);
+  border-color: #ff5500;
+  background: #ffffff;
 }
 
 .medication-options-list {
@@ -9665,27 +9318,11 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
   background: #94a3b8;
 }
 
-[data-theme="dark"] .medication-options-list {
-  scrollbar-color: #475569 #1e293b;
-}
-
-[data-theme="dark"] .medication-options-list::-webkit-scrollbar-track {
-  background: #1e293b;
-}
-
-[data-theme="dark"] .medication-options-list::-webkit-scrollbar-thumb {
-  background: #475569;
-}
-
-[data-theme="dark"] .medication-options-list::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
-}
-
 .medication-option {
   padding: 12px 16px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #d0d0d0;
 }
 
 .medication-option:last-child {
@@ -9693,18 +9330,18 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 .medication-option:hover {
-  background: var(--bg-secondary);
+  background: #ffffff;
 }
 
 .medication-option.focused {
-  background: var(--bg-secondary);
-  outline: 2px solid var(--primary-color);
+  background: #ffffff;
+  outline: 2px solid #ff5500;
   outline-offset: -2px;
 }
 
 .medication-option.selected {
   background: rgba(255, 107, 53, 0.1);
-  border-left: 3px solid var(--primary-color);
+  border-left: 3px solid #ff5500;
   padding-left: 13px;
 }
 
@@ -9718,7 +9355,7 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 
 .medication-option-name {
   font-size: 0.9375rem;
-  color: var(--text-primary);
+  color: #000000;
   font-weight: 500;
   flex: 1;
   overflow: hidden;
@@ -9757,42 +9394,6 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 /* Dark theme medication dropdown */
-[data-theme="dark"] .medication-custom-dropdown {
-  background: var(--bg-secondary);
-}
-
-[data-theme="dark"] .medication-dropdown-menu {
-  background: var(--bg-secondary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="dark"] .medication-search-wrapper {
-  background: var(--bg-secondary);
-}
-
-[data-theme="dark"] .medication-search-input {
-  background: var(--bg-tertiary);
-}
-
-[data-theme="dark"] .medication-option:hover {
-  background: var(--bg-tertiary);
-}
-
-[data-theme="dark"] .medication-option.selected {
-  background: rgba(255, 107, 53, 0.15);
-}
-
-[data-theme="dark"] .medication-tag.vial-tag {
-  background: rgba(33, 150, 243, 0.15);
-  color: #64b5f6;
-  border-color: rgba(33, 150, 243, 0.3);
-}
-
-[data-theme="dark"] .medication-tag.dosing-tag {
-  background: rgba(156, 39, 176, 0.15);
-  color: #ba68c8;
-  border-color: rgba(156, 39, 176, 0.3);
-}
 
 /* Toggle Field Styles */
 .toggle-field {
@@ -9813,7 +9414,7 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 .toggle-field-label {
   font-size: 0.9375rem;
   font-weight: 500;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 /* Infusion Mode Toggle Styles */
@@ -9855,7 +9456,7 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 .infusion-toggle-input:checked + .infusion-toggle-label {
-  background-color: var(--primary-color);
+  background-color: #ff5500;
 }
 
 .infusion-toggle-input:checked + .infusion-toggle-label .infusion-toggle-slider {
@@ -9863,41 +9464,8 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 /* Dark theme toggle field */
-[data-theme="dark"] .toggle-field {
-  background: var(--bg-tertiary);
-}
-
-[data-theme="dark"] .infusion-toggle-label {
-  background-color: #555;
-}
 
 /* Dark theme vial sizes */
-[data-theme="dark"] .vial-sizes-details {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-[data-theme="dark"] .vial-sizes-header {
-  color: #94a3b8;
-}
-
-[data-theme="dark"] .vial-size-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .vial-size-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-[data-theme="dark"] .vial-strength {
-  color: #f1f5f9;
-}
-
-[data-theme="dark"] .vial-volume {
-  color: #94a3b8;
-}
 
 /* Mobile adjustments for vial sizes */
 @media (max-width: 768px) {
@@ -9927,10 +9495,10 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 }
 
 .custom-calculation-results {
-  background: var(--bg-secondary);
+  background: #ffffff;
   border-radius: 12px;
   padding: 1.5rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid #d0d0d0;
 }
 
 .result-fields {
@@ -9949,7 +9517,7 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 .result-field label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -9957,7 +9525,7 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 .result-value {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #000000;
   min-height: 2rem;
   display: flex;
   align-items: center;
@@ -9966,7 +9534,7 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 .result-value .placeholder {
   font-size: 0.875rem;
   font-weight: 400;
-  color: var(--text-secondary);
+  color: #666666;
   font-style: italic;
 }
 
@@ -10084,7 +9652,7 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 /* Ensure dropdown menu has absolute highest priority */
 .medication-dropdown-menu {
   z-index: 2147483647 !important; /* Maximum z-index value */
-  background: var(--bg-primary) !important;
+  background: #ffffff !important;
   position: absolute !important;
 }
 
@@ -10111,4 +9679,1314 @@ body:has(.medication-dropdown-wrapper.dropdown-open) .dose-unit {
 .medication-dropdown-menu {
   transform: translateZ(0) !important;
   will-change: transform !important;
+}
+
+/* ===== DARK THEME FIXES FOR PUMP PAGE ===== */
+/* Fix all hardcoded colors to use CSS variables */
+
+/* Fix specific color issues */
+
+/* Override any remaining hardcoded white backgrounds */
+
+/* Ensure proper text color inheritance */
+
+/* Fix button text colors */
+
+/* ===== ADDITIONAL DARK THEME FIXES ===== */
+/* Fix dose cards and param cards with white backgrounds */
+
+/* Fix dose safety cards */
+
+/* Fix current dose rate card */
+
+/* Fix infusion parameter cards */
+
+/* Fix main container scrolling issues */
+.pump-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pump-calculator-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure proper height calculation */
+@supports (height: 100dvh) {
+  .pump-page {
+    height: 100dvh;
+  }
+}
+
+/* Additional mobile scrolling fixes */
+@media (max-width: 768px) {
+  .pump-calculator-container {
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+  
+  .pump-calculator-full-width {
+    min-height: 100vh !important;
+  }
+}
+
+/* Vial Input Button Styles */
+.vial-input-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin-top: 0.75rem;
+  background: #FF6900 !important;
+  color: white !important;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  justify-content: center;
+}
+
+.vial-input-btn svg {
+  color: white !important;
+}
+
+.vial-input-btn:hover:not(:disabled) {
+  background: #E65F00 !important;
+  color: white !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 96, 21, 0.3);
+}
+
+.vial-input-btn:hover:not(:disabled) svg {
+  color: white !important;
+}
+
+.vial-input-btn:disabled {
+  background: rgba(0, 0, 0, 0.03) !important;
+  color: #999999 !important;
+  cursor: not-allowed;
+}
+
+.vial-input-btn:disabled svg {
+  color: #999999 !important;
+}
+
+/* Vial Input Modal Styles */
+.vial-input-instructions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  color: #666666;
+}
+
+.medication-info-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.medication-info-header strong {
+  color: #000000;
+}
+
+.medication-info-header .separator {
+  color: #999999;
+}
+
+.vial-input-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.vial-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.vial-input-row:hover {
+  border-color: rgba(255, 85, 0, 0.1);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.vial-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.vial-strength {
+  font-weight: 600;
+  color: #000000;
+  font-size: 1rem;
+}
+
+.vial-volume {
+  font-size: 0.875rem;
+  color: #666666;
+}
+
+.vial-input-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vial-adjust-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vial-adjust-btn:hover:not(:disabled) {
+  background: rgba(255, 85, 0, 0.1);
+  border-color: #ff5500;
+  color: white;
+}
+
+.vial-adjust-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vial-count-input {
+  width: 80px;
+  height: 36px;
+  padding: 0.5rem;
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000000;
+  transition: all 0.2s ease;
+}
+
+.vial-count-input:focus {
+  outline: none;
+  border-color: #ff5500;
+  background: white;
+}
+
+/* Remove spinner buttons in Chrome, Safari, Edge */
+.vial-count-input::-webkit-outer-spin-button,
+.vial-count-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Remove spinner buttons in Firefox */
+.vial-count-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.coverage-results {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 12px;
+  border: 1px solid #d0d0d0;
+}
+
+.coverage-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.coverage-summary .summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #d0d0d0;
+}
+
+.coverage-summary .summary-row:last-child {
+  border-bottom: none;
+}
+
+.coverage-summary .summary-row.highlight {
+  background: #ffffff;
+  margin: -0.75rem -1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 85, 0, 0.1);
+}
+
+.coverage-summary .summary-label {
+  font-weight: 500;
+  color: #666666;
+}
+
+.coverage-summary .summary-value {
+  font-weight: 600;
+  color: #000000;
+  font-size: 1.1rem;
+}
+
+.coverage-indicator {
+  font-size: 0.875rem;
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.coverage-indicator.sufficient {
+  background: rgba(52, 211, 153, 0.1);
+  color: #10b981;
+}
+
+.coverage-indicator.insufficient {
+  background: rgba(248, 113, 113, 0.1);
+  color: #ef4444;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #d0d0d0;
+}
+
+.reset-vials-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  color: #666666;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-vials-btn:hover {
+  background: #ffffff;
+  border-color: #666666;
+  color: #000000;
+}
+
+/* Dark theme adjustments for vial input modal */
+
+/* ======================================== */
+/* DEFINITIVE ORANGE BUTTON STYLES - CB6015 */
+/* ======================================== */
+/* This section overrides ALL conflicting styles */
+
+/* Reset any conflicting backgrounds first */
+.professional-action-btn.calculate-fixed-btn,
+.professional-action-btn.calculate-custom-btn,
+.action-btn.pump-action-btn.fixed-rate-btn,
+.action-btn.pump-action-btn.custom-steps-btn,
+.pump-action-btn.fixed-rate-btn,
+.pump-action-btn.custom-steps-btn,
+.apply-custom-btn,
+.vial-input-btn {
+  /* Remove any inherited backgrounds */
+  background: none !important;
+  background-color: #FF6900 !important;
+  background-image: none !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(203, 96, 21, 0.3) !important;
+}
+
+/* Hover states */
+.professional-action-btn.calculate-fixed-btn:hover:not(:disabled),
+.professional-action-btn.calculate-custom-btn:hover:not(:disabled),
+.action-btn.pump-action-btn.fixed-rate-btn:hover:not(:disabled),
+.action-btn.pump-action-btn.custom-steps-btn:hover:not(:disabled),
+.pump-action-btn.fixed-rate-btn:hover:not(:disabled),
+.pump-action-btn.custom-steps-btn:hover:not(:disabled),
+.apply-custom-btn:hover:not(:disabled),
+.vial-input-btn:hover:not(:disabled) {
+  background: none !important;
+  background-color: #E65F00 !important;
+  background-image: none !important;
+  color: white !important;
+  border: none !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(203, 96, 21, 0.4) !important;
+}
+
+/* Active states */
+.professional-action-btn.calculate-fixed-btn:active,
+.professional-action-btn.calculate-custom-btn:active,
+.pump-action-btn.fixed-rate-btn:active,
+.pump-action-btn.custom-steps-btn:active,
+.apply-custom-btn:active,
+.vial-input-btn:active {
+  background-color: #CC5400 !important;
+  transform: translateY(0);
+}
+
+/* Ensure ALL text and icons are white */
+.professional-action-btn.calculate-fixed-btn *,
+.professional-action-btn.calculate-custom-btn *,
+.pump-action-btn.fixed-rate-btn *,
+.pump-action-btn.custom-steps-btn *,
+.apply-custom-btn *,
+.vial-input-btn * {
+  color: white !important;
+}
+
+/* Specific elements that might have conflicting styles */
+.professional-action-btn.calculate-fixed-btn .btn-label,
+.professional-action-btn.calculate-custom-btn .btn-label,
+.professional-action-btn.calculate-fixed-btn .btn-description,
+.professional-action-btn.calculate-custom-btn .btn-description,
+.professional-action-btn.calculate-fixed-btn .btn-content,
+.professional-action-btn.calculate-custom-btn .btn-content,
+.professional-action-btn.calculate-fixed-btn span,
+.professional-action-btn.calculate-custom-btn span,
+.professional-action-btn.calculate-fixed-btn div,
+.professional-action-btn.calculate-custom-btn div {
+  color: white !important;
+}
+
+/* SVG icons */
+.professional-action-btn.calculate-fixed-btn svg,
+.professional-action-btn.calculate-custom-btn svg,
+.pump-action-btn.fixed-rate-btn svg,
+.pump-action-btn.custom-steps-btn svg,
+.apply-custom-btn svg,
+.vial-input-btn svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* Icon wrappers specifically */
+.professional-action-btn.calculate-fixed-btn .btn-icon-wrapper,
+.professional-action-btn.calculate-custom-btn .btn-icon-wrapper {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: none !important;
+}
+
+/* Force override for both themes with maximum specificity */
+htmlbody .professional-action-btn.calculate-fixed-btn,
+htmlbody .professional-action-btn.calculate-custom-btn,
+html
+
+/* Ensure text visibility with absolute specificity */
+html body .professional-action-btn.calculate-fixed-btn *,
+html body .professional-action-btn.calculate-custom-btn * {
+  color: white !important;
+}
+
+/* Disabled state */
+.professional-action-btn.calculate-fixed-btn:disabled,
+.professional-action-btn.calculate-custom-btn:disabled,
+.pump-action-btn.fixed-rate-btn:disabled,
+.pump-action-btn.custom-steps-btn:disabled,
+.apply-custom-btn:disabled,
+.vial-input-btn:disabled {
+  background-color: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.professional-action-btn.calculate-fixed-btn:disabled *,
+.professional-action-btn.calculate-custom-btn:disabled *,
+.pump-action-btn.fixed-rate-btn:disabled *,
+.pump-action-btn.custom-steps-btn:disabled *,
+.apply-custom-btn:disabled *,
+.vial-input-btn:disabled * {
+  color: #666 !important;
+}
+
+/* ULTIMATE OVERRIDE - Force CB6015 even with inline styles */
+button[style*="backgroundColor"] {
+  &.pump-action-btn.fixed-rate-btn,
+  &.pump-action-btn.custom-steps-btn,
+  &.professional-action-btn.calculate-fixed-btn,
+  &.professional-action-btn.calculate-custom-btn {
+    background-color: #FF6900 !important;
+  }
+}
+
+/* Alternative approach for browsers that don't support nesting */
+button[style*="backgroundColor"].pump-action-btn.fixed-rate-btn,
+button[style*="backgroundColor"].pump-action-btn.custom-steps-btn,
+button[style*="backgroundColor"].professional-action-btn.calculate-fixed-btn,
+button[style*="backgroundColor"].professional-action-btn.calculate-custom-btn {
+  background-color: #FF6900 !important;
+}
+
+/* Force override inline styles with attribute selector */
+.action-btn.pump-action-btn[style],
+.professional-action-btn[style] {
+  &.fixed-rate-btn,
+  &.custom-steps-btn,
+  &.calculate-fixed-btn,
+  &.calculate-custom-btn {
+    background-color: #FF6900 !important;
+    color: white !important;
+  }
+}
+
+/* Non-nested version */
+.action-btn.pump-action-btn.fixed-rate-btn[style],
+.action-btn.pump-action-btn.custom-steps-btn[style],
+.professional-action-btn.calculate-fixed-btn[style],
+.professional-action-btn.calculate-custom-btn[style] {
+  background-color: #FF6900 !important;
+  color: white !important;
+}
+
+/* NUCLEAR OPTION - Override EVERYTHING with maximum specificity */
+html body div.pump-calculator-container button.action-btn.pump-action-btn.fixed-rate-btn,
+html body div.pump-calculator-container button.action-btn.pump-action-btn.custom-steps-btn,
+html body div.pump-calculator-container button.professional-action-btn.calculate-fixed-btn,
+html body div.pump-calculator-container button.professional-action-btn.calculate-custom-btn,
+body .pump-calculator-container .action-btn.fixed-rate-btn,
+body .pump-calculator-container .action-btn.custom-steps-btn,
+body .pump-calculator-container .professional-action-btn.calculate-fixed-btn,
+body .pump-calculator-container .professional-action-btn.calculate-custom-btn {
+  background: #FF6900 !important;
+  background-color: #FF6900 !important;
+  background-image: none !important;
+  color: white !important;
+  border: none !important;
+  outline: none !important;
+}
+
+/* Target buttons with any style attribute */
+button.fixed-rate-btn[style],
+button.custom-steps-btn[style],
+button.calculate-fixed-btn[style],
+button.calculate-custom-btn[style] {
+  background: #FF6900 !important;
+  background-color: #FF6900 !important;
+  color: white !important;
+}
+
+/* Most aggressive selector possible */
+* button.pump-action-btn.fixed-rate-btn,
+* button.pump-action-btn.custom-steps-btn {
+  background: #FF6900 !important;
+  background-color: #FF6900 !important;
+  color: white !important;
+}
+
+/* Override any inline style attribute */
+[style*="background"]:is(.fixed-rate-btn, .custom-steps-btn, .calculate-fixed-btn, .calculate-custom-btn) {
+  background: #FF6900 !important;
+  background-color: #FF6900 !important;
+  color: white !important;
+}
+
+/* Target buttons by their text content as last resort */
+button:has(span:contains("Calculate Fixed Rate Infusion")),
+button:has(span:contains("Calculate Custom Steps Infusion")) {
+  background: #FF6900 !important;
+  background-color: #FF6900 !important;
+  color: white !important;
+}
+
+/* Target the exact inline style */
+button[style*="#FF6900"] {
+  background: #FF6900 !important;
+  background-color: #FF6900 !important;
+}
+
+/* Last resort - use CSS property override */
+.pump-action-btn.fixed-rate-btn,
+.pump-action-btn.custom-steps-btn {
+  --button-bg: #FF6900 !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Override with pseudo-element if nothing else works */
+.pump-action-btn.fixed-rate-btn::before,
+.pump-action-btn.custom-steps-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #FF6900;
+  z-index: -1;
+  border-radius: inherit;
+}
+
+
+/* Specific button color overrides for #FF6900 */
+/* Calculate Days Coverage Button - FF6900 Color at All Times */
+.vial-input-btn,
+.calculate-days-coverage-btn,
+.professional-action-btn.calculate-days-coverage-btn,
+button:has(.vial-input-instructions),
+button:contains("Calculate Days Coverage") {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 1rem 2rem !important;
+  background: #FF6900 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  min-width: 250px !important;
+  min-height: auto !important;
+  justify-content: center !important;
+}
+
+.vial-input-btn:hover:not(:disabled),
+.calculate-days-coverage-btn:hover:not(:disabled),
+.professional-action-btn.calculate-days-coverage-btn:hover:not(:disabled) {
+  background: #E65F00 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(255, 105, 0, 0.4) !important;
+}
+
+.vial-input-btn:active,
+.calculate-days-coverage-btn:active,
+.professional-action-btn.calculate-days-coverage-btn:active {
+  background: #CC5400 !important;
+  transform: translateY(0) !important;
+}
+
+/* Ensure all text and icons are white */
+.vial-input-btn *,
+.calculate-days-coverage-btn *,
+.professional-action-btn.calculate-days-coverage-btn * {
+  color: white !important;
+}
+
+.vial-input-btn svg,
+.calculate-days-coverage-btn svg,
+.professional-action-btn.calculate-days-coverage-btn svg {
+  color: white !important;
+  fill: white !important;
+}
+
+/* Reset complex layout for copy button style */
+.professional-action-btn.calculate-days-coverage-btn .btn-icon-wrapper {
+  background: none !important;
+  border: none !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.professional-action-btn.calculate-days-coverage-btn .btn-content {
+  text-align: center !important;
+  flex: none !important;
+}
+
+/* CRITICAL: Force calculate days coverage button to always show #FF6900 */
+/* Use maximum specificity to override any general professional-action-btn styles */
+button.professional-action-btn.calculate-days-coverage-btn,
+.pump-calculator-container button.professional-action-btn.calculate-days-coverage-btn,
+html body .pump-calculator-container button.professional-action-btn.calculate-days-coverage-btn,
+.professional-action-btn.calculate-days-coverage-btn,
+html body div.pump-calculator-container button.professional-action-btn.calculate-days-coverage-btn,
+.pump-calculator-container .professional-action-btn.calculate-days-coverage-btn {
+  background: #FF6900 !important;
+  background-color: #FF6900 !important;
+  background-image: none !important;
+  color: white !important;
+  border: 2px solid #FF6900 !important;
+  border-color: #FF6900 !important;
+  box-shadow: 0 2px 4px rgba(255, 105, 0, 0.3) !important;
+}
+
+button.professional-action-btn.calculate-days-coverage-btn:hover:not(:disabled),
+.pump-calculator-container button.professional-action-btn.calculate-days-coverage-btn:hover:not(:disabled),
+html body .pump-calculator-container button.professional-action-btn.calculate-days-coverage-btn:hover:not(:disabled) {
+  background: #E65F00 !important;
+  background-color: #E65F00 !important;
+  color: white !important;
+  border-color: #E65F00 !important;
+}
+
+/* Force all child elements to be white */
+button.professional-action-btn.calculate-days-coverage-btn *,
+button.professional-action-btn.calculate-days-coverage-btn .btn-label,
+button.professional-action-btn.calculate-days-coverage-btn .btn-description,
+button.professional-action-btn.calculate-days-coverage-btn svg {
+  color: white !important;
+  fill: white !important;
+}
+
+/* Pump Page Copy Button Styles - All Buttons Same Size and Font */
+.pump-calculator-container .copy-note-btn.calculate-fixed-btn,
+.pump-calculator-container .copy-note-btn.calculate-custom-btn,
+.pump-calculator-container .copy-note-btn.reset-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 1rem 2rem !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  min-width: 250px !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+}
+
+/* Calculate buttons - orange background */
+.pump-calculator-container .copy-note-btn.calculate-fixed-btn,
+.pump-calculator-container .copy-note-btn.calculate-custom-btn {
+  background: var(--primary-color) !important;
+  color: white !important;
+}
+
+/* Reset button - red background with white text */
+.pump-calculator-container .copy-note-btn.reset-btn {
+  background: #dc3545 !important;
+  color: white !important;
+}
+
+/* Force white text on reset button with maximum specificity */
+html body .pump-calculator-container .copy-note-btn.reset-btn,
+html body .pump-calculator-container button.copy-note-btn.reset-btn {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+/* Hover effects for calculate buttons */
+.pump-calculator-container .copy-note-btn.calculate-fixed-btn:hover:not(:disabled),
+.pump-calculator-container .copy-note-btn.calculate-custom-btn:hover:not(:disabled) {
+  background: var(--primary-hover) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px var(--primary-shadow) !important;
+}
+
+/* Hover effects for reset button */
+.pump-calculator-container .copy-note-btn.reset-btn:hover:not(:disabled) {
+  background: #c82333 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3) !important;
+}
+
+/* Active states for all buttons */
+.pump-calculator-container .copy-note-btn.calculate-fixed-btn:active,
+.pump-calculator-container .copy-note-btn.calculate-custom-btn:active,
+.pump-calculator-container .copy-note-btn.reset-btn:active {
+  transform: translateY(0) !important;
+}
+
+/* Ensure all text and icons are white */
+.pump-calculator-container .copy-note-btn.calculate-fixed-btn *,
+.pump-calculator-container .copy-note-btn.calculate-custom-btn *,
+.pump-calculator-container .copy-note-btn.reset-btn * {
+  color: white !important;
+}
+
+.pump-calculator-container .copy-note-btn.calculate-fixed-btn svg,
+.pump-calculator-container .copy-note-btn.calculate-custom-btn svg,
+.pump-calculator-container .copy-note-btn.reset-btn svg {
+  color: white !important;
+  fill: white !important;
+}
+
+/* Mobile responsiveness for copy button style */
+@media (max-width: 768px) {
+  .professional-action-btn.calculate-days-coverage-btn,
+  .pump-calculator-container .copy-note-btn.calculate-fixed-btn,
+  .pump-calculator-container .copy-note-btn.calculate-custom-btn,
+  .pump-calculator-container .copy-note-btn.reset-btn {
+    min-width: 100% !important;
+    padding: 0.875rem 1.5rem !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+/* Removed from Vial Toggle Button */
+.overfill-toggle-option.removed-from-vial,
+.toggle-option:contains("Removed from vial"),
+input[value="removed-from-vial"] + label,
+.overfill-toggle label:has(input[value="removed-from-vial"]) {
+  background-color: #FF6900 !important;
+  color: white !important;
+}
+
+.overfill-toggle-option.removed-from-vial:hover {
+  background-color: #E65F00 !important;
+}
+
+/* When selected/active */
+.overfill-toggle input[value="removed-from-vial"]:checked + label,
+.overfill-toggle-option.removed-from-vial.active {
+  background-color: #FF6900 !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(255, 105, 0, 0.3);
+}
+
+/* Calculate Fixed Rate and Custom Steps Buttons - Match Note Generator Copy Button Design */
+.professional-action-btn.calculate-fixed-btn,
+.professional-action-btn.calculate-custom-btn,
+.action-btn.pump-action-btn.fixed-rate-btn,
+.action-btn.pump-action-btn.custom-steps-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 1rem 2rem !important;
+  background: var(--primary-color) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  min-width: 250px !important;
+  min-height: auto !important;
+  justify-content: center !important;
+}
+
+.professional-action-btn.calculate-fixed-btn:hover:not(:disabled),
+.professional-action-btn.calculate-custom-btn:hover:not(:disabled),
+.action-btn.pump-action-btn.fixed-rate-btn:hover:not(:disabled),
+.action-btn.pump-action-btn.custom-steps-btn:hover:not(:disabled) {
+  background: var(--primary-hover) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px var(--primary-shadow) !important;
+}
+
+.professional-action-btn.calculate-fixed-btn:active,
+.professional-action-btn.calculate-custom-btn:active,
+.action-btn.pump-action-btn.fixed-rate-btn:active,
+.action-btn.pump-action-btn.custom-steps-btn:active {
+  transform: translateY(0) !important;
+}
+
+/* Ensure all children have white text */
+.professional-action-btn.calculate-fixed-btn *,
+.professional-action-btn.calculate-custom-btn *,
+.action-btn.pump-action-btn.fixed-rate-btn *,
+.action-btn.pump-action-btn.custom-steps-btn * {
+  color: white !important;
+}
+
+/* SVG Icons */
+.professional-action-btn.calculate-fixed-btn svg,
+.professional-action-btn.calculate-custom-btn svg,
+.action-btn.pump-action-btn.fixed-rate-btn svg,
+.action-btn.pump-action-btn.custom-steps-btn svg {
+  color: white !important;
+  fill: white !important;
+}
+
+/* Reset complex layout for copy button style */
+.professional-action-btn.calculate-fixed-btn .btn-icon-wrapper,
+.professional-action-btn.calculate-custom-btn .btn-icon-wrapper {
+  background: none !important;
+  border: none !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.professional-action-btn.calculate-fixed-btn .btn-content,
+.professional-action-btn.calculate-custom-btn .btn-content {
+  text-align: center !important;
+  flex: none !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+}
+
+/* Hide description text to match copy button single-line design */
+.professional-action-btn.calculate-fixed-btn .btn-description,
+.professional-action-btn.calculate-custom-btn .btn-description {
+  display: none !important;
+}
+
+/* Ensure label text is properly styled */
+.professional-action-btn.calculate-fixed-btn .btn-label,
+.professional-action-btn.calculate-custom-btn .btn-label {
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  color: white !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+/* ========================================
+   DARK THEME SUPPORT
+   ======================================== */
+
+[data-theme="dark"] .pump-calculator-container {
+  background: var(--bg-secondary, #0a0a0a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .calculator-section {
+  background: var(--bg-primary, #000000);
+  border-color: var(--border-color, #2a2a2a);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+[data-theme="dark"] .section-header {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+  border-bottom-color: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] .section-header h3,
+[data-theme="dark"] .section-header h4 {
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .section-content {
+  background: var(--bg-primary, #000000);
+  color: var(--text-primary, #ffffff);
+}
+
+/* Form inputs and selects */
+[data-theme="dark"] .medication-select,
+[data-theme="dark"] .param-input,
+[data-theme="dark"] .info-input,
+[data-theme="dark"] .supply-input,
+[data-theme="dark"] .input-container input,
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: var(--input-bg, #1a1a1a);
+  border-color: var(--input-border, #2a2a2a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .medication-select:hover,
+[data-theme="dark"] .param-input:hover,
+[data-theme="dark"] .info-input:hover,
+[data-theme="dark"] .supply-input:hover,
+[data-theme="dark"] input:hover,
+[data-theme="dark"] select:hover {
+  border-color: var(--primary-color, #ff5500);
+}
+
+[data-theme="dark"] .medication-select:focus,
+[data-theme="dark"] .param-input:focus,
+[data-theme="dark"] .info-input:focus,
+[data-theme="dark"] .supply-input:focus,
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus {
+  border-color: var(--primary-color, #ff5500);
+  box-shadow: 0 0 0 3px var(--primary-light, rgba(255, 85, 0, 0.1));
+  outline: none;
+}
+
+/* Placeholders */
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--text-tertiary, #666666);
+}
+
+/* Cards */
+[data-theme="dark"] .dose-card,
+[data-theme="dark"] .param-card,
+[data-theme="dark"] .info-card,
+[data-theme="dark"] .medication-info-card {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+  border-color: var(--border-color, #2a2a2a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .dose-card:hover,
+[data-theme="dark"] .param-card:hover,
+[data-theme="dark"] .info-card:hover {
+  border-color: var(--primary-color, #ff5500);
+  background: rgba(255, 85, 0, 0.05);
+}
+
+/* Labels and text */
+[data-theme="dark"] .param-label,
+[data-theme="dark"] .dose-label,
+[data-theme="dark"] .info-label,
+[data-theme="dark"] .card-label,
+[data-theme="dark"] .param-card-label,
+[data-theme="dark"] label {
+  color: var(--text-secondary, #a0a0a0);
+}
+
+[data-theme="dark"] .medication-info-value,
+[data-theme="dark"] .unit-text,
+[data-theme="dark"] .helper-text {
+  color: var(--text-primary, #ffffff);
+}
+
+/* Dropdown and modal */
+[data-theme="dark"] .medication-dropdown {
+  background: var(--bg-primary, #000000);
+  border-color: var(--border-color, #2a2a2a);
+  box-shadow: var(--shadow-lg, 0 10px 15px rgba(0, 0, 0, 0.5));
+}
+
+[data-theme="dark"] .medication-item {
+  background: transparent;
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .medication-item:hover {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+}
+
+[data-theme="dark"] .medication-category {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+  color: var(--text-secondary, #a0a0a0);
+  border-bottom-color: var(--border-color, #2a2a2a);
+}
+
+/* Results section */
+[data-theme="dark"] .results-container {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+  border-color: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] .results-header {
+  background: var(--bg-secondary, #0a0a0a);
+  border-bottom-color: var(--border-color, #2a2a2a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .result-section {
+  background: var(--bg-primary, #000000);
+  border-color: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] .result-header {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+  border-bottom-color: var(--border-color, #2a2a2a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .result-item {
+  background: transparent;
+  border-bottom-color: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] .result-label {
+  color: var(--text-secondary, #a0a0a0);
+}
+
+[data-theme="dark"] .result-value {
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .result-highlight {
+  background: rgba(255, 85, 0, 0.1);
+  color: var(--primary-color, #ff5500);
+  border-color: rgba(255, 85, 0, 0.2);
+}
+
+/* Buttons */
+[data-theme="dark"] .action-button,
+[data-theme="dark"] .professional-action-btn {
+  background: var(--primary-color, #ff5500);
+  color: white;
+}
+
+[data-theme="dark"] .action-button:hover,
+[data-theme="dark"] .professional-action-btn:hover {
+  background: var(--primary-hover, #e64a00);
+}
+
+[data-theme="dark"] .secondary-button,
+[data-theme="dark"] .reset-button {
+  background: var(--button-bg, rgba(255, 255, 255, 0.05));
+  color: var(--text-primary, #ffffff);
+  border-color: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] .secondary-button:hover,
+[data-theme="dark"] .reset-button:hover {
+  background: var(--button-hover-bg, rgba(255, 255, 255, 0.08));
+  border-color: var(--primary-color, #ff5500);
+}
+
+/* Toggle switches */
+[data-theme="dark"] .toggle-switch {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+  border-color: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] .toggle-switch.active {
+  background: var(--primary-color, #ff5500);
+}
+
+/* Info cards and alerts */
+[data-theme="dark"] .info-box,
+[data-theme="dark"] .alert-box {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+  border-color: var(--border-color, #2a2a2a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .warning-box {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+[data-theme="dark"] .error-box {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+[data-theme="dark"] .success-box {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+/* Dividers and borders */
+[data-theme="dark"] .divider,
+[data-theme="dark"] .parameters-divider,
+[data-theme="dark"] hr {
+  border-color: var(--border-color, #2a2a2a);
+  background: var(--border-color, #2a2a2a);
+}
+
+/* Scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar {
+  background: var(--bg-secondary, #0a0a0a);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+/* Custom step validation indicators */
+[data-theme="dark"] .validation-indicator {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+  border-color: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] .validation-indicator.valid {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+[data-theme="dark"] .validation-indicator.invalid {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+/* Print dialog */
+[data-theme="dark"] .print-header,
+[data-theme="dark"] .print-dialog {
+  background: var(--bg-primary, #000000);
+  color: var(--text-primary, #ffffff);
+  border-color: var(--border-color, #2a2a2a);
+}
+
+/* Loading states */
+[data-theme="dark"] .loading-overlay {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="dark"] .loading-spinner {
+  border-color: var(--border-color, #2a2a2a);
+  border-top-color: var(--primary-color, #ff5500);
+}
+
+/* Tooltips */
+[data-theme="dark"] .tooltip {
+  background: var(--bg-primary, #000000);
+  color: var(--text-primary, #ffffff);
+  border-color: var(--border-color, #2a2a2a);
+}
+
+/* Read-only inputs */
+[data-theme="dark"] input[readonly],
+[data-theme="dark"] .supply-input[readonly] {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+  opacity: 0.7;
+}
+
+/* Enhanced dark theme support for all elements */
+[data-theme="dark"] .calculator-section {
+  background: var(--bg-tertiary, #1a1a1a);
+  border-color: var(--border-color, #2a2a2a);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .section-header {
+  background: var(--bg-primary, #0f0f0f);
+  border-bottom-color: var(--border-color, #2a2a2a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .section-title {
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .section-icon {
+  color: var(--primary-color, #ff6900);
+}
+
+[data-theme="dark"] .dose-card,
+[data-theme="dark"] .param-card {
+  background: var(--bg-tertiary, #1a1a1a);
+  border-color: var(--border-color, #2a2a2a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .dose-input,
+[data-theme="dark"] .param-input,
+[data-theme="dark"] .supply-input {
+  background: var(--input-bg, #2a2a2a);
+  border-color: var(--input-border, #333333);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .dose-input:focus,
+[data-theme="dark"] .param-input:focus,
+[data-theme="dark"] .supply-input:focus {
+  border-color: var(--input-focus-border, #ff6900);
+  background: var(--input-bg, #2a2a2a);
+  box-shadow: 0 0 0 3px var(--primary-light, rgba(255, 105, 0, 0.2));
+}
+
+[data-theme="dark"] .dose-label,
+[data-theme="dark"] .param-label {
+  color: var(--text-secondary, #cccccc);
+}
+
+[data-theme="dark"] .unit-selector {
+  background: var(--bg-secondary, #1f1f1f);
+  border-color: var(--border-color, #2a2a2a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .unit-option:hover {
+  background: var(--button-hover-bg, #333333);
+}
+
+[data-theme="dark"] .reset-section-btn {
+  color: var(--text-secondary, #cccccc);
+  background: var(--bg-secondary, #1f1f1f);
+  border-color: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] .reset-section-btn:hover {
+  background: var(--button-hover-bg, #333333);
+  border-color: var(--input-focus-border, #ff6900);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .results-section {
+  background: var(--bg-tertiary, #1a1a1a);
+  border-color: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] .result-card {
+  background: var(--bg-secondary, #1f1f1f);
+  border-color: var(--border-color, #2a2a2a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .result-value {
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .result-label {
+  color: var(--text-secondary, #cccccc);
+}
+
+[data-theme="dark"] .pump-selection-grid {
+  background: var(--bg-secondary, #1f1f1f);
+}
+
+[data-theme="dark"] .pump-card {
+  background: var(--bg-tertiary, #1a1a1a);
+  border-color: var(--border-color, #2a2a2a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .pump-card:hover {
+  border-color: var(--primary-color, #ff6900);
+  background: var(--bg-primary, #0f0f0f);
+}
+
+[data-theme="dark"] .pump-card.selected {
+  border-color: var(--primary-color, #ff6900);
+  background: var(--primary-light, rgba(255, 105, 0, 0.1));
+}
+
+[data-theme="dark"] .dose-safety-indicator {
+  background: var(--bg-tertiary, #1a1a1a);
+  border-color: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] .prescribed-dose-card {
+  background: var(--bg-secondary, #1f1f1f);
+  border-color: var(--border-color, #2a2a2a);
+}
+
+[data-theme="dark"] .prescribed-dose-title {
+  color: var(--text-secondary, #cccccc);
+}
+
+[data-theme="dark"] .dose-number {
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .dose-unit {
+  color: var(--text-secondary, #cccccc);
 }

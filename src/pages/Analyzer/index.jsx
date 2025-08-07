@@ -2826,9 +2826,13 @@ const Analyzer = () => {
             <div className="supplies-results-section">
               <div className="supplies-results-header">
                 <h2>Prescription Analysis Results</h2>
-                <button className="toggle-btn reset-style" onClick={handleReset}>
-                  <X size={16} />
-                  Reset
+                <button 
+                  className="reset-analysis-btn" 
+                  onClick={handleReset}
+                  title="Reset prescription analysis"
+                >
+                  <RotateCcw size={18} />
+                  <span>Reset Analysis</span>
                 </button>
               </div>
 
@@ -3145,9 +3149,13 @@ const Analyzer = () => {
             <div className="supplies-results-section">
               <div className="supplies-results-header">
                 <h2>Supply Order Comparison</h2>
-                <button className="toggle-btn reset-style" onClick={handleResetSupplies}>
-                  <X size={16} />
-                  Reset
+                <button 
+                  className="reset-supplies-btn" 
+                  onClick={handleResetSupplies}
+                  title="Reset supplies comparison"
+                >
+                  <RotateCcw size={18} />
+                  <span>Reset Comparison</span>
                 </button>
               </div>
               

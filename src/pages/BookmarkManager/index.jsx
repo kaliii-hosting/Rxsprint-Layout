@@ -36,13 +36,23 @@ const ItemTypes = {
   FOLDER: 'folder'
 };
 
-// Default colors for items - Neon palette
+// Default colors for items - Pastel palette (matching notes page)
 const defaultColors = [
-  '#FF006E', '#FB5607', '#FFBE0B', '#8338EC', '#3A86FF',  // Neon pink, orange, yellow, purple, blue
-  '#06FFB4', '#FF4365', '#00F5FF', '#C77DFF', '#7209B7',  // Neon mint, coral, cyan, lavender, deep purple
-  '#F72585', '#4CC9F0', '#4361EE', '#3F37C9', '#480CA8',  // Hot pink, sky blue, electric blue, royal blue, violet
-  '#560BAD', '#B5179E', '#E0AAFF', '#5390D9', '#5E60CE',  // Deep violet, magenta, light purple, cornflower, slate blue
-  '#6930C3', '#7400B8', '#9D4EDD', '#BF0603', '#DC2F02'   // Purple, dark purple, bright purple, red, orange red
+  '#FFB5A7', // Coral/Pink
+  '#FFE5B4', // Peach/Yellow
+  '#C8E6C9', // Mint green
+  '#B3E5FC', // Light cyan
+  '#E1BEE7', // Light purple
+  '#FFCCBC', // Light orange/salmon
+  '#F8BBD0', // Light pink
+  '#DCEDC8', // Light green
+  '#D7CCC8', // Light brown
+  '#CFD8DC', // Blue grey
+  '#FFCDD2', // Light red
+  '#C5CAE9', // Light indigo
+  '#BBDEFB', // Light blue
+  '#F0F4C3', // Lime
+  '#FFF9C4'  // Light yellow
 ];
 
 // Default icons
