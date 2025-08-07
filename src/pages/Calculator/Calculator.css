@@ -32,9 +32,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
+  gap: 2rem;
   width: 100%;
-  max-width: 500px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: clamp(1rem, 2vw, 2rem);
   min-height: calc(100vh - 120px);
@@ -42,7 +42,7 @@
 
 .calculator-wrapper {
   width: 100%;
-  max-width: 100%;
+  max-width: 450px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: 16px;
@@ -50,6 +50,7 @@
   transition: all 0.3s ease;
   animation: fadeInUp 0.5s ease;
 }
+
 
 @keyframes fadeInUp {
   from {
@@ -207,13 +208,14 @@
   justify-content: center;
 }
 
-/* Calculator Mode Selector - Icon Buttons */
+/* Calculator Mode Selector - Horizontal Layout */
 .calculator-mode-selector {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   width: 100%;
-  margin-bottom: 1.5rem;
+  max-width: 600px;
+  margin-bottom: 0;
 }
 
 .calc-mode-button {
@@ -281,7 +283,7 @@
   line-height: 1.2;
 }
 
-/* Mode Selector Container - OLD - TO BE REMOVED */
+/* Mode Selector Container - Dropdown (Not used anymore) */
 .mode-selector-container {
   position: relative;
   background: var(--bg-tertiary);
@@ -614,6 +616,8 @@
   }
 }
 
+
+
 /* Desktop height optimization */
 @media (min-height: 800px) and (min-width: 1024px) {
   .calculator-dashboard {
@@ -635,10 +639,11 @@
 /* Special Calculator Styles (BMI & ABW) */
 .special-calculator {
   width: 100%;
+  max-width: 450px;
   padding: 1.5rem;
   background: var(--bg-tertiary);
   border-radius: 12px;
-  margin-top: 1rem;
+  margin-top: 0;
 }
 
 .calc-header {
@@ -770,17 +775,17 @@
   border-color: var(--primary-color);
 }
 
-/* Neon Green Highlight for specific cards */
+/* Orange Highlight for specific cards */
 .result-card.highlight-neon {
-  background: #39ff14;
-  background: linear-gradient(135deg, #39ff14, #32e60d);
-  border: 2px solid #2bc40a;
-  box-shadow: 0 0 20px rgba(57, 255, 20, 0.5), inset 0 0 20px rgba(57, 255, 20, 0.2);
+  background: #FF6900;
+  background: linear-gradient(135deg, #FF6900, #ff8533);
+  border: 2px solid #E55D00;
+  box-shadow: 0 0 20px rgba(255, 105, 0, 0.5), inset 0 0 20px rgba(255, 105, 0, 0.2);
 }
 
 .result-card.highlight-neon:hover {
-  box-shadow: 0 0 30px rgba(57, 255, 20, 0.7), 0 8px 25px rgba(0, 0, 0, 0.2);
-  background: linear-gradient(135deg, #4dff28, #39ff14);
+  box-shadow: 0 0 30px rgba(255, 105, 0, 0.7), 0 8px 25px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #ff8533, #FF6900);
 }
 
 .result-label {

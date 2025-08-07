@@ -387,7 +387,7 @@ const Calculator = () => {
     <div className="calculator-page page-container">
       <div className="calculator-content">
         <div className="calculator-dashboard">
-          {/* Mode Selector */}
+          {/* Mode Selector with Icons */}
           <div className="calculator-mode-selector">
             <button
               className={`calc-mode-button ${calculatorMode === 'standard' ? 'active' : ''}`}
@@ -419,7 +419,7 @@ const Calculator = () => {
             </button>
           </div>
             
-            <div className="calculator-wrapper">
+          <div className="calculator-wrapper">
             {/* Standard Calculator */}
             {calculatorMode === 'standard' && (
               <>

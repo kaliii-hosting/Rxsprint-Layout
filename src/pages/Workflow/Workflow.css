@@ -870,7 +870,7 @@
 
 /* Yes/No Cell Styling */
 .yes {
-  color: #39ff14;
+  color: #FF6900;
   font-weight: 700;
   text-shadow: 0 0 8px rgba(57, 255, 20, 0.5);
 }
@@ -1098,7 +1098,7 @@
 
 /* Highlight Text - Neon Green */
 .highlight {
-  background: #39ff14;
+  background: #FF6900;
   color: #000000;
   padding: 0.25rem 0.5rem;
   border-radius: 6px;
@@ -1109,7 +1109,7 @@
 
 /* Mark tag styling for highlighted text */
 mark, .marked {
-  background: #39ff14;
+  background: #FF6900;
   color: #000000;
   padding: 0.125rem 0.375rem;
   border-radius: 4px;
@@ -1302,7 +1302,7 @@ u {
 .subsection-card.completed .completion-indicator {
   background: #000000;
   border-radius: 50%;
-  color: #39ff14;
+  color: #FF6900;
 }
 
 .subsection-card.completed .empty-circle {
@@ -1349,8 +1349,8 @@ u {
 .workflow-expansion .subsections-grid .subsection-card.completed,
 .subsections-grid .subsection-card.completed,
 .subsection-card.completed {
-  background: #39ff14 !important;
-  background-color: #39ff14 !important;
+  background: #FF6900 !important;
+  background-color: #FF6900 !important;
 }
 
 /* Subsection Card */
@@ -1374,9 +1374,9 @@ u {
 
 /* Completed card styles */
 .subsection-card.completed {
-  background: #39ff14 !important;
-  background-color: #39ff14 !important;
-  border-color: #39ff14 !important;
+  background: #FF6900 !important;
+  background-color: #FF6900 !important;
+  border-color: #FF6900 !important;
   border-width: 3px !important;
   box-shadow: 0 0 20px rgba(57, 255, 20, 0.4) !important;
   transform: scale(1.02);
@@ -1442,7 +1442,7 @@ u {
   right: 1rem;
   width: 24px;
   height: 24px;
-  color: #39ff14;
+  color: #FF6900;
   font-size: 16px;
   font-weight: bold;
   display: flex;
@@ -1918,9 +1918,9 @@ u {
 body .subsection-card.completed,
 #root .subsection-card.completed,
 .subsection-card.completed {
-  background: #39ff14 !important;
-  background-color: #39ff14 !important;
-  border: 3px solid #39ff14 !important;
+  background: #FF6900 !important;
+  background-color: #FF6900 !important;
+  border: 3px solid #FF6900 !important;
   box-shadow: 0 0 30px rgba(57, 255, 20, 0.6) !important;
 }
 

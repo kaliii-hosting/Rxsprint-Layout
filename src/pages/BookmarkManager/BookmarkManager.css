@@ -101,8 +101,8 @@
 }
 
 .toggle-btn:hover {
-  background: #ff5400;
-  border-color: #ff5400;
+  background: #FF6900;
+  border-color: #FF6900;
   color: white;
   transform: translateY(-1px);
 }
@@ -112,9 +112,9 @@
 }
 
 .toggle-btn.active {
-  background: #ff5400;
+  background: #FF6900;
   color: white;
-  border-color: #ff5400;
+  border-color: #FF6900;
   box-shadow: 0 4px 12px rgba(255, 84, 0, 0.3);
 }
 
@@ -131,8 +131,8 @@
 /* Enhanced mobile touch feedback */
 @media (hover: none) and (pointer: coarse) {
   .toggle-btn:active {
-    background: #ff5400;
-    border-color: #ff5400;
+    background: #FF6900;
+    border-color: #FF6900;
     color: white;
   }
 }
@@ -252,7 +252,7 @@
 
 .filter-btn {
   position: relative;
-  background: #ff5400;
+  background: #FF6900;
   color: white;
   border: none;
   border-radius: 8px;
@@ -278,8 +278,8 @@
 }
 
 .filter-btn.active {
-  background: #ff5400;
-  box-shadow: 0 4px 12px rgba(255, 84, 0, 0.3);
+  background: #FF6900;
+  box-shadow: 0 2px 8px rgba(255, 105, 0, 0.25);
 }
 
 .filter-btn:not(.active) {
@@ -289,8 +289,8 @@
 }
 
 .filter-btn:not(.active):hover {
-  background: #ff5400;
-  border-color: #ff5400;
+  background: #FF6900;
+  border-color: #FF6900;
   color: white;
   transform: translateY(-2px);
 }
@@ -336,9 +336,9 @@
 }
 
 .bookmark-btn {
-  background: #ff5400;
+  background: #FF6900;
   color: white;
-  border: 1px solid #ff5400;
+  border: 1px solid #FF6900;
 }
 
 .bookmark-btn:hover {
@@ -567,12 +567,13 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
-  color: white;
+  color: rgba(0, 0, 0, 0.8);
   overflow: hidden;
   aspect-ratio: 1;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   background-size: cover;
   background-position: center;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .bookmark-item.grid-view.compact {
@@ -580,8 +581,9 @@
 }
 
 .bookmark-item.grid-view:hover {
-  transform: translateY(-6px) scale(1.03);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .bookmark-item.grid-view:active {
@@ -594,8 +596,8 @@
 }
 
 .bookmark-item.grid-view.drag-over {
-  transform: scale(1.08);
-  box-shadow: 0 0 0 4px var(--primary-color), 0 12px 32px rgba(0, 0, 0, 0.3);
+  transform: scale(1.05);
+  box-shadow: 0 0 0 3px #FF6900, 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 
@@ -604,8 +606,9 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 0.75rem;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
   transition: transform 0.3s ease;
+  color: rgba(0, 0, 0, 0.7);
 }
 
 .bookmark-item.grid-view:hover .item-icon {
@@ -616,13 +619,14 @@
   font-size: 1rem;
   font-weight: 600;
   margin: 0;
-  color: white;
+  color: rgba(0, 0, 0, 0.85);
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 
 .bookmark-item.grid-view.compact .item-title {
@@ -773,7 +777,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1rem 2rem;
-  background: #ff5400;
+  background: #FF6900;
   color: white;
   border: none;
   border-radius: 12px;
@@ -806,7 +810,7 @@
   width: 48px;
   height: 48px;
   border: 3px solid var(--border-color);
-  border-top-color: #ff5400;
+  border-top-color: #FF6900;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -1454,7 +1458,7 @@
 
 [data-theme="light"] .form-group input:focus {
   background: #ffffff;
-  border-color: #ff5500;
+  border-color: #FF6900;
   box-shadow: 0 0 0 4px rgba(255, 85, 0, 0.1);
 }
 
@@ -1484,8 +1488,8 @@
 }
 
 [data-theme="light"] .save-btn {
-  background: #ff5500;
-  border-color: #ff5500;
+  background: #FF6900;
+  border-color: #FF6900;
   color: white;
 }
 
@@ -1718,7 +1722,7 @@
 
 [data-theme="dark"] .form-group input:focus {
   background: #111827;
-  border-color: #ff5500;
+  border-color: #FF6900;
   box-shadow: 0 0 0 4px rgba(255, 85, 0, 0.2);
 }
 
@@ -1748,8 +1752,8 @@
 }
 
 [data-theme="dark"] .save-btn {
-  background: #ff5500;
-  border-color: #ff5500;
+  background: #FF6900;
+  border-color: #FF6900;
   color: white;
 }
 

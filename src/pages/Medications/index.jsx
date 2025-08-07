@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit2, Trash2, Plus, Upload, Grid, FileSpreadsheet, CheckCircle, AlertCircle, Download, Pill } from 'lucide-react';
+import { Edit2, Trash2, Plus, Upload, Grid, FileSpreadsheet, CheckCircle, AlertCircle, Download, Droplet, Package, Pill, Beaker } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { storage, firestore } from '../../config/firebase';
@@ -861,7 +861,7 @@ const Medications = () => {
               onClick={() => setShowSterileSolutions(!showSterileSolutions)}
             >
               <span className="mobile-abbr">SS</span>
-              <Pill size={16} className="desktop-icon" />
+              <Droplet size={16} className="desktop-icon" />
               <span className="desktop-text">Sterile Solutions</span>
             </button>
             <button
@@ -869,7 +869,7 @@ const Medications = () => {
               onClick={() => setShowLyophilizedPowders(!showLyophilizedPowders)}
             >
               <span className="mobile-abbr">LP</span>
-              <Pill size={16} className="desktop-icon" />
+              <Package size={16} className="desktop-icon" />
               <span className="desktop-text">Lyophilized Powders</span>
             </button>
             <button
@@ -885,7 +885,7 @@ const Medications = () => {
               onClick={() => setShowSolutions(!showSolutions)}
             >
               <span className="mobile-abbr">SOL</span>
-              <Pill size={16} className="desktop-icon" />
+              <Beaker size={16} className="desktop-icon" />
               <span className="desktop-text">Solutions</span>
             </button>
           </div>
