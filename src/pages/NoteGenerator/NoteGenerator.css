@@ -242,17 +242,6 @@
   }
 }
 
-/* Neon glow animation for YES selections */
-@keyframes neonGlow {
-  from {
-    box-shadow: 0 0 20px rgba(57, 255, 20, 0.6), 
-                inset 0 0 10px rgba(57, 255, 20, 0.3);
-  }
-  to {
-    box-shadow: 0 0 30px rgba(57, 255, 20, 0.9), 
-                inset 0 0 20px rgba(57, 255, 20, 0.5);
-  }
-}
 
 .template-selector-card:hover {
   border-color: var(--primary-border);
@@ -1298,20 +1287,6 @@ button:focus-visible {
   animation: neonGlow 1.5s ease-in-out infinite alternate;
 }
 
-@keyframes neonGlow {
-  from {
-    box-shadow: 0 0 20px rgba(57, 255, 20, 0.8), 
-                0 0 40px rgba(57, 255, 20, 0.6),
-                0 0 60px rgba(57, 255, 20, 0.4),
-                inset 0 0 20px rgba(255, 255, 255, 0.3);
-  }
-  to {
-    box-shadow: 0 0 25px rgba(57, 255, 20, 1), 
-                0 0 50px rgba(57, 255, 20, 0.8),
-                0 0 75px rgba(57, 255, 20, 0.6),
-                inset 0 0 25px rgba(255, 255, 255, 0.4);
-  }
-}
 
 /* NO button active state - Red */
 .toggle-btn:last-child.active {
@@ -1451,20 +1426,16 @@ button:focus-visible {
   left: var(--slider-position, 64.44%);
 }
 
-/* Background colors for different states with enhanced neon effect */
+/* Background colors for different states */
 .switch-toggle[data-value="yes"] {
   background: #39ff14;
   background: linear-gradient(135deg, #39ff14, #00ff41);
   border-color: #39ff14;
-  box-shadow: 0 0 20px rgba(57, 255, 20, 0.6), 
-              inset 0 0 10px rgba(57, 255, 20, 0.3);
-  animation: neonGlow 1.5s ease-in-out infinite alternate;
 }
 
 .switch-toggle[data-value="no"] {
   background-color: #ff3b30;
   border-color: #ff3b30;
-  box-shadow: 0 0 15px rgba(255, 59, 48, 0.4);
 }
 
 .switch-toggle[data-value=""] {
@@ -1554,14 +1525,11 @@ button:focus-visible {
   background: #39ff14;
   background: linear-gradient(135deg, #39ff14, #00ff41);
   border-color: #39ff14;
-  box-shadow: 0 0 25px rgba(57, 255, 20, 0.7), 
-              inset 0 0 15px rgba(57, 255, 20, 0.4);
 }
 
 [data-theme="dark"] .switch-toggle[data-value="no"] {
   background-color: #ff3b30;
   border-color: #ff3b30;
-  box-shadow: 0 0 20px rgba(255, 59, 48, 0.5);
 }
 
 [data-theme="dark"] .toggle-btn {
