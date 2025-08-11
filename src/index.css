@@ -1069,9 +1069,6 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 .bookmarks-page button,
 .bookmarks-page .button,
 .bookmarks-page .btn,
-.gpt-page button,
-.gpt-page .button,
-.gpt-page .btn,
 .shop-page button,
 .shop-page .button,
 .shop-page .btn,
@@ -1091,7 +1088,6 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 /* Remove glow on hover */
 .analyzer-page button:hover,
 .bookmarks-page button:hover,
-.gpt-page button:hover,
 .shop-page button:hover,
 .medications-page button:hover,
 .workflow-page button:hover,
@@ -1119,34 +1115,13 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 .bookmarks-page .header-button,
 .bookmarks-page .action-button,
 .bookmarks-page .primary-button,
-.bookmarks-page .add-bookmark-btn,
-.gpt-page .header-button,
-.gpt-page .action-button,
-.gpt-page .primary-button {
+.bookmarks-page .add-bookmark-btn {
   background: #FF6900 !important;
   background-color: #FF6900 !important;
   color: white !important;
   border-color: #FF6900 !important;
 }
 
-/* GPT page search button specific styling */
-.gpt-page .search-button,
-.gpt-page .search-btn,
-.gpt-page button[type="submit"],
-.gpt-page .chat-input-container button {
-  background: #FF6900 !important;
-  background-color: #FF6900 !important;
-  color: white !important;
-  border-color: #FF6900 !important;
-}
-
-.gpt-page .search-button svg,
-.gpt-page .search-btn svg,
-.gpt-page button[type="submit"] svg,
-.gpt-page .chat-input-container button svg {
-  color: white !important;
-  fill: white !important;
-}
 
 /* Hover states for FF6900 buttons */
 .medications-page .header-button:hover,
@@ -1162,11 +1137,7 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 .analyzer-page .action-button:hover,
 .bookmarks-page .header-button:hover,
 .bookmarks-page .action-button:hover,
-.bookmarks-page .add-bookmark-btn:hover,
-.gpt-page .header-button:hover,
-.gpt-page .action-button:hover,
-.gpt-page .search-button:hover,
-.gpt-page .search-btn:hover {
+.bookmarks-page .add-bookmark-btn:hover {
   background: #E55D00 !important;
   background-color: #E55D00 !important;
   transform: translateY(-1px);
@@ -1179,15 +1150,11 @@ html[data-theme="light"] body .pump-calculator-container .professional-action-co
 [data-theme="dark"] .notes-page .header-button,
 [data-theme="dark"] .analyzer-page .header-button,
 [data-theme="dark"] .bookmarks-page .header-button,
-[data-theme="dark"] .gpt-page .header-button,
-[data-theme="dark"] .gpt-page .search-button,
 [data-theme="light"] .medications-page .header-button,
 [data-theme="light"] .workflow-page .header-button,
 [data-theme="light"] .shop-page .header-button,
 [data-theme="light"] .notes-page .header-button,
 [data-theme="light"] .analyzer-page .header-button,
-[data-theme="light"] .bookmarks-page .header-button,
-[data-theme="light"] .gpt-page .header-button,
-[data-theme="light"] .gpt-page .search-button {
+[data-theme="light"] .bookmarks-page .header-button {
   color: white !important;
 }

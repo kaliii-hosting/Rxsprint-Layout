@@ -15,7 +15,6 @@ import {
   StickyNote,
   ScanLine,
   Bookmark,
-  Bot,
   Zap,
   Settings,
   Palette
@@ -67,7 +66,6 @@ const Layout = ({ children }) => {
     { path: '/notes', icon: StickyNote, label: 'Notes' },
     { path: '/analyzer', icon: ScanLine, label: 'Analyzer' },
     { path: '/bookmark-manager', icon: Bookmark, label: 'Bookmarks' },
-    { path: '/gpt', icon: Bot, label: 'GPT' },
     { path: '/board', icon: Palette, label: 'Board' }
   ];
 

@@ -12,7 +12,6 @@ import {
   StickyNote,
   ScanLine,
   Bookmark,
-  Bot,
   Zap,
   Globe,
   ExternalLink,
@@ -109,13 +108,6 @@ const locations = [
     coords: [29.5123, -95.1656],
     path: '/workflow'
   },
-  {
-    name: 'GPT',
-    icon: Bot,
-    class: 'marker-gpt',
-    coords: [29.5623, -95.1856],
-    path: '/gpt'
-  }
 ];
 
 // African locations - spread across the entire continent

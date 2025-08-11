@@ -18,7 +18,6 @@ import Supplies from './pages/Supplies'
 import Notes from './pages/Notes'
 import Analyzer from './pages/Analyzer'
 import BookmarkManager from './pages/BookmarkManager'
-import GPT from './pages/GPT'
 import Board from './pages/Board'
 import './App.css'
 
@@ -48,7 +47,6 @@ function AppContent() {
                 <Route path="/notes" element={<Notes />} />
                 <Route path="/analyzer" element={<Analyzer />} />
                 <Route path="/bookmark-manager" element={<BookmarkManager />} />
-                <Route path="/gpt" element={<GPT />} />
                 <Route path="/board" element={<Board />} />
               </Routes>
             </Layout>
