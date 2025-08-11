@@ -147,9 +147,22 @@
   border-color: #FF6900;
 }
 
+.action-btn.primary span {
+  color: white;
+}
+
+.action-btn.primary svg {
+  color: white;
+}
+
 .action-btn.primary:hover {
   background: #E55D00;
   border-color: #E55D00;
+}
+
+.action-btn.primary:hover span,
+.action-btn.primary:hover svg {
+  color: white;
 }
 
 .action-btn.secondary {

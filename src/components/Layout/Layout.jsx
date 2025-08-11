@@ -17,7 +17,8 @@ import {
   Bookmark,
   Bot,
   Zap,
-  Settings
+  Settings,
+  Palette
 } from 'lucide-react';
 import { useCalculator } from '../../contexts/CalculatorContext';
 import { useSearch } from '../../contexts/SearchContext';
@@ -66,7 +67,8 @@ const Layout = ({ children }) => {
     { path: '/notes', icon: StickyNote, label: 'Notes' },
     { path: '/analyzer', icon: ScanLine, label: 'Analyzer' },
     { path: '/bookmark-manager', icon: Bookmark, label: 'Bookmarks' },
-    { path: '/gpt', icon: Bot, label: 'GPT' }
+    { path: '/gpt', icon: Bot, label: 'GPT' },
+    { path: '/board', icon: Palette, label: 'Board' }
   ];
 
   // Handle click outside to close dropdown

@@ -1977,8 +1977,24 @@ const Notes = () => {
                           }
                         }}
                       >
+                        <h3 className="modern-note-title">{note.title || 'Untitled'}</h3>
                         <div className="banner-content">
-                          <h3 className="modern-note-title">{note.title || 'Untitled'}</h3>
+                          {/* Show banner pills if note has banners */}
+                          {note.banners && note.banners.length > 0 && (
+                            <div className="card-banner-preview">
+                              {note.banners.slice(0, 3).map((banner, idx) => (
+                                <span 
+                                  key={idx} 
+                                  className={`card-banner-pill ${banner.isOrange ? 'orange' : ''} ${banner.isDone ? 'done' : ''}`}
+                                >
+                                  {banner.text}
+                                </span>
+                              ))}
+                              {note.banners.length > 3 && (
+                                <span className="card-banner-pill">+{note.banners.length - 3} more</span>
+                              )}
+                            </div>
+                          )}
                           {contentPreview && (
                             <p className="modern-note-preview">{contentPreview}</p>
                           )}

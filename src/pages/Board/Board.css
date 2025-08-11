@@ -1,0 +1,337 @@
+/* Board Page Styles */
+.board-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.board-content {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  background: var(--bg-primary, #ffffff);
+  /* Enable smooth scrolling */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+.board-canvas {
+  display: block;
+  min-width: 100%;
+  min-height: 100%;
+  background: var(--bg-primary, #ffffff);
+  /* Allow canvas to grow beyond viewport */
+  max-width: none;
+  max-height: none;
+}
+
+.board-canvas.draw-cursor {
+  cursor: crosshair;
+}
+
+.board-canvas.move-cursor {
+  cursor: move;
+}
+
+.board-canvas.resize-cursor {
+  cursor: crosshair;
+}
+
+/* Header Controls */
+.stroke-width-controls,
+.color-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #57606a);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.stroke-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--button-bg, #f6f8fa);
+  border: 1px solid var(--border-color, #d0d7de);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stroke-btn:hover {
+  background: var(--hover-background, #f3f4f6);
+  border-color: var(--hover-border, #8b949e);
+}
+
+.stroke-btn.active {
+  background: #FF6900;
+  border-color: #FF6900;
+  box-shadow: 0 2px 4px rgba(255, 105, 0, 0.2);
+}
+
+.stroke-btn.active .stroke-preview {
+  background: white !important;
+}
+
+.stroke-preview {
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.color-btn {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--border-color, #d0d7de);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.color-btn:hover {
+  transform: scale(1.1);
+  border-color: var(--hover-border, #8b949e);
+}
+
+.color-btn.active {
+  border-color: #FF6900;
+  border-width: 3px;
+  box-shadow: 0 0 0 2px rgba(255, 105, 0, 0.2);
+}
+
+.color-btn.active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Resize Handles */
+.resize-handles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+}
+
+.resize-handle {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: #FF6900;
+  border: 4px solid white;
+  border-radius: 50%;
+  pointer-events: all;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  z-index: 101;
+  transition: all 0.2s ease;
+  transform: translate(-50%, -50%);
+  animation: pulseHandle 2s infinite;
+}
+
+/* Pulse animation for handles */
+@keyframes pulseHandle {
+  0%, 100% { 
+    opacity: 1; 
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+.resize-handle.nw {
+  cursor: nw-resize;
+}
+
+.resize-handle.ne {
+  cursor: ne-resize;
+}
+
+.resize-handle.sw {
+  cursor: sw-resize;
+}
+
+.resize-handle.se {
+  cursor: se-resize;
+}
+
+.resize-handle:hover {
+  background: #E55D00;
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* Disabled button styles */
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.action-btn:disabled:hover {
+  background: var(--button-bg, #f6f8fa);
+  border-color: var(--border-color, #d0d7de);
+  transform: none;
+}
+
+/* Dark Theme */
+[data-theme="dark"] .board-page {
+  background: var(--bg-primary, #0d1117);
+}
+
+[data-theme="dark"] .board-content {
+  background: var(--bg-primary, #0d1117);
+}
+
+[data-theme="dark"] .board-canvas {
+  background: var(--bg-primary, #0d1117);
+}
+
+
+[data-theme="dark"] .stroke-btn {
+  background: var(--secondary-background, #161b22);
+  border-color: var(--border-color, #30363d);
+}
+
+[data-theme="dark"] .stroke-btn:hover {
+  background: var(--hover-background, #21262d);
+  border-color: var(--hover-border, #8b949e);
+}
+
+[data-theme="dark"] .color-btn {
+  border-color: var(--border-color, #30363d);
+}
+
+[data-theme="dark"] .color-btn:hover {
+  border-color: var(--hover-border, #8b949e);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .board-page {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
+  }
+  
+  .board-content {
+    /* Ensure proper touch scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  .board-canvas {
+    /* Improve touch interactions */
+    touch-action: pan-x pan-y;
+  }
+  
+  .board-canvas.draw-cursor,
+  .board-canvas.move-cursor,
+  .board-canvas.resize-cursor {
+    /* Better touch feedback */
+    touch-action: none;
+  }
+  
+  .stroke-width-controls,
+  .color-controls {
+    gap: 0.25rem;
+  }
+  
+  .control-label {
+    font-size: 0.7rem;
+  }
+  
+  .stroke-btn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .color-btn {
+    width: 24px;
+    height: 24px;
+  }
+  
+  /* Larger touch targets for resize handles */
+  .resize-handle {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .board-content {
+    /* Better mobile scrolling */
+    scroll-padding: 20px;
+  }
+  
+  .stroke-width-controls,
+  .color-controls {
+    display: none;
+  }
+  
+  /* Keep resize handles visible but smaller */
+  .resize-handle {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Ensure minimum canvas size on very small screens */
+  .board-canvas {
+    min-width: 320px;
+    min-height: 400px;
+  }
+}
+
+/* Animation for tools */
+.stroke-btn,
+.color-btn {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Canvas selection highlight */
+.board-canvas:focus {
+  outline: none;
+}
+
+/* Tool-specific cursors */
+.board-canvas.draw-cursor:hover {
+  cursor: crosshair;
+}
+
+.board-canvas.move-cursor:hover {
+  cursor: grab;
+}
+
+.board-canvas.move-cursor:active {
+  cursor: grabbing;
+}

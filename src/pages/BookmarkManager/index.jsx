@@ -114,7 +114,6 @@ const DraggableItem = ({ item, index, moveItem, onOpen, viewMode, onContextMenu,
         ref={ref}
         className={`bookmark-item list-view ${isDragging ? 'dragging' : ''} ${isOver ? 'drag-over' : ''}`}
         style={{ 
-          color: item.color || defaultColors[0],
           opacity: isDragging ? 0.5 : 1 
         }}
         onContextMenu={(e) => onContextMenu(e, item)}
@@ -144,13 +143,15 @@ const DraggableItem = ({ item, index, moveItem, onOpen, viewMode, onContextMenu,
     );
   }
 
-  // Grid view (Stream Deck style)
+  // Grid view (Button style with first letter)
+  const firstLetter = item.title ? item.title.charAt(0).toUpperCase() : '?';
+  const isFolder = item.type === 'folder';
+  
   return (
     <div
       ref={ref}
-      className={`bookmark-item grid-view ${viewMode} ${isDragging ? 'dragging' : ''} ${isOver ? 'drag-over' : ''}`}
+      className={`bookmark-item grid-view ${viewMode} ${isDragging ? 'dragging' : ''} ${isOver ? 'drag-over' : ''} ${isFolder ? 'folder-item' : ''}`}
       style={{ 
-        color: item.color || defaultColors[0],
         opacity: isDragging ? 0.5 : 1
       }}
       onClick={handleClick}
@@ -158,21 +159,13 @@ const DraggableItem = ({ item, index, moveItem, onOpen, viewMode, onContextMenu,
       onTouchStart={() => onTouchStart(item)}
       onTouchEnd={onTouchEnd}
     >
-      <div className="item-icon">
-        <Icon size={viewMode === 'compact' ? 20 : 24} />
+      <div className="bookmark-button-content">
+        <span className="bookmark-first-letter">
+          {isFolder ? <Folder size={16} /> : firstLetter}
+        </span>
+        <span className="bookmark-divider">|</span>
+        <span className="bookmark-title">{item.title}</span>
       </div>
-      <h4 className="item-title">{item.title}</h4>
-      {item.type === 'bookmark' && viewMode !== 'compact' && item.url && (
-        <p className="item-subtitle">
-          {(() => {
-            try {
-              return new URL(item.url).hostname;
-            } catch (e) {
-              return item.url;
-            }
-          })()}
-        </p>
-      )}
     </div>
   );
 };
