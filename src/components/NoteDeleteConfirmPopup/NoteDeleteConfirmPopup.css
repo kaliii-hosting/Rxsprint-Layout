@@ -1,0 +1,456 @@
+/* Note Deletion Confirmation Popup Styles */
+.note-deletion-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-modal-backdrop, rgba(0, 0, 0, 0.8));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999999 !important; /* Maximum z-index with important to override any conflicts */
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.note-deletion-popup {
+  background: var(--bg-modal, #1a1a1a);
+  border: 1px solid var(--primary-color-alpha, rgba(255, 85, 0, 0.2));
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px var(--shadow-color, rgba(0, 0, 0, 0.5)), 0 0 0 1px var(--primary-color-alpha, rgba(255, 85, 0, 0.1));
+  animation: slideUp 0.3s ease-out;
+  position: relative;
+}
+
+.note-deletion-popup.shake {
+  animation: shake 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+.close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.5));
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: var(--button-hover-bg, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary, #ffffff);
+}
+
+.note-deletion-icon-wrapper {
+  margin-bottom: 24px;
+}
+
+.note-deletion-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--danger-color-alpha-bg, rgba(255, 68, 68, 0.1));
+  border: 1px solid var(--danger-color-alpha, rgba(255, 68, 68, 0.2));
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--danger-color, #ff4444);
+}
+
+.note-deletion-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+  margin: 0 0 16px 0;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.note-deletion-message {
+  font-size: 16px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.note-deletion-message strong {
+  color: var(--text-primary, #ffffff);
+  font-weight: 600;
+}
+
+.note-deletion-warning {
+  font-size: 14px;
+  color: var(--danger-color, #ff4444);
+  margin: 0 0 32px 0;
+  font-weight: 500;
+}
+
+/* PIN Section */
+.pin-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: var(--input-bg, rgba(255, 255, 255, 0.05));
+  border-radius: 12px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.pin-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.pin-label svg {
+  color: var(--text-secondary, rgba(255, 255, 255, 0.5));
+}
+
+.pin-inputs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.pin-input {
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--border-color, rgba(255, 255, 255, 0.2));
+  border-radius: 12px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  outline: none;
+  transition: all 0.2s ease;
+  background: var(--input-bg, rgba(255, 255, 255, 0.05));
+  color: var(--text-primary, #ffffff);
+}
+
+.pin-input:focus {
+  border-color: var(--danger-color, #ff4444);
+  box-shadow: 0 0 0 3px var(--danger-color-alpha, rgba(255, 68, 68, 0.2));
+  background: var(--input-focus-bg, rgba(255, 255, 255, 0.08));
+}
+
+.pin-input.filled {
+  background: var(--danger-color-alpha-bg, rgba(255, 68, 68, 0.1));
+  border-color: var(--danger-color-alpha, rgba(255, 68, 68, 0.3));
+}
+
+.pin-input.error {
+  border-color: var(--danger-color, #ff4444);
+  animation: shake 0.3s ease-in-out;
+}
+
+.pin-input::-webkit-inner-spin-button,
+.pin-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.pin-error {
+  color: var(--danger-color, #ff4444);
+  font-size: 14px;
+  margin: 12px 0 0 0;
+  font-weight: 500;
+}
+
+/* Action Buttons */
+.note-deletion-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.cancel-btn,
+.delete-btn {
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  outline: none;
+  min-width: 140px;
+}
+
+.cancel-btn {
+  background: var(--button-bg, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary, #ffffff);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.2));
+}
+
+.cancel-btn:hover {
+  background: var(--button-hover-bg, rgba(255, 255, 255, 0.15));
+  transform: translateY(-1px);
+  border-color: var(--border-hover-color, rgba(255, 255, 255, 0.3));
+}
+
+.delete-btn {
+  background: var(--danger-color, #ff4444);
+  color: var(--text-primary, white);
+  border: 1px solid var(--danger-color, #ff4444);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: var(--danger-hover, #ff3333);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--danger-color-alpha, rgba(255, 68, 68, 0.3));
+  border-color: var(--danger-hover, #ff3333);
+}
+
+.delete-btn:disabled {
+  background: var(--button-bg, rgba(255, 255, 255, 0.1));
+  border-color: var(--border-color, rgba(255, 255, 255, 0.2));
+  color: var(--text-disabled, rgba(255, 255, 255, 0.3));
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.delete-btn:active:not(:disabled),
+.cancel-btn:active {
+  transform: translateY(0);
+}
+
+/* Mobile Full-Screen Design */
+@media (max-width: 768px) {
+  .note-deletion-popup-overlay {
+    background: rgba(255, 255, 255, 1) !important; /* White background for mobile */
+    padding: 0 !important;
+    align-items: flex-start !important;
+    z-index: 99999999 !important; /* Maximum z-index for mobile with important to ensure it's always on top */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+  }
+  
+  .note-deletion-popup {
+    background: #ffffff !important; /* White background */
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 40px 24px !important;
+    max-width: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100vh !important;
+    box-shadow: none !important;
+    animation: slideInFromBottom 0.3s ease-out;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    position: relative !important;
+  }
+  
+  .close-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.05);
+    color: #333333;
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .close-button:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #000000;
+  }
+  
+  .note-deletion-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.2);
+  }
+  
+  .note-deletion-title {
+    font-size: 28px;
+    color: #1a1a1a;
+    margin: 0 0 20px 0;
+  }
+  
+  .note-deletion-message {
+    font-size: 18px;
+    color: #666666;
+    margin: 0 0 12px 0;
+  }
+  
+  .note-deletion-message strong {
+    color: #1a1a1a;
+  }
+  
+  .note-deletion-warning {
+    font-size: 16px;
+    color: #ff4444;
+    margin: 0 0 40px 0;
+  }
+  
+  .pin-section {
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+    padding: 32px 24px;
+  }
+  
+  .pin-label {
+    color: #666666;
+    margin-bottom: 24px;
+  }
+  
+  .pin-input {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    background: #ffffff;
+    color: #1a1a1a;
+    border: 2px solid rgba(0, 0, 0, 0.15);
+  }
+  
+  .pin-input:focus {
+    border-color: #ff4444;
+    box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.2);
+    background: #ffffff;
+  }
+  
+  .pin-input.filled {
+    background: rgba(255, 68, 68, 0.05);
+    border-color: rgba(255, 68, 68, 0.4);
+  }
+  
+  .note-deletion-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 16px;
+    margin-top: auto;
+    padding-top: 20px;
+  }
+  
+  .cancel-btn,
+  .delete-btn {
+    width: 100%;
+    height: 56px;
+    font-size: 18px;
+    border-radius: 12px;
+  }
+  
+  .cancel-btn {
+    background: rgba(0, 0, 0, 0.05);
+    color: #1a1a1a;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+  }
+  
+  .cancel-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
+  
+  .delete-btn {
+    background: #ff4444;
+    color: white;
+    border: 1px solid #ff4444;
+  }
+  
+  .delete-btn:hover:not(:disabled) {
+    background: #ff3333;
+    border-color: #ff3333;
+  }
+  
+  .delete-btn:disabled {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.2);
+    color: rgba(0, 0, 0, 0.3);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Small mobile screens - even more compact */
+@media (max-width: 480px) {
+  .note-deletion-popup {
+    padding: 32px 20px;
+  }
+  
+  .note-deletion-icon {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .note-deletion-icon svg {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .note-deletion-title {
+    font-size: 24px;
+  }
+  
+  .pin-input {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+  
+  .cancel-btn,
+  .delete-btn {
+    height: 52px;
+    font-size: 16px;
+  }
+}

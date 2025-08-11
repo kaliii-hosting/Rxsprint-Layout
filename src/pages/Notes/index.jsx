@@ -19,6 +19,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './Notes.css';
 import EnterpriseHeader, { TabGroup, TabButton, ActionButton, ActionGroup, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
+import NoteDeleteConfirmPopup from '../../components/NoteDeleteConfirmPopup/NoteDeleteConfirmPopup';
 
 const Notes = () => {
   const { theme } = useTheme();
@@ -55,7 +56,9 @@ const Notes = () => {
   const [noteContextMenu, setNoteContextMenu] = useState({ visible: false, x: 0, y: 0, noteId: null });
   const noteLongPressTimer = useRef(null);
   
-  // Delete confirmation state removed - using window.confirm instead
+  // Delete confirmation state
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState(null);
   
   // Mobile menu state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -228,13 +231,31 @@ const Notes = () => {
 
   const handleDelete = (noteId = null) => {
     // Use provided noteId or fall back to selectedNote
-    const noteToDelete = noteId || selectedNote?.id;
+    const noteIdToDelete = noteId || selectedNote?.id;
     
-    if (noteToDelete) {
-      if (window.confirm('Are you sure you want to delete this note?')) {
-        confirmDelete(noteToDelete);
+    if (noteIdToDelete) {
+      // Find the note to get its title for the popup
+      const note = notes.find(n => n.id === noteIdToDelete);
+      if (note) {
+        setNoteToDelete(note);
+        setShowDeletePopup(true);
       }
     }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!noteToDelete || !db) return;
+    
+    const noteIdToDelete = noteToDelete.id;
+    setShowDeletePopup(false);
+    setNoteToDelete(null);
+    
+    await confirmDelete(noteIdToDelete);
+  };
+  
+  const handleCancelDelete = () => {
+    setShowDeletePopup(false);
+    setNoteToDelete(null);
   };
 
   const confirmDelete = async (noteIdToDelete) => {
@@ -654,13 +675,65 @@ const Notes = () => {
     }
   };
 
-  // Helper function to render banners directly in PDF (fast and reliable)
+  // Enterprise text processing for optimal PDF formatting
+  const processEnterpriseText = (text, maxWidth, pdf) => {
+    // Clean and optimize text for enterprise formatting
+    const cleanText = text
+      .replace(/\s+/g, ' ') // Normalize multiple spaces
+      .replace(/\.\s+/g, '. ') // Consistent sentence spacing
+      .replace(/,\s+/g, ', ') // Consistent comma spacing
+      .replace(/;\s+/g, '; ') // Consistent semicolon spacing
+      .replace(/:\s+/g, ': ') // Consistent colon spacing
+      .replace(/\?\s+/g, '? ') // Consistent question mark spacing
+      .replace(/!\s+/g, '! ') // Consistent exclamation spacing
+      .trim();
+
+    // Use intelligent line breaking for better text flow
+    const lines = pdf.splitTextToSize(cleanText, maxWidth);
+    
+    // Post-process lines to avoid orphaned words and improve readability
+    const optimizedLines = [];
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].trim();
+      
+      // If line ends with a single word that's very short, try to pull it up
+      if (i < lines.length - 1 && line.split(' ').length > 1) {
+        const words = line.split(' ');
+        const lastWord = words[words.length - 1];
+        
+        // If last word is very short (1-3 chars), consider moving it to next line
+        if (lastWord.length <= 3 && lines[i + 1]) {
+          const nextLineWords = lines[i + 1].trim().split(' ');
+          if (nextLineWords.length <= 3) { // Only if next line is short
+            const newCurrentLine = words.slice(0, -1).join(' ');
+            const newNextLine = lastWord + ' ' + lines[i + 1].trim();
+            
+            // Check if the new arrangement fits
+            const newCurrentWidth = pdf.getTextWidth(newCurrentLine);
+            const newNextWidth = pdf.getTextWidth(newNextLine);
+            
+            if (newCurrentWidth <= maxWidth && newNextWidth <= maxWidth) {
+              optimizedLines.push(newCurrentLine);
+              lines[i + 1] = newNextLine; // Update next line
+              continue;
+            }
+          }
+        }
+      }
+      
+      optimizedLines.push(line);
+    }
+    
+    return optimizedLines;
+  };
+
+  // Enterprise banner rendering for compact PDF format
   const renderBannersInPDF = (pdf, banners, leftMargin, yPosition, contentWidth) => {
-    const bannerHeight = 12; // 12mm height for excellent readability
-    const bannerPadding = 3; // Padding inside banner
-    const bannerGap = 4; // Gap between banners
-    const fontSize = 11; // 11pt font for excellent readability
-    const lineSpacing = 2; // Space between banner lines
+    const bannerHeight = 10; // Compact banner height for enterprise format
+    const bannerPadding = 2; // Minimal padding inside banner
+    const bannerGap = 3; // Reduced gap between banners
+    const fontSize = 9; // Smaller font for compact enterprise format
+    const lineSpacing = 1; // Minimal space between banner lines
     
     let currentY = yPosition;
     let currentX = leftMargin;
@@ -859,14 +932,14 @@ const Notes = () => {
       const contentWidth = pageWidth - leftMargin - rightMargin - 5; // Extra safety buffer
       const maxY = pageHeight - bottomMargin;
       
-      // Typography settings
+      // Enterprise Typography settings
       const titleSize = 18;
       const headingSize = 14;
-      const bodySize = 11;
+      const bodySize = 10; // Smaller for more compact text
       const metaSize = 9;
-      const lineSpacing = 1.5;
-      const paragraphSpacing = 4; // Reduced from 8 to avoid excessive white space
-      const sectionSpacing = 8; // Reduced from 12
+      const lineSpacing = 1.0; // Tight enterprise line spacing
+      const paragraphSpacing = 1.5; // Minimal paragraph spacing for enterprise format
+      const sectionSpacing = 3; // Compact section spacing
       
       let yPosition = topMargin;
       let pageNumber = 1;
@@ -1038,21 +1111,21 @@ const Notes = () => {
         const maxBannerWidth = maxLineWidth; // Full width for multi-line
         const minBannerWidth = 30; // Min 30mm
         
-        // Split text into lines if needed with proper padding
-        const textMaxWidth = maxBannerWidth - (bannerPadding * 3); // Extra padding for done banners
-        const textLines = pdf.splitTextToSize(fullText, textMaxWidth);
-        const numLines = textLines.length;
-        const bannerHeight = Math.max(minBannerHeight, (numLines * lineHeight) + (bannerPadding * 2));
+        // Split text into lines with conservative width to ensure content area compliance
+        const textMaxWidth = Math.min(maxBannerWidth - (bannerPadding * 4), contentWidth - (bannerPadding * 4));
+        let textLines = pdf.splitTextToSize(fullText, textMaxWidth);
+        let numLines = textLines.length;
+        let bannerHeight = Math.max(minBannerHeight, (numLines * lineHeight) + (bannerPadding * 2));
         
-        // Calculate actual banner width
+        // Calculate actual banner width with strict content area enforcement
         let bannerWidth;
         if (numLines > 1) {
-          // Multi-line banners always use full width
-          bannerWidth = maxBannerWidth;
+          // Multi-line banners always use full width but within content area
+          bannerWidth = Math.min(maxBannerWidth, contentWidth);
         } else {
-          // Single line banners size to content
+          // Single line banners size to content but never exceed content area
           const lineWidth = pdf.getTextWidth(fullText) + (bannerPadding * 4);
-          bannerWidth = Math.max(minBannerWidth, Math.min(lineWidth, maxBannerWidth * 0.9));
+          bannerWidth = Math.max(minBannerWidth, Math.min(lineWidth, Math.min(maxBannerWidth, contentWidth)));
         }
         
         // Multi-line banners always go on new line and center
@@ -1074,6 +1147,23 @@ const Notes = () => {
         
         // Check page break
         checkPageBreak(bannerHeight + bannerGap);
+        
+        // Enforce banner position within content area boundaries
+        const maxRightPosition = leftMargin + contentWidth;
+        if (currentX + bannerWidth > maxRightPosition) {
+          // If banner would overflow, constrain it to fit within content area
+          bannerWidth = Math.max(minBannerWidth, maxRightPosition - currentX);
+          // Re-split text for the constrained width
+          const constrainedTextMaxWidth = bannerWidth - (bannerPadding * 4);
+          const newTextLines = pdf.splitTextToSize(fullText, constrainedTextMaxWidth);
+          const newNumLines = newTextLines.length;
+          const newBannerHeight = Math.max(minBannerHeight, (newNumLines * lineHeight) + (bannerPadding * 2));
+          // Update variables with constrained values
+          textLines.splice(0, textLines.length, ...newTextLines);
+          numLines = newNumLines;
+          bannerHeight = newBannerHeight;
+          maxHeightInRow = Math.max(maxHeightInRow, bannerHeight);
+        }
         
         // Set banner color
         if (banner.isDone) {
@@ -1097,18 +1187,28 @@ const Notes = () => {
           pdf.setTextColor(255, 255, 255); // White
         }
         
-        // Add text - left aligned for multi-line, centered for single line
+        // Add text - left aligned for multi-line, centered for single line with strict boundary enforcement
         const textStartY = yPosition + (bannerHeight - (numLines * lineHeight)) / 2 + lineHeight;
+        const maxRightBoundary = leftMargin + contentWidth; // Strict content area boundary
+        
         textLines.forEach((line, lineIndex) => {
           let textX;
+          const textWidth = pdf.getTextWidth(line);
+          
           if (numLines > 1) {
             // Left align text in multi-line banners
             textX = currentX + bannerPadding;
           } else {
             // Center text in single-line banners
-            const textWidth = pdf.getTextWidth(line);
             textX = currentX + (bannerWidth - textWidth) / 2;
           }
+          
+          // Enforce strict boundary - never allow text to extend beyond content area
+          const textEndX = textX + textWidth;
+          if (textEndX > maxRightBoundary) {
+            textX = Math.max(leftMargin, maxRightBoundary - textWidth);
+          }
+          
           const textY = textStartY + (lineIndex * lineHeight);
           pdf.text(line, textX, textY);
         });
@@ -1117,8 +1217,8 @@ const Notes = () => {
         currentX += bannerWidth + bannerGap;
       });
       
-      // Update final Y position and add spacing
-      yPosition += maxHeightInRow + sectionSpacing;
+      // Update final Y position and add adequate spacing after banners
+      yPosition += maxHeightInRow + sectionSpacing * 1.5;
       
       // Reset text formatting
       pdf.setTextColor(0);
@@ -1128,9 +1228,9 @@ const Notes = () => {
     
     // Add content with proper spacing
     if (formData.content) {
-      // Add spacing before content if there were banners
+      // Add additional spacing before content if there were banners
       if (formData.banners && formData.banners.length > 0) {
-        yPosition += sectionSpacing;
+        yPosition += sectionSpacing * 1.0;
       }
       
       try {
@@ -1159,13 +1259,14 @@ const Notes = () => {
             pdf.setFontSize(bodySize);
             pdf.setTextColor(0);
             
-            // Ensure text fits within A4 boundaries with proper margins
-            const maxTextWidth = contentWidth - 5; // Small buffer for edge cases
-            const lines = pdf.splitTextToSize(text, maxTextWidth);
-            lines.forEach(line => {
-              checkPageBreak(bodySize * lineSpacing);
+            // Enterprise text formatting with proper margin constraints
+            const maxTextWidth = contentWidth - 2; // Keep text within content area with safety margin
+            const optimizedLines = processEnterpriseText(text, maxTextWidth, pdf);
+            
+            optimizedLines.forEach(line => {
+              checkPageBreak(bodySize * lineSpacing + 1);
               pdf.text(line, leftMargin, yPosition);
-              yPosition += bodySize * lineSpacing;
+              yPosition += bodySize * lineSpacing + 0.3; // Ultra-compact line spacing
             });
           }
         } else if (node.nodeType === Node.ELEMENT_NODE) {
@@ -1175,7 +1276,7 @@ const Notes = () => {
           if (tagName === 'table') {
             // Handle tables using jspdf-autotable
             try {
-              yPosition += paragraphSpacing;
+              yPosition += paragraphSpacing * 0.5;
               
               // Extract table data
               const headers = [];
@@ -1254,12 +1355,12 @@ const Notes = () => {
                 
                 // Update yPosition based on where the table ended
                 if (pdf.previousAutoTable && pdf.previousAutoTable.finalY) {
-                  yPosition = pdf.previousAutoTable.finalY + paragraphSpacing;
+                  yPosition = pdf.previousAutoTable.finalY + paragraphSpacing * 0.5;
                 } else if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) {
-                  yPosition = pdf.lastAutoTable.finalY + paragraphSpacing;
+                  yPosition = pdf.lastAutoTable.finalY + paragraphSpacing * 0.5;
                 } else {
                   // Fallback if autoTable position is not available
-                  yPosition += estimatedTableHeight + paragraphSpacing;
+                  yPosition += estimatedTableHeight + paragraphSpacing * 0.5;
                 }
               }
             } catch (tableError) {
@@ -1275,24 +1376,25 @@ const Notes = () => {
               yPosition += 35;
             }
           } else if (tagName === 'p') {
-            // Handle paragraphs
+            // Handle paragraphs with advanced enterprise formatting
             const text = node.textContent.trim();
             if (text) {
-              const maxTextWidth = contentWidth - 5; // Small buffer for edge cases
-              const lines = pdf.splitTextToSize(text, maxTextWidth);
-              lines.forEach(line => {
-                checkPageBreak(bodySize * lineSpacing);
+              const maxTextWidth = contentWidth - 2; // Maximum text width within content area
+              const optimizedLines = processEnterpriseText(text, maxTextWidth, pdf);
+              
+              optimizedLines.forEach(line => {
+                checkPageBreak(bodySize * lineSpacing + 1);
                 pdf.text(line, leftMargin, yPosition);
-                yPosition += bodySize * lineSpacing;
+                yPosition += bodySize * lineSpacing + 0.3; // Ultra-compact line spacing
               });
-              yPosition += paragraphSpacing;
+              yPosition += paragraphSpacing; // Minimal paragraph spacing
             } else {
-              // Empty paragraph - add minimal spacing, not full paragraph spacing
-              yPosition += bodySize * 0.5;
+              // Empty paragraph - minimal spacing
+              yPosition += bodySize * 0.1;
             }
           } else if (tagName === 'br') {
-            // Handle line breaks
-            yPosition += bodySize * lineSpacing;
+            // Handle line breaks - ultra-minimal spacing for enterprise format
+            yPosition += bodySize * 0.4;
           } else if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3') {
             // Handle headings
             const text = node.textContent.trim();
@@ -1307,7 +1409,7 @@ const Notes = () => {
               
               checkPageBreak(fontSize * lineSpacing);
               pdf.text(text, leftMargin, yPosition);
-              yPosition += fontSize * lineSpacing + paragraphSpacing;
+              yPosition += fontSize * lineSpacing + paragraphSpacing * 0.5;
               
               try {
                 pdf.setFont('Roboto', 'normal');
@@ -1336,12 +1438,12 @@ const Notes = () => {
               const prefixWidth = pdf.getTextWidth(prefix);
               const indentX = leftMargin + prefixWidth;
               
-              // Split text to fit within margins
-              const maxTextWidth = contentWidth - prefixWidth - 10;
-              const lines = pdf.splitTextToSize(listItemText, maxTextWidth);
+              // Enterprise list formatting with advanced text optimization
+              const maxTextWidth = contentWidth - prefixWidth - 3; // Maximize text space
+              const optimizedLines = processEnterpriseText(listItemText, maxTextWidth, pdf);
               
-              lines.forEach((line, lineIndex) => {
-                checkPageBreak(bodySize * lineSpacing);
+              optimizedLines.forEach((line, lineIndex) => {
+                checkPageBreak(bodySize * lineSpacing + 1);
                 if (lineIndex === 0) {
                   // First line with prefix
                   pdf.text(prefix + line, leftMargin, yPosition);
@@ -1349,12 +1451,12 @@ const Notes = () => {
                   // Subsequent lines indented
                   pdf.text(line, indentX, yPosition);
                 }
-                yPosition += bodySize * lineSpacing;
+                yPosition += bodySize * lineSpacing + 0.3; // Ultra-compact list spacing
               });
             });
-            yPosition += paragraphSpacing;
+            yPosition += paragraphSpacing * 0.5;
           } else if (tagName === 'blockquote') {
-            // Handle blockquotes
+            // Handle blockquotes with enterprise formatting
             const text = node.textContent.trim();
             if (text) {
               try {
@@ -1362,17 +1464,24 @@ const Notes = () => {
               } catch (e) {
                 pdf.setFont('helvetica', 'italic');
               }
-              pdf.setTextColor(100);
+              pdf.setTextColor(80); // Slightly darker for better readability
               
-              const lines = pdf.splitTextToSize(text, contentWidth - 20);
-              lines.forEach(line => {
-                checkPageBreak(bodySize * lineSpacing);
-                pdf.text(line, leftMargin + 10, yPosition);
-                yPosition += bodySize * lineSpacing;
+              // Advanced blockquote text processing
+              const maxTextWidth = contentWidth - 12; // Minimal indentation for enterprise format
+              const optimizedLines = processEnterpriseText(text, maxTextWidth, pdf);
+              
+              optimizedLines.forEach(line => {
+                checkPageBreak(bodySize * lineSpacing + 1);
+                pdf.text(line, leftMargin + 6, yPosition); // Minimal indentation
+                yPosition += bodySize * lineSpacing + 0.3; // Ultra-compact spacing
               });
-              yPosition += paragraphSpacing;
+              yPosition += paragraphSpacing * 0.3; // Minimal blockquote spacing
               
-              pdf.setFont('arial', 'normal');
+              try {
+                pdf.setFont('Roboto', 'normal');
+              } catch (e) {
+                pdf.setFont('helvetica', 'normal');
+              }
               pdf.setTextColor(0);
             }
           } else if (tagName === 'img') {
@@ -1473,7 +1582,7 @@ const Notes = () => {
                   pdf.setFontSize(bodySize);
                 }
                 
-                yPosition += imgHeight + paragraphSpacing;
+                yPosition += imgHeight + paragraphSpacing * 0.5;
               } catch (error) {
                 console.error('Error adding image to PDF:', error);
                 // Add error placeholder
@@ -1484,7 +1593,7 @@ const Notes = () => {
                 pdf.text('Error loading image', leftMargin + contentWidth / 2, yPosition + 15, { align: 'center' });
                 pdf.setTextColor(0);
                 pdf.setFontSize(bodySize);
-                yPosition += 30 + paragraphSpacing;
+                yPosition += 30 + paragraphSpacing * 0.5;
               }
             }
           } else if (tagName === 'div' && node.className && node.className.includes('tableWrapper')) {
@@ -1766,8 +1875,15 @@ const Notes = () => {
                           className={`banner-color-toggle-btn ${bannerColorOrange ? 'orange' : 'blue'}`}
                           onClick={() => setBannerColorOrange(!bannerColorOrange)}
                           title={bannerColorOrange ? "Orange color" : "Blue color"}
+                          style={bannerColorOrange ? {
+                            background: '#CB6015',
+                            color: '#FFFFFF',
+                            borderColor: '#CB6015'
+                          } : {}}
                         >
-                          {bannerColorOrange ? "Orange" : "Blue"}
+                          <span style={bannerColorOrange ? { color: '#FFFFFF' } : {}}>
+                            {bannerColorOrange ? "Orange" : "Blue"}
+                          </span>
                         </button>
                       </div>
                     </div>
@@ -2114,6 +2230,14 @@ const Notes = () => {
         </div>,
         document.body
       )}
+
+      {/* Delete Confirmation Popup */}
+      <NoteDeleteConfirmPopup
+        isOpen={showDeletePopup}
+        noteTitle={noteToDelete?.title || 'this note'}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
 
     </div>
   );

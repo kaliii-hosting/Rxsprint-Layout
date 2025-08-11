@@ -1603,3 +1603,670 @@ button:focus-visible {
   text-align: center;
   width: 100%;
 }
+
+/* Banner Notes Section Styles */
+.banner-notes-card {
+  margin-bottom: 2rem;
+}
+
+.banner-notes-card.full-width {
+  width: 100%;
+}
+
+.banner-notes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Banner Section Styles - Matching Notes Page Layout */
+.editor-banner-controls-container {
+  padding: 1rem;
+  width: 100%;
+  margin: 0 0 2rem 0;
+  background: var(--bg-primary);
+  border-radius: 0;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.banner-input-row {
+  width: 100%;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.banner-controls-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Banner Input - Matching Notes Page */
+.banner-input {
+  width: 800px;
+  max-width: 80%;
+  padding: 0.75rem 1.25rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  min-height: 44px;
+  resize: none;
+  overflow: hidden;
+  font-family: inherit;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.banner-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
+}
+
+/* Add Banner Button - Matching Notes Page Styling */
+.add-banner-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: #FF6900 !important;
+  color: white !important;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-banner-btn:hover:not(:disabled) {
+  background: #E65F00 !important;
+  color: white !important;
+  transform: translateY(-1px);
+}
+
+.add-banner-btn:disabled {
+  background: var(--border-color) !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Force all child elements to be white */
+.add-banner-btn *,
+.add-banner-btn svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+.add-banner-btn:hover *,
+.add-banner-btn:hover svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* Banner Toggle Button - Matching Notes Page */
+.banner-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem 0.75rem 2.5rem;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 130px;
+  min-height: 44px;
+  position: relative;
+}
+
+.banner-toggle-btn::before {
+  content: '⇄';
+  position: absolute;
+  left: 0.75rem;
+  font-size: 1.2rem;
+  opacity: 0.6;
+}
+
+.banner-toggle-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--primary-color);
+  color: var(--text-primary);
+}
+
+/* Banner Color Toggle Button - Matching Notes Page */
+.banner-color-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 100px;
+  min-height: 44px;
+}
+
+.banner-color-toggle-btn.blue {
+  background: #3B82F6;
+  color: white;
+  border-color: #2563EB;
+}
+
+.banner-color-toggle-btn.blue:hover {
+  background: #2563EB;
+  border-color: #1D4ED8;
+  color: white !important;
+}
+
+.banner-color-toggle-btn.orange {
+  background: #FF6900 !important;
+  color: white !important;
+  border-color: #E65F00 !important;
+}
+
+.banner-color-toggle-btn.orange:hover {
+  background: #E65F00 !important;
+  border-color: #A04E11 !important;
+  color: white !important;
+}
+
+.banner-color-toggle-btn.orange::before,
+.banner-color-toggle-btn.orange::after,
+.banner-color-toggle-btn.orange * {
+  color: white !important;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .editor-banner-controls-container {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .banner-controls-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .banner-controls-row button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .banner-input {
+    width: 100%;
+    max-width: 95%;
+  }
+}
+
+.banner-display-section {
+  margin-top: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  background: var(--bg-secondary);
+}
+
+.banner-display-section h5 {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.banners-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.banner-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  min-height: 44px;
+}
+
+.banner-item.blue {
+  background: #3b82f6;
+  color: white;
+}
+
+.banner-item.orange {
+  background: #f97316;
+  color: white;
+}
+
+.banner-item.done {
+  background: #10b981;
+  color: white;
+}
+
+.banner-item.copied {
+  background: #8b5cf6;
+  color: white;
+}
+
+.banner-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.banner-text {
+  flex: 1;
+}
+
+.remove-banner-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.remove-banner-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.banner-line-break {
+  width: 100%;
+  height: 1px;
+  margin: 0.25rem 0;
+}
+
+.banner-save-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #10b981;
+}
+
+/* Title Input with Controls */
+.title-input-with-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.title-input-with-controls .note-input {
+  flex: 1;
+}
+
+.title-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.open-notes-btn,
+.clear-note-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+/* Enhanced Open Notes Button Styling - Override all possible selectors */
+.title-controls .open-notes-btn,
+button.open-notes-btn,
+.open-notes-btn[style*="background"] {
+  background: #FF6900 !important;
+  background-color: #FF6900 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #FF6900 !important;
+  border-color: #FF6900 !important;
+}
+
+.title-controls .open-notes-btn:hover:not(:disabled),
+button.open-notes-btn:hover:not(:disabled),
+.open-notes-btn[style*="background"]:hover:not(:disabled) {
+  background: #E55A00 !important;
+  background-color: #E55A00 !important;
+  color: #FFFFFF !important;
+  border-color: #E55A00 !important;
+}
+
+.title-controls .open-notes-btn *,
+.title-controls .open-notes-btn svg,
+button.open-notes-btn *,
+button.open-notes-btn svg,
+.open-notes-btn[style*="background"] *,
+.open-notes-btn[style*="background"] svg {
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+/* Force text color specifically - all possible selectors */
+.open-notes-btn,
+.open-notes-btn span,
+.open-notes-btn::after,
+.open-notes-btn::before,
+button.open-notes-btn span[style*="color"],
+.open-notes-btn[style*="background"] span {
+  color: #FFFFFF !important;
+}
+
+.open-notes-btn:disabled {
+  background: var(--border-color);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.clear-note-btn {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.clear-note-btn:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.clear-note-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Existing Notes Modal - Enhanced Visibility */
+body .existing-notes-modal,
+div.existing-notes-modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.existing-notes-modal .modal-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(0, 0, 0, 0.85) !important;
+  z-index: 1 !important;
+}
+
+.existing-notes-modal .modal-content {
+  position: relative !important;
+  background: #ffffff !important;
+  border: 3px solid #FF6900 !important;
+  border-radius: 15px !important;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6) !important;
+  max-width: 800px !important;
+  width: 90vw !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  animation: modalFadeIn 0.3s ease-out !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  z-index: 2 !important;
+}
+
+/* Dark theme support */
+[data-theme="dark"] .existing-notes-modal .modal-content {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 1.5rem !important;
+  border-bottom: 2px solid var(--border-color) !important;
+  background: var(--bg-primary) !important;
+}
+
+.modal-header h4 {
+  margin: 0 !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-close-btn {
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  color: var(--text-secondary) !important;
+  padding: 0.5rem !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.modal-close-btn:hover {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-body {
+  padding: 1.5rem !important;
+  overflow-y: auto !important;
+  flex: 1 !important;
+  background: var(--bg-primary) !important;
+}
+
+/* Specific overrides for existing notes modal */
+.existing-notes-modal .modal-header {
+  padding: 2rem !important;
+  border-bottom: 2px solid #FF6900 !important;
+}
+
+.existing-notes-modal .modal-header h4 {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: #333333 !important;
+}
+
+[data-theme="dark"] .existing-notes-modal .modal-header h4 {
+  color: #ffffff !important;
+}
+
+.existing-notes-modal .modal-body {
+  padding: 2rem !important;
+}
+
+.no-notes-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.notes-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+}
+
+.note-item {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  padding: 1.25rem !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  background: var(--bg-secondary) !important;
+}
+
+.note-item:hover {
+  background: var(--bg-hover) !important;
+  border-color: #FF6900 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.note-info h5 {
+  margin: 0 !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+  line-height: 1.4 !important;
+}
+
+.note-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  margin-top: 0.5rem !important;
+}
+
+.banner-count,
+.note-date {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  font-size: 0.85rem !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+}
+
+.note-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.preview-banner {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-banner.blue {
+  background: #3b82f6;
+  color: white;
+}
+
+.preview-banner.orange {
+  background: #f97316;
+  color: white;
+}
+
+.more-banners {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px dashed var(--border-color);
+}
+
+/* Custom scrollbar styles */
+.banner-notes-container::-webkit-scrollbar,
+.banner-display-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.banner-notes-container::-webkit-scrollbar-track,
+.banner-display-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.banner-notes-container::-webkit-scrollbar-thumb,
+.banner-display-section::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.banner-notes-container::-webkit-scrollbar-thumb:hover,
+.banner-display-section::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Firefox scrollbar */
+.banner-notes-container,
+.banner-display-section {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   FileText, 
   Copy, 
@@ -20,9 +21,13 @@ import {
   ChevronRight,
   Edit,
   Save,
-  X
+  X,
+  Tag,
+  FolderOpen
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { firestore as db } from '../../config/firebase';
+import { collection, addDoc, updateDoc, doc, serverTimestamp, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import './NoteGenerator.css';
 
 const NoteGenerator = () => {
@@ -33,9 +38,38 @@ const NoteGenerator = () => {
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [editedNote, setEditedNote] = useState('');
   const noteTextareaRef = useRef(null);
+  
+  // Scroll to top function
+  const scrollToTop = () => {
+    // Method 1: Direct window scroll
+    window.scrollTo(0, 0);
+    
+    // Method 2: Document element scroll
+    if (document.documentElement) {
+      document.documentElement.scrollTop = 0;
+    }
+    
+    // Method 3: Body scroll
+    if (document.body) {
+      document.body.scrollTop = 0;
+    }
+    
+    // Method 4: History push to top
+    if (window.location.hash) {
+      window.location.hash = '';
+    }
+    
+    // Method 5: Focus on top element
+    const topElement = document.querySelector('h1, h2, .card-header, .dashboard-card');
+    if (topElement) {
+      topElement.focus();
+      topElement.scrollIntoView(true);
+    }
+  };
   const [dragState, setDragState] = useState({ isDragging: false, fieldName: null, dragPosition: null, yesValue: null, noValue: null });
   const toggleRefs = useRef({});
   const [isPatientInfoExpanded, setIsPatientInfoExpanded] = useState(false);
+  const [isBannerNotesExpanded, setIsBannerNotesExpanded] = useState(false);
   const dragStartPosition = useRef(null);
   const lastUpdateTime = useRef(0);
   const animationFrameRef = useRef(null);
@@ -50,6 +84,26 @@ const NoteGenerator = () => {
     medicationName: '',
     changes: ''
   });
+
+  // Banner Notes State
+  const [bannerNotes, setBannerNotes] = useState({
+    title: '',
+    banners: [],
+    docId: null // Track the Firebase document ID
+  });
+  const [newBannerText, setNewBannerText] = useState('');
+  const [showBannerInput, setShowBannerInput] = useState(false);
+  const [copiedBannerId, setCopiedBannerId] = useState(null);
+  const [bannerColorOrange, setBannerColorOrange] = useState(false);
+  const [bannerLineBreak, setBannerLineBreak] = useState(false);
+  const bannerInputRef = useRef(null);
+  const bannerSectionRef = useRef(null);
+  const bannersListRef = useRef(null);
+  
+  // Existing notes state
+  const [existingNotes, setExistingNotes] = useState([]);
+  const [showExistingNotes, setShowExistingNotes] = useState(false);
+  const [loadingNotes, setLoadingNotes] = useState(false);
 
   // Intervention Note Form State - Rearranged fields in requested order
   const [interventionForm, setInterventionForm] = useState({
@@ -625,6 +679,19 @@ const NoteGenerator = () => {
 
   // Reset form
   const resetInterventionForm = () => {
+    // Call scroll function immediately
+    scrollToTop();
+    
+    // Call again with requestAnimationFrame
+    requestAnimationFrame(() => {
+      scrollToTop();
+    });
+    
+    // And once more after state updates
+    setTimeout(() => {
+      scrollToTop();
+    }, 0);
+    
     setInterventionForm({
       reviewedNotesFor: '',
       sig: '',
@@ -667,6 +734,190 @@ const NoteGenerator = () => {
     setFilledFields(new Set());
     setIsEditingNote(false);
     setEditedNote('');
+  };
+
+  // Banner Notes Functions
+  const addBanner = async () => {
+    if (!newBannerText.trim()) return;
+    
+    const newBanner = {
+      id: Date.now().toString(),
+      text: newBannerText.trim(),
+      createdAt: new Date(),
+      newLine: bannerLineBreak,
+      isOrange: bannerColorOrange,
+      isDone: false
+    };
+    
+    const updatedBanners = [...bannerNotes.banners, newBanner];
+    setBannerNotes(prev => ({ ...prev, banners: updatedBanners }));
+    
+    // Clear input and reset settings
+    setNewBannerText('');
+    setBannerLineBreak(false);
+    setBannerColorOrange(false);
+    
+    // Auto-save to Notes collection if there's a title
+    if (bannerNotes.title.trim()) {
+      saveBannerNoteToFirebase(updatedBanners);
+    }
+  };
+
+  const removeBanner = (bannerId) => {
+    const updatedBanners = bannerNotes.banners.filter(banner => banner.id !== bannerId);
+    setBannerNotes(prev => ({ ...prev, banners: updatedBanners }));
+    
+    // Auto-save to Notes collection if there's a title
+    if (bannerNotes.title.trim()) {
+      saveBannerNoteToFirebase(updatedBanners);
+    }
+  };
+
+  const copyBannerToClipboard = async (banner) => {
+    try {
+      await navigator.clipboard.writeText(banner.text);
+      setCopiedBannerId(banner.id);
+      setTimeout(() => setCopiedBannerId(null), 1500);
+    } catch (err) {
+      console.error('Failed to copy banner text:', err);
+      alert('Failed to copy banner text to clipboard');
+    }
+  };
+
+  const saveBannerNoteToFirebase = async (bannersToSave = bannerNotes.banners) => {
+    if (!bannerNotes.title.trim() || bannersToSave.length === 0) return;
+    
+    try {
+      if (bannerNotes.docId) {
+        // Update existing document
+        const noteRef = doc(db, 'notes', bannerNotes.docId);
+        const updateData = {
+          title: bannerNotes.title.trim(),
+          banners: bannersToSave,
+          updatedAt: serverTimestamp()
+        };
+        
+        await updateDoc(noteRef, updateData);
+        console.log('Banner note updated in Notes collection');
+      } else {
+        // Create new document
+        const notesRef = collection(db, 'notes');
+        const noteData = {
+          title: bannerNotes.title.trim(),
+          content: '', // Empty content for banner-only notes
+          starred: false,
+          images: [],
+          banners: bannersToSave,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+        
+        const docRef = await addDoc(notesRef, noteData);
+        setBannerNotes(prev => ({ ...prev, docId: docRef.id }));
+        console.log('New banner note created in Notes collection');
+      }
+    } catch (error) {
+      console.error('Error saving banner note:', error);
+    }
+  };
+
+  const handleBannerTitleChange = (value) => {
+    setBannerNotes(prev => ({ ...prev, title: value }));
+    
+    // Auto-save when title is provided and there are banners
+    if (value.trim() && bannerNotes.banners.length > 0) {
+      // Debounce the save to avoid too many calls
+      clearTimeout(window.bannerTitleSaveTimeout);
+      window.bannerTitleSaveTimeout = setTimeout(() => {
+        saveBannerNoteToFirebase();
+      }, 1000);
+    }
+  };
+
+  // Fetch existing notes
+  const fetchExistingNotes = () => {
+    if (loadingNotes) return;
+    
+    setLoadingNotes(true);
+    setShowExistingNotes(true);
+    
+    try {
+      const notesRef = collection(db, 'notes');
+      const q = query(notesRef, orderBy('updatedAt', 'desc'), limit(20));
+      
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const notes = snapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(note => note.banners && note.banners.length > 0); // Only notes with banners
+        
+        setExistingNotes(notes);
+        setLoadingNotes(false);
+      });
+      
+      // Clean up subscription when component unmounts or when fetching again
+      return unsubscribe;
+    } catch (error) {
+      console.error('Error fetching notes:', error);
+      setLoadingNotes(false);
+    }
+  };
+
+  // Load an existing note into the banner section
+  const loadExistingNote = (note) => {
+    setBannerNotes({
+      title: note.title || '',
+      banners: note.banners || [],
+      docId: note.id // Include the document ID for updates
+    });
+    setShowExistingNotes(false);
+    
+    // Expand the banner notes section if it's collapsed
+    if (!isBannerNotesExpanded) {
+      setIsBannerNotesExpanded(true);
+    }
+    
+    // Scroll to the banner section after a short delay to allow for render
+    setTimeout(() => {
+      // First scroll to the banner section
+      if (bannerSectionRef.current) {
+        bannerSectionRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+        
+        // Then scroll to the bottom of the banners list after another delay
+        setTimeout(() => {
+          if (bannersListRef.current) {
+            bannersListRef.current.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'end' 
+            });
+          }
+          
+          // Focus on the input field for adding new banners
+          if (!showBannerInput) {
+            setShowBannerInput(true);
+            setTimeout(() => {
+              if (bannerInputRef.current) {
+                bannerInputRef.current.focus();
+              }
+            }, 100);
+          }
+        }, 500);
+      }
+    }, 100);
+  };
+
+  // Clear current banner note
+  const clearBannerNote = () => {
+    setBannerNotes({
+      title: '',
+      banners: [],
+      docId: null // Reset document ID
+    });
+    setNewBannerText('');
+    setBannerLineBreak(false);
+    setBannerColorOrange(false);
   };
 
   // Global event listeners for drag functionality
@@ -1001,6 +1252,228 @@ const NoteGenerator = () => {
                   </div>
                 </div>
               </div>
+              </div>
+            )}
+          </div>
+
+          {/* Banner Notes Section - Collapsible Dropdown */}
+          <div ref={bannerSectionRef} className="dashboard-card banner-notes-card full-width">
+            <div className="card-header collapsible-header" onClick={() => setIsBannerNotesExpanded(!isBannerNotesExpanded)}>
+              <div className="header-left">
+                <h3>Banner Notes</h3>
+                <Tag size={20} />
+              </div>
+              <div className="collapse-indicator">
+                {isBannerNotesExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+              </div>
+            </div>
+            {isBannerNotesExpanded && (
+              <div className="card-body">
+                <div className="banner-notes-container">
+                  {/* Banner Note Title */}
+                  <div className="input-group">
+                    <label>Note Title</label>
+                    <div className="title-input-with-controls">
+                      <input
+                        type="text"
+                        value={bannerNotes.title}
+                        onChange={(e) => handleBannerTitleChange(e.target.value)}
+                        placeholder="Enter note title (required for auto-save)"
+                        className="note-input"
+                      />
+                      <div className="title-controls">
+                        <button
+                          className="open-notes-btn"
+                          onClick={fetchExistingNotes}
+                          disabled={loadingNotes}
+                          title="Open existing note"
+                          style={{
+                            background: '#FF6900',
+                            backgroundColor: '#FF6900',
+                            color: '#FFFFFF',
+                            border: '2px solid #FF6900',
+                            borderColor: '#FF6900'
+                          }}
+                        >
+                          <FolderOpen size={16} style={{ color: '#FFFFFF' }} />
+                          <span style={{ color: '#FFFFFF' }}>
+                            {loadingNotes ? 'Loading...' : 'Open Note'}
+                          </span>
+                        </button>
+                        <button
+                          className="clear-note-btn"
+                          onClick={clearBannerNote}
+                          disabled={!bannerNotes.title && bannerNotes.banners.length === 0}
+                          title="Clear current note"
+                        >
+                          <X size={16} />
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Existing Notes Modal */}
+                  {showExistingNotes && createPortal(
+                    <div className="existing-notes-modal">
+                      <div className="modal-overlay" onClick={() => setShowExistingNotes(false)} />
+                      <div className="modal-content">
+                        <div className="modal-header">
+                          <h4>Select Existing Note</h4>
+                          <button 
+                            className="modal-close-btn"
+                            onClick={() => setShowExistingNotes(false)}
+                          >
+                            <X size={20} />
+                          </button>
+                        </div>
+                        <div className="modal-body">
+                          {existingNotes.length === 0 ? (
+                            <div className="no-notes-message">
+                              <Info size={24} />
+                              <p>No notes with banners found</p>
+                            </div>
+                          ) : (
+                            <div className="notes-list">
+                              {existingNotes.map(note => (
+                                <div 
+                                  key={note.id}
+                                  className="note-item"
+                                  onClick={() => loadExistingNote(note)}
+                                >
+                                  <div className="note-info">
+                                    <h5>{note.title || 'Untitled Note'}</h5>
+                                    <div className="note-meta">
+                                      <span className="banner-count">
+                                        <Tag size={14} />
+                                        {note.banners?.length || 0} banners
+                                      </span>
+                                      <span className="note-date">
+                                        {note.updatedAt?.toDate ? 
+                                          note.updatedAt.toDate().toLocaleDateString() :
+                                          new Date(note.updatedAt).toLocaleDateString()
+                                        }
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="note-preview">
+                                    {note.banners?.slice(0, 3).map((banner, idx) => (
+                                      <span 
+                                        key={idx}
+                                        className={`preview-banner ${banner.isOrange ? 'orange' : 'blue'}`}
+                                      >
+                                        {banner.text.length > 20 ? banner.text.substring(0, 20) + '...' : banner.text}
+                                      </span>
+                                    ))}
+                                    {note.banners?.length > 3 && (
+                                      <span className="more-banners">+{note.banners.length - 3} more</span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>,
+                    document.body
+                  )}
+
+                  {/* Banner Input Section - Matching Notes Page Layout */}
+                  <div className="editor-banner-controls-container">
+                    <div className="banner-input-row">
+                      <textarea
+                        ref={bannerInputRef}
+                        className="banner-input"
+                        placeholder="Enter banner text..."
+                        value={newBannerText}
+                        onChange={(e) => {
+                          setNewBannerText(e.target.value);
+                          // Auto-resize textarea
+                          e.target.style.height = 'auto';
+                          e.target.style.height = e.target.scrollHeight + 'px';
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey && newBannerText.trim()) {
+                            e.preventDefault();
+                            addBanner();
+                          }
+                        }}
+                        rows={1}
+                      />
+                    </div>
+                    <div className="banner-controls-row">
+                      <button
+                        className="add-banner-btn"
+                        onClick={addBanner}
+                        disabled={!newBannerText.trim()}
+                        title="Add new banner"
+                      >
+                        <Tag size={16} />
+                        Add Banner
+                      </button>
+                      <button
+                        className="banner-toggle-btn"
+                        onClick={() => setBannerLineBreak(!bannerLineBreak)}
+                        title={bannerLineBreak ? "New line" : "Existing line"}
+                      >
+                        {bannerLineBreak ? "New Line" : "Existing Line"}
+                      </button>
+                      <button
+                        className={`banner-color-toggle-btn ${bannerColorOrange ? 'orange' : 'blue'}`}
+                        onClick={() => setBannerColorOrange(!bannerColorOrange)}
+                        title={bannerColorOrange ? "Orange color" : "Blue color"}
+                        style={bannerColorOrange ? {
+                          background: '#FF6900',
+                          color: '#FFFFFF',
+                          borderColor: '#FF6900'
+                        } : {}}
+                      >
+                        <span style={bannerColorOrange ? { color: '#FFFFFF' } : {}}>
+                          {bannerColorOrange ? "Orange" : "Blue"}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Display Existing Banners */}
+                  {bannerNotes.banners && bannerNotes.banners.length > 0 && (
+                    <div className="banner-display-section">
+                      <h5>Current Banners:</h5>
+                      <div ref={bannersListRef} className="banners-list">
+                        {bannerNotes.banners.map((banner, index) => (
+                          <React.Fragment key={banner.id}>
+                            {banner.newLine && index > 0 && <div className="banner-line-break" />}
+                            <div 
+                              className={`banner-item ${banner.isOrange ? 'orange' : 'blue'} ${banner.isDone ? 'done' : ''} ${copiedBannerId === banner.id ? 'copied' : ''}`}
+                              onClick={() => copyBannerToClipboard(banner)}
+                              title="Click to copy banner text"
+                            >
+                              <span className="banner-text">{banner.text}</span>
+                              <button
+                                className="remove-banner-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeBanner(banner.id);
+                                }}
+                                title="Remove banner"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                      
+                      {bannerNotes.title.trim() && (
+                        <div className="banner-save-info">
+                          <Info size={16} />
+                          <span>Banners are automatically saved to Notes page with title: "{bannerNotes.title}"</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

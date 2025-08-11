@@ -2850,8 +2850,49 @@ const RedesignedPumpCalculator = () => {
     }
   }, [focusedMedicationIndex, showMedicationDropdown]);
 
+  // Scroll to top helper function
+  const scrollToTop = () => {
+    // Method 1: Direct window scroll
+    window.scrollTo(0, 0);
+    
+    // Method 2: Document element scroll
+    if (document.documentElement) {
+      document.documentElement.scrollTop = 0;
+    }
+    
+    // Method 3: Body scroll
+    if (document.body) {
+      document.body.scrollTop = 0;
+    }
+    
+    // Method 4: History manipulation
+    if (window.location.hash) {
+      window.location.hash = '';
+    }
+    
+    // Method 5: Focus on top element
+    const topElement = document.querySelector('.professional-container, .section-header, h1, h2');
+    if (topElement) {
+      topElement.focus();
+      topElement.scrollIntoView(true);
+    }
+  };
+
   // Reset calculator
   const resetCalculator = () => {
+    // Call scroll function immediately
+    scrollToTop();
+    
+    // Call again with requestAnimationFrame
+    requestAnimationFrame(() => {
+      scrollToTop();
+    });
+    
+    // And once more after state updates
+    setTimeout(() => {
+      scrollToTop();
+    }, 0);
+    
     // Reset all input fields
     setInputs({
       selectedMedication: '',
