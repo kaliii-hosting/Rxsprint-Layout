@@ -5,7 +5,9 @@ import './PinLock.css';
 const PinLock = ({ onUnlock }) => {
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
-  const correctPin = '2112';
+  const [showMaintenanceMessage, setShowMaintenanceMessage] = useState(false);
+  const correctPin = '1973';
+  const maintenancePin = '2112';
   
   // Animation refs
   const pinContainerRef = useRef(null);
@@ -223,7 +225,19 @@ const PinLock = ({ onUnlock }) => {
   };
 
   const checkPin = (pinToCheck = pin) => {
-    if (pinToCheck === correctPin) {
+    if (pinToCheck === maintenancePin) {
+      // Show maintenance message
+      setShowMaintenanceMessage(true);
+      // Clear the PIN after showing message
+      setTimeout(() => {
+        setPin('');
+        pinDotsRef.current.forEach(dot => {
+          if (dot) {
+            dot.classList.remove('filled', 'animate-fill');
+          }
+        });
+      }, 500);
+    } else if (pinToCheck === correctPin) {
       // Success animation
       pinDotsRef.current.forEach((dot, index) => {
         if (dot) {
@@ -366,6 +380,31 @@ const PinLock = ({ onUnlock }) => {
           </div>
         </div>
       </div>
+      
+      {/* Maintenance Message Popup */}
+      {showMaintenanceMessage && (
+        <div className="maintenance-popup-overlay">
+          <div className="maintenance-popup">
+            <div className="maintenance-popup-header">
+              <svg className="maintenance-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12" y2="16"/>
+              </svg>
+            </div>
+            <div className="maintenance-popup-content">
+              <h3>System Maintenance</h3>
+              <p>The software application is currently undergoing development. The server will be back online shortly.</p>
+            </div>
+            <button 
+              className="maintenance-popup-button"
+              onClick={() => setShowMaintenanceMessage(false)}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

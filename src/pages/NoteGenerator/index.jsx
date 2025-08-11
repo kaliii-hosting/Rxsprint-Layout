@@ -532,6 +532,8 @@ const NoteGenerator = () => {
       fields.push('Patient self-infuses');
     } else if (interventionForm.infusionMethod === 'md-office') {
       fields.push('Infusing at MD office or clinic');
+    } else if (interventionForm.infusionMethod === 'oral') {
+      fields.push('Oral medication');
     } else if (interventionForm.infusionMethod === 'other' && interventionForm.infusionMethodOther) {
       fields.push(interventionForm.infusionMethodOther);
     }
@@ -1378,6 +1380,7 @@ const NoteGenerator = () => {
                           <option value="hhn">Patient has HHN</option>
                           <option value="self-infuses">Patient self-infuses</option>
                           <option value="md-office">Infusing at MD office or clinic</option>
+                          <option value="oral">Oral medication</option>
                           <option value="other">Other</option>
                         </select>
                         <ChevronDown className="dropdown-icon" size={16} />

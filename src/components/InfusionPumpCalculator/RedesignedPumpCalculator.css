@@ -233,7 +233,7 @@
   width: 100%;
   padding: 0 1rem;
   position: relative;
-  z-index: 999999;
+  z-index: 100;
   isolation: isolate;
 }
 
@@ -257,14 +257,14 @@
 }
 
 .medication-select-dropdown:hover {
-  border-color: #ff6b35;
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  border-color: #999999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .medication-select-dropdown:focus {
   outline: none;
-  border-color: #ff6b35;
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+  border-color: #999999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .medication-select-dropdown.error {
@@ -705,7 +705,7 @@
 
 .supply-input:focus {
   outline: none;
-  border-color: #ff6b35;
+  border-color: #999999;
   background: white;
   box-shadow: none;
 }
@@ -746,13 +746,13 @@
 }
 
 .mega-menu-trigger:hover {
-  border-color: #ff6b35;
+  border-color: #999999;
 }
 
 .mega-menu-trigger:focus {
   outline: none;
-  border-color: #ff6b35;
-  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+  border-color: #999999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .mega-menu-trigger.error {
@@ -825,7 +825,7 @@
 
 .mega-menu-search-input:focus {
   outline: none;
-  border-color: #ff6b35;
+  border-color: #999999;
 }
 
 .mega-menu-content {
@@ -1138,7 +1138,7 @@
 
 .supply-dropdown:focus {
   outline: none;
-  border-color: #ff6b35;
+  border-color: #999999;
   background: white;
   box-shadow: none;
 }
@@ -3217,7 +3217,7 @@
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid #ffd700;
   opacity: 1;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dose-safety-card.correct-dose:not(.active) {
@@ -3353,7 +3353,7 @@
   transform: none;
   opacity: 1;
   padding: 1rem 1.5rem;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   position: relative;
 }
 
@@ -3391,7 +3391,7 @@
   transform: none;
   opacity: 1;
   padding: 1rem 1.5rem;
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(0, 255, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   position: relative;
 }
 
@@ -3429,7 +3429,7 @@
   transform: none;
   opacity: 1;
   padding: 1rem 1.5rem;
-  box-shadow: 0 0 20px rgba(255, 56, 56, 0.5), 0 0 40px rgba(255, 56, 56, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   position: relative;
 }
 
@@ -4293,7 +4293,7 @@
 .combination-option.selected {
   border-color: #FF6900;
   background: rgba(203, 96, 21, 0.1);
-  box-shadow: 0 0 0 2px rgba(203, 96, 21, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .combination-option {
@@ -5626,8 +5626,8 @@ button.professional-action-btn.calculate-custom-btn {
 }
 
 .calc-display-container:focus-within {
-  border-color: #ff5500;
-  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
+  border-color: #999999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .calc-display-value {
@@ -5778,8 +5778,8 @@ button.professional-action-btn.calculate-custom-btn {
 }
 
 .professional-input-container:focus-within {
-  border-color: #ff5500;
-  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
+  border-color: #999999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 /* Professional Time Input Styles */
@@ -6809,8 +6809,8 @@ button.professional-action-btn.calculate-custom-btn {
 
 .dose-unit-dropdown:focus {
   outline: none;
-  border-color: #ff5500;
-  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
+  border-color: #999999;
+  box-shadow: none;
 }
 
 .unit-dropdown-icon {
@@ -7916,7 +7916,7 @@ button.professional-action-btn.calculate-custom-btn {
 .pump-action-btn:hover {
   background: #E65F00;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(203, 96, 21, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .pump-action-btn:active {
@@ -7943,7 +7943,7 @@ button.professional-action-btn.calculate-custom-btn {
 
 .pump-action-btn.reset-btn:hover {
   background: #c82333;
-  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Removed duplicate orange button styling - see DEFINITIVE ORANGE BUTTON STYLES section */
@@ -8211,7 +8211,7 @@ button.professional-action-btn.calculate-custom-btn {
   border-color: #b91c1c;
   color: white;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .action-btn:disabled {
@@ -9112,8 +9112,8 @@ button.professional-action-btn.calculate-custom-btn {
 
 .supply-input.has-dropdown:focus {
   outline: none;
-  border-color: #ff5500;
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+  border-color: #999999;
+  box-shadow: none;
 }
 
 .vial-size-dropdown {
@@ -9209,13 +9209,13 @@ button.professional-action-btn.calculate-custom-btn {
 }
 
 .medication-custom-dropdown:hover {
-  border-color: #ff5500;
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  border-color: #999999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .medication-custom-dropdown.open {
-  border-color: #ff5500;
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+  border-color: #999999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .medication-custom-dropdown.error {
@@ -9247,8 +9247,9 @@ button.professional-action-btn.calculate-custom-btn {
 .medication-dropdown-menu {
   position: absolute;
   top: calc(100% + 4px);
-  left: 0;
-  right: 0;
+  left: 1rem;
+  right: 1rem;
+  width: calc(100% - 2rem);
   background: #ffffff;
   border: 1px solid #d0d0d0;
   border-radius: 8px;
@@ -9288,8 +9289,9 @@ button.professional-action-btn.calculate-custom-btn {
 }
 
 .medication-search-input:focus {
-  border-color: #ff5500;
+  border-color: #d0d0d0;
   background: #ffffff;
+  outline: none;
 }
 
 .medication-options-list {
@@ -9588,11 +9590,11 @@ button.professional-action-btn.calculate-custom-btn {
 
 /* Fix z-index issues for medication dropdown */
 .medication-dropdown-wrapper {
-  z-index: 999999 !important;
+  z-index: 100 !important;
 }
 
 .medication-dropdown-menu {
-  z-index: 9999999 !important;
+  z-index: 101 !important;
   /* Remove position: fixed to maintain proper positioning */
   /* Keep position: absolute as defined earlier in the file */
 }
@@ -9632,12 +9634,12 @@ button.professional-action-btn.calculate-custom-btn {
 
 /* Ensure medication dropdown menu is always on top of all other elements */
 .medication-dropdown-wrapper.dropdown-open {
-  z-index: 999999999 !important;
+  z-index: 102 !important;
   position: relative !important;
 }
 
 .medication-dropdown-wrapper.dropdown-open .medication-dropdown-menu {
-  z-index: 999999999 !important;
+  z-index: 103 !important;
   /* Use the original position: absolute */
 }
 
@@ -9651,7 +9653,7 @@ button.professional-action-btn.calculate-custom-btn {
 
 /* Ensure dropdown menu has absolute highest priority */
 .medication-dropdown-menu {
-  z-index: 2147483647 !important; /* Maximum z-index value */
+  z-index: 104 !important;
   background: #ffffff !important;
   position: absolute !important;
 }
@@ -10256,56 +10258,51 @@ button[style*="#FF6900"] {
 
 
 /* Specific button color overrides for #FF6900 */
-/* Calculate Days Coverage Button - FF6900 Color at All Times */
-.vial-input-btn,
-.calculate-days-coverage-btn,
-.professional-action-btn.calculate-days-coverage-btn,
-button:has(.vial-input-instructions),
-button:contains("Calculate Days Coverage") {
-  display: flex !important;
+/* Calculate Days Coverage Button - Copy Button Style like Calculate Fixed Date */
+.copy-note-btn.calculate-days-coverage-btn {
+  display: inline-flex !important;
   align-items: center !important;
-  gap: 0.5rem !important;
-  padding: 1rem 2rem !important;
+  gap: 0.75rem !important;
+  padding: 0.875rem 1.5rem !important;
   background: #FF6900 !important;
   color: white !important;
-  border: none !important;
-  border-radius: 8px !important;
-  font-size: 1rem !important;
-  font-weight: 500 !important;
+  border: 2px solid #FF6900 !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  font-size: 0.9375rem !important;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   cursor: pointer !important;
   transition: all 0.3s ease !important;
-  min-width: 250px !important;
-  min-height: auto !important;
+  min-width: 220px !important;
   justify-content: center !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  box-shadow: 0 2px 8px rgba(255, 105, 0, 0.2) !important;
 }
 
-.vial-input-btn:hover:not(:disabled),
-.calculate-days-coverage-btn:hover:not(:disabled),
-.professional-action-btn.calculate-days-coverage-btn:hover:not(:disabled) {
+.copy-note-btn.calculate-days-coverage-btn:hover:not(:disabled) {
   background: #E65F00 !important;
+  border-color: #E65F00 !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(255, 105, 0, 0.4) !important;
+  box-shadow: 0 6px 20px rgba(255, 105, 0, 0.3) !important;
 }
 
-.vial-input-btn:active,
-.calculate-days-coverage-btn:active,
-.professional-action-btn.calculate-days-coverage-btn:active {
+.copy-note-btn.calculate-days-coverage-btn:active {
   background: #CC5400 !important;
   transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(255, 105, 0, 0.2) !important;
 }
 
 /* Ensure all text and icons are white */
-.vial-input-btn *,
-.calculate-days-coverage-btn *,
-.professional-action-btn.calculate-days-coverage-btn * {
+.copy-note-btn.calculate-days-coverage-btn * {
   color: white !important;
 }
 
-.vial-input-btn svg,
-.calculate-days-coverage-btn svg,
-.professional-action-btn.calculate-days-coverage-btn svg {
+.copy-note-btn.calculate-days-coverage-btn svg {
   color: white !important;
   fill: white !important;
+  width: 18px !important;
+  height: 18px !important;
 }
 
 /* Reset complex layout for copy button style */
@@ -10410,7 +10407,7 @@ html body .pump-calculator-container button.copy-note-btn.reset-btn {
 .pump-calculator-container .copy-note-btn.reset-btn:hover:not(:disabled) {
   background: #c82333 !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Active states for all buttons */
@@ -10619,8 +10616,8 @@ input[value="removed-from-vial"] + label,
 [data-theme="dark"] .supply-input:focus,
 [data-theme="dark"] input:focus,
 [data-theme="dark"] select:focus {
-  border-color: var(--primary-color, #ff5500);
-  box-shadow: 0 0 0 3px var(--primary-light, rgba(255, 85, 0, 0.1));
+  border-color: var(--primary-color, #666666);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   outline: none;
 }
 
@@ -10898,9 +10895,9 @@ input[value="removed-from-vial"] + label,
 [data-theme="dark"] .dose-input:focus,
 [data-theme="dark"] .param-input:focus,
 [data-theme="dark"] .supply-input:focus {
-  border-color: var(--input-focus-border, #ff6900);
+  border-color: var(--input-focus-border, #666666);
   background: var(--input-bg, #2a2a2a);
-  box-shadow: 0 0 0 3px var(--primary-light, rgba(255, 105, 0, 0.2));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 [data-theme="dark"] .dose-label,
@@ -10926,7 +10923,7 @@ input[value="removed-from-vial"] + label,
 
 [data-theme="dark"] .reset-section-btn:hover {
   background: var(--button-hover-bg, #333333);
-  border-color: var(--input-focus-border, #ff6900);
+  border-color: var(--input-focus-border, #666666);
   color: var(--text-primary, #ffffff);
 }
 
@@ -10989,4 +10986,76 @@ input[value="removed-from-vial"] + label,
 
 [data-theme="dark"] .dose-unit {
   color: var(--text-secondary, #cccccc);
+}
+
+/* ===== DARK THEME FIXES FROM COMMIT 51cae61 ===== */
+
+/* Dark theme support for dose cards */
+.theme-dark .dose-card,
+[data-theme="dark"] .dose-card {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Dark theme for input containers */
+.theme-dark .time-input-container,
+.theme-dark .volume-input-container,
+.theme-dark .rate-input-container,
+.theme-dark .dose-input-container,
+[data-theme="dark"] .time-input-container,
+[data-theme="dark"] .volume-input-container, 
+[data-theme="dark"] .rate-input-container,
+[data-theme="dark"] .dose-input-container {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Dark theme for value inputs */
+.theme-dark .time-value-input,
+.theme-dark .volume-value-input,
+.theme-dark .rate-value-input,
+.theme-dark .dose-value-input,
+[data-theme="dark"] .time-value-input,
+[data-theme="dark"] .volume-value-input,
+[data-theme="dark"] .rate-value-input,
+[data-theme="dark"] .dose-value-input {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .time-value-input:focus,
+.theme-dark .volume-value-input:focus,
+.theme-dark .rate-value-input:focus,
+.theme-dark .dose-value-input:focus,
+[data-theme="dark"] .time-value-input:focus,
+[data-theme="dark"] .volume-value-input:focus,
+[data-theme="dark"] .rate-value-input:focus,
+[data-theme="dark"] .dose-value-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary-color);
+}
+
+/* Dark theme for separator dots */
+.theme-dark .separator-dot,
+[data-theme="dark"] .separator-dot {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Dark theme support for inactive safety cards */
+.theme-dark .dose-safety-card.low-dose:not(.active),
+[data-theme="dark"] .dose-safety-card.low-dose:not(.active) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #fbbf24;
+}
+
+.theme-dark .dose-safety-card.correct-dose:not(.active),
+[data-theme="dark"] .dose-safety-card.correct-dose:not(.active) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #10b981;
+}
+
+.theme-dark .dose-safety-card.high-dose:not(.active),
+[data-theme="dark"] .dose-safety-card.high-dose:not(.active) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #ef4444;
 }

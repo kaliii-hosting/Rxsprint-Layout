@@ -3653,20 +3653,15 @@ const RedesignedPumpCalculator = () => {
                           })()}
                         </span>
                       </div>
-                      {/* Calculate Days Coverage Button - Professional Design */}
+                      {/* Calculate Days Coverage Button - Copy Button Design to match Calculate Fixed Date */}
                       <button
                         type="button"
-                        className="professional-action-btn calculate-days-coverage-btn"
+                        className="copy-note-btn calculate-days-coverage-btn"
                         onClick={() => setShowVialInputModal(true)}
                         disabled={!selectedMedicationData || !inputs.dose || !inputs.patientWeight}
                       >
-                        <div className="btn-icon-wrapper">
-                          <Calendar size={20} />
-                        </div>
-                        <div className="btn-content">
-                          <span className="btn-label">Calculate Days Coverage</span>
-                          <span className="btn-description">Calculate supply duration from vials</span>
-                        </div>
+                        <Calendar size={18} />
+                        Calculate Days Coverage
                       </button>
                     </div>
                   </div>

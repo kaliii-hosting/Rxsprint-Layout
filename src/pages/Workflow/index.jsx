@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import './Workflow.css';
+import EnterpriseHeader, { TabGroup, TabButton, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 
 const Workflow = () => {
   const { theme } = useTheme();
@@ -257,30 +258,31 @@ const Workflow = () => {
 
   return (
     <div className="workflow-page page-container">
-      {/* Toggle Banner - Analyzer Style */}
-      <div className="section-toggle-banner">
-        <button 
-          className="toggle-btn"
-          onClick={collapseAll}
-        >
-          <ChevronUp size={16} />
-          <span>Collapse All</span>
-        </button>
-        <button 
-          className="toggle-btn"
-          onClick={expandAll}
-        >
-          <ChevronDown size={16} />
-          <span>Expand All</span>
-        </button>
-        <button 
-          className="toggle-btn active"
-          onClick={resetCompletions}
-        >
-          <RefreshCcw size={16} />
-          <span>Reset</span>
-        </button>
-      </div>
+      {/* Enterprise Header */}
+      <EnterpriseHeader>
+        <ActionGroup>
+          <ActionButton
+            onClick={collapseAll}
+            icon={ChevronUp}
+            secondary
+          >
+            Collapse All
+          </ActionButton>
+          <ActionButton
+            onClick={expandAll}
+            icon={ChevronDown}
+            secondary
+          >
+            Expand All
+          </ActionButton>
+          <ActionButton
+            onClick={resetCompletions}
+            icon={RefreshCcw}
+          >
+            Reset
+          </ActionButton>
+        </ActionGroup>
+      </EnterpriseHeader>
       
       <div className="workflow-timeline-content">
 

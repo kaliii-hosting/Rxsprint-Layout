@@ -34,6 +34,7 @@ const Supplies = () => {
   const [showPIVInfo, setShowPIVInfo] = useState(false);
   const [showPICInfo, setShowPICInfo] = useState(false);
   const [showPORTInfo, setShowPORTInfo] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');  // For showing error messages
 
   // Supply data structure
   const suppliesData = {
@@ -426,7 +427,22 @@ const Supplies = () => {
       console.log('=== SUPPLIES CALCULATOR UPDATE CHECK ===');
       console.log('Version: 2024-01-23 v3 - SPRX only for CEREZYME, ELELYSO, NEXVIAZYME, XENPOZYME');
       
-      if (!selectedMedication || !dosesPerMonth) return;
+      // Check for required fields
+      if (!selectedMedication || !dosesPerMonth) {
+        setErrorMessage('Please fill in all required fields');
+        setTimeout(() => setErrorMessage(''), 3000);
+        return;
+      }
+      
+      // Check for validation errors
+      if (validationErrors.length > 0) {
+        setErrorMessage('Please correct the errors before calculating');
+        setTimeout(() => setErrorMessage(''), 3000);
+        return;
+      }
+      
+      // Clear any existing error message
+      setErrorMessage('');
 
       const medication = suppliesData.medications[selectedMedication];
       if (!medication) {
@@ -1310,13 +1326,20 @@ const Supplies = () => {
               Reset All
             </button>
             <button 
-              className="calculate-btn"
-              disabled={!selectedMedication || !dosesPerMonth || validationErrors.length > 0}
+              className="calculate-btn calculate-btn-always-active"
               onClick={calculateSupplies}
             >
               Calculate Supplies
             </button>
           </div>
+
+          {/* Error Message Display */}
+          {errorMessage && (
+            <div className="error-message-banner">
+              <AlertCircle size={16} />
+              <span>{errorMessage}</span>
+            </div>
+          )}
 
           {/* Results Dashboard */}
           {showResults && calculatedSupplies && (

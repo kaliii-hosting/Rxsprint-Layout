@@ -15,6 +15,7 @@ import ExcelOptionsPopup from '../../components/ExcelOptionsPopup/ExcelOptionsPo
 import { generateMedicationCode } from '../../utils/medicationCode';
 import { useLocation } from 'react-router-dom';
 import { useSearch } from '../../contexts/SearchContext';
+import EnterpriseHeader, { TabGroup, TabButton, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import './Medications.css';
 
 const Medications = () => {
@@ -837,7 +838,7 @@ const Medications = () => {
   const displayMedications = getFilteredAndSortedMedications();
 
   return (
-    <div className="medications-page page-container">
+    <div className="medications-page page-container page-with-enterprise-header">
       {/* Show modal directly if open, otherwise show normal page */}
       {isModalOpen ? (
         <MedicationModal
@@ -854,41 +855,35 @@ const Medications = () => {
         />
       ) : (
         <>
-          {/* Filter Banner - Shop Style */}
-          <div className="section-toggle-banner">
-            <button
-              className={`toggle-btn ${showSterileSolutions ? 'active' : ''}`}
-              onClick={() => setShowSterileSolutions(!showSterileSolutions)}
-            >
-              <span className="mobile-abbr">SS</span>
-              <Droplet size={16} className="desktop-icon" />
-              <span className="desktop-text">Sterile Solutions</span>
-            </button>
-            <button
-              className={`toggle-btn ${showLyophilizedPowders ? 'active' : ''}`}
-              onClick={() => setShowLyophilizedPowders(!showLyophilizedPowders)}
-            >
-              <span className="mobile-abbr">LP</span>
-              <Package size={16} className="desktop-icon" />
-              <span className="desktop-text">Lyophilized Powders</span>
-            </button>
-            <button
-              className={`toggle-btn ${showCapsules ? 'active' : ''}`}
-              onClick={() => setShowCapsules(!showCapsules)}
-            >
-              <span className="mobile-abbr">CAP</span>
-              <Pill size={16} className="desktop-icon" />
-              <span className="desktop-text">Capsules</span>
-            </button>
-            <button
-              className={`toggle-btn ${showSolutions ? 'active' : ''}`}
-              onClick={() => setShowSolutions(!showSolutions)}
-            >
-              <span className="mobile-abbr">SOL</span>
-              <Beaker size={16} className="desktop-icon" />
-              <span className="desktop-text">Solutions</span>
-            </button>
-          </div>
+          {/* Enterprise Header with Filter Tabs */}
+          <EnterpriseHeader>
+            <TabGroup>
+              <TabButton
+                active={showSterileSolutions}
+                onClick={() => setShowSterileSolutions(!showSterileSolutions)}
+              >
+                Sterile Solutions
+              </TabButton>
+              <TabButton
+                active={showLyophilizedPowders}
+                onClick={() => setShowLyophilizedPowders(!showLyophilizedPowders)}
+              >
+                Lyophilized Powders
+              </TabButton>
+              <TabButton
+                active={showCapsules}
+                onClick={() => setShowCapsules(!showCapsules)}
+              >
+                Capsules
+              </TabButton>
+              <TabButton
+                active={showSolutions}
+                onClick={() => setShowSolutions(!showSolutions)}
+              >
+                Solutions
+              </TabButton>
+            </TabGroup>
+          </EnterpriseHeader>
           
           <div className="medications-content">
             <div className="medications-dashboard">

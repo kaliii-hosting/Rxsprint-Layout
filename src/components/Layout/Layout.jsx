@@ -14,8 +14,6 @@ import {
   Calculator as CalcIcon,
   StickyNote,
   ScanLine,
-  Sun,
-  Moon,
   Bookmark,
   Bot,
   Zap,
@@ -33,7 +31,7 @@ import './Layout.css';
 const Layout = ({ children }) => {
   const location = useLocation();
   const { toggleCalculatorMode } = useCalculator();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const { lock } = useAuth();
   const [showVoiceTranscription, setShowVoiceTranscription] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -102,31 +100,91 @@ const Layout = ({ children }) => {
     setShowSuggestions(false);
   };
 
-  // Handle keyboard navigation
+  // Handle keyboard navigation for both suggestions and results
   const handleKeyDown = (e) => {
-    if (!showDropdown || searchResults.length === 0) return;
+    // Handle suggestions navigation
+    if (showSuggestions && searchSuggestions.length > 0) {
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex(prev => 
+            prev < searchSuggestions.length - 1 ? prev + 1 : 0
+          );
+          // Scroll to selected item
+          setTimeout(() => {
+            const selectedEl = document.querySelector('.suggestion-item.selected');
+            if (selectedEl) {
+              selectedEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+          }, 0);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex(prev => 
+            prev > 0 ? prev - 1 : searchSuggestions.length - 1
+          );
+          // Scroll to selected item
+          setTimeout(() => {
+            const selectedEl = document.querySelector('.suggestion-item.selected');
+            if (selectedEl) {
+              selectedEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+          }, 0);
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (selectedIndex >= 0 && selectedIndex < searchSuggestions.length) {
+            handleSuggestionClick(searchSuggestions[selectedIndex]);
+          }
+          break;
+        case 'Escape':
+          setShowSuggestions(false);
+          setSelectedIndex(-1);
+          break;
+      }
+      return;
+    }
 
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < searchResults.length - 1 ? prev + 1 : prev
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => prev > -1 ? prev - 1 : -1);
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
-          handleResultClick(searchResults[selectedIndex]);
-        }
-        break;
-      case 'Escape':
-        setShowDropdown(false);
-        setSelectedIndex(-1);
-        break;
+    // Handle search results navigation
+    if (showDropdown && searchResults.length > 0) {
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex(prev => 
+            prev < searchResults.length - 1 ? prev + 1 : 0
+          );
+          // Scroll to selected item
+          setTimeout(() => {
+            const selectedEl = document.querySelector('.search-result-item.selected');
+            if (selectedEl) {
+              selectedEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+          }, 0);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex(prev => 
+            prev > 0 ? prev - 1 : searchResults.length - 1
+          );
+          // Scroll to selected item
+          setTimeout(() => {
+            const selectedEl = document.querySelector('.search-result-item.selected');
+            if (selectedEl) {
+              selectedEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+          }, 0);
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
+            handleResultClick(searchResults[selectedIndex]);
+          }
+          break;
+        case 'Escape':
+          setShowDropdown(false);
+          setSelectedIndex(-1);
+          break;
+      }
     }
   };
 
@@ -183,8 +241,9 @@ const Layout = ({ children }) => {
                   {searchSuggestions.map((suggestion, index) => (
                     <div
                       key={index}
-                      className="suggestion-item"
+                      className={`suggestion-item ${index === selectedIndex ? 'selected' : ''}`}
                       onClick={() => handleSuggestionClick(suggestion)}
+                      onMouseEnter={() => setSelectedIndex(index)}
                     >
                       <span className="suggestion-text">{suggestion}</span>
                     </div>
@@ -214,24 +273,34 @@ const Layout = ({ children }) => {
                       >
                         <div className="result-icon">
                           {item.resultType === 'bookmark' ? '🔖' : 
-                           item.resultType === 'shopProduct' ? '📦' : '💊'}
+                           item.resultType === 'shopProduct' ? '📦' : 
+                           item.resultType === 'note' ? '📝' :
+                           item.resultType === 'workflow' ? '🔄' : '💊'}
                         </div>
                         <div className="result-content">
                           <h4 className="result-title">
                             {item.resultType === 'bookmark' ? item.title : 
-                             item.resultType === 'shopProduct' ? item.name : item.brandName}
+                             item.resultType === 'shopProduct' ? item.name : 
+                             item.resultType === 'note' ? item.title :
+                             item.resultType === 'workflow' ? item.title : item.brandName}
                           </h4>
                           {item.resultType === 'bookmark' && item.url ? (
                             <p className="result-subtitle">{item.url}</p>
                           ) : item.resultType === 'shopProduct' && item.irc_code ? (
                             <p className="result-subtitle">IRC: {item.irc_code} - {item.category}</p>
+                          ) : item.resultType === 'note' && item.content ? (
+                            <p className="result-subtitle">{item.content.substring(0, 50)}...</p>
+                          ) : item.resultType === 'workflow' && item.description ? (
+                            <p className="result-subtitle">{item.description}</p>
                           ) : item.genericName ? (
                             <p className="result-subtitle">{item.genericName}</p>
                           ) : null}
                         </div>
                         <div className="result-category">
                           {item.resultType === 'bookmark' ? 'Bookmark' : 
-                           item.resultType === 'shopProduct' ? 'Supply' : 'Medication'}
+                           item.resultType === 'shopProduct' ? 'Supply' : 
+                           item.resultType === 'note' ? 'Note' :
+                           item.resultType === 'workflow' ? 'Workflow' : 'Medication'}
                         </div>
                       </div>
                     ))}
@@ -257,13 +326,6 @@ const Layout = ({ children }) => {
               onClick={() => setShowVoiceTranscription(true)}
             >
               <Mic size={20} />
-            </button>
-            <button 
-              className="icon-button theme-toggle" 
-              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-              onClick={toggleTheme}
-            >
-              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
           </div>
         </header>

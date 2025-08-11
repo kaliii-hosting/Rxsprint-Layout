@@ -7,6 +7,7 @@ import autoTable from 'jspdf-autotable';
 // Import combined supplies data
 import suppliesData from './combined_supplies.json';
 import './Shop.css';
+import EnterpriseHeader, { TabGroup, TabButton, ActionButton, ActionGroup, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
 
 const Shop = () => {
   const [products, setProducts] = useState([]);
@@ -618,37 +619,34 @@ const Shop = () => {
   };
 
   return (
-    <div className="shop-page page-container">
-      {/* Toggle Banner - Analyzer Style */}
-      <div className="section-toggle-banner">
-        {categories.map(category => {
-          const displayName = category === 'PIC' ? 'PICC' : category;
-          const abbreviation = category === 'ALL' ? 'ALL' : 
-                             category === 'PIC' ? 'PC' : 
-                             category === 'PIV' ? 'IV' : 
-                             category === 'PORT' ? 'PT' : 
-                             category === 'ADDITIONAL' ? 'ADD' : category.substring(0, 3);
-          return (
-            <button
-              key={category}
-              className={`toggle-btn ${selectedCategory === category ? 'active' : ''}`}
-              onClick={() => setSelectedCategory(category)}
-            >
-              <span className="mobile-abbr">{abbreviation}</span>
-              <Package size={16} className="desktop-icon" />
-              <span className="desktop-text">{displayName}</span>
-            </button>
-          );
-        })}
-        <button 
-          className={`toggle-btn cart-toggle ${showCart ? 'active' : ''} ${cartButtonAnimating ? 'animate' : ''}`}
-          onClick={() => setShowCart(!showCart)}
-        >
-          <span className="mobile-abbr">CART</span>
-          <ShoppingCart size={16} className="desktop-icon" />
-          <span className="desktop-text">Cart {cartItemCount > 0 && `(${cartItemCount})`}</span>
-        </button>
-      </div>
+    <div className="shop-page page-container page-with-enterprise-header">
+      {/* Enterprise Header */}
+      <EnterpriseHeader>
+        <TabGroup>
+          {categories.map(category => {
+            const displayName = category === 'PIC' ? 'PICC' : category;
+            return (
+              <TabButton
+                key={category}
+                active={selectedCategory === category}
+                onClick={() => setSelectedCategory(category)}
+              >
+                {displayName}
+              </TabButton>
+            );
+          })}
+        </TabGroup>
+        <HeaderDivider />
+        <ActionGroup>
+          <ActionButton
+            onClick={() => setShowCart(!showCart)}
+            icon={ShoppingCart}
+            secondary={!showCart}
+          >
+            Cart {cartItemCount > 0 && `(${cartItemCount})`}
+          </ActionButton>
+        </ActionGroup>
+      </EnterpriseHeader>
 
       <div className="shop-content">
         {loading ? (

@@ -25,6 +25,17 @@
   overflow-x: hidden;
 }
 
+/* Ensure enterprise header works properly with shop page */
+.shop-page.page-with-enterprise-header {
+  padding-top: 0; /* Override default padding since header is inside container */
+}
+
+.shop-page .enterprise-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
 /* Toggle Banner - Analyzer Style Design */
 .section-toggle-banner {
   display: flex;
@@ -254,8 +265,8 @@
   border: 2px solid var(--bg-primary);
 }
 
-/* Category Filters */
-.category-filters {
+/* Category Filters - DEPRECATED: Now using EnterpriseHeader components */
+/* .category-filters {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
@@ -302,7 +313,7 @@
   border-color: #FF6900;
   color: white;
   transform: translateY(-2px);
-}
+} */
 
 /* Shop Content */
 .shop-content {
@@ -1003,11 +1014,11 @@
     align-items: center;
   }
   
+  /* DEPRECATED filter button styles - using EnterpriseHeader now
   .category-filters {
-    display: contents; /* Remove wrapper */
+    display: contents;
   }
   
-  /* Make all buttons same size and style */
   .filter-btn,
   .cart-button {
     width: 36px;
@@ -1022,22 +1033,20 @@
     flex: 0 0 auto;
   }
   
-  /* Filter button specific styles */
   .filter-btn {
     font-size: 0.75rem;
     font-weight: 600;
     overflow: hidden;
-    text-indent: -9999px; /* Hide text */
+    text-indent: -9999px;
   }
   
-  /* Add icons to filter buttons using pseudo-elements */
   .filter-btn::before {
     content: attr(data-short);
     position: absolute;
     text-indent: 0;
     font-size: 0.875rem;
     font-weight: 700;
-  }
+  } */
   
   /* Disable cart button animation on mobile */
   .cart-button.animate {
@@ -1178,9 +1187,9 @@
     height: 60px;
   }
 
-  .category-filters {
+  /* .category-filters {
     justify-content: center;
-  }
+  } */
 }
 
 @media (max-width: 480px) {
@@ -1192,7 +1201,7 @@
     font-size: 1.125rem;
   }
   
-  /* Make all buttons slightly smaller on very small screens */
+  /* DEPRECATED filter button styles - using EnterpriseHeader now
   .filter-btn,
   .cart-button {
     width: 32px;
@@ -1203,7 +1212,7 @@
   
   .filter-btn::before {
     font-size: 0.75rem;
-  }
+  } */
   
   .cart-button svg {
     width: 16px;
@@ -1217,10 +1226,10 @@
 
 /* For very narrow screens, show only essential filters */
 @media (max-width: 360px) {
-  /* Hide less important category filters */
+  /* DEPRECATED filter button styles - using EnterpriseHeader now
   .filter-btn:nth-child(n+4) {
     display: none;
-  }
+  } */
   
   .shop-title {
     font-size: 1rem;

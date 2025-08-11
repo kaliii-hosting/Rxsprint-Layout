@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Upload, X, ScanLine, Check, X as XIcon, AlertCircle, RotateCcw, FileText, ChevronDown, Package, GitCompare, TrendingUp, TrendingDown, ImageIcon, Plus } from 'lucide-react';
 import './Analyzer.css';
+import EnterpriseHeader, { TabGroup, TabButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 
 const Analyzer = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -2506,23 +2507,25 @@ const Analyzer = () => {
     <div className="analyzer-page page-container">
       <div className="analyzer-content">
         <div className="analyzer-dashboard">
-          {/* Toggle Banner */}
-          <div className="section-toggle-banner">
-            <button 
-              className={`toggle-btn ${activeSection === 'prescription' ? 'active' : ''}`}
-              onClick={() => setActiveSection('prescription')}
-            >
-              <FileText size={16} />
-              Analyze Prescription
-            </button>
-            <button 
-              className={`toggle-btn ${activeSection === 'supplies' ? 'active' : ''}`}
-              onClick={() => setActiveSection('supplies')}
-            >
-              <Package size={16} />
-              Analyze Supplies
-            </button>
-          </div>
+          {/* Enterprise Header */}
+          <EnterpriseHeader>
+            <TabGroup>
+              <TabButton
+                active={activeSection === 'prescription'}
+                onClick={() => setActiveSection('prescription')}
+                icon={FileText}
+              >
+                Analyze Prescription
+              </TabButton>
+              <TabButton
+                active={activeSection === 'supplies'}
+                onClick={() => setActiveSection('supplies')}
+                icon={Package}
+              >
+                Analyze Supplies
+              </TabButton>
+            </TabGroup>
+          </EnterpriseHeader>
 
           {/* Prescription Section */}
           {activeSection === 'prescription' && (

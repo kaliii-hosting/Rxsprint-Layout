@@ -1,0 +1,444 @@
+/* Bookmark Modal Mobile Responsive Fixes - Respecting Sidebar Layout */
+
+/* Get sidebar width from CSS variable or use default */
+:root {
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 60px;
+}
+
+/* Mobile modal adjustments - respecting sidebar */
+@media screen and (max-width: 768px) {
+  /* Modal Overlay - Fill entire content area */
+  .modal-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: var(--sidebar-collapsed-width, 60px) !important; /* Start after sidebar */
+    right: 0 !important;
+    bottom: 0 !important;
+    width: calc(100% - var(--sidebar-collapsed-width, 60px)) !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    z-index: 999999 !important;
+    overflow: hidden !important;
+  }
+  
+  /* Modal Content - Fill entire available area */
+  .modal-content {
+    position: relative !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: var(--bg-modal, #ffffff) !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    animation: slideInRight 0.3s ease !important;
+  }
+  
+  /* Modal Header */
+  .modal-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 1.5rem 1.25rem !important;
+    margin: 0 !important;
+    border-bottom: 1px solid var(--border-color, #e5e7eb) !important;
+    background: var(--bg-modal, #ffffff) !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.375rem !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    color: var(--text-primary, #1f2937) !important;
+  }
+  
+  .close-btn {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-secondary, #6b7280) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    border-radius: 8px !important;
+  }
+  
+  .close-btn:hover {
+    background: var(--button-hover-bg, #f3f4f6) !important;
+  }
+  
+  .close-btn svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  
+  /* Modal Body */
+  .modal-body {
+    flex: 1 1 auto !important;
+    padding: 1.25rem !important;
+    margin: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    max-height: none !important;
+    min-height: 0 !important;
+  }
+  
+  /* Form Styles */
+  .form-group {
+    margin-bottom: 2rem !important;
+    width: 100% !important;
+  }
+  
+  .form-group:last-child {
+    margin-bottom: 0 !important;
+  }
+  
+  .form-group label {
+    display: block !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.75rem !important;
+    color: var(--text-secondary, #6b7280) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.025em !important;
+  }
+  
+  .form-group input,
+  .form-group select {
+    width: 100% !important;
+    padding: 1rem 1.25rem !important;
+    font-size: 16px !important;
+    border: 2px solid var(--border-color, #e5e7eb) !important;
+    border-radius: 12px !important;
+    background: var(--input-bg, #f9fafb) !important;
+    color: var(--text-primary, #1f2937) !important;
+    box-sizing: border-box !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    outline: none !important;
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--primary-color, #ff6900) !important;
+    box-shadow: 0 0 0 2px rgba(255, 105, 0, 0.1) !important;
+  }
+  
+  /* Color Picker */
+  .color-picker {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 1rem !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    background: var(--secondary-bg, #f9fafb) !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--border-color, #e5e7eb) !important;
+  }
+  
+  .color-option {
+    width: 100% !important;
+    aspect-ratio: 1 !important;
+    height: auto !important;
+    min-height: 56px !important;
+    border-radius: 12px !important;
+    border: 3px solid transparent !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .color-option:hover {
+    transform: scale(1.1) !important;
+  }
+  
+  .color-option.selected {
+    border-color: #1f2937 !important;
+    box-shadow: 0 0 0 3px rgba(31, 41, 55, 0.1) !important;
+  }
+  
+  /* Modal Footer */
+  .modal-footer {
+    display: flex !important;
+    gap: 1rem !important;
+    padding: 1.25rem !important;
+    margin: 0 !important;
+    border-top: 1px solid var(--border-color, #e5e7eb) !important;
+    background: var(--bg-modal, #ffffff) !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .cancel-btn,
+  .save-btn {
+    flex: 1 !important;
+    padding: 1rem !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    min-height: 56px !important;
+    border-radius: 12px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.025em !important;
+  }
+  
+  .cancel-btn {
+    background: var(--button-bg, #f3f4f6) !important;
+    color: var(--text-primary, #1f2937) !important;
+    border: 1px solid var(--border-color, #e5e7eb) !important;
+  }
+  
+  .cancel-btn:hover {
+    background: var(--button-hover-bg, #e5e7eb) !important;
+  }
+  
+  .save-btn {
+    background: #FF6900 !important;
+    color: white !important;
+  }
+  
+  .save-btn:hover:not(:disabled) {
+    background: #e55d00 !important;
+  }
+  
+  .save-btn:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+  }
+}
+
+/* Small screens with expanded sidebar */
+@media screen and (max-width: 768px) {
+  /* When sidebar is expanded on mobile */
+  .sidebar-expanded .modal-overlay {
+    left: var(--sidebar-width, 240px) !important;
+    width: calc(100% - var(--sidebar-width, 240px)) !important;
+  }
+  
+  .sidebar-expanded .modal-content {
+    width: calc(100% - 1rem) !important;
+    max-width: 400px !important;
+  }
+}
+
+/* Very small screens - still fill full area */
+@media screen and (max-width: 480px) {
+  .modal-overlay {
+    left: 0 !important; /* Full screen on very small devices */
+    width: 100% !important;
+    padding: 0 !important;
+  }
+  
+  .modal-content {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+  }
+  
+  .modal-header {
+    padding: 1.25rem 1rem !important;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.25rem !important;
+  }
+  
+  .modal-body {
+    padding: 1rem !important;
+  }
+  
+  .form-group {
+    margin-bottom: 1.75rem !important;
+  }
+  
+  .form-group label {
+    font-size: 0.9375rem !important;
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: 0.875rem 1rem !important;
+    font-size: 16px !important;
+  }
+  
+  .color-picker {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem !important;
+  }
+  
+  .color-option {
+    min-height: 50px !important;
+  }
+  
+  .modal-footer {
+    padding: 1rem !important;
+    gap: 0.75rem !important;
+  }
+  
+  .cancel-btn,
+  .save-btn {
+    padding: 0.875rem !important;
+    font-size: 0.9375rem !important;
+    min-height: 50px !important;
+  }
+}
+
+/* Landscape orientation */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  .modal-content {
+    max-height: calc(100vh - 2rem) !important;
+    width: 100% !important;
+    max-width: 700px !important;
+  }
+  
+  .modal-body {
+    max-height: calc(100vh - 8rem) !important;
+    padding: 1rem 1.5rem !important;
+  }
+  
+  .color-picker {
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+  
+  .color-option {
+    min-height: 40px !important;
+  }
+}
+
+/* Animation */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Dark mode */
+[data-theme="dark"] .modal-overlay {
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="dark"] .modal-content {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+}
+
+[data-theme="dark"] .modal-header {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+}
+
+[data-theme="dark"] .modal-footer {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group select {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] .cancel-btn {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] .close-btn {
+  color: #999 !important;
+}
+
+[data-theme="dark"] .close-btn:hover {
+  background: #2a2a2a !important;
+}
+
+/* Ensure visibility */
+.modal-overlay {
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.modal-content {
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* iOS Safari fixes */
+@supports (-webkit-touch-callout: none) {
+  .modal-body {
+    -webkit-overflow-scrolling: touch !important;
+    overflow-y: scroll !important;
+  }
+}
+
+/* Ensure proper z-index stacking */
+.modal-overlay {
+  z-index: 999999 !important;
+}
+
+/* Account for different sidebar states */
+.bookmark-manager.sidebar-collapsed .modal-overlay {
+  left: var(--sidebar-collapsed-width, 60px) !important;
+  width: calc(100% - var(--sidebar-collapsed-width, 60px)) !important;
+}
+
+.bookmark-manager:not(.sidebar-collapsed) .modal-overlay {
+  left: var(--sidebar-width, 240px) !important;
+  width: calc(100% - var(--sidebar-width, 240px)) !important;
+}
+
+/* Full-width on mobile when sidebar is hidden */
+@media screen and (max-width: 480px) {
+  .bookmark-manager .modal-overlay {
+    left: 0 !important;
+    width: 100% !important;
+  }
+}

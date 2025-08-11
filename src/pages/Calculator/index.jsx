@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator as CalculatorIcon, Grid3X3, Heart, Weight } from 'lucide-react';
 import './Calculator.css';
+import EnterpriseHeader, { TabGroup, TabButton, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
 
 const Calculator = () => {
   // Calculator mode state
@@ -385,39 +386,38 @@ const Calculator = () => {
 
   return (
     <div className="calculator-page page-container">
+      {/* Enterprise Header for Calculator Mode Selection */}
+      <EnterpriseHeader>
+        <TabGroup>
+          <TabButton
+            active={calculatorMode === 'standard'}
+            onClick={() => setCalculatorMode('standard')}
+          >
+            Standard
+          </TabButton>
+          <TabButton
+            active={calculatorMode === 'cross'}
+            onClick={() => setCalculatorMode('cross')}
+          >
+            Cross Multiply
+          </TabButton>
+          <TabButton
+            active={calculatorMode === 'bmi'}
+            onClick={() => setCalculatorMode('bmi')}
+          >
+            BMI
+          </TabButton>
+          <TabButton
+            active={calculatorMode === 'abw'}
+            onClick={() => setCalculatorMode('abw')}
+          >
+            ABW
+          </TabButton>
+        </TabGroup>
+      </EnterpriseHeader>
+      
       <div className="calculator-content">
         <div className="calculator-dashboard">
-          {/* Mode Selector with Icons */}
-          <div className="calculator-mode-selector">
-            <button
-              className={`calc-mode-button ${calculatorMode === 'standard' ? 'active' : ''}`}
-              onClick={() => setCalculatorMode('standard')}
-            >
-              <CalculatorIcon size={32} />
-              <span>Standard</span>
-            </button>
-            <button
-              className={`calc-mode-button ${calculatorMode === 'cross' ? 'active' : ''}`}
-              onClick={() => setCalculatorMode('cross')}
-            >
-              <Grid3X3 size={32} />
-              <span>Cross Multiply</span>
-            </button>
-            <button
-              className={`calc-mode-button ${calculatorMode === 'bmi' ? 'active' : ''}`}
-              onClick={() => setCalculatorMode('bmi')}
-            >
-              <Heart size={32} />
-              <span>BMI</span>
-            </button>
-            <button
-              className={`calc-mode-button ${calculatorMode === 'abw' ? 'active' : ''}`}
-              onClick={() => setCalculatorMode('abw')}
-            >
-              <Weight size={32} />
-              <span>ABW</span>
-            </button>
-          </div>
             
           <div className="calculator-wrapper">
             {/* Standard Calculator */}

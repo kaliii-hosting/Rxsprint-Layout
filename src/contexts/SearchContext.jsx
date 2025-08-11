@@ -21,16 +21,20 @@ export const SearchProvider = ({ children }) => {
   const [medications, setMedications] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
   const [shopProducts, setShopProducts] = useState([]);
+  const [notes, setNotes] = useState([]);
+  const [workflowSections, setWorkflowSections] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
 
-  // Load medications, bookmarks, and shop products on mount
+  // Load all searchable data on mount
   useEffect(() => {
     loadMedications();
     loadBookmarks();
     loadShopProducts();
+    loadNotes();
+    loadWorkflowSections();
   }, []);
 
   const loadMedications = async () => {
@@ -152,6 +156,54 @@ export const SearchProvider = ({ children }) => {
     }
   };
 
+  const loadNotes = async () => {
+    try {
+      // Check if firestore is initialized
+      if (!firestore) {
+        console.warn('Firestore not initialized yet');
+        return;
+      }
+      
+      const notesRef = collection(firestore, 'notes');
+      const snapshot = await getDocs(notesRef);
+      
+      const notesData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        type: 'note'
+      }));
+      
+      // Sort notes by creation date
+      const sortedNotes = notesData.sort((a, b) => {
+        const dateA = a.createdAt?.toDate?.() || new Date(0);
+        const dateB = b.createdAt?.toDate?.() || new Date(0);
+        return dateB - dateA;
+      });
+      
+      setNotes(sortedNotes);
+    } catch (error) {
+      console.error('Error loading notes for search:', error);
+      setNotes([]);
+    }
+  };
+
+  const loadWorkflowSections = () => {
+    // Define workflow sections statically as they're not stored in a database
+    const sections = [
+      { id: 'pre-procedure', title: 'Pre-Procedure', description: 'Patient assessment and preparation steps' },
+      { id: 'assessment', title: 'Patient Assessment', description: 'Initial patient evaluation and vital signs' },
+      { id: 'vascular-access', title: 'Vascular Access', description: 'IV insertion and access management' },
+      { id: 'medication-prep', title: 'Medication Preparation', description: 'Drug calculation and preparation procedures' },
+      { id: 'infusion-setup', title: 'Infusion Setup', description: 'Pump programming and setup instructions' },
+      { id: 'during-infusion', title: 'During Infusion', description: 'Monitoring and management during therapy' },
+      { id: 'post-infusion', title: 'Post-Infusion', description: 'Completion and documentation procedures' },
+      { id: 'documentation', title: 'Documentation', description: 'Record keeping and reporting requirements' },
+      { id: 'emergency', title: 'Emergency Protocols', description: 'Emergency response and troubleshooting' }
+    ];
+    
+    setWorkflowSections(sections);
+  };
+
   // Generate search suggestions for 1-3 letter queries
   const generateSuggestions = (query) => {
     if (!query || query.length < 1 || query.length > 3) {
@@ -184,6 +236,20 @@ export const SearchProvider = ({ children }) => {
     shopProducts.forEach(product => {
       if (product.name && product.name.toLowerCase().startsWith(lowerQuery)) {
         allTerms.add(product.name);
+      }
+    });
+
+    // Collect from notes
+    notes.forEach(note => {
+      if (note.title && note.title.toLowerCase().startsWith(lowerQuery)) {
+        allTerms.add(note.title);
+      }
+    });
+
+    // Collect from workflow sections
+    workflowSections.forEach(section => {
+      if (section.title && section.title.toLowerCase().startsWith(lowerQuery)) {
+        allTerms.add(section.title);
       }
     });
 
@@ -248,14 +314,39 @@ export const SearchProvider = ({ children }) => {
              ircCode.includes(lowerQuery);
     }).map(product => ({ ...product, resultType: 'shopProduct' }));
 
-    // Combine results and limit to 12
-    const combinedResults = [...medicationResults, ...bookmarkResults, ...shopResults].slice(0, 12);
+    // Search notes
+    const noteResults = notes.filter(note => {
+      const title = (note.title || '').toLowerCase();
+      const content = (note.content || '').toLowerCase();
+      const tags = (note.tags || []).join(' ').toLowerCase();
+      
+      return title.includes(lowerQuery) || 
+             content.includes(lowerQuery) || 
+             tags.includes(lowerQuery);
+    }).map(note => ({ ...note, resultType: 'note' }));
+
+    // Search workflow sections
+    const workflowResults = workflowSections.filter(section => {
+      const title = (section.title || '').toLowerCase();
+      const description = (section.description || '').toLowerCase();
+      
+      return title.includes(lowerQuery) || description.includes(lowerQuery);
+    }).map(section => ({ ...section, resultType: 'workflow' }));
+
+    // Combine results and limit to 15
+    const combinedResults = [
+      ...medicationResults, 
+      ...bookmarkResults, 
+      ...shopResults,
+      ...noteResults,
+      ...workflowResults
+    ].slice(0, 15);
 
     setSearchResults(combinedResults);
     setShowDropdown(combinedResults.length > 0);
   };
 
-  // Navigate to medication, bookmark, or shop product
+  // Navigate to medication, bookmark, shop product, note, or workflow section
   const navigateToMedication = (item) => {
     try {
       setShowDropdown(false);
@@ -278,6 +369,22 @@ export const SearchProvider = ({ children }) => {
             state: { 
               selectedProductId: item.id,
               scrollToProduct: true 
+            } 
+          });
+        } else if (item.resultType === 'note') {
+          // Navigate to notes page with selected note
+          navigate('/notes', { 
+            state: { 
+              selectedNoteId: item.id,
+              openNote: true 
+            } 
+          });
+        } else if (item.resultType === 'workflow') {
+          // Navigate to workflow page with selected section
+          navigate('/workflow', { 
+            state: { 
+              selectedSectionId: item.id,
+              scrollToSection: true 
             } 
           });
         } else {
@@ -317,7 +424,9 @@ export const SearchProvider = ({ children }) => {
       clearSearch,
       loadMedications,
       loadBookmarks,
-      loadShopProducts
+      loadShopProducts,
+      loadNotes,
+      loadWorkflowSections
     }}>
       {children}
     </SearchContext.Provider>

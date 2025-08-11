@@ -1,0 +1,159 @@
+/* Bookmark Page Mobile Header Fix */
+@media (max-width: 768px) {
+  /* Force header to be horizontal on mobile */
+  .bookmark-manager .enterprise-header {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .bookmark-manager .header-content {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    padding: 0.75rem !important;
+    gap: 0.375rem !important;
+    flex-wrap: nowrap !important;
+    min-width: max-content !important;
+  }
+  
+  /* Hide scrollbar */
+  .bookmark-manager .header-content::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .bookmark-manager .header-content {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  /* Force all groups to be inline */
+  .bookmark-manager .tab-group,
+  .bookmark-manager .action-group {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 0.25rem !important;
+    align-items: center !important;
+    width: auto !important;
+    margin: 0 !important;
+  }
+  
+  /* Make all buttons square and icon-only */
+  .bookmark-manager .tab-btn,
+  .bookmark-manager .action-btn,
+  .bookmark-manager .icon-btn {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 auto !important;
+    border-radius: 8px !important;
+  }
+  
+  /* Hide button text on mobile */
+  .bookmark-manager .tab-btn span,
+  .bookmark-manager .action-btn span {
+    display: none !important;
+  }
+  
+  /* Icon sizing */
+  .bookmark-manager .tab-btn svg,
+  .bookmark-manager .action-btn svg,
+  .bookmark-manager .icon-btn svg {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+  }
+  
+  /* Header divider */
+  .bookmark-manager .header-divider {
+    width: 1px !important;
+    height: 24px !important;
+    background: var(--border-color) !important;
+    margin: 0 0.375rem !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* Remove any wrapping or stacking */
+  .bookmark-manager .header-content > * {
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+  }
+}
+
+/* Even smaller screens */
+@media (max-width: 480px) {
+  .bookmark-manager .header-content {
+    padding: 0.5rem !important;
+    gap: 0.25rem !important;
+  }
+  
+  .bookmark-manager .tab-btn,
+  .bookmark-manager .action-btn,
+  .bookmark-manager .icon-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    border-radius: 6px !important;
+  }
+  
+  .bookmark-manager .tab-btn svg,
+  .bookmark-manager .action-btn svg,
+  .bookmark-manager .icon-btn svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  .bookmark-manager .header-divider {
+    margin: 0 0.25rem !important;
+    height: 20px !important;
+  }
+}
+
+/* Ultra-specific overrides to ensure horizontal layout */
+@media (max-width: 768px) {
+  .bookmark-manager .enterprise-header .header-content {
+    display: -webkit-box !important;
+    display: -ms-flexbox !important;
+    display: flex !important;
+    -webkit-box-orient: horizontal !important;
+    -webkit-box-direction: normal !important;
+    -ms-flex-direction: row !important;
+    flex-direction: row !important;
+    -webkit-box-align: center !important;
+    -ms-flex-align: center !important;
+    align-items: center !important;
+    -ms-flex-wrap: nowrap !important;
+    flex-wrap: nowrap !important;
+  }
+  
+  /* Ensure groups don't stack */
+  .bookmark-manager .enterprise-header .tab-group,
+  .bookmark-manager .enterprise-header .action-group {
+    display: -webkit-inline-box !important;
+    display: -ms-inline-flexbox !important;
+    display: inline-flex !important;
+    -webkit-box-orient: horizontal !important;
+    -webkit-box-direction: normal !important;
+    -ms-flex-direction: row !important;
+    flex-direction: row !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+  
+  /* Force buttons to stay in row */
+  .bookmark-manager .enterprise-header .tab-btn,
+  .bookmark-manager .enterprise-header .action-btn {
+    display: -webkit-inline-box !important;
+    display: -ms-inline-flexbox !important;
+    display: inline-flex !important;
+    float: none !important;
+    position: relative !important;
+  }
+}

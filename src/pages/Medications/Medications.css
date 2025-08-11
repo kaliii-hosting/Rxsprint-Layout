@@ -17,10 +17,24 @@
   position: relative;
 }
 
-/* Toggle Banner - Shop Style */
+/* Ensure enterprise header works properly with medications page */
+.medications-page.page-with-enterprise-header {
+  padding-top: 0; /* Override default padding since header is inside container */
+}
+
+.medications-page .enterprise-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Toggle Banner - DEPRECATED: Now using EnterpriseHeader components 
+/*
+DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
+*/
 .section-toggle-banner {
   /* Mobile-first base styles - Force horizontal layout */
-  display: flex;
+  /* display: flex;
   flex-direction: row !important;
   gap: 0.375rem;
   padding: 0.625rem;

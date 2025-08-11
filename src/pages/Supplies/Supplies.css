@@ -332,6 +332,53 @@
   cursor: not-allowed;
 }
 
+/* Always Active Calculate Button */
+.calculate-btn.calculate-btn-always-active {
+  background: var(--primary-color) !important;
+  border: 1px solid var(--primary-color) !important;
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+}
+
+.calculate-btn.calculate-btn-always-active:hover {
+  background: var(--primary-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--primary-light);
+}
+
+/* Error Message Banner */
+.error-message-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  color: #dc2626;
+  font-weight: 500;
+  margin-top: 1rem;
+  animation: slideDown 0.3s ease;
+}
+
+[data-theme="dark"] .error-message-banner {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Results Dashboard */
 .results-dashboard {
   margin-top: 2rem;

@@ -395,7 +395,7 @@ button.toggle-btn.full-width {
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
   background: #FF6900;
-  color: white;
+  color: white !important;
   border: none;
   border-radius: 10px;
   font-size: 0.9rem;
@@ -406,11 +406,29 @@ button.toggle-btn.full-width {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.reset-supplies-btn span,
+.reset-analysis-btn span {
+  color: white !important;
+}
+
+.reset-supplies-btn svg,
+.reset-analysis-btn svg {
+  color: white !important;
+}
+
 .reset-supplies-btn:hover,
 .reset-analysis-btn:hover {
   background: #E55D00;
+  color: white !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(255, 105, 0, 0.2);
+}
+
+.reset-supplies-btn:hover span,
+.reset-analysis-btn:hover span,
+.reset-supplies-btn:hover svg,
+.reset-analysis-btn:hover svg {
+  color: white !important;
 }
 
 .reset-supplies-btn:active,
@@ -432,12 +450,20 @@ button.toggle-btn.full-width {
 [data-theme="dark"] .reset-supplies-btn,
 [data-theme="dark"] .reset-analysis-btn {
   background: #FF6900;
-  color: white;
+  color: white !important;
+}
+
+[data-theme="dark"] .reset-supplies-btn span,
+[data-theme="dark"] .reset-analysis-btn span,
+[data-theme="dark"] .reset-supplies-btn svg,
+[data-theme="dark"] .reset-analysis-btn svg {
+  color: white !important;
 }
 
 [data-theme="dark"] .reset-supplies-btn:hover,
 [data-theme="dark"] .reset-analysis-btn:hover {
   background: #E55D00;
+  color: white !important;
 }
 
 /* Action Buttons - Shop Style */
@@ -1238,6 +1264,7 @@ button.toggle-btn.full-width {
   .reset-supplies-btn span,
   .reset-analysis-btn span {
     font-size: 0.85rem;
+    color: white !important;
   }
   
   .reset-btn,

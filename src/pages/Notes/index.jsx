@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download, ChevronRight } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { firestore as db, storage } from '../../config/firebase';
 import { 
@@ -18,10 +18,12 @@ import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './Notes.css';
+import EnterpriseHeader, { TabGroup, TabButton, ActionButton, ActionGroup, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
 
 const Notes = () => {
   const { theme } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -203,6 +205,18 @@ const Notes = () => {
           updatedAt: serverTimestamp()
         };
         await updateDoc(noteRef, updateData);
+        
+        // Update the selectedNote with the new data
+        const updatedNote = {
+          ...selectedNote,
+          title: formData.title,
+          content: formData.content,
+          starred: formData.starred,
+          images: formData.images || [],
+          banners: formData.banners || [],
+          updatedAt: new Date()
+        };
+        setSelectedNote(updatedNote);
       }
       
       setIsEditing(false);
@@ -212,21 +226,31 @@ const Notes = () => {
     }
   };
 
-  const handleDelete = () => {
-    if (selectedNote) {
+  const handleDelete = (noteId = null) => {
+    // Use provided noteId or fall back to selectedNote
+    const noteToDelete = noteId || selectedNote?.id;
+    
+    if (noteToDelete) {
       if (window.confirm('Are you sure you want to delete this note?')) {
-        confirmDelete();
+        confirmDelete(noteToDelete);
       }
     }
   };
 
-  const confirmDelete = async () => {
-    if (!selectedNote || !db) return;
+  const confirmDelete = async (noteIdToDelete) => {
+    if (!noteIdToDelete || !db) return;
 
     try {
-      await deleteDoc(doc(db, 'notes', selectedNote.id));
-      setSelectedNote(null);
-      setFormData({ title: '', content: '', starred: false, images: [], banners: [] });
+      await deleteDoc(doc(db, 'notes', noteIdToDelete));
+      
+      // Clear selected note if we deleted the currently selected one
+      if (selectedNote && selectedNote.id === noteIdToDelete) {
+        setSelectedNote(null);
+        setFormData({ title: '', content: '', starred: false, images: [], banners: [] });
+      }
+      
+      // Remove from notes array
+      setNotes(prevNotes => prevNotes.filter(note => note.id !== noteIdToDelete));
     } catch (error) {
       console.error('Error deleting note:', error);
       alert('Failed to delete note. Please try again.');
@@ -306,6 +330,11 @@ const Notes = () => {
     }
   };
   
+  // Helper function to get current banners array based on mode
+  const getCurrentBanners = () => {
+    return (isEditing || isCreating) ? formData.banners : selectedNote?.banners || [];
+  };
+
   // Render content with HTML support
   const renderContent = (content) => {
     if (!content) return <p className="empty-content">No content</p>;
@@ -337,8 +366,15 @@ const Notes = () => {
   };
 
   const handleDeleteNoteFromMenu = async (noteId) => {
-    if (window.confirm('Are you sure you want to delete this note?')) {
-      await handleDelete(noteId);
+    // handleDelete already shows confirmation, so just call it directly
+    await handleDelete(noteId);
+    setNoteContextMenu({ visible: false, x: 0, y: 0, noteId: null });
+  };
+
+  const handleToggleStarFromMenu = async (noteId) => {
+    const note = notes.find(n => n.id === noteId);
+    if (note) {
+      await toggleStar(note);
     }
     setNoteContextMenu({ visible: false, x: 0, y: 0, noteId: null });
   };
@@ -1531,6 +1567,9 @@ const Notes = () => {
                   setIsCreating(false);
                   setIsEditing(false);
                   setFormData({ title: '', content: '', starred: false, images: [], banners: [] });
+                  setHasUserInteracted(true); // Mark as user interaction
+                  // Clear navigation state to fix button click issue after search navigation
+                  navigate('/notes', { replace: true });
                 }}
                 title="Back to All Notes"
               >
@@ -1572,7 +1611,8 @@ const Notes = () => {
                         title: selectedNote?.title || '',
                         content: selectedNote?.content || '',
                         starred: selectedNote?.starred || false,
-                        images: selectedNote?.images || []
+                        images: selectedNote?.images || [],
+                        banners: selectedNote?.banners || []
                       });
                     }
                   }}>
@@ -1609,45 +1649,63 @@ const Notes = () => {
             </div>
           </div>
         ) : (
-          /* Toggle Banner - When no note is selected */
-          <div className="section-toggle-banner">
-            <button 
-              className={`toggle-btn ${isCreating ? 'active' : ''}`}
-              onClick={handleCreateNote}
-            >
-              <Plus size={16} />
-              <span>New Note</span>
-            </button>
-            <button 
-              className="toggle-btn"
-              onClick={() => {
-                setIsCreating(true);
-                setIsEditing(true);
-                setSelectedNote(null);
-                setFormData({
-                  title: 'New Note',
-                  content: '',
-                  starred: false,
-                  images: [],
-                  banners: []
-                });
-                // Reset line tracking for new note
-                setCurrentLineNumber(0);
-                setBannerLineBreak(false);
-                setBannerColorOrange(false);
-                // Activate banner field after creating note
-                setTimeout(() => {
-                  if (bannerInputRef.current) {
-                    bannerInputRef.current.focus();
-                  }
-                }, 100);
-              }}
-              title="Create new note with banner"
-            >
-              <Tag size={16} />
-              <span>Add Banner</span>
-            </button>
-          </div>
+          /* Enterprise Header - When no note is selected */
+          <EnterpriseHeader>
+            <div className="notes-header-content">
+              <div className="notes-header-left">
+                <div className="notes-header-title">
+                  <h2>All Notes</h2>
+                  <span className="notes-count-badge">{filteredNotes.length}</span>
+                </div>
+                <div className="notes-header-search">
+                  <Search size={16} className="search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search notes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="notes-header-search-input"
+                  />
+                </div>
+              </div>
+              <ActionGroup>
+                <ActionButton
+                  onClick={handleCreateNote}
+                  icon={Plus}
+                >
+                  New Note
+                </ActionButton>
+                <ActionButton
+                  onClick={() => {
+                    setIsCreating(true);
+                    setIsEditing(true);
+                    setSelectedNote(null);
+                    setFormData({
+                      title: 'New Note',
+                      content: '',
+                      starred: false,
+                      images: [],
+                      banners: []
+                    });
+                    // Reset line tracking for new note
+                    setCurrentLineNumber(0);
+                    setBannerLineBreak(false);
+                    setBannerColorOrange(false);
+                    // Activate banner field after creating note
+                    setTimeout(() => {
+                      if (bannerInputRef.current) {
+                        bannerInputRef.current.focus();
+                      }
+                    }, 100);
+                  }}
+                  icon={Tag}
+                  secondary
+                >
+                  Add Banner
+                </ActionButton>
+              </ActionGroup>
+            </div>
+          </EnterpriseHeader>
         )}
       </div>
 
@@ -1795,9 +1853,9 @@ const Notes = () => {
                 ) : (
                   <div className="note-content">
                     {/* Display banners in the content area when viewing */}
-                    {formData.banners && formData.banners.length > 0 && (
+                    {getCurrentBanners().length > 0 && (
                       <div className="content-banners-container">
-                        {formData.banners.map((banner, index) => (
+                        {getCurrentBanners().map((banner, index) => (
                           <React.Fragment key={banner.id}>
                             {banner.newLine && index > 0 && <div className="banner-line-break" />}
                             {editingBannerId === banner.id ? (
@@ -1855,52 +1913,21 @@ const Notes = () => {
                         ))}
                       </div>
                     )}
-                    {renderContent(formData.content)}
+                    {renderContent(selectedNote?.content)}
                   </div>
                 )}
               </div>
             </>
           ) : (
             <div className="notes-main-list">
-              <div className="notes-list-header">
-                <div className="notes-list-title">
-                  <h2>All Notes</h2>
-                  <span className="notes-count">{filteredNotes.length} notes</span>
-                </div>
-              </div>
-              
-              <div className="notes-search-bar">
-                <Search size={20} className="search-icon" />
-                <input
-                  type="text"
-                  placeholder="Search notes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="notes-search-input"
-                />
-              </div>
-              
               {loading ? (
                 <div className="loading-state">
                   <div className="spinner" />
                   <p>Loading notes...</p>
                 </div>
               ) : filteredNotes.length > 0 ? (
-                <div className="notes-masonry-grid">
+                <div className="notes-grid-layout">
                   {filteredNotes.map((note, index) => {
-                    // Generate pastel colors matching the screenshot
-                    const colors = [
-                      '#FFB5A7', // Coral/Pink (like the first card)
-                      '#FFE5B4', // Peach/Yellow (like the second card)
-                      '#C8E6C9', // Mint green (like the third card)
-                      '#B3E5FC', // Light cyan (like Spotify card)
-                      '#E1BEE7', // Light purple (like the mobile wallpaper card)
-                      '#FFCCBC', // Light orange/salmon (like Design for Good)
-                      '#F8BBD0', // Light pink
-                      '#DCEDC8', // Light green
-                    ];
-                    
-                    const backgroundColor = colors[index % colors.length];
                     
                     // Extract plain text from HTML content for preview
                     const getPlainTextPreview = (htmlContent) => {
@@ -1916,8 +1943,7 @@ const Notes = () => {
                     return (
                       <div
                         key={note.id}
-                        className="modern-note-card"
-                        style={{ backgroundColor }}
+                        className="modern-note-card enterprise-card"
                         onClick={() => handleSelectNote(note)}
                         onContextMenu={(e) => {
                           e.preventDefault();
@@ -1951,15 +1977,12 @@ const Notes = () => {
                           }
                         }}
                       >
-                        {note.starred && (
-                          <div className="modern-note-star">
-                            <Star size={16} fill="currentColor" />
-                          </div>
-                        )}
-                        <h3 className="modern-note-title">{note.title || 'Untitled'}</h3>
-                        {contentPreview && (
-                          <p className="modern-note-preview">{contentPreview}</p>
-                        )}
+                        <div className="banner-content">
+                          <h3 className="modern-note-title">{note.title || 'Untitled'}</h3>
+                          {contentPreview && (
+                            <p className="modern-note-preview">{contentPreview}</p>
+                          )}
+                        </div>
                         <div className="modern-note-footer">
                           <span className="modern-note-date">
                             {formatDate(note.updatedAt)}
@@ -1967,6 +1990,12 @@ const Notes = () => {
                           {note.images && note.images.length > 0 && (
                             <ImageIcon size={14} className="modern-note-icon" />
                           )}
+                          {note.starred && (
+                            <div className="modern-note-star">
+                              <Star size={16} fill="currentColor" />
+                            </div>
+                          )}
+                          <ChevronRight size={20} className="banner-chevron" />
                         </div>
                       </div>
                     );
@@ -2036,15 +2065,32 @@ const Notes = () => {
           onClick={(e) => e.stopPropagation()}
         >
           <button
+            className={`context-menu-item ${notes.find(n => n.id === noteContextMenu.noteId)?.starred ? 'favorite' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              const note = notes.find(n => n.id === noteContextMenu.noteId);
+              handleToggleStarFromMenu(noteContextMenu.noteId);
+            }}
+          >
+            <Star size={16} fill={notes.find(n => n.id === noteContextMenu.noteId)?.starred ? 'currentColor' : 'none'} />
+            <span>{notes.find(n => n.id === noteContextMenu.noteId)?.starred ? 'Unfavorite' : 'Favorite'}</span>
+          </button>
+          <button
             className="context-menu-item"
-            onClick={() => handleEditNoteFromMenu(noteContextMenu.noteId)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEditNoteFromMenu(noteContextMenu.noteId);
+            }}
           >
             <Edit3 size={16} />
             <span>Edit</span>
           </button>
           <button
             className="context-menu-item delete"
-            onClick={() => handleDeleteNoteFromMenu(noteContextMenu.noteId)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteNoteFromMenu(noteContextMenu.noteId);
+            }}
           >
             <Trash2 size={16} />
             <span>Delete</span>

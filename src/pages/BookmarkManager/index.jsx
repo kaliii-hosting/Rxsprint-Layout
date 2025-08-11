@@ -29,6 +29,9 @@ import { db, auth } from '../../config/firebase';
 import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import BookmarkDeletionPopup from './BookmarkDeletionPopup';
 import './BookmarkManager.css';
+import './BookmarkMobilefix.css';
+import './BookmarkModalMobileFix.css';
+import EnterpriseHeader, { TabGroup, TabButton, HeaderDivider, ActionGroup, ActionButton, IconButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 
 // Drag and Drop Item Types
 const ItemTypes = {
@@ -110,17 +113,31 @@ const DraggableItem = ({ item, index, moveItem, onOpen, viewMode, onContextMenu,
       <div
         ref={ref}
         className={`bookmark-item list-view ${isDragging ? 'dragging' : ''} ${isOver ? 'drag-over' : ''}`}
-        style={{ opacity: isDragging ? 0.5 : 1 }}
+        style={{ 
+          color: item.color || defaultColors[0],
+          opacity: isDragging ? 0.5 : 1 
+        }}
         onContextMenu={(e) => onContextMenu(e, item)}
         onTouchStart={() => onTouchStart(item)}
         onTouchEnd={onTouchEnd}
       >
         <div className="item-content" onClick={handleClick}>
-          <div className="item-icon" style={{ color: item.color || defaultColors[0] }}>
+          <div className="item-icon">
             <Icon size={20} />
           </div>
           <div className="item-details">
             <h4>{item.title}</h4>
+            {item.type === 'bookmark' && item.url && (
+              <p className="item-url">
+                {(() => {
+                  try {
+                    return new URL(item.url).hostname;
+                  } catch (e) {
+                    return item.url;
+                  }
+                })()}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -133,7 +150,7 @@ const DraggableItem = ({ item, index, moveItem, onOpen, viewMode, onContextMenu,
       ref={ref}
       className={`bookmark-item grid-view ${viewMode} ${isDragging ? 'dragging' : ''} ${isOver ? 'drag-over' : ''}`}
       style={{ 
-        backgroundColor: item.color || defaultColors[0],
+        color: item.color || defaultColors[0],
         opacity: isDragging ? 0.5 : 1
       }}
       onClick={handleClick}
@@ -142,7 +159,7 @@ const DraggableItem = ({ item, index, moveItem, onOpen, viewMode, onContextMenu,
       onTouchEnd={onTouchEnd}
     >
       <div className="item-icon">
-        <Icon size={viewMode === 'compact' ? 24 : 32} />
+        <Icon size={viewMode === 'compact' ? 20 : 24} />
       </div>
       <h4 className="item-title">{item.title}</h4>
       {item.type === 'bookmark' && viewMode !== 'compact' && item.url && (
@@ -537,45 +554,48 @@ const BookmarkManager = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={`bookmark-manager ${theme} page-container`}>
-        {/* Toggle Banner - Analyzer Style */}
-        <div className="section-toggle-banner">
+      <div className={`bookmark-manager ${theme} page-container page-with-enterprise-header`}>
+        {/* Enterprise Header */}
+        <EnterpriseHeader>
           {currentFolder && (
-            <button className="toggle-btn" onClick={handleBack}>
-              <ChevronLeft size={16} />
-              <span>Back</span>
-            </button>
+            <>
+              <IconButton icon={ChevronLeft} onClick={handleBack} title="Back" />
+              <HeaderDivider />
+            </>
           )}
-          <button
-            className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
-            onClick={() => setViewMode('grid')}
-          >
-            <Grid3x3 size={16} />
-            <span>Grid</span>
-          </button>
-          <button
-            className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
-            onClick={() => setViewMode('list')}
-          >
-            <List size={16} />
-            <span>List</span>
-          </button>
-          <button
-            className={`toggle-btn ${viewMode === 'compact' ? 'active' : ''}`}
-            onClick={() => setViewMode('compact')}
-          >
-            <Square size={16} />
-            <span>Compact</span>
-          </button>
-          <button className="toggle-btn" onClick={() => openAddModal('folder')}>
-            <Folder size={16} />
-            <span>New Folder</span>
-          </button>
-          <button className="toggle-btn" onClick={() => openAddModal('bookmark')}>
-            <Plus size={16} />
-            <span>Add Bookmark</span>
-          </button>
-        </div>
+          <TabGroup>
+            <TabButton
+              active={viewMode === 'grid'}
+              onClick={() => setViewMode('grid')}
+              icon={Grid3x3}
+            >
+              Grid
+            </TabButton>
+            <TabButton
+              active={viewMode === 'list'}
+              onClick={() => setViewMode('list')}
+              icon={List}
+            >
+              List
+            </TabButton>
+            <TabButton
+              active={viewMode === 'compact'}
+              onClick={() => setViewMode('compact')}
+              icon={Square}
+            >
+              Compact
+            </TabButton>
+          </TabGroup>
+          <HeaderDivider />
+          <ActionGroup>
+            <ActionButton onClick={() => openAddModal('folder')} icon={Folder} secondary>
+              New Folder
+            </ActionButton>
+            <ActionButton onClick={() => openAddModal('bookmark')} icon={Plus}>
+              Add Bookmark
+            </ActionButton>
+          </ActionGroup>
+        </EnterpriseHeader>
 
         {/* Content */}
         <div className={`bookmark-content ${viewMode}-view`}>

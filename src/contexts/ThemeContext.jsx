@@ -11,18 +11,22 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem('rxsprint-theme');
-    return savedTheme || 'dark';
-  });
+  // Always use light theme
+  const theme = 'light';
 
   useEffect(() => {
-    localStorage.setItem('rxsprint-theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+    // Set light theme on mount
+    localStorage.setItem('rxsprint-theme', 'light');
+    document.documentElement.setAttribute('data-theme', 'light');
+  }, []);
 
+  // No-op functions for compatibility
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    // Theme switching disabled - always light
+  };
+
+  const setTheme = () => {
+    // Theme setting disabled - always light
   };
 
   const value = {

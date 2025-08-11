@@ -5,36 +5,41 @@
 :root {
   --primary-light-rgb: 59, 130, 246;
   --bg-tertiary-rgb: 241, 245, 249;
+  --github-border: #d0d7de;
+  --github-hover: rgba(0, 0, 0, 0.03);
+  --github-active: rgba(0, 0, 0, 0.05);
 }
 
-/* Toggle Banner - Mobile-First Professional Design */
+[data-theme="dark"] {
+  --github-border: #30363d;
+  --github-hover: rgba(255, 255, 255, 0.05);
+  --github-active: rgba(255, 255, 255, 0.08);
+}
+
+/* Toggle Banner - GitHub Style Header */
 .section-toggle-banner {
-  /* Mobile-first base styles - Force horizontal layout */
   display: flex;
-  flex-direction: row !important;
-  gap: 0.375rem;
-  padding: 0.625rem;
+  align-items: stretch;
+  gap: 0;
+  padding: 0 1rem;
   background: var(--card-background);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  margin: 0.75rem;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: nowrap !important;
+  border-bottom: 1px solid var(--github-border);
+  margin: 0;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   position: sticky;
   top: 0;
   z-index: 100;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  min-height: 56px; /* Standard mobile header height */
-  max-height: 56px; /* Prevent vertical expansion */
-  white-space: nowrap; /* Prevent wrapping */
+  min-height: 48px;
+  white-space: nowrap;
+  box-shadow: 0 1px 0 var(--github-border);
 }
 
 .section-toggle-banner::-webkit-scrollbar {
@@ -44,116 +49,155 @@
 /* Tablet and desktop styles */
 @media (min-width: 768px) {
   .section-toggle-banner {
-    gap: 0.5rem;
-    padding: 1rem;
-    margin: 1.5rem;
-    border-radius: 16px;
-    flex-wrap: nowrap !important; /* Keep horizontal on desktop too */
+    padding: 0 1.5rem;
     overflow-x: visible;
-    min-height: auto;
-    max-height: auto;
   }
 }
 
 .toggle-btn {
-  /* Mobile-first base styles */
+  /* GitHub-style tab button */
   position: relative;
-  background: var(--secondary-background);
-  color: #666666;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 0;
-  display: flex;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 0.75rem 1rem;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
+  gap: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
   white-space: nowrap;
-  min-width: 44px; /* iOS recommended touch target */
-  width: 44px;
-  height: 44px; /* iOS recommended touch target */
-  aspect-ratio: 1;
-  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  text-decoration: none;
+  line-height: 20px;
+  margin: 0;
 }
 
-/* Tablet and desktop styles */
-@media (min-width: 768px) {
+/* Mobile adjustments */
+@media (max-width: 767px) {
   .toggle-btn {
-    padding: 0.5rem 1.5rem;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    min-width: 120px;
-    width: auto;
-    height: 40px;
-    aspect-ratio: auto;
-    border-radius: 12px;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
   }
   
   .toggle-btn span {
-    display: inline !important;
+    display: none;
+  }
+  
+  .toggle-btn svg {
+    width: 18px;
+    height: 18px;
   }
 }
 
 .toggle-btn:hover {
-  background: #FF6900;
-  border-color: #FF6900;
-  color: white;
-  transform: translateY(-1px);
+  color: var(--text-primary);
+  background: var(--github-hover);
+  border-bottom-color: var(--github-border);
 }
 
 .toggle-btn:active {
-  transform: scale(0.97);
+  background: var(--github-active);
 }
 
 .toggle-btn.active {
+  color: var(--text-primary);
+  font-weight: 600;
+  border-bottom-color: #FF6900;
+  background: transparent;
+}
+
+.toggle-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
   background: #FF6900;
-  color: white;
-  border-color: #FF6900;
-  box-shadow: 0 4px 12px rgba(255, 84, 0, 0.3);
+}
+
+/* Separator between sections */
+.toggle-separator {
+  width: 1px;
+  background: var(--github-border);
+  margin: 0.5rem 0.5rem;
+  align-self: stretch;
+}
+
+/* Back button styling */
+.toggle-btn.back-btn {
+  margin-right: 0.5rem;
+  padding-right: 1rem;
+  border-right: 1px solid var(--github-border);
+}
+
+/* Action buttons (New Folder, Add Bookmark) */
+.toggle-btn.action-btn {
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.toggle-btn.action-btn:hover {
+  color: #FF6900;
+  background: var(--github-hover);
+  border-bottom-color: transparent;
+}
+
+.toggle-btn.action-btn svg {
+  color: #FF6900;
+}
+
+@media (max-width: 767px) {
+  .toggle-separator {
+    margin: 0.375rem 0.25rem;
+  }
+  
+  .toggle-btn.back-btn {
+    margin-right: 0.25rem;
+    padding-right: 0.75rem;
+  }
 }
 
 .toggle-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
 }
 
 .toggle-btn span {
-  display: none;
+  display: inline-block;
 }
 
 /* Enhanced mobile touch feedback */
 @media (hover: none) and (pointer: coarse) {
   .toggle-btn:active {
-    background: #FF6900;
-    border-color: #FF6900;
-    color: white;
+    background: var(--active-background, rgba(0, 0, 0, 0.08));
   }
 }
 
 /* Fine-tuning for very small devices */
 @media (max-width: 360px) {
   .section-toggle-banner {
-    margin: 0.5rem;
-    padding: 0.5rem;
-    gap: 0.25rem;
+    padding: 0 0.75rem;
   }
 
   .toggle-btn {
-    min-width: 40px;
-    width: 40px;
-    height: 40px;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
   }
 
   .toggle-btn svg {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
   }
 }
 
@@ -440,14 +484,14 @@
   
   /* Grid view - responsive columns on small phones */
   .items-grid.grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 0.5rem;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
   
   /* Compact view - responsive columns on small phones */
   .items-grid.compact {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 0.375rem;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
   
   /* Smaller bookmark items */
@@ -531,11 +575,11 @@
 }
 
 .items-grid.grid {
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 .items-grid.compact {
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 0.75rem;
 }
 
@@ -555,35 +599,51 @@
   }
 }
 
-/* Bookmark Items - Grid View */
+/* Bookmark Items - Grid View (Notes Card Style) */
 .bookmark-item.grid-view {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  border-radius: 18px;
+  padding: 1.25rem;
+  padding-left: 1.5rem;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-align: center;
-  color: rgba(0, 0, 0, 0.8);
+  transition: all 0.2s ease;
+  background: var(--card-background, #ffffff);
+  border: 1px solid var(--border-color, #e1e4e8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  aspect-ratio: 1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  background-size: cover;
-  background-position: center;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  min-height: 160px;
+  aspect-ratio: unset;
+}
+
+/* Side color banner */
+.bookmark-item.grid-view::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: currentColor;
+  transition: width 0.2s ease;
 }
 
 .bookmark-item.grid-view.compact {
-  padding: 1.5rem 0.75rem;
+  padding: 1rem;
+  padding-left: 1.25rem;
+  min-height: 140px;
 }
 
 .bookmark-item.grid-view:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  border-color: rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--border-color-hover, #d0d7de);
+  background: var(--hover-background, #f6f8fa);
+}
+
+.bookmark-item.grid-view:hover::before {
+  width: 6px;
 }
 
 .bookmark-item.grid-view:active {
@@ -601,32 +661,34 @@
 }
 
 
-.item-icon {
+.bookmark-item.grid-view .item-icon {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 0.75rem;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
-  transition: transform 0.3s ease;
-  color: rgba(0, 0, 0, 0.7);
+  justify-content: flex-start;
+  margin-bottom: 0.5rem;
+  transition: transform 0.2s ease;
+  color: inherit;
+  width: 24px;
+  height: 24px;
 }
 
 .bookmark-item.grid-view:hover .item-icon {
   transform: scale(1.1);
 }
 
-.item-title {
+.bookmark-item.grid-view .item-title {
   font-size: 1rem;
   font-weight: 600;
-  margin: 0;
-  color: rgba(0, 0, 0, 0.85);
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary, #24292e);
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+  text-align: left;
+  line-height: 1.4;
 }
 
 .bookmark-item.grid-view.compact .item-title {
@@ -634,14 +696,18 @@
   -webkit-line-clamp: 1;
 }
 
-.item-subtitle {
-  font-size: 0.75rem;
-  margin: 0.25rem 0 0;
-  opacity: 0.8;
+.bookmark-item.grid-view .item-subtitle {
+  font-size: 0.813rem;
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary, #57606a);
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.5;
+  text-align: left;
+  flex: 1;
 }
 
 /* Bookmark Items - List View - Rectangle Cards */
@@ -732,7 +798,8 @@
   letter-spacing: -0.025em;
 }
 
-.item-details p {
+.item-details p,
+.item-details .item-url {
   margin: 0.25rem 0 0;
   font-size: 0.813rem;
   color: var(--text-secondary);
@@ -1342,10 +1409,29 @@
   .bookmark-header {
     padding: 0.75rem !important;
     gap: 0.5rem !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   .bookmark-title {
     font-size: 1.25rem !important;
+    flex-shrink: 0;
+  }
+  
+  /* Keep all controls in one row */
+  .header-right {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 0.375rem !important;
+    flex-shrink: 0;
+  }
+  
+  .view-filters,
+  .action-buttons {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 0.375rem !important;
   }
   
   /* Make buttons icon-only on mobile */
@@ -1358,6 +1444,7 @@
     padding: 0;
     min-width: 36px;
     border-radius: 10px;
+    flex-shrink: 0;
   }
   
   /* Hide button text on mobile */
@@ -1378,11 +1465,22 @@
 @media (max-width: 480px) {
   .bookmark-header {
     padding: 0.5rem !important;
-    gap: 0.375rem !important;
+    gap: 0.25rem !important;
+    flex-wrap: nowrap !important;
   }
   
   .bookmark-title {
     font-size: 1rem !important;
+  }
+  
+  /* Keep controls in one row */
+  .header-right {
+    gap: 0.25rem !important;
+  }
+  
+  .view-filters,
+  .action-buttons {
+    gap: 0.25rem !important;
   }
   
   /* Make buttons smaller on very small screens */
@@ -1767,4 +1865,84 @@
   border-color: #374151;
   color: #6b7280;
   opacity: 0.5;
+}
+/* Card Footer Section */
+.bookmark-item.grid-view .item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color, #e1e4e8);
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #8b949e);
+}
+
+.bookmark-item.grid-view.compact .item-footer {
+  padding-top: 0.5rem;
+  font-size: 0.7rem;
+}
+
+/* Update hover state for footer */
+.bookmark-item.grid-view:hover .item-footer {
+  border-top-color: var(--border-color-hover, #d0d7de);
+}
+
+/* Ensure proper layout for content */
+.bookmark-item.grid-view .item-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Tablet responsive */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .items-grid.grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  
+  .items-grid.compact {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+/* Additional mobile header fixes */
+@media (max-width: 768px) {
+  /* Prevent wrapping and enable horizontal scroll */
+  .bookmark-header {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100%;
+    min-width: 0;
+  }
+  
+  /* Hide scrollbar but keep functionality */
+  .bookmark-header::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .bookmark-header {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  /* Ensure buttons container stays horizontal */
+  .header-right {
+    display: inline-flex !important;
+    align-items: center !important;
+    min-width: max-content;
+  }
+  
+  .view-filters {
+    display: inline-flex !important;
+    min-width: max-content;
+  }
+  
+  .action-buttons {
+    display: inline-flex !important;
+    min-width: max-content;
+  }
 }

@@ -185,6 +185,12 @@
   box-shadow: 0 0 0 3px var(--primary-light);
 }
 
+/* Focus visible for keyboard navigation */
+.search-input:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
 .search-input::placeholder {
   color: var(--text-tertiary);
   font-weight: 400;
@@ -887,18 +893,56 @@
 .suggestions-content {
   max-height: 240px;
   overflow-y: auto;
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+/* Custom scrollbar for suggestions */
+.suggestions-content::-webkit-scrollbar {
+  width: 8px;
+  position: absolute;
+  left: 0;
+}
+
+.suggestions-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.suggestions-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.suggestions-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
 
 .suggestion-item {
   padding: 12px 16px;
+  padding-left: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
 }
 
 .suggestion-item:hover {
   background: var(--button-hover-bg);
-  padding-left: 20px;
+  padding-left: 24px;
+}
+
+.suggestion-item.selected {
+  background: var(--primary-light);
+  border-left: 3px solid var(--primary-color);
+  padding-left: 17px;
+}
+
+.suggestion-item.selected:hover {
+  background: var(--primary-light);
+  padding-left: 21px;
 }
 
 .suggestion-item:last-child {
@@ -920,7 +964,7 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  backdrop-filter: blur(2px);
+  /* Removed backdrop-filter to prevent blur effect */
   animation: backdropFadeIn 0.2s ease-out;
 }
 
@@ -996,19 +1040,32 @@
   max-height: 400px;
   overflow-y: auto;
   padding: 8px;
+  padding-left: 12px;
+  position: relative;
+  direction: rtl; /* Places scrollbar on left */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.search-dropdown-content > * {
+  direction: ltr; /* Reset direction for content */
 }
 
 .search-dropdown-content::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  position: absolute;
+  left: 0;
 }
 
 .search-dropdown-content::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
 }
 
 .search-dropdown-content::-webkit-scrollbar-thumb {
   background: var(--border-color);
-  border-radius: 3px;
+  border-radius: 4px;
+  border: 1px solid transparent;
 }
 
 .search-dropdown-content::-webkit-scrollbar-thumb:hover {
@@ -1051,8 +1108,14 @@
 .search-result-item.selected {
   background: var(--primary-light);
   border-color: var(--primary-color);
-  transform: translateY(-2px);
+  border-left: 3px solid var(--primary-color);
+  transform: translateX(2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  padding-left: 17px;
+}
+
+.search-result-item.selected:hover {
+  transform: translateX(4px) translateY(-2px);
 }
 
 .search-result-item:hover::before,
@@ -1160,7 +1223,12 @@
   
   .search-result-item:hover,
   .search-result-item.selected {
-    transform: none;
+    transform: translateX(2px);
+    border-left: 3px solid var(--primary-color);
+  }
+  
+  .search-result-item.selected:hover {
+    transform: translateX(3px);
   }
   
   .result-icon {
