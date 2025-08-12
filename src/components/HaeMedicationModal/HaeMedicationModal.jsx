@@ -136,7 +136,7 @@ const HaeMedicationModal = ({
     <div className="modal-prescription-profile">
       <div className="modal-profile-header">
         <h1 className="modal-profile-title">
-          {isEditing ? (medication?.isNew ? 'NEW MEDICATION' : `EDITING: ${medication?.drug?.toUpperCase() || 'MEDICATION'}`) : (medication?.drug?.toUpperCase() || 'MEDICATION')}
+          {isEditing ? (medication?.isNew ? 'NEW MEDICATION' : `EDITING: ${medication?.brand?.toUpperCase() || 'MEDICATION'}`) : (medication?.brand?.toUpperCase() || 'MEDICATION')}
         </h1>
         <button className="modal-header-back-button" onClick={onClose}>
           <ArrowLeft size={18} />
