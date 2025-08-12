@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
+    "@handsontable/react": "^16.0.1",
     "@tiptap/extension-image": "^2.25.0",
     "@tiptap/extension-table": "^2.25.0",
     "@tiptap/extension-table-cell": "^2.25.0",
@@ -20,6 +21,7 @@
     "@tiptap/starter-kit": "^2.25.0",
     "firebase": "^11.9.1",
     "gsap": "^3.13.0",
+    "handsontable": "^16.0.1",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "liquidfun-wasm": "^7.0.0",
@@ -29,6 +31,7 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",
+    "react-spreadsheet": "^0.10.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

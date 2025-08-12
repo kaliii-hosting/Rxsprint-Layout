@@ -17,6 +17,7 @@
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   height: 100vh;
   width: 100%;
+  max-width: 100vw;
   margin: 0;
   padding: 0;
   display: flex;
@@ -24,6 +25,21 @@
   overflow: hidden;
   position: relative;
   background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  box-sizing: border-box;
+}
+
+/* When editing mode is active, make the page scrollable */
+.notes-page.editing-mode {
+  overflow-y: auto;
+}
+
+/* Mobile viewport fixes */
+@media (max-width: 768px) {
+  .notes-page {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    overflow-x: hidden;
+  }
 }
 
 /* Full-width content fix */
@@ -33,54 +49,331 @@
   padding: 0;
 }
 
-/* Table styles for note content display */
-.note-content-wrapper table {
+/* Table styles for note content display - Excel paste support */
+.note-content-wrapper table,
+.tiptap-editor table {
   border-collapse: collapse;
-  width: 100%;
-  margin: 1em 0;
+  width: auto !important;
+  min-width: 100%;
+  margin: 0;
   font-size: 0.9375rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  overflow: hidden;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
+  table-layout: auto;
+  background: var(--bg-primary);
+  display: table !important;
 }
 
 .note-content-wrapper table th,
-.note-content-wrapper table td {
+.note-content-wrapper table td,
+.tiptap-editor table th,
+.tiptap-editor table td {
   border: 1px solid var(--border-color);
-  padding: 12px 16px;
+  padding: 10px 14px;
   text-align: left;
+  white-space: nowrap;
+  min-width: 100px;
+  position: relative;
 }
 
-.note-content-wrapper table th {
-  background: var(--bg-tertiary);
+.note-content-wrapper table th,
+.tiptap-editor table th {
+  background: linear-gradient(135deg, #FF6900 0%, #ff7a1a 100%);
   font-weight: 600;
-  color: var(--text-primary);
-  border-bottom: 2px solid var(--border-color);
+  color: white;
+  border-bottom: 2px solid #FF6900;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.note-content-wrapper table tr:nth-child(even) {
+.note-content-wrapper table tr:nth-child(even) td,
+.tiptap-editor table tr:nth-child(even) td {
   background: var(--bg-secondary);
 }
 
-.note-content-wrapper table tr:hover {
-  background: var(--bg-hover);
+.note-content-wrapper table tr:hover td,
+.tiptap-editor table tr:hover td {
+  background: rgba(255, 105, 0, 0.05);
 }
 
-/* Responsive table wrapper */
-.note-content-wrapper .tableWrapper {
-  overflow-x: auto;
-  margin: 1em 0;
+/* Responsive table wrapper with horizontal scroll - for both view and edit modes */
+.note-content-wrapper .tableWrapper,
+.tiptap-editor .tableWrapper,
+.note-content .tableWrapper,
+.note-view-content .tableWrapper {
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
   -webkit-overflow-scrolling: touch;
+  border: none;
+  border-radius: 0;
+  background: var(--bg-primary);
+  box-shadow: none;
+  width: 100% !important;
+  height: calc(100vh - 150px) !important;
+  max-width: 100vw !important;
+  max-height: calc(100vh - 150px) !important;
+  position: relative !important;
 }
 
+/* Force scrollbars to always be visible for table wrappers */
+.note-content-wrapper .tableWrapper,
+.note-content .tableWrapper,
+.note-view-content .tableWrapper {
+  overflow: auto !important;
+  scrollbar-width: auto !important;
+  scrollbar-color: #FF6900 var(--bg-tertiary) !important;
+}
+
+/* Custom scrollbar for tables - always visible in both view and edit modes */
+.note-content-wrapper .tableWrapper::-webkit-scrollbar,
+.tiptap-editor .tableWrapper::-webkit-scrollbar,
+.note-content-wrapper::-webkit-scrollbar,
+.note-content::-webkit-scrollbar,
+.note-view-content .tableWrapper::-webkit-scrollbar {
+  width: 14px !important;
+  height: 14px !important;
+  background: var(--bg-secondary);
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.note-content-wrapper .tableWrapper::-webkit-scrollbar-track,
+.tiptap-editor .tableWrapper::-webkit-scrollbar-track,
+.note-content-wrapper::-webkit-scrollbar-track,
+.note-content::-webkit-scrollbar-track,
+.note-view-content .tableWrapper::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  margin: 2px;
+  visibility: visible !important;
+}
+
+.note-content-wrapper .tableWrapper::-webkit-scrollbar-thumb,
+.tiptap-editor .tableWrapper::-webkit-scrollbar-thumb,
+.note-content-wrapper::-webkit-scrollbar-thumb,
+.note-content::-webkit-scrollbar-thumb,
+.note-view-content .tableWrapper::-webkit-scrollbar-thumb {
+  background: #FF6900;
+  border-radius: 6px;
+  transition: background 0.3s ease;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  visibility: visible !important;
+}
+
+.note-content-wrapper .tableWrapper::-webkit-scrollbar-thumb:hover,
+.tiptap-editor .tableWrapper::-webkit-scrollbar-thumb:hover,
+.note-content-wrapper::-webkit-scrollbar-thumb:hover,
+.note-content::-webkit-scrollbar-thumb:hover,
+.note-view-content .tableWrapper::-webkit-scrollbar-thumb:hover {
+  background: #ff7a1a;
+}
+
+.note-content-wrapper .tableWrapper::-webkit-scrollbar-corner,
+.tiptap-editor .tableWrapper::-webkit-scrollbar-corner,
+.note-content::-webkit-scrollbar-corner,
+.note-view-content .tableWrapper::-webkit-scrollbar-corner {
+  background: var(--bg-secondary);
+  visibility: visible !important;
+}
+
+/* Read-only table indication */
+.note-content-wrapper table,
+.tiptap-editor[contenteditable="false"] table {
+  user-select: auto;
+  cursor: default;
+}
+
+.note-content-wrapper table td,
+.note-content-wrapper table th,
+.tiptap-editor[contenteditable="false"] table td,
+.tiptap-editor[contenteditable="false"] table th {
+  cursor: default;
+  user-select: text;
+}
+
+/* Excel-style formatting preservation */
+.note-content-wrapper table td[style*="text-align: right"],
+.tiptap-editor table td[style*="text-align: right"] {
+  text-align: right !important;
+}
+
+.note-content-wrapper table td[style*="text-align: center"],
+.tiptap-editor table td[style*="text-align: center"] {
+  text-align: center !important;
+}
+
+/* Full-page table display */
+.note-content-wrapper:has(table) {
+  padding: 0 !important;
+  overflow: hidden !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.note-content-wrapper > *:has(table),
+.note-content-wrapper > .tableWrapper {
+  flex: 1;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+}
+
+/* Dark theme table adjustments */
+[data-theme="dark"] .note-content-wrapper table,
+[data-theme="dark"] .tiptap-editor table {
+  background: var(--card-background);
+  box-shadow: none;
+}
+
+[data-theme="dark"] .note-content-wrapper table th,
+[data-theme="dark"] .tiptap-editor table th {
+  background: linear-gradient(135deg, #FF6900 0%, #cc5500 100%);
+}
+
+[data-theme="dark"] .note-content-wrapper table tr:hover td,
+[data-theme="dark"] .tiptap-editor table tr:hover td {
+  background: rgba(255, 105, 0, 0.1);
+}
+
+/* Excel Viewer Integration */
+.excel-viewer-wrapper {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.excel-viewer-wrapper.view-mode {
+  margin: 1rem 0 2rem 0;
+}
+
+.excel-viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, #FF6900 0%, #ff7a1a 100%);
+  color: white;
+  border-radius: 8px 8px 0 0;
+}
+
+.excel-viewer-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.remove-excel-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.remove-excel-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* Full width/height for Excel viewer in notes */
+.note-content-edit-area .excel-viewer-container {
+  height: 500px;
+  width: 100%;
+}
+
+.note-content-wrapper .excel-viewer-container {
+  height: 500px;
+  width: 100%;
+}
+
+/* Mobile adjustments for Excel viewer */
 @media (max-width: 768px) {
-  .note-content-wrapper table {
+  .excel-viewer-wrapper {
+    margin: 1rem -1rem;
+    border-radius: 0;
+  }
+  
+  .excel-viewer-header {
+    border-radius: 0;
+    padding: 0.75rem 1rem;
+  }
+  
+  .note-content-edit-area .excel-viewer-container,
+  .note-content-wrapper .excel-viewer-container {
+    height: 400px;
+  }
+}
+
+/* Mobile toolbar adjustments */
+@media (max-width: 768px) {
+  .editor-toolbar-container {
+    padding: 8px 12px;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .editor-toolbar-main {
+    flex-wrap: nowrap;
+    min-width: max-content;
+  }
+  
+  .toolbar-actions {
+    flex-shrink: 0;
+  }
+  
+  .toolbar-action-btn {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    min-width: auto;
+  }
+  
+  .toolbar-action-btn span {
+    display: none;
+  }
+  
+  .toolbar-action-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Mobile table adjustments */
+@media (max-width: 768px) {
+  .note-content-wrapper table,
+  .tiptap-editor table {
     font-size: 0.875rem;
   }
   
   .note-content-wrapper table th,
-  .note-content-wrapper table td {
+  .note-content-wrapper table td,
+  .tiptap-editor table th,
+  .tiptap-editor table td {
     padding: 8px 12px;
+    min-width: 80px;
+  }
+  
+  .note-content-wrapper .tableWrapper,
+  .tiptap-editor .tableWrapper {
+    margin: 0;
+    border-radius: 0;
+    max-width: 100%;
   }
 }
 
@@ -183,6 +476,8 @@
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .notes-list-header {
@@ -268,12 +563,27 @@
 /* Grid Layout for Notes */
 .notes-grid-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 1rem;
   padding: 0;
   width: 100%;
   height: auto;
   min-height: min-content;
+  container-type: inline-size;
+  box-sizing: border-box;
+}
+
+/* Container queries for better responsive behavior */
+@container (max-width: 600px) {
+  .notes-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container (min-width: 601px) and (max-width: 900px) {
+  .notes-grid-layout {
+    grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  }
 }
 
 /* Grid Card Design - With Orange Banner */
@@ -287,6 +597,8 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   height: 220px;
   background: var(--card-background, #ffffff);
   border: 1px solid var(--border-color, #e1e4e8);
@@ -394,6 +706,8 @@
   display: flex;
   align-items: center;
   height: 60px;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 0 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 }
@@ -407,6 +721,8 @@
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 /* Banner pills in card preview */
@@ -574,13 +890,13 @@
 /* Responsive Layout - Banner Style */
 @media (max-width: 1400px) {
   .notes-grid-layout {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   }
 }
 
 @media (max-width: 1200px) {
   .notes-grid-layout {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
     gap: 1rem;
   }
   
@@ -591,7 +907,7 @@
 
 @media (max-width: 992px) {
   .notes-grid-layout {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
     gap: 0.875rem;
   }
   
@@ -602,7 +918,7 @@
 
 @media (max-width: 768px) {
   .notes-grid-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
     gap: 1rem;
     padding: 0.5rem;
   }
@@ -701,6 +1017,7 @@
     grid-template-columns: 1fr;
     gap: 0.75rem;
     padding: 0.375rem;
+    width: 100%;
   }
   
   .notes-main-list {
@@ -812,7 +1129,7 @@
 /* Landscape orientation for mobile */
 @media (max-width: 768px) and (orientation: landscape) {
   .notes-grid-layout {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(min(45%, 200px), 1fr));
     gap: 0.75rem;
   }
   
@@ -839,7 +1156,7 @@
 /* Small landscape phones */
 @media (max-width: 640px) and (orientation: landscape) and (max-height: 420px) {
   .notes-grid-layout {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(min(45%, 180px), 1fr));
     gap: 0.5rem;
   }
   
@@ -1952,11 +2269,16 @@
   flex: 1;
   padding: 0;
   overflow-y: auto;
+  overflow-x: auto;
   width: 100%;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
   background: var(--bg-primary);
+  height: calc(100vh - 120px);
+  height: calc(100vh - 120px);
+  box-sizing: border-box;
 }
 
 .note-textarea {
@@ -2001,9 +2323,10 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   padding: 2.5rem;
-  max-width: 100%;
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   margin: 0;
+  overflow: visible;
 }
 
 @media (max-width: 768px) {
@@ -2021,19 +2344,30 @@
 .note-content-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0;
   font-size: 1rem;
   line-height: 1.8;
   color: var(--text-primary);
-  padding: 2.5rem;
+  padding: 2rem;
   max-width: 100%;
   width: 100%;
+  height: 100%;
   margin: 0;
+  overflow: auto;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Remove padding when table is present */
+.note-content-wrapper:has(.tableWrapper),
+.note-content-wrapper:has(table) {
+  padding: 0 !important;
+  overflow: hidden !important;
 }
 
 @media (max-width: 768px) {
   .note-content-wrapper {
-    padding: 1.5rem;
+    padding: 0;
   }
 }
 
@@ -2466,12 +2800,15 @@
   }
   
   .note-editor {
-    padding: 1.25rem;
-    height: calc(100vh - 180px);
+    padding: 0;
+    height: calc(100vh - 140px);
     overflow-y: auto;
-    max-width: 100%;
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
     display: flex;
     flex-direction: column;
+    position: relative;
   }
   
   .no-note-selected {
@@ -2524,7 +2861,12 @@
   /* Mobile sidebar styles removed */
   
   .note-editor {
-    padding: 1rem;
+    padding: 0;
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0;
+    height: calc(100vh - 120px);
+    overflow-x: hidden;
   }
   
   .content-header {
@@ -2690,6 +3032,17 @@
 @media (max-width: 768px) {
   .note-editor .rich-text-editor {
     min-height: 300px;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .note-editor .ProseMirror {
+    padding: 1rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
   }
 }
 
@@ -2900,11 +3253,14 @@
 .editor-banner-controls-container {
   padding: 1rem;
   width: 100%;
-  margin: 0 0 2rem 0;
-  background: var(--bg-primary);
+  margin: 0;
+  background: var(--bg-secondary, #f9fafb);
   border-radius: 0;
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 99;
 }
 
 .banner-input-row {
@@ -2919,7 +3275,9 @@
   justify-content: center;
   align-items: center;
   gap: 1rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  padding: 0.5rem 0;
+  width: 100%;
 }
 
 .content-banners-container {
@@ -2935,11 +3293,34 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  padding: 1rem 4rem 2rem 4rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  overflow: hidden;
+  padding: 1rem 2rem;
   width: 100%;
+  max-width: 100%;
+  height: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Remove padding when table present */
+.note-content-edit-area:has(.tableWrapper),
+.note-content-edit-area:has(table) {
+  padding: 0 !important;
+}
+
+/* Rich text editor full height for tables */
+.note-content-edit-area .rich-text-editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-content-edit-area:has(.tableWrapper) .rich-text-editor,
+.note-content-edit-area:has(table) .rich-text-editor {
+  border: none !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
 }
 
 /* Banners in edit mode - positioned at top of content */
@@ -3573,13 +3954,18 @@ div.editor-banner-controls-container div.banner-controls-row button.add-banner-b
   }
   
   .banner-controls-row {
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.75rem;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 0.5rem;
   }
   
   .banner-controls-row button {
-    width: 100%;
+    width: auto;
+    min-width: 120px;
     justify-content: center;
+    flex-shrink: 0;
   }
   
   .edit-banners-list {
@@ -3588,6 +3974,10 @@ div.editor-banner-controls-container div.banner-controls-row button.add-banner-b
   
   .note-content-edit-area {
     padding: 0.5rem 1rem 1rem 1rem;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
   
   .content-banners-container.edit-mode {
@@ -3831,7 +4221,9 @@ div.editor-banner-controls-container div.banner-controls-row button.add-banner-b
   .notes-grid-layout {
     grid-template-columns: 1fr;
     gap: 0.75rem;
-    padding: 0;
+    padding: 0.5rem;
+    width: calc(100% - 1rem);
+    margin: 0 auto;
   }
   
   /* Card styles mobile */
@@ -3866,7 +4258,7 @@ div.editor-banner-controls-container div.banner-controls-row button.add-banner-b
 /* Tablet styles */
 @media (min-width: 769px) and (max-width: 1024px) {
   .notes-grid-layout {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
   }
 }
 
@@ -4027,4 +4419,875 @@ div.editor-banner-controls-container div.banner-controls-row button.add-banner-b
 
 .note-context-menu .context-menu-item.favorite:hover {
   background: linear-gradient(90deg, rgba(255, 184, 0, 0.1) 0%, rgba(255, 184, 0, 0.05) 100%);
+}
+
+/* Spreadsheet Styles */
+.spreadsheet-controls-container {
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+}
+
+.add-spreadsheet-btn,
+.import-excel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-spreadsheet-btn:hover,
+.import-excel-btn:hover {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.note-spreadsheets-container {
+  width: max-content;
+  min-width: 100%;
+  padding: 20px;
+  background: var(--bg-secondary);
+  box-sizing: border-box;
+}
+
+.note-spreadsheets-container.view-mode {
+  width: max-content;
+  min-width: 100%;
+  padding: 20px;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.spreadsheet-wrapper {
+  width: max-content;
+  min-width: 100%;
+  margin-bottom: 30px;
+  background: white;
+  border-radius: 12px;
+  overflow: visible;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.spreadsheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 2px solid #dee2e6;
+}
+
+.spreadsheet-header.view {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-bottom: none;
+}
+
+.spreadsheet-header.view h3 {
+  margin: 0;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.spreadsheet-name-input {
+  flex: 1;
+  padding: 6px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  background: white;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.spreadsheet-name-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.remove-spreadsheet-btn {
+  padding: 6px;
+  background: transparent;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-spreadsheet-btn:hover {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.note-spreadsheet {
+  border: none \!important;
+  box-shadow: none \!important;
+  margin: 0 \!important;
+  border-radius: 0 \!important;
+}
+
+.note-spreadsheet.view {
+  pointer-events: auto;
+  user-select: text;
+}
+
+/* Override Handsontable styles for Notes integration */
+.note-spreadsheets-container .handsontable {
+  width: 100% \!important;
+}
+
+.note-spreadsheets-container .ht_master {
+  overflow-x: auto \!important;
+  overflow-y: auto \!important;
+}
+
+.note-spreadsheets-container .wtHolder {
+  width: 100% \!important;
+  overflow-x: auto \!important;
+}
+
+/* Editor Toolbar Container */
+.editor-toolbar-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-primary, white);
+  border-bottom: 2px solid #e5e7eb;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  flex-shrink: 0;
+  min-height: 56px;
+}
+
+.editor-toolbar-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+  width: 100%;
+  min-width: max-content;
+}
+
+.editor-toolbar-container .toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border-right: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  height: 32px;
+}
+
+.editor-toolbar-container .toolbar-group:last-child {
+  border-right: none;
+}
+
+.editor-toolbar-container .toolbar-btn {
+  padding: 6px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-toolbar-container .toolbar-btn:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.editor-toolbar-container .toolbar-btn.active {
+  background: #3b82f6;
+  color: white;
+}
+
+.toolbar-actions {
+  margin-left: auto;
+  border-right: none !important;
+  gap: 8px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  height: 32px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toolbar-action-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #1f2937;
+}
+
+.toolbar-action-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.toolbar-action-btn input[type="file"] {
+  display: none;
+}
+
+/* Note content with full width */
+.notes-content {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+}
+
+.note-editor {
+  width: 100%;
+  max-width: 100%;
+}
+
+.note-content-edit-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: auto;
+  min-height: 0;
+  padding: 20px;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Full width spreadsheet container */
+.note-spreadsheets-container {
+  width: 100%;
+  margin: 0;
+  padding: 20px 0;
+  background: transparent;
+}
+
+.note-spreadsheets-container.view-mode {
+  width: 100%;
+  margin: 0;
+  padding: 20px 0;
+  background: transparent;
+}
+
+.spreadsheet-wrapper {
+  width: 100%;
+  margin-bottom: 30px;
+  background: white;
+  border-radius: 8px;
+  overflow: visible;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure spreadsheet uses full width */
+.spreadsheet-editor-container {
+  width: 100% \!important;
+  position: relative;
+  background: var(--card-bg);
+  border-radius: 8px;
+  overflow: visible;
+  margin: 0;
+}
+
+.spreadsheet-editor-container .handsontable {
+  width: 100% \!important;
+}
+
+.spreadsheet-editor-container .ht_master {
+  width: 100% \!important;
+  overflow: visible \!important;
+}
+
+.spreadsheet-editor-container .ht_clone_top,
+.spreadsheet-editor-container .ht_clone_left,
+.spreadsheet-editor-container .ht_clone_top_left_corner {
+  width: auto \!important;
+}
+
+/* Banner controls - now collapsible */
+.editor-banner-controls-container {
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 20px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 200px;
+    opacity: 1;
+  }
+}
+
+/* Fix scrolling for imported spreadsheets */
+.note-editor.has-spreadsheet {
+  overflow-y: auto \!important;
+  height: calc(100vh - 120px);
+}
+
+.note-content-edit-area.has-spreadsheet {
+  overflow-y: visible;
+  min-height: 100%;
+  height: auto;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .editor-toolbar-container {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme="dark"] .editor-toolbar-container .toolbar-btn {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .editor-toolbar-container .toolbar-btn:hover {
+  background: #374151;
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .toolbar-action-btn {
+  background: #1f2937;
+  border-color: #374151;
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .toolbar-action-btn:hover {
+  background: #374151;
+  color: #f3f4f6;
+}
+
+/* Remove all padding from main content area for full-width */
+.notes-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 \!important;
+  margin: 0 \!important;
+  width: 100% \!important;
+  max-width: 100% \!important;
+}
+
+.note-editor {
+  padding: 0 \!important;
+  margin: 0 \!important;
+  width: 100% \!important;
+  max-width: 100% \!important;
+}
+
+/* Full viewport width for spreadsheets */
+.note-spreadsheets-container {
+  width: 100vw \!important;
+  margin-left: calc(50% - 50vw) \!important;
+  margin-right: calc(50% - 50vw) \!important;
+  padding: 20px \!important;
+  box-sizing: border-box \!important;
+}
+
+.spreadsheet-wrapper {
+  width: calc(100vw - 40px) \!important;
+  max-width: calc(100vw - 40px) \!important;
+  margin: 0 auto 30px \!important;
+}
+
+/* Ensure RichTextEditor content is properly contained */
+.rich-text-editor {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Fix scrolling when spreadsheet is present */
+.note-editor.has-spreadsheet {
+  overflow-y: auto \!important;
+  overflow-x: hidden \!important;
+}
+
+.note-content-edit-area.has-spreadsheet {
+  overflow-y: visible \!important;
+  height: auto \!important;
+  min-height: calc(100vh - 200px);
+}
+
+/* Page-level scrolling for spreadsheets */
+.notes-page {
+  overflow-x: auto \!important;
+  overflow-y: auto \!important;
+}
+
+.notes-layout {
+  width: max-content;
+  min-width: 100%;
+}
+
+/* Ensure spreadsheet displays all data */
+.note-editor.has-spreadsheet {
+  overflow-x: auto \!important;
+  overflow-y: auto \!important;
+  width: max-content;
+  min-width: 100%;
+}
+
+.note-content-edit-area.has-spreadsheet {
+  width: max-content \!important;
+  min-width: 100% \!important;
+}
+
+/* Spreadsheet specific sizing */
+.spreadsheet-editor-container .handsontable {
+  width: auto \!important;
+  min-width: 100% \!important;
+}
+
+.spreadsheet-editor-container .ht_master table {
+  width: auto \!important;
+  min-width: 100% \!important;
+}
+
+/* Remove max-width constraints */
+.note-spreadsheets-container .spreadsheet-wrapper {
+  max-width: none \!important;
+}
+
+/* Full data visibility */
+.spreadsheet-editor-container .ht_master .htCore {
+  width: auto \!important;
+  min-width: 100% \!important;
+}
+
+/* Ensure RichTextEditor doesnt expand page width */
+.rich-text-editor {
+  max-width: min(1200px, 100%);
+  width: 100%;
+}
+
+/* View mode full width */
+.note-content .note-spreadsheets-container {
+  width: max-content \!important;
+  min-width: 100% \!important;
+}
+
+/* Ensure headers are visible */
+.spreadsheet-editor-container .ht_clone_top,
+.spreadsheet-editor-container .ht_clone_left,
+.spreadsheet-editor-container .ht_clone_corner {
+  position: sticky \!important;
+  z-index: 10;
+}
+
+/* Final adjustments for full spreadsheet visibility */
+.notes-content {
+  width: 100%;
+  min-width: 100%;
+  overflow: visible \!important;
+}
+
+/* Ensure page can scroll horizontally */
+body {
+  overflow-x: auto \!important;
+}
+
+/* Remove width constraints on main containers */
+.page-container {
+  max-width: none \!important;
+  width: 100% \!important;
+}
+
+/* Spreadsheet should show all data */
+.spreadsheet-editor-container .ht_master table.htCore {
+  table-layout: auto \!important;
+}
+
+/* Ensure cells are visible */
+.spreadsheet-editor-container td,
+.spreadsheet-editor-container th {
+  white-space: nowrap \!important;
+}
+
+/* Fix horizontal scrolling for spreadsheets */
+.note-spreadsheets-container {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.spreadsheet-wrapper {
+  width: fit-content;
+  min-width: 100%;
+  margin-bottom: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: visible;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.spreadsheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+
+.spreadsheet-header.view {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-bottom: none;
+}
+
+.spreadsheet-header.view h3 {
+  margin: 0;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.spreadsheet-name-input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  background: white;
+  color: #1f2937;
+}
+
+.remove-spreadsheet-btn {
+  padding: 4px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-spreadsheet-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Ensure note editor allows horizontal scroll */
+.note-editor {
+  overflow-x: auto \!important;
+  overflow-y: auto \!important;
+}
+
+.note-content-edit-area {
+  width: fit-content;
+  min-width: 100%;
+  overflow: visible;
+}
+
+/* Remove constraints that prevent scrolling */
+.notes-content {
+  overflow: visible \!important;
+  width: 100%;
+}
+
+/* Comprehensive Mobile Fixes for Note Editor */
+@media (max-width: 768px) {
+  /* Main containers */
+  .notes-page,
+  .notes-content,
+  .note-editor,
+  .note-content-edit-area {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  
+  /* Note editor specific */
+  .note-editor {
+    padding: 0;
+    height: calc(100vh - 120px);
+    height: calc(100dvh - 120px);
+  }
+  
+  /* Content edit area */
+  .note-content-edit-area {
+    padding: 1rem;
+    width: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Rich text editor */
+  .note-editor .rich-text-editor,
+  .note-editor .ProseMirror {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+  
+  /* Excel viewer */
+  .excel-viewer-wrapper {
+    width: calc(100% + 2rem);
+    margin: 1rem -1rem;
+  }
+  
+  /* Banners */
+  .content-banners-container {
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  /* Images */
+  .note-content-wrapper img,
+  .ProseMirror img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Tables */
+  .note-content-wrapper .tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  /* Toolbar */
+  .editor-toolbar-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Hide horizontal scrollbar on body */
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* Small mobile specific */
+@media (max-width: 480px) {
+  .note-content-edit-area {
+    padding: 0.75rem;
+  }
+  
+  .note-editor .ProseMirror {
+    padding: 0.75rem;
+  }
+  
+  .editor-toolbar-container {
+    padding: 6px 8px;
+  }
+}
+
+/* FORCE FULL-SCREEN TABLE DISPLAY - MAXIMUM PRIORITY */
+/* These rules override all other styles for tables */
+body .notes-page .note-content-wrapper table,
+body .notes-page .tiptap-editor table,
+body .notes-page .ProseMirror table {
+  width: auto !important;
+  min-width: 100% !important;
+  margin: 0 !important;
+  display: table !important;
+}
+
+body .notes-page .note-content-wrapper .tableWrapper,
+body .notes-page .tiptap-editor .tableWrapper,
+body .notes-page .ProseMirror .tableWrapper {
+  position: relative !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: calc(100vh - 150px) !important;
+  max-width: 100vw !important;
+  max-height: calc(100vh - 150px) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Force visible scrollbars in both view and edit modes */
+body .notes-page .tableWrapper,
+body .notes-page .note-content .tableWrapper,
+body .notes-page .note-view-content .tableWrapper,
+body .notes-page .note-content-wrapper .tableWrapper {
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overflow-x: scroll !important;
+  overflow-y: scroll !important;
+}
+
+body .notes-page .tableWrapper::-webkit-scrollbar {
+  width: 14px !important;
+  height: 14px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body .notes-page .tableWrapper::-webkit-scrollbar-track {
+  background: #f1f1f1 !important;
+  border-radius: 0 !important;
+  visibility: visible !important;
+}
+
+body .notes-page .tableWrapper::-webkit-scrollbar-thumb {
+  background: #FF6900 !important;
+  border-radius: 7px !important;
+  visibility: visible !important;
+  border: 2px solid #f1f1f1 !important;
+}
+
+body .notes-page .tableWrapper::-webkit-scrollbar-thumb:hover {
+  background: #ff5500 !important;
+}
+
+body .notes-page .tableWrapper::-webkit-scrollbar-corner {
+  background: #f1f1f1 !important;
+}
+
+/* Remove padding from containers when table exists */
+body .notes-page .note-content-wrapper:has(table),
+body .notes-page .note-content-wrapper:has(.tableWrapper),
+body .notes-page .note-content-edit-area:has(table),
+body .notes-page .note-content-edit-area:has(.tableWrapper) {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+body .notes-page .ProseMirror:has(table),
+body .notes-page .ProseMirror:has(.tableWrapper) {
+  padding: 0 !important;
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
+/* Ensure editor content fills space */
+body .notes-page .editor-content:has(.tableWrapper) {
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
+/* Make table cells visible */
+body .notes-page table th,
+body .notes-page table td {
+  white-space: nowrap !important;
+  min-width: 100px !important;
+  padding: 10px 14px !important;
+}
+
+/* Page level scrolling */
+body {
+  overflow-x: auto \!important;
+}
+
+.notes-page {
+  overflow-x: auto \!important;
+  min-width: 100%;
+}
+
+
+/* FORCE SCROLLBARS IN VIEW MODE */
+/* Ensure tables in view-only mode have visible scrollbars */
+.note-content .tableWrapper,
+.note-content-wrapper:not(.editing) .tableWrapper,
+.note-view-content .tableWrapper,
+body .notes-page:not(.editing-mode) .tableWrapper {
+  overflow-x: scroll !important;
+  overflow-y: scroll !important;
+  scrollbar-width: auto !important;
+  scrollbar-color: #FF6900 var(--bg-tertiary) !important;
+}
+
+/* Force webkit scrollbars to show in view mode */
+.note-content .tableWrapper::-webkit-scrollbar,
+.note-content-wrapper:not(.editing) .tableWrapper::-webkit-scrollbar,
+.note-view-content .tableWrapper::-webkit-scrollbar,
+body .notes-page:not(.editing-mode) .tableWrapper::-webkit-scrollbar {
+  width: 14px !important;
+  height: 14px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.note-content .tableWrapper::-webkit-scrollbar-track,
+.note-content-wrapper:not(.editing) .tableWrapper::-webkit-scrollbar-track,
+.note-view-content .tableWrapper::-webkit-scrollbar-track,
+body .notes-page:not(.editing-mode) .tableWrapper::-webkit-scrollbar-track {
+  background: #f1f1f1 !important;
+  visibility: visible !important;
+}
+
+.note-content .tableWrapper::-webkit-scrollbar-thumb,
+.note-content-wrapper:not(.editing) .tableWrapper::-webkit-scrollbar-thumb,
+.note-view-content .tableWrapper::-webkit-scrollbar-thumb,
+body .notes-page:not(.editing-mode) .tableWrapper::-webkit-scrollbar-thumb {
+  background: #FF6900 !important;
+  border-radius: 7px !important;
+  visibility: visible !important;
+  border: 2px solid #f1f1f1 !important;
+}
+
+.note-content .tableWrapper::-webkit-scrollbar-corner,
+.note-content-wrapper:not(.editing) .tableWrapper::-webkit-scrollbar-corner,
+.note-view-content .tableWrapper::-webkit-scrollbar-corner,
+body .notes-page:not(.editing-mode) .tableWrapper::-webkit-scrollbar-corner {
+  background: #f1f1f1 !important;
+  visibility: visible !important;
 }

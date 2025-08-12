@@ -14,7 +14,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Profile Header - Matching medications page */
@@ -43,7 +44,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
 }
 
@@ -148,7 +149,7 @@ textarea.header-field-input {
   border: 1px solid var(--border-color);
   border-radius: 6px;
   background: var(--button-bg);
-  color: var(--text-primary);
+  color: black;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -163,8 +164,7 @@ textarea.header-field-input {
 
 /* Table Wrapper - Matching medications page */
 .modal-table-wrapper {
-  overflow-y: auto;
-  overflow-x: auto;
+  overflow: visible;
   position: relative;
   background: transparent;
   margin-bottom: 20px;
@@ -328,7 +328,7 @@ textarea.header-field-input {
   border: 1px solid var(--success-color);
   border-radius: 4px;
   background: var(--success-color);
-  color: var(--text-primary);
+  color: white !important;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -340,6 +340,7 @@ textarea.header-field-input {
   border-color: var(--success-color);
   transform: translateY(-1px);
   opacity: 0.9;
+  color: white !important;
 }
 
 .modal-infusion-steps-content {
@@ -489,7 +490,7 @@ textarea.modal-table-input {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background: var(--button-bg);
-  color: var(--text-secondary);
+  color: white !important;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -501,12 +502,12 @@ textarea.modal-table-input {
 .modal-prescription-btn:hover {
   background: var(--button-hover-bg);
   border-color: var(--border-color);
-  color: var(--text-primary);
+  color: white !important;
 }
 
 .modal-prescription-btn.edit {
   background: var(--primary-color);
-  color: var(--text-primary);
+  color: white !important;
   border-color: var(--primary-color);
 }
 
@@ -515,11 +516,12 @@ textarea.modal-table-input {
   border-color: var(--primary-hover);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--primary-light);
+  color: white !important;
 }
 
 .modal-prescription-btn.delete {
   background: var(--error-color);
-  color: var(--text-primary);
+  color: white !important;
   border-color: var(--error-color);
   margin-left: auto;
 }
@@ -530,11 +532,12 @@ textarea.modal-table-input {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   opacity: 0.9;
+  color: white !important;
 }
 
 .modal-prescription-btn.save {
   background: var(--success-color);
-  color: var(--text-primary);
+  color: white !important;
   border-color: var(--success-color);
 }
 
@@ -544,11 +547,12 @@ textarea.modal-table-input {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   opacity: 0.9;
+  color: white !important;
 }
 
 .modal-prescription-btn.cancel {
   background: transparent;
-  color: var(--text-secondary);
+  color: white !important;
   border-color: var(--border-color);
   margin-left: auto;
 }
@@ -556,6 +560,51 @@ textarea.modal-table-input {
 .modal-prescription-btn.cancel:hover {
   background: var(--button-bg);
   border-color: var(--border-color);
+  color: white !important;
+}
+
+.modal-prescription-btn.add {
+  background: var(--primary-color);
+  color: white !important;
+  border-color: var(--primary-color);
+}
+
+.modal-prescription-btn.add:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--primary-light);
+  color: white !important;
+}
+
+/* Force white text on action buttons (Add, Edit, Delete, Save) */
+.modal-prescription-profile .modal-prescription-btn,
+.modal-prescription-profile .modal-prescription-btn.edit,
+.modal-prescription-profile .modal-prescription-btn.delete,
+.modal-prescription-profile .modal-prescription-btn.save,
+.modal-prescription-profile .modal-prescription-btn.cancel,
+.modal-prescription-profile .modal-prescription-btn.add,
+.modal-prescription-actions .modal-prescription-btn {
+  color: white !important;
+}
+
+.modal-prescription-profile .modal-prescription-btn:hover,
+.modal-prescription-profile .modal-prescription-btn.edit:hover,
+.modal-prescription-profile .modal-prescription-btn.delete:hover,
+.modal-prescription-profile .modal-prescription-btn.save:hover,
+.modal-prescription-profile .modal-prescription-btn.cancel:hover,
+.modal-prescription-profile .modal-prescription-btn.add:hover,
+.modal-prescription-actions .modal-prescription-btn:hover {
+  color: white !important;
+}
+
+/* Ensure Back to Medications button has black text */
+.modal-header-back-button {
+  color: black !important;
+}
+
+.modal-header-back-button:hover {
+  color: black !important;
 }
 
 /* Animation for smooth transition */
@@ -653,4 +702,52 @@ textarea.modal-table-input {
   .remove-step-button {
     margin-left: 30px;
   }
+}
+
+/* COMPREHENSIVE BUTTON COLOR RULES FOR MEDICATION MODALS */
+/* Ensure all action buttons (Add, Edit, Delete, Save) have white text */
+.modal-prescription-profile button.modal-prescription-btn,
+.modal-prescription-profile .modal-prescription-btn,
+.modal-prescription-actions button.modal-prescription-btn,
+.modal-prescription-actions .modal-prescription-btn,
+.modal-infusion-steps-section button.add-step-button,
+.modal-infusion-steps-section .add-step-button,
+button.modal-prescription-btn.add,
+button.modal-prescription-btn.edit,
+button.modal-prescription-btn.delete,
+button.modal-prescription-btn.save,
+button.modal-prescription-btn.cancel {
+  color: white !important;
+}
+
+/* Hover states for action buttons */
+.modal-prescription-profile button.modal-prescription-btn:hover,
+.modal-prescription-profile .modal-prescription-btn:hover,
+.modal-prescription-actions button.modal-prescription-btn:hover,
+.modal-prescription-actions .modal-prescription-btn:hover,
+.modal-infusion-steps-section button.add-step-button:hover,
+.modal-infusion-steps-section .add-step-button:hover,
+button.modal-prescription-btn.add:hover,
+button.modal-prescription-btn.edit:hover,
+button.modal-prescription-btn.delete:hover,
+button.modal-prescription-btn.save:hover,
+button.modal-prescription-btn.cancel:hover {
+  color: white !important;
+}
+
+/* Back to Medications button - always black text */
+.modal-header-back-button,
+.modal-header-back-button:hover,
+.modal-header-back-button:focus,
+.modal-header-back-button:active,
+button.modal-header-back-button,
+button.modal-header-back-button:hover {
+  color: black !important;
+}
+
+/* Ensure icons in Back to Medications button are also black */
+.modal-header-back-button svg,
+.modal-header-back-button:hover svg {
+  color: black !important;
+  fill: black !important;
 }

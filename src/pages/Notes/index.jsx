@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download, ChevronRight } from 'lucide-react';
+import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download, ChevronRight, Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, Heading3, Code, Strikethrough, Undo, Redo } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { firestore as db, storage } from '../../config/firebase';
@@ -55,6 +55,8 @@ const Notes = () => {
   const [isLongPress, setIsLongPress] = useState(false);
   const [noteContextMenu, setNoteContextMenu] = useState({ visible: false, x: 0, y: 0, noteId: null });
   const noteLongPressTimer = useRef(null);
+  const [showBannerSection, setShowBannerSection] = useState(false);
+  const editorRef = useRef(null);
   
   // Delete confirmation state
   const [showDeletePopup, setShowDeletePopup] = useState(false);
@@ -76,12 +78,16 @@ const Notes = () => {
       const notesRef = collection(db, 'notes');
       unsubscribe = onSnapshot(notesRef, 
         (snapshot) => {
-          const notesData = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate() || new Date(),
-            updatedAt: doc.data().updatedAt?.toDate() || new Date()
-          }));
+          const notesData = snapshot.docs.map(doc => {
+            const data = doc.data();
+            
+            return {
+              id: doc.id,
+              ...data,
+              createdAt: data.createdAt?.toDate() || new Date(),
+              updatedAt: data.updatedAt?.toDate() || new Date()
+            };
+          });
           
           // Sort by updated date (newest first)
           notesData.sort((a, b) => b.updatedAt - a.updatedAt);
@@ -142,6 +148,7 @@ const Notes = () => {
       ...banner,
       isDone: banner.isDone !== undefined ? banner.isDone : false
     }));
+    
     setFormData({
       title: note.title || '',
       content: note.content || '',
@@ -176,6 +183,7 @@ const Notes = () => {
     try {
       if (isCreating) {
         const notesRef = collection(db, 'notes');
+        
         const noteData = {
           title: formData.title,
           content: formData.content,
@@ -188,6 +196,7 @@ const Notes = () => {
         const docRef = await addDoc(notesRef, noteData);
         
         // Create a temporary note object to display immediately
+        // Note: Keep the original formData with parsed arrays for display
         const newNote = {
           id: docRef.id,
           ...formData,
@@ -360,7 +369,6 @@ const Notes = () => {
   const renderContent = (content) => {
     if (!content) return <p className="empty-content">No content</p>;
     
-    // For rich text HTML content, render it directly
     return (
       <div 
         className="note-content-wrapper"
@@ -553,6 +561,8 @@ const Notes = () => {
       alert('Failed to copy text to clipboard');
     }
   };
+
+
 
   // Handle right-click context menu
   const handleContextMenu = (e, bannerId) => {
@@ -1075,6 +1085,7 @@ const Notes = () => {
       pdf.setFont('helvetica', 'normal');
     }
     pdf.setFontSize(bodySize);
+    
     
     // Add banners if any using direct PDF rendering for fast performance
     if (formData.banners && formData.banners.length > 0) {
@@ -1661,7 +1672,7 @@ const Notes = () => {
 
 
   return (
-    <div className="notes-page page-container">
+    <div className={`notes-page page-container ${(isEditing || isCreating) ? 'editing-mode' : ''}`}>
       {/* Header */}
       {/* Dynamic Header - Shows toggle buttons or note info */}
       <div className="notes-dynamic-header">
@@ -1831,8 +1842,75 @@ const Notes = () => {
               >
                 {isEditing || isCreating ? (
                   <>
-                    {/* Add Banner Controls - Redesigned Layout */}
-                    <div className="editor-banner-controls-container">
+                    {/* Editor Toolbar */}
+                    <div className="editor-toolbar-container">
+                      <div className="editor-toolbar-main">
+                        {/* Text formatting buttons */}
+                        <div className="toolbar-group">
+                          <button className="toolbar-btn" title="Bold">
+                            <Bold size={16} />
+                          </button>
+                          <button className="toolbar-btn" title="Italic">
+                            <Italic size={16} />
+                          </button>
+                          <button className="toolbar-btn" title="Strikethrough">
+                            <Strikethrough size={16} />
+                          </button>
+                          <button className="toolbar-btn" title="Code">
+                            <Code size={16} />
+                          </button>
+                        </div>
+                        
+                        <div className="toolbar-group">
+                          <button className="toolbar-btn" title="Heading 1">
+                            <Heading1 size={16} />
+                          </button>
+                          <button className="toolbar-btn" title="Heading 2">
+                            <Heading2 size={16} />
+                          </button>
+                          <button className="toolbar-btn" title="Heading 3">
+                            <Heading3 size={16} />
+                          </button>
+                        </div>
+                        
+                        <div className="toolbar-group">
+                          <button className="toolbar-btn" title="Bullet List">
+                            <List size={16} />
+                          </button>
+                          <button className="toolbar-btn" title="Numbered List">
+                            <ListOrdered size={16} />
+                          </button>
+                          <button className="toolbar-btn" title="Quote">
+                            <Quote size={16} />
+                          </button>
+                        </div>
+                        
+                        <div className="toolbar-group">
+                          <button className="toolbar-btn" title="Undo">
+                            <Undo size={16} />
+                          </button>
+                          <button className="toolbar-btn" title="Redo">
+                            <Redo size={16} />
+                          </button>
+                        </div>
+                        
+                        {/* Action buttons */}
+                        <div className="toolbar-group toolbar-actions">
+                          <button
+                            className={`toolbar-action-btn ${showBannerSection ? 'active' : ''}`}
+                            onClick={() => setShowBannerSection(!showBannerSection)}
+                            title="Toggle Banner Section"
+                          >
+                            <Tag size={16} />
+                            <span>Banners</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Add Banner Controls - Only show when toggled */}
+                    {showBannerSection && (
+                      <div className="editor-banner-controls-container">
                       <div className="banner-input-row">
                         <textarea
                           ref={bannerInputRef}
@@ -1887,6 +1965,8 @@ const Notes = () => {
                         </button>
                       </div>
                     </div>
+
+                    )}
 
                     <div className="note-content-edit-area">
                       {/* Display banners in content area during edit mode */}
@@ -1952,11 +2032,17 @@ const Notes = () => {
                         </div>
                       )}
 
+
+                      
                       <RichTextEditor
+                        ref={editorRef}
                         value={formData.content}
-                        onChange={(content) => setFormData({ ...formData, content })}
-                        placeholder="Start typing your note..."
+                        onChange={(content) => {
+                          setFormData({ ...formData, content });
+                        }}
+                        placeholder="Start typing your note or paste Excel data..."
                         onImageUpload={uploadImage}
+                        hideToolbar={true}
                       />
                     </div>
                     {uploadingImage && (
@@ -2029,6 +2115,8 @@ const Notes = () => {
                         ))}
                       </div>
                     )}
+                    
+                    
                     {renderContent(selectedNote?.content)}
                   </div>
                 )}

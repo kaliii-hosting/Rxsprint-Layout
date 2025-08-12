@@ -19,6 +19,7 @@ export const SearchProvider = ({ children }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [medications, setMedications] = useState([]);
+  const [haeMedications, setHaeMedications] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
   const [shopProducts, setShopProducts] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -31,6 +32,7 @@ export const SearchProvider = ({ children }) => {
   // Load all searchable data on mount
   useEffect(() => {
     loadMedications();
+    loadHaeMedications();
     loadBookmarks();
     loadShopProducts();
     loadNotes();
@@ -68,6 +70,38 @@ export const SearchProvider = ({ children }) => {
       setMedications([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadHaeMedications = async () => {
+    try {
+      // Check if firestore is initialized
+      if (!firestore) {
+        console.warn('Firestore not initialized yet');
+        return;
+      }
+      
+      const haeMedicationsRef = collection(firestore, 'haeMedications');
+      const snapshot = await getDocs(haeMedicationsRef);
+      
+      const haeMedicationsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        type: 'haeMedication'
+      }));
+      
+      // Sort HAE medications alphabetically by drug name
+      const sortedHaeMedications = haeMedicationsData.sort((a, b) => {
+        const drugA = (a.drug || '').toLowerCase();
+        const drugB = (b.drug || '').toLowerCase();
+        return drugA.localeCompare(drugB);
+      });
+      
+      setHaeMedications(sortedHaeMedications);
+    } catch (error) {
+      console.error('Error loading HAE medications for search:', error);
+      // Don't crash the app if HAE medications can't be loaded
+      setHaeMedications([]);
     }
   };
 
@@ -225,6 +259,16 @@ export const SearchProvider = ({ children }) => {
       }
     });
 
+    // Collect from HAE medications
+    haeMedications.forEach(med => {
+      if (med.drug && med.drug.toLowerCase().startsWith(lowerQuery)) {
+        allTerms.add(med.drug);
+      }
+      if (med.brand && med.brand.toLowerCase().startsWith(lowerQuery)) {
+        allTerms.add(med.brand);
+      }
+    });
+
     // Collect from bookmarks
     bookmarks.forEach(bookmark => {
       if (bookmark.title && bookmark.title.toLowerCase().startsWith(lowerQuery)) {
@@ -293,6 +337,21 @@ export const SearchProvider = ({ children }) => {
              indication.includes(lowerQuery);
     }).map(med => ({ ...med, resultType: 'medication' }));
 
+    // Search HAE medications
+    const haeMedicationResults = haeMedications.filter(med => {
+      const drug = (med.drug || '').toLowerCase();
+      const brand = (med.brand || '').toLowerCase();
+      const company = (med.company || '').toLowerCase();
+      const moa = (med.moa || '').toLowerCase();
+      const dosing = (med.dosing || '').toLowerCase();
+      
+      return drug.includes(lowerQuery) || 
+             brand.includes(lowerQuery) || 
+             company.includes(lowerQuery) ||
+             moa.includes(lowerQuery) ||
+             dosing.includes(lowerQuery);
+    }).map(med => ({ ...med, resultType: 'haeMedication' }));
+
     // Search bookmarks
     const bookmarkResults = bookmarks.filter(bookmark => {
       const title = (bookmark.title || '').toLowerCase();
@@ -335,7 +394,8 @@ export const SearchProvider = ({ children }) => {
 
     // Combine results and limit to 15
     const combinedResults = [
-      ...medicationResults, 
+      ...medicationResults,
+      ...haeMedicationResults, 
       ...bookmarkResults, 
       ...shopResults,
       ...noteResults,
@@ -387,6 +447,15 @@ export const SearchProvider = ({ children }) => {
               scrollToSection: true 
             } 
           });
+        } else if (item.resultType === 'haeMedication') {
+          // Navigate to medications page with HAE medication selected
+          navigate('/medications', { 
+            state: { 
+              selectedHaeMedicationId: item.id,
+              openHaeModal: true,
+              medicationType: 'hae'
+            } 
+          });
         } else {
           // Navigate to medications page and open the modal
           navigate('/medications', { 
@@ -423,6 +492,7 @@ export const SearchProvider = ({ children }) => {
       navigateToMedication,
       clearSearch,
       loadMedications,
+      loadHaeMedications,
       loadBookmarks,
       loadShopProducts,
       loadNotes,

@@ -502,6 +502,20 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   padding: clamp(1rem, 2vw, 1.5rem);
 }
 
+/* When modal is open, prevent table scrolling and allow page scrolling */
+.medications-page.modal-open {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.medications-page.modal-open .table-wrapper {
+  overflow: hidden;
+}
+
+.medications-page.modal-open .medications-content {
+  overflow: visible;
+}
+
 /* Custom scrollbar styles */
 .table-wrapper::-webkit-scrollbar {
   width: 8px;
@@ -595,7 +609,7 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   width: 20px;
   height: 20px;
   background: var(--primary-color);
-  color: var(--text-primary);
+  color: white !important;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -749,7 +763,7 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background: var(--button-bg);
-  color: var(--text-secondary);
+  color: white !important;
   font-size: clamp(11px, 1.5vw, 14px);
   font-weight: 600;
   cursor: pointer;
@@ -762,12 +776,12 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
 .prescription-btn:hover {
   background: var(--button-hover-bg);
   border-color: var(--border-color);
-  color: var(--text-primary);
+  color: white !important;
 }
 
 .prescription-btn.add-medication {
   background: var(--success-color);
-  color: var(--text-primary);
+  color: white !important;
   border-color: var(--success-color);
 }
 
@@ -777,11 +791,12 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   opacity: 0.9;
+  color: white !important;
 }
 
 .prescription-btn.edit {
   background: var(--primary-color);
-  color: var(--text-primary);
+  color: white !important;
   border-color: var(--primary-color);
 }
 
@@ -790,11 +805,12 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   border-color: var(--primary-hover);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--primary-light);
+  color: white !important;
 }
 
 .prescription-btn.delete {
   background: var(--error-color);
-  color: var(--text-primary);
+  color: white !important;
   border-color: var(--error-color);
   margin-left: auto;
 }
@@ -803,6 +819,28 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   background: var(--error-color);
   border-color: var(--error-color);
   opacity: 0.9;
+  color: white !important;
+}
+
+/* Force white text on all prescription buttons */
+.medications-page button.prescription-btn,
+.medications-page .prescription-btn,
+.medications-page .prescription-btn.edit,
+.medications-page .prescription-btn.delete,
+.medications-page .prescription-btn.add-medication,
+.prescription-actions button,
+.prescription-actions .prescription-btn {
+  color: white !important;
+}
+
+.medications-page button.prescription-btn:hover,
+.medications-page .prescription-btn:hover,
+.medications-page .prescription-btn.edit:hover,
+.medications-page .prescription-btn.delete:hover,
+.medications-page .prescription-btn.add-medication:hover,
+.prescription-actions button:hover,
+.prescription-actions .prescription-btn:hover {
+  color: white !important;
 }
 
 /* Empty State */
@@ -828,6 +866,35 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   font-size: clamp(14px, 2.5vw, 18px);
   margin: 0;
   color: var(--text-secondary);
+}
+
+/* Empty Row State - for table inline empty state */
+.empty-row {
+  background: transparent !important;
+}
+
+.empty-row:hover {
+  background: transparent !important;
+}
+
+.empty-state-inline {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-state-inline h3 {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.empty-state-inline p {
+  margin: 0;
+  font-size: 14px;
+  color: #999;
+  line-height: 1.5;
 }
 
 /* Loading State */

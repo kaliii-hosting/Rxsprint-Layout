@@ -25,14 +25,36 @@ import {
 } from 'lucide-react';
 import './RichTextEditor.css';
 
-const RichTextEditor = ({ 
+// Force table scrolling styles
+const tableScrollStyles = `
+  .ProseMirror .tableWrapper {
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 200px) !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .ProseMirror .tableWrapper::-webkit-scrollbar {
+    width: 14px !important;
+    height: 14px !important;
+    display: block !important;
+  }
+  .ProseMirror .tableWrapper::-webkit-scrollbar-thumb {
+    background: #FF6900 !important;
+    border-radius: 7px !important;
+  }
+`;
+
+const RichTextEditor = React.forwardRef(({ 
   value = '', 
   onChange, 
   placeholder = 'Start typing...', 
   readOnly = false,
   onImageUpload,
-  className = ''
-}) => {
+  className = '',
+  hideToolbar = false
+}, ref) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isReady, setIsReady] = useState(false);
 
@@ -45,6 +67,9 @@ const RichTextEditor = ({
       }),
       Table.configure({
         resizable: true,
+        HTMLAttributes: {
+          class: 'excel-table',
+        },
       }),
       TableRow,
       TableHeader,
@@ -233,7 +258,9 @@ const RichTextEditor = ({
 
   return (
     <div className={`rich-text-editor tiptap-editor ${className} ${isMobile ? 'mobile' : ''}`}>
-      <div className="editor-toolbar">
+      <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
+      {!hideToolbar && (
+        <div className="editor-toolbar">
         {/* Text formatting */}
         <div className="toolbar-group">
           <ToolbarButton
@@ -350,6 +377,7 @@ const RichTextEditor = ({
           </div>
         )}
       </div>
+      )}
       
       <EditorContent 
         editor={editor} 
@@ -357,6 +385,8 @@ const RichTextEditor = ({
       />
     </div>
   );
-};
+});
+
+RichTextEditor.displayName = 'RichTextEditor';
 
 export default RichTextEditor;

@@ -394,19 +394,19 @@ const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, a
               <div className="modal-prescription-actions">
                 {!isEditing ? (
                   <>
-                    <button className="modal-prescription-btn edit" onClick={handleEdit}>
+                    <button className="modal-prescription-btn edit" onClick={handleEdit} style={{ color: 'white' }}>
                       Edit
                     </button>
-                    <button className="modal-prescription-btn delete" onClick={handleDelete}>
+                    <button className="modal-prescription-btn delete" onClick={handleDelete} style={{ color: 'white' }}>
                       Delete
                     </button>
                   </>
                 ) : (
                   <>
-                    <button className="modal-prescription-btn save" onClick={handleSave}>
+                    <button className="modal-prescription-btn save" onClick={handleSave} style={{ color: 'white' }}>
                       Save
                     </button>
-                    <button className="modal-prescription-btn cancel" onClick={handleCancel}>
+                    <button className="modal-prescription-btn cancel" onClick={handleCancel} style={{ color: 'white' }}>
                       Cancel
                     </button>
                   </>
