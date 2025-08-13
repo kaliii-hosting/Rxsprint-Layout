@@ -21,6 +21,7 @@ import Notes from './pages/Notes'
 import Analyzer from './pages/Analyzer'
 import BookmarkManager from './pages/BookmarkManager'
 import Board from './pages/Board'
+import Terminal from './pages/Terminal'
 import './App.css'
 
 function AppContent() {
@@ -51,6 +52,7 @@ function AppContent() {
                 <Route path="/analyzer" element={<Analyzer />} />
                 <Route path="/bookmark-manager" element={<BookmarkManager />} />
                 <Route path="/board" element={<Board />} />
+                <Route path="/terminal" element={<Terminal />} />
               </Routes>
             </Layout>
             <MedicationChatbot />
