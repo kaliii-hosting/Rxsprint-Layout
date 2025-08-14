@@ -2,202 +2,57 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Terminal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KALIII Terminal</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: 'Courier New', monospace;
-            background: #000;
+            background: #0a0a0a;
             color: #fff;
-            overflow: hidden;
             height: 100vh;
             width: 100vw;
-        }
-
-        .terminal-container {
-            position: relative; /* NOT fixed or absolute */
-            width: 100%;
-            height: 100vh; /* Full viewport for standalone page */
             display: flex;
             flex-direction: column;
-            background: #000;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
+            align-items: center;
+            justify-content: center;
         }
-
-        .status-bar {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #333;
+        
+        h1 {
+            color: #ff8800;
+            margin-bottom: 20px;
         }
-
-        .status-message {
-            color: #0f0;
-            font-size: 16px;
-            margin-bottom: 15px;
+        
+        p {
+            margin-bottom: 30px;
         }
-
-        .status-bar.error .status-message {
-            color: #f00;
-        }
-
-        .reconnect-btn {
-            background: #0f0;
+        
+        a {
+            padding: 15px 30px;
+            background: #ff8800;
             color: #000;
-            border: none;
-            padding: 10px 20px;
-            font-size: 14px;
+            text-decoration: none;
+            border-radius: 5px;
             font-weight: bold;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: background 0.3s;
+            font-size: 18px;
         }
-
-        .reconnect-btn:hover {
-            background: #0c0;
-        }
-
-        #terminal-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: #000;
-            display: block;
-        }
-
-        .loading {
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        
+        .note {
+            color: #666;
+            margin-top: 20px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <div class="terminal-container">
-        <div id="status-bar" class="status-bar">
-            <div class="status-message">Connecting to terminal server...</div>
-            <button id="reconnect-btn" class="reconnect-btn" style="display: none;">Reconnect</button>
-        </div>
-        <iframe 
-            id="terminal-frame"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-            style="display: none;"
-        ></iframe>
-    </div>
-
-    <script>
-        const terminalFrame = document.getElementById('terminal-frame');
-        const statusBar = document.getElementById('status-bar');
-        const statusMessage = statusBar.querySelector('.status-message');
-        const reconnectBtn = document.getElementById('reconnect-btn');
-        
-        let connectionAttempts = 0;
-        const maxAttempts = 3;
-        
-        function getTerminalUrl() {
-            // Detect if we're on HTTPS or HTTP
-            const isHTTPS = window.location.protocol === 'https:';
-            
-            // Set the appropriate terminal URL
-            const terminalHost = '192.168.1.167';
-            const terminalURL = isHTTPS 
-                ? `https://${terminalHost}:8443` 
-                : `http://${terminalHost}:8080`;
-            
-            return terminalURL;
-        }
-        
-        function showStatus(message, isError = false) {
-            statusBar.style.display = 'block';
-            statusMessage.textContent = message;
-            statusBar.classList.toggle('error', isError);
-            statusBar.classList.toggle('loading', !isError);
-            terminalFrame.style.display = 'none';
-        }
-        
-        function hideStatus() {
-            statusBar.style.display = 'none';
-            terminalFrame.style.display = 'block';
-        }
-        
-        function connectToTerminal() {
-            connectionAttempts++;
-            const url = getTerminalUrl();
-            
-            showStatus('Connecting to terminal server...');
-            reconnectBtn.style.display = 'none';
-            
-            // Set the iframe source
-            terminalFrame.src = url;
-            
-            // Set a timeout for connection
-            const connectionTimeout = setTimeout(() => {
-                if (connectionAttempts >= maxAttempts) {
-                    showStatus('Terminal server offline', true);
-                    reconnectBtn.style.display = 'inline-block';
-                } else {
-                    // Retry connection
-                    setTimeout(connectToTerminal, 2000);
-                }
-            }, 5000);
-            
-            // Listen for successful load
-            terminalFrame.onload = function() {
-                clearTimeout(connectionTimeout);
-                connectionAttempts = 0;
-                hideStatus();
-                console.log('Terminal connected successfully');
-            };
-            
-            // Listen for errors
-            terminalFrame.onerror = function() {
-                clearTimeout(connectionTimeout);
-                if (connectionAttempts >= maxAttempts) {
-                    showStatus('Failed to connect to terminal server', true);
-                    reconnectBtn.style.display = 'inline-block';
-                } else {
-                    setTimeout(connectToTerminal, 2000);
-                }
-            };
-        }
-        
-        // Reconnect button handler
-        reconnectBtn.addEventListener('click', function() {
-            connectionAttempts = 0;
-            connectToTerminal();
-        });
-        
-        // Initial connection
-        window.addEventListener('load', function() {
-            connectToTerminal();
-        });
-        
-        // Handle iframe communication errors
-        window.addEventListener('message', function(e) {
-            // Handle any messages from the iframe if needed
-            if (e.data && e.data.type === 'terminal-error') {
-                showStatus('Terminal disconnected', true);
-                reconnectBtn.style.display = 'inline-block';
-            }
-        });
-    </script>
+    <h1>KALIII AI Terminal</h1>
+    <p>Click below to open the terminal in a new tab</p>
+    <a href="http://172.20.246.72:8080" target="_blank">Launch Terminal</a>
+    <p class="note">Note: You'll need to accept the security certificate on first visit</p>
 </body>
 </html>

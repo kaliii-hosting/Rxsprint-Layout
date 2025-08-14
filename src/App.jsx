@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
 import Layout from './components/Layout/Layout'
 import PinLock from './components/PinLock/PinLock'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -26,6 +27,14 @@ import './App.css'
 
 function AppContent() {
   const { isUnlocked, unlock } = useAuth()
+
+  useEffect(() => {
+    // Global HTTPS redirect protection - exclude /terminal route
+    if (window.location.pathname !== '/terminal' && window.location.protocol === 'http:') {
+      // Uncomment the line below if you want to enforce HTTPS for all pages except terminal
+      // window.location.protocol = 'https:';
+    }
+  }, []);
 
   if (!isUnlocked) {
     return <PinLock onUnlock={unlock} />

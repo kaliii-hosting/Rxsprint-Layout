@@ -1,42 +1,39 @@
-import React, { useMemo } from 'react';
-import './Terminal.css';
+import React, { useEffect, useState } from 'react';
 
 const Terminal = () => {
-  const terminalURL = useMemo(() => {
-    // Detect if we're on HTTPS or HTTP
-    const isHTTPS = window.location.protocol === 'https:';
+  const [isHTTPS, setIsHTTPS] = useState(false);
+
+  useEffect(() => {
+    // Check protocol
+    const currentProtocol = window.location.protocol;
+    setIsHTTPS(currentProtocol === 'https:');
     
-    // Set the appropriate terminal URL
-    const terminalHost = '192.168.1.167';
-    return isHTTPS 
-      ? `https://${terminalHost}:8443` 
-      : `http://${terminalHost}:8080`;
+    // Force HTTP for terminal page only
+    if (currentProtocol === 'https:') {
+      window.location.protocol = 'http:';
+    }
   }, []);
 
-  return (
-    <div className="page-container">
-      <div className="terminal-page-wrapper">
-        <h2>KALIII AI Terminal</h2>
-        <div className="terminal-box">
-          <div className="terminal-container">
-            <iframe 
-              src={terminalURL} 
-              className="terminal-iframe"
-              allow="clipboard-read; clipboard-write"
-              title="KALIII AI Terminal"
-              sandbox="allow-scripts allow-same-origin allow-forms"
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                border: 'none'
-              }}
-            />
-          </div>
-        </div>
+  // If still on HTTPS (before redirect), show message
+  if (isHTTPS) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 120px)', background: '#0a0a0a' }}>
+        <h1 style={{ color: '#ff8800', marginBottom: '20px' }}>Redirecting to HTTP...</h1>
+        <p style={{ color: '#fff', marginBottom: '30px' }}>Terminal requires HTTP for iframe compatibility</p>
       </div>
+    );
+  }
+
+  // HTTP version - show iframe
+  return (
+    <div style={{ width: '100%', height: 'calc(100vh - 120px)', background: '#0a0a0a' }}>
+      <iframe 
+        src="http://172.20.246.72:8080"
+        style={{ width: '100%', height: '100%', border: 'none' }}
+        allow="clipboard-read; clipboard-write; camera; microphone"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-modals"
+        title="KALIII Terminal">
+      </iframe>
     </div>
   );
 };
