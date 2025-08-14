@@ -1,324 +1,65 @@
-/* Terminal Page - Black background with header/sidebar visible */
-.terminal-page-wrapper {
-  width: 100%;
-  height: calc(100vh - 80px); /* Account for header */
-  background-color: #000000; /* Black background */
-  padding: 15px;
-  box-sizing: border-box;
-  overflow: auto; /* Allow scrolling */
-  position: relative;
+/* Container for terminal - minimal styling */
+.terminal-page-container {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 80px); /* Adjust based on header height */
+    background-color: #000000;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    overflow: hidden;
+    contain: layout;
 }
 
-.terminal-container-box {
-  width: 100%;
-  max-width: 1400px;
-  height: calc(100vh - 110px); /* Space for header + padding */
-  margin: 0 auto;
-  background: #1a1a1a;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  border: 2px solid #333;
-  position: relative;
+/* Iframe - no style interference */
+.terminal-iframe {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: block;
 }
 
-.custom-launcher-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  display: block;
-  background: #000;
-  outline: none;
-  /* Custom filter to change colors to FF6900 for titles and orange elements */
-  filter: 
-    hue-rotate(15deg) 
-    saturate(1.8) 
-    brightness(1.2) 
-    contrast(1.1)
-    sepia(0.3);
+
+/* Ensure header and sidebar stay above terminal */
+.app-header,
+.header,
+header {
+    position: relative !important;
+    z-index: 1000 !important;
 }
 
-/* Focus styles for keyboard interaction */
-.custom-launcher-iframe:focus {
-  outline: 2px solid #FF6900;
-  outline-offset: -2px;
+.app-sidebar,
+.sidebar,
+aside {
+    position: relative !important;
+    z-index: 999 !important;
 }
 
-/* CSS injection for launcher content styling */
-.terminal-container-box::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 1;
-  /* Additional color overlay for FF6900 enhancement */
-  background: linear-gradient(
-    transparent 0%, 
-    rgba(255, 105, 0, 0.05) 20%, 
-    transparent 100%
-  );
-}
 
-/* Offline popup styles */
-.offline-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-}
-
-.offline-popup {
-  background: #1a1a1a;
-  border: 3px solid #FF6900;
-  border-radius: 12px;
-  padding: 40px;
-  text-align: center;
-  max-width: 500px;
-  color: #fff;
-  box-shadow: 0 0 30px rgba(255, 105, 0, 0.4);
-}
-
-.offline-icon {
-  font-size: 48px;
-  margin-bottom: 20px;
-}
-
-.offline-popup h2 {
-  color: #FF6900;
-  margin-bottom: 15px;
-  font-size: 24px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.offline-popup p {
-  color: #ddd;
-  margin-bottom: 10px;
-  line-height: 1.6;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.offline-spinner {
-  margin: 20px auto;
-  width: 40px;
-  height: 40px;
-  border: 3px solid #333;
-  border-top: 3px solid #FF6900;
-  border-radius: 50%;
-  animation: spin-animation 1s linear infinite;
-}
-
-@keyframes spin-animation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.offline-retry-btn {
-  background: #FF6900;
-  color: #fff;
-  border: none;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: all 0.3s ease;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.offline-retry-btn:hover {
-  background: #e55a00;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 105, 0, 0.3);
-}
-
-/* Tablet responsive design */
-@media (max-width: 1024px) {
-  .terminal-page-wrapper {
-    height: calc(100vh - 70px);
-    padding: 12px;
-  }
-  
-  .terminal-container-box {
-    height: calc(100vh - 94px);
-    border-radius: 10px;
-  }
-  
-  .custom-launcher-iframe {
-    /* Enhanced filter for tablet */
-    filter: 
-      hue-rotate(15deg) 
-      saturate(2.0) 
-      brightness(1.3) 
-      contrast(1.2)
-      sepia(0.4);
-  }
-}
-
-/* Mobile responsive design */
+/* Mobile responsive */
 @media (max-width: 768px) {
-  .terminal-page-wrapper {
-    height: calc(100vh - 60px);
-    padding: 8px;
-    /* Enable horizontal scrolling if needed */
-    overflow-x: auto;
-    overflow-y: auto;
-  }
-  
-  .terminal-container-box {
-    height: calc(100vh - 76px);
-    min-height: 400px;
-    border-radius: 8px;
-    border-width: 1px;
-  }
-  
-  .custom-launcher-iframe {
-    /* Mobile optimized filter */
-    filter: 
-      hue-rotate(15deg) 
-      saturate(2.2) 
-      brightness(1.4) 
-      contrast(1.3)
-      sepia(0.5);
-  }
-  
-  .offline-popup {
-    padding: 25px;
-    max-width: 90%;
-    margin: 10px;
-  }
-  
-  .offline-popup h2 {
-    font-size: 20px;
-  }
-  
-  .offline-popup p {
-    font-size: 14px;
-  }
+    .terminal-page-container {
+        height: calc(100vh - 60px); /* Smaller header on mobile */
+    }
 }
 
-/* Small mobile responsive design */
-@media (max-width: 480px) {
-  .terminal-page-wrapper {
-    height: calc(100vh - 50px);
-    padding: 5px;
-  }
-  
-  .terminal-container-box {
-    height: calc(100vh - 60px);
-    min-height: 350px;
-    border-radius: 6px;
-  }
-  
-  .custom-launcher-iframe {
-    /* Small mobile optimized filter for FF6900 colors */
-    filter: 
-      hue-rotate(12deg) 
-      saturate(2.5) 
-      brightness(1.5) 
-      contrast(1.4)
-      sepia(0.6);
-  }
-  
-  .offline-popup {
-    padding: 20px;
-    max-width: 95%;
-  }
-  
-  .offline-icon {
-    font-size: 36px;
-  }
-  
-  .offline-popup h2 {
-    font-size: 18px;
-  }
-  
-  .offline-retry-btn {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
+/* Tablet responsive */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .terminal-page-container {
+        height: calc(100vh - 70px);
+    }
 }
 
-/* Ensure iframe is focusable and responsive */
-.custom-launcher-iframe {
-  /* Make iframe focusable for keyboard input */
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  
-  /* Ensure proper scaling */
-  transform-origin: top left;
-  
-  /* Smooth transitions */
-  transition: filter 0.3s ease;
+/* Ensure header and sidebar stay visible */
+.header {
+    position: relative;
+    z-index: 1000;
 }
 
-/* Auto-focus helper styles */
-.terminal-page-wrapper:focus-within .custom-launcher-iframe {
-  filter: 
-    hue-rotate(15deg) 
-    saturate(2.0) 
-    brightness(1.3) 
-    contrast(1.2)
-    sepia(0.4)
-    drop-shadow(0 0 5px rgba(255, 105, 0, 0.3));
-}
-
-/* Scrollbar styling for dark theme */
-.terminal-page-wrapper::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-}
-
-.terminal-page-wrapper::-webkit-scrollbar-track {
-  background: #000;
-}
-
-.terminal-page-wrapper::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 6px;
-}
-
-.terminal-page-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #FF6900;
-}
-
-/* Custom styles for launcher content enhancement */
-.terminal-container-box iframe {
-  /* Additional enhancement for orange/FF6900 colors */
-  background: #000 !important;
-}
-
-/* Loading and title color enhancement overlay */
-.terminal-container-box::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 0;
-  /* Subtle overlay to enhance FF6900 colors */
-  background: radial-gradient(
-    circle at center,
-    rgba(255, 105, 0, 0.02) 0%,
-    transparent 50%
-  );
-}
-
-/* Ensure terminal takes precedence over overlay */
-.custom-launcher-iframe {
-  position: relative;
-  z-index: 2;
+.sidebar {
+    position: relative;
+    z-index: 999;
 }
