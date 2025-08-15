@@ -18,12 +18,14 @@ import {
   Zap,
   Settings,
   Palette,
-  Terminal
+  Terminal,
+  Brain
 } from 'lucide-react';
 import { useCalculator } from '../../contexts/CalculatorContext';
 import { useSearch } from '../../contexts/SearchContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useModel } from '../../contexts/ModelContext';
 import VoiceTranscription from '../VoiceTranscription/VoiceTranscription';
 import CurlinPumpIcon from '../icons/CurlinPumpIcon';
 import PumpSimulator from '../PumpSimulator/PumpSimulator';
@@ -34,9 +36,11 @@ const Layout = ({ children }) => {
   const { toggleCalculatorMode } = useCalculator();
   const { theme } = useTheme();
   const { lock } = useAuth();
+  const { selectedModel, setSelectedModel, models } = useModel();
   const [showVoiceTranscription, setShowVoiceTranscription] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showPumpSimulator, setShowPumpSimulator] = useState(false);
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
   const { 
     searchQuery, 
     searchResults, 
@@ -322,6 +326,45 @@ const Layout = ({ children }) => {
                 <CurlinPumpIcon size={20} />
               </button>
             )}
+            
+            {/* Model Selector Button */}
+            <div className="model-selector-container">
+              <button 
+                className="icon-button model-selector-btn" 
+                title={`AI Model: ${selectedModel}`}
+                onClick={() => setShowModelDropdown(!showModelDropdown)}
+              >
+                <Brain size={20} />
+              </button>
+              
+              {showModelDropdown && (
+                <div className="model-dropdown-global">
+                  <div className="model-dropdown-header">
+                    <span className="model-dropdown-title">Select AI Model</span>
+                  </div>
+                  {models.map(model => (
+                    <button
+                      key={model.displayName}
+                      className={`model-option-global ${selectedModel === model.displayName ? 'selected' : ''}`}
+                      onClick={() => {
+                        setSelectedModel(model.displayName);
+                        setShowModelDropdown(false);
+                      }}
+                    >
+                      <span className="model-icon">{model.icon}</span>
+                      <div className="model-info">
+                        <span className="model-name">{model.displayName}</span>
+                        <span className="model-description">{model.description}</span>
+                      </div>
+                      {selectedModel === model.displayName && (
+                        <span className="model-checkmark">✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
             <button 
               className="icon-button" 
               title="Voice Assistant"

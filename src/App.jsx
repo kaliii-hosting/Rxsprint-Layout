@@ -8,6 +8,7 @@ import { SearchProvider } from './contexts/SearchContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { MedicationProvider } from './contexts/MedicationContext'
+import { ModelProvider } from './contexts/ModelContext'
 import MedicationChatbot from './components/MedicationChatbot/MedicationChatbot'
 import Home from './pages/Home'
 import Calculator from './pages/Calculator'
@@ -36,9 +37,10 @@ function AppContent() {
     <ErrorBoundary>
       <CalculatorProvider>
         <MedicationProvider>
-          <BrowserRouter>
-            <SearchProvider>
-              <Layout>
+          <ModelProvider>
+            <BrowserRouter>
+              <SearchProvider>
+                <Layout>
                 <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/calculator" element={<Calculator />} />
@@ -55,13 +57,14 @@ function AppContent() {
                 <Route path="/board" element={<Board />} />
                 <Route path="/terminal" element={<Terminal />} />
               </Routes>
-            </Layout>
-            <MedicationChatbot />
-          </SearchProvider>
-        </BrowserRouter>
-      </MedicationProvider>
-    </CalculatorProvider>
-  </ErrorBoundary>
+                </Layout>
+                <MedicationChatbot />
+              </SearchProvider>
+            </BrowserRouter>
+          </ModelProvider>
+        </MedicationProvider>
+      </CalculatorProvider>
+    </ErrorBoundary>
   )
 }
 
