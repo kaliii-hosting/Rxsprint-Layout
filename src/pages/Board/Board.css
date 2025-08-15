@@ -26,6 +26,14 @@
   /* Allow canvas to grow beyond viewport */
   max-width: none;
   max-height: none;
+  /* Better touch and pen support */
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .board-canvas.draw-cursor {
@@ -38,6 +46,29 @@
 
 .board-canvas.resize-cursor {
   cursor: crosshair;
+}
+
+/* Tablet and touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .board-canvas {
+    /* Prevent iOS bounce scroll */
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .board-content {
+    /* Disable momentum scrolling on touch devices when drawing */
+    overflow: hidden;
+  }
+}
+
+/* Support for stylus/pen devices */
+@media (hover: hover) and (pointer: fine) {
+  .board-canvas {
+    /* Smoother drawing for pen devices */
+    image-rendering: optimizeSpeed;
+  }
 }
 
 /* Header Controls */
@@ -254,6 +285,19 @@
   .stroke-width-controls,
   .color-controls {
     gap: 0.25rem;
+  }
+  
+  /* Larger touch targets for tablet/mobile */
+  .stroke-btn,
+  .color-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
+  
+  .resize-handle {
+    width: 32px !important;
+    height: 32px !important;
   }
   
   .control-label {

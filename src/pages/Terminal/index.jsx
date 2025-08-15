@@ -8,7 +8,7 @@ export default function Terminal() {
                 id="rxsprint-ai"
                 src="https://rxsprint-ai.ngrok.app"
                 title="RX Sprint AI"
-                allow="fullscreen"
+                allow="microphone *; camera *; autoplay; clipboard-write; clipboard-read; fullscreen"
                 className="rxsprint-iframe"
             />
         </div>

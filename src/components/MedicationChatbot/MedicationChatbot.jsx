@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   MessageCircle, X, Search, Bot, ChevronRight, 
   Pill, Beaker, Droplet, Clock, Package, 
@@ -12,6 +13,7 @@ import { firestore } from '../../config/firebase';
 import './MedicationChatbot.css';
 
 const MedicationChatbot = () => {
+  const location = useLocation();
   const { medications, loading } = useMedications();
   const [haeMedications, setHaeMedications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -196,6 +198,11 @@ const MedicationChatbot = () => {
     const IconComponent = field?.icon || Sparkles;
     return <IconComponent size={20} style={{ color: field?.color || '#666' }} />;
   };
+
+  // Hide the chatbot on the terminal page
+  if (location.pathname === '/terminal') {
+    return null;
+  }
 
   return (
     <>

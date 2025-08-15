@@ -1,13 +1,18 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Highlighter, Pen, RotateCcw, Download, Trash2, Move, Square, Undo, Redo, Maximize2 } from 'lucide-react';
+import { Highlighter, Pen, RotateCcw, Download, Trash2, Move, Square, Undo, Redo, Maximize2, Save } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useNavigate } from 'react-router-dom';
+import { firestore as db } from '../../config/firebase';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import EnterpriseHeader, { TabGroup, TabButton, ActionGroup, ActionButton, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import './Board.css';
 
 const Board = () => {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [currentTool, setCurrentTool] = useState('highlighter'); // highlighter, marker, move, resize
   const [currentColor, setCurrentColor] = useState('#ffff00'); // yellow highlighter
   const [strokeWidth, setStrokeWidth] = useState(20);
@@ -282,11 +287,32 @@ const Board = () => {
   // Mouse and touch event position handler with accurate scroll consideration
   const getEventPosition = (e) => {
     const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
+    if (!canvas) return { x: 0, y: 0, pressure: 1 };
     
-    // Handle both mouse and touch events
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    // Handle both mouse, touch, and pen/pointer events
+    let clientX, clientY, pressure = 1;
+    
+    if (e.touches && e.touches.length > 0) {
+      // Touch events
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+      // Touch pressure if available
+      if (e.touches[0].force !== undefined) {
+        pressure = e.touches[0].force || 1;
+      }
+    } else if (e.pointerType) {
+      // Pointer events (pen, touch, mouse)
+      clientX = e.clientX;
+      clientY = e.clientY;
+      // Pen pressure support
+      if (e.pointerType === 'pen' && e.pressure !== undefined) {
+        pressure = e.pressure;
+      }
+    } else {
+      // Mouse events
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
     
     // Get canvas bounding rect (accounts for scroll automatically)
     const rect = canvas.getBoundingClientRect();
@@ -302,7 +328,8 @@ const Board = () => {
     
     return { 
       x: x * scaleX, 
-      y: y * scaleY 
+      y: y * scaleY,
+      pressure: pressure
     };
   };
 
@@ -590,6 +617,82 @@ const Board = () => {
     imageCache.current.clear();
   }, [saveToHistory]);
 
+  const getNextDrawingNumber = async () => {
+    try {
+      if (!db) return 1;
+      
+      const notesRef = collection(db, 'notes');
+      const q = query(notesRef, where('title', '>=', 'Drawing '), where('title', '<=', 'Drawing ~'));
+      const snapshot = await getDocs(q);
+      
+      let maxNumber = 0;
+      snapshot.forEach(doc => {
+        const title = doc.data().title;
+        const match = title.match(/^Drawing (\d+)$/);
+        if (match) {
+          const num = parseInt(match[1]);
+          maxNumber = Math.max(maxNumber, num);
+        }
+      });
+      
+      return maxNumber + 1;
+    } catch (error) {
+      console.error('Error getting drawing number:', error);
+      return 1;
+    }
+  };
+
+  const saveAsNote = async () => {
+    if (isSaving) return;
+    
+    setIsSaving(true);
+    
+    try {
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        alert('No canvas found');
+        return;
+      }
+      
+      // Get the drawing as a data URL
+      const imageDataUrl = canvas.toDataURL('image/png');
+      
+      // Get the next drawing number
+      const drawingNumber = await getNextDrawingNumber();
+      const title = `Drawing ${drawingNumber}`;
+      
+      // Create note data
+      const noteData = {
+        title: title,
+        content: `<img src="${imageDataUrl}" alt="${title}" style="max-width: 100%; height: auto;" />`,
+        starred: false,
+        images: [imageDataUrl],
+        banners: [],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+      
+      // Save to Firebase
+      if (db) {
+        const notesRef = collection(db, 'notes');
+        await addDoc(notesRef, noteData);
+        
+        // Show success message
+        alert(`Drawing saved as "${title}" in Notes!`);
+        
+        // Optionally navigate to notes page
+        // navigate('/notes');
+      } else {
+        alert('Database connection not available. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error saving drawing as note:', error);
+      alert('Failed to save drawing. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const downloadBoard = () => {
     const canvas = canvasRef.current;
     const link = document.createElement('a');
@@ -699,6 +802,13 @@ const Board = () => {
           <ActionButton onClick={clearBoard} icon={Trash2} secondary>
             Clear
           </ActionButton>
+          <ActionButton 
+            onClick={saveAsNote} 
+            icon={Save}
+            disabled={isSaving}
+          >
+            {isSaving ? 'Saving...' : 'Save as Note'}
+          </ActionButton>
           <ActionButton onClick={downloadBoard} icon={Download}>
             Download
           </ActionButton>
@@ -721,6 +831,11 @@ const Board = () => {
           onTouchMove={handleMove}
           onTouchEnd={handleEnd}
           onTouchCancel={handleEnd}
+          onPointerDown={handleStart}
+          onPointerMove={handleMove}
+          onPointerUp={handleEnd}
+          onPointerCancel={handleEnd}
+          style={{ touchAction: 'none' }}
         />
 
         {/* Resize handles only show in resize mode */}
