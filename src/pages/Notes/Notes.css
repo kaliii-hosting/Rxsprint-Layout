@@ -571,6 +571,10 @@
   min-height: min-content;
   container-type: inline-size;
   box-sizing: border-box;
+  /* Fix for Safari/iPad rendering */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Container queries for better responsive behavior */
@@ -5290,4 +5294,146 @@ body .notes-page:not(.editing-mode) .tableWrapper::-webkit-scrollbar-thumb {
 body .notes-page:not(.editing-mode) .tableWrapper::-webkit-scrollbar-corner {
   background: #f1f1f1 !important;
   visibility: visible !important;
+}
+
+/* ================ IPAD SPECIFIC FIXES ================ */
+/* iPad Portrait (768px - 834px) */
+@media only screen 
+  and (min-device-width: 768px) 
+  and (max-device-width: 1024px) {
+  
+  /* Fix grid layout for iPad */
+  .notes-grid-layout {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+    gap: 1rem !important;
+    padding: 1rem !important;
+    width: calc(100% - 2rem) !important;
+    margin: 0 auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+  }
+  
+  /* Ensure note cards are visible */
+  .modern-note-card {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+    height: auto !important;
+    min-height: 200px !important;
+    max-height: 280px !important;
+    background: var(--card-background, #ffffff) !important;
+    border: 2px solid transparent !important;
+    z-index: 1 !important;
+  }
+  
+  .modern-note-card.enterprise-card {
+    display: flex !important;
+    visibility: visible !important;
+  }
+  
+  /* Fix content areas */
+  .notes-main-list {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: calc(100vh - 180px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 1rem !important;
+  }
+  
+  /* Ensure banners show */
+  .modern-note-card::before {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Fix text content */
+  .modern-note-title,
+  .modern-note-preview,
+  .modern-note-footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: var(--text-primary) !important;
+  }
+  
+  .banner-content {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Fix container issues */
+  .notes-page {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Prevent Safari rendering issues */
+  * {
+    -webkit-transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
+  }
+}
+
+/* iPad Landscape */
+@media only screen 
+  and (min-device-width: 768px) 
+  and (max-device-width: 1024px) 
+  and (orientation: landscape) {
+  
+  .notes-grid-layout {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    padding: 1.5rem !important;
+  }
+  
+  .modern-note-card {
+    min-height: 180px !important;
+    max-height: 240px !important;
+  }
+}
+
+/* iPad Pro (1024px - 1366px) */
+@media only screen 
+  and (min-device-width: 1024px) 
+  and (max-device-width: 1366px) {
+  
+  .notes-grid-layout {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 1.25rem !important;
+    padding: 1.5rem !important;
+  }
+  
+  .modern-note-card {
+    min-height: 220px !important;
+    max-height: 300px !important;
+  }
+}
+
+/* Force visibility for all note elements on touch devices */
+@supports (-webkit-touch-callout: none) {
+  .notes-grid-layout,
+  .modern-note-card,
+  .modern-note-card * {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: initial !important;
+  }
+  
+  .modern-note-card {
+    display: flex !important;
+  }
+  
+  .notes-grid-layout {
+    display: grid !important;
+  }
 }

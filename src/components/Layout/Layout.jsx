@@ -69,8 +69,7 @@ const Layout = ({ children }) => {
     { path: '/notes', icon: StickyNote, label: 'Notes' },
     { path: '/analyzer', icon: ScanLine, label: 'Analyzer' },
     { path: '/bookmark-manager', icon: Bookmark, label: 'Bookmarks' },
-    { path: '/board', icon: Palette, label: 'Board' },
-    { path: '/terminal', icon: Terminal, label: 'Terminal' }
+    { path: '/board', icon: Palette, label: 'Board' }
   ];
 
   // Handle click outside to close dropdown
