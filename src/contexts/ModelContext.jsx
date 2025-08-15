@@ -2,13 +2,13 @@ import React, { createContext, useContext, useState } from 'react';
 
 // Model mapping: Display name -> EXACT Ollama model name
 const modelMap = {
-    "Vanilla": "llama3.2:3b",
-    "Cortex": "llama3.1:70b-instruct-q3_K_M"
+    "Vanilla": "llama3.2:1b",
+    "Cortex": "cortex"
 };
 
 const models = [
     { displayName: 'Vanilla', description: 'Fast responses', icon: '⚡' },
-    { displayName: 'Cortex', description: 'Quality responses', icon: '🧠' }
+    { displayName: 'Cortex', description: 'GPU Optimized', icon: '🚀' }
 ];
 
 const ModelContext = createContext();
