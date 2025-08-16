@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
+import { observeTablesAndAddButtons } from '../../utils/tableCopyUtils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './Notes.css';
@@ -57,6 +58,7 @@ const Notes = () => {
   const noteLongPressTimer = useRef(null);
   const [showBannerSection, setShowBannerSection] = useState(false);
   const editorRef = useRef(null);
+  const noteContentRef = useRef(null);
   
   // Delete confirmation state
   const [showDeletePopup, setShowDeletePopup] = useState(false);
@@ -365,12 +367,52 @@ const Notes = () => {
     return (isEditing || isCreating) ? formData.banners : selectedNote?.banners || [];
   };
 
+  // Add copy buttons to tables in view mode only
+  useEffect(() => {
+    // Only add buttons in view mode (not editing or creating)
+    if (!noteContentRef.current || isEditing || isCreating) {
+      // Clean up any existing buttons when entering edit mode
+      if (noteContentRef.current) {
+        const buttons = noteContentRef.current.querySelectorAll('.table-copy-btn');
+        buttons.forEach(btn => btn.remove());
+        
+        // Unwrap tables if they were wrapped
+        const wrappedTables = noteContentRef.current.querySelectorAll('.table-with-copy');
+        wrappedTables.forEach(wrapper => {
+          const table = wrapper.querySelector('table');
+          if (table && wrapper.parentNode) {
+            wrapper.parentNode.insertBefore(table, wrapper);
+            wrapper.remove();
+          }
+        });
+      }
+      return;
+    }
+    
+    let observer = null;
+    
+    // Small delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      if (noteContentRef.current && !isEditing && !isCreating) {
+        observer = observeTablesAndAddButtons(noteContentRef.current, false);
+      }
+    }, 200);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, [selectedNote, isEditing, isCreating, formData.content]);
+
   // Render content with HTML support
   const renderContent = (content) => {
     if (!content) return <p className="empty-content">No content</p>;
     
     return (
       <div 
+        ref={noteContentRef}
         className="note-content-wrapper"
         dangerouslySetInnerHTML={{ __html: content }}
       />

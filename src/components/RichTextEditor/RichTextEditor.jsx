@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -57,6 +57,7 @@ const RichTextEditor = React.forwardRef(({
 }, ref) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isReady, setIsReady] = useState(false);
+  const editorContainerRef = useRef(null);
 
   const editor = useEditor({
     extensions: [
@@ -257,7 +258,7 @@ const RichTextEditor = React.forwardRef(({
   );
 
   return (
-    <div className={`rich-text-editor tiptap-editor ${className} ${isMobile ? 'mobile' : ''}`}>
+    <div ref={editorContainerRef} className={`rich-text-editor tiptap-editor ${className} ${isMobile ? 'mobile' : ''}`}>
       <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
       {!hideToolbar && (
         <div className="editor-toolbar">

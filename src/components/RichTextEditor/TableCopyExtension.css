@@ -1,0 +1,191 @@
+/* Table Copy Extension Styles */
+.table-copy-extension-portal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.table-copy-button {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #FF6900 0%, #FF8C00 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(255, 105, 0, 0.3);
+  transition: all 0.3s ease;
+  pointer-events: all;
+  z-index: 10000;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.table-copy-button:hover {
+  background: linear-gradient(135deg, #FF7A00 0%, #FF9500 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 105, 0, 0.4);
+}
+
+.table-copy-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 105, 0, 0.3);
+}
+
+.table-copy-button.copied {
+  background: linear-gradient(135deg, #00C853 0%, #00E676 100%);
+  box-shadow: 0 4px 12px rgba(0, 200, 83, 0.3);
+  animation: successPulse 0.5s ease;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.table-copy-button.copied:hover {
+  background: linear-gradient(135deg, #00E676 0%, #00F87C 100%);
+  box-shadow: 0 6px 16px rgba(0, 200, 83, 0.4);
+}
+
+.copy-icon,
+.copy-icon-success {
+  transition: transform 0.2s ease;
+}
+
+.table-copy-button:hover .copy-icon {
+  transform: rotate(-10deg) scale(1.1);
+}
+
+.copy-text {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .table-copy-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    left: auto;
+    top: auto !important;
+    padding: 10px 16px;
+    font-size: 15px;
+    box-shadow: 0 6px 20px rgba(255, 105, 0, 0.4);
+  }
+  
+  .table-copy-button .copy-text {
+    display: none;
+  }
+  
+  .table-copy-button .copy-icon,
+  .table-copy-button .copy-icon-success {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Dark theme support */
+.dark-theme .table-copy-button {
+  background: linear-gradient(135deg, #FF6900 0%, #FF8C00 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 105, 0, 0.5);
+}
+
+.dark-theme .table-copy-button:hover {
+  background: linear-gradient(135deg, #FF7A00 0%, #FF9500 100%);
+  box-shadow: 0 6px 16px rgba(255, 105, 0, 0.6);
+}
+
+/* Ensure button appears above other elements */
+.ProseMirror table {
+  position: relative;
+}
+
+/* Add visual indicator on table hover */
+.ProseMirror table:hover {
+  outline: 2px solid rgba(255, 105, 0, 0.2);
+  outline-offset: 4px;
+  transition: outline 0.2s ease;
+}
+
+/* Style for tables in the editor to indicate copy capability */
+.ProseMirror .excel-table {
+  position: relative;
+  margin: 20px 0;
+}
+
+.ProseMirror .excel-table::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  bottom: -4px;
+  left: -4px;
+  border: 2px dashed transparent;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.ProseMirror .excel-table:hover::before {
+  border-color: rgba(255, 105, 0, 0.3);
+  background: rgba(255, 105, 0, 0.02);
+}
+
+/* Tooltip for copy button */
+.table-copy-button::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.table-copy-button:hover::after {
+  opacity: 1;
+}
+
+/* Hide tooltip on mobile */
+@media (max-width: 768px) {
+  .table-copy-button::after {
+    display: none;
+  }
+}
