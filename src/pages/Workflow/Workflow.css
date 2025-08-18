@@ -101,7 +101,7 @@
 }
 
 .toggle-btn:hover {
-  background: #ff5400;
+  background: #00ff88;
   border-color: #ff5400;
   color: white;
   transform: translateY(-1px);
@@ -112,7 +112,7 @@
 }
 
 .toggle-btn.active {
-  background: #ff5400;
+  background: #00ff88;
   color: white;
   border-color: #ff5400;
   box-shadow: 0 4px 12px rgba(255, 84, 0, 0.3);
@@ -131,7 +131,7 @@
 /* Enhanced mobile touch feedback */
 @media (hover: none) and (pointer: coarse) {
   .toggle-btn:active {
-    background: #ff5400;
+    background: #00ff88;
     border-color: #ff5400;
     color: white;
   }
@@ -332,7 +332,7 @@
 }
 
 .workflow-card-compact.overview-card {
-  background: linear-gradient(135deg, #fff5eb, #ffeaa7);
+  background: linear-gradient(135deg, #e6ffef, #b3ffd9);
   border-color: #f39c12;
 }
 
@@ -657,7 +657,7 @@
   flex-shrink: 0;
   width: 4rem;
   height: 4rem;
-  background: #ff5500;
+  background: #00ff88;
   border: 3px solid #ff5500;
   border-radius: 50%;
   display: flex;
@@ -676,7 +676,7 @@
 .blue-section .timeline-node,
 .green-section .timeline-node,
 .gray-section .timeline-node {
-  background: #ff5500;
+  background: #00ff88;
   border-color: #ff5500;
   color: white;
 }
@@ -692,7 +692,7 @@
 .blue-section .timeline-node.active,
 .green-section .timeline-node.active,
 .gray-section .timeline-node.active {
-  background: #ff5500;
+  background: #00ff88;
   color: white;
   box-shadow: 0 0 0 8px rgba(255, 85, 0, 0.2), 0 4px 12px rgba(255, 85, 0, 0.4);
 }
@@ -1927,10 +1927,10 @@ u {
 body .subsection-card.completed,
 #root .subsection-card.completed,
 .subsection-card.completed {
-  background: #FF6900 !important;
-  background-color: #FF6900 !important;
-  border: 3px solid #FF6900 !important;
-  box-shadow: 0 0 30px rgba(57, 255, 20, 0.6) !important;
+  background: #00ff88 !important;
+  background-color: #00ff88 !important;
+  border: 3px solid #00ff88 !important;
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.6) !important;
 }
 
 /* Remove ALL backgrounds from inner elements in completed cards */

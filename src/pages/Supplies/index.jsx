@@ -41,7 +41,7 @@ const Supplies = () => {
     medications: {
       ALDURAZYME: {
         name: "ALDURAZYME",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "mg",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -58,7 +58,7 @@ const Supplies = () => {
       },
       CEREZYME: {
         name: "CEREZYME",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "units",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -77,7 +77,7 @@ const Supplies = () => {
       },
       ELAPRASE: {
         name: "ELAPRASE",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "mg",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -95,7 +95,7 @@ const Supplies = () => {
       },
       ELELYSO: {
         name: "ELELYSO",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "units",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -114,7 +114,7 @@ const Supplies = () => {
       },
       FABRAZYME: {
         name: "FABRAZYME",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "mg_with_vials",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -134,7 +134,7 @@ const Supplies = () => {
       },
       KANUMA: {
         name: "KANUMA",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "mg",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -152,7 +152,7 @@ const Supplies = () => {
       },
       LUMIZYME: {
         name: "LUMIZYME",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "mg_with_vials",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -172,7 +172,7 @@ const Supplies = () => {
       },
       NAGLAZYME: {
         name: "NAGLAZYME",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "mg",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -189,7 +189,7 @@ const Supplies = () => {
       },
       NEXVIAZYME: {
         name: "NEXVIAZYME",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "mg",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -208,7 +208,7 @@ const Supplies = () => {
       },
       VIMIZIM: {
         name: "VIMIZIM",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "mg",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -226,7 +226,7 @@ const Supplies = () => {
       },
       VPRIV: {
         name: "VPRIV",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "mg_with_vials",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -246,7 +246,7 @@ const Supplies = () => {
       },
       XENPOZYME: {
         name: "XENPOZYME",
-        color: "#ff5500",
+        color: "#00ff88",
         inputType: "mg",
         base_supplies: [
           { name: "TUBING 92\" CURLIN NO/DEHP", irc: "36282", qty: "doses_per_month" },
@@ -1200,7 +1200,7 @@ const Supplies = () => {
 
                   {/* PORT Section */}
                   <div className="infusion-type-section">
-                    <div className="infusion-type-header" style={{ backgroundColor: '#fff3e0', color: '#f57c00' }}>
+                    <div className="infusion-type-header" style={{ backgroundColor: '#e6fff7', color: '#00ff88' }}>
                       <h4>PORT (Implanted Port)</h4>
                     </div>
                     <div className="infusion-type-content">
@@ -1213,17 +1213,17 @@ const Supplies = () => {
                             alignItems: 'center', 
                             justifyContent: 'space-between',
                             padding: '8px 12px',
-                            backgroundColor: '#fff3e0',
+                            backgroundColor: '#e6fff7',
                             borderRadius: '6px',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease'
                           }}
                         >
-                          <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#f57c00' }}>
+                          <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#00ff88' }}>
                             <Info size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
                             Information
                           </span>
-                          {showPORTInfo ? <ChevronUp size={16} color="#f57c00" /> : <ChevronDown size={16} color="#f57c00" />}
+                          {showPORTInfo ? <ChevronUp size={16} color="#00ff88" /> : <ChevronDown size={16} color="#00ff88" />}
                         </div>
                         {showPORTInfo && (
                           <div style={{ marginTop: '10px', padding: '12px', backgroundColor: '#fffaf5', borderRadius: '6px', fontSize: '0.85rem', lineHeight: '1.6' }}>
@@ -1252,7 +1252,7 @@ const Supplies = () => {
                         <li style={{ marginBottom: '5px' }}>• Heparin Flushes</li>
                         <li style={{ marginBottom: '5px' }}>• Extension Sets</li>
                       </ul>
-                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#fff3e0', borderRadius: '4px' }}>
+                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#e6fff7', borderRadius: '4px' }}>
                         <strong style={{ fontSize: '0.85rem' }}>➤ Key Identifier:</strong> <span style={{ fontSize: '0.85rem' }}>Look for Central Line Dressing Kit with Gripper Plus or Huber needle combo.</span>
                       </div>
                     </div>

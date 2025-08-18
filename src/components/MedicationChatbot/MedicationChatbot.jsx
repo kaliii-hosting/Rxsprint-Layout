@@ -19,7 +19,6 @@ const MedicationChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMedication, setSelectedMedication] = useState(null);
-  const [selectedField, setSelectedField] = useState(null);
   const [showPredictions, setShowPredictions] = useState(false);
   const [filteredMedications, setFilteredMedications] = useState([]);
   const [medicationType, setMedicationType] = useState('all'); // 'all', 'lyso', 'hae'
@@ -149,17 +148,10 @@ const MedicationChatbot = () => {
     setSelectedMedication(medication);
     setSearchQuery(medication.isHae ? (medication.brand || medication.drug) : medication.brandName);
     setShowPredictions(false);
-    setSelectedField(null);
-  };
-
-  const handleSelectField = (field) => {
-    setSelectedField(field);
   };
 
   const handleBack = () => {
-    if (selectedField) {
-      setSelectedField(null);
-    } else if (selectedMedication) {
+    if (selectedMedication) {
       setSelectedMedication(null);
       setSearchQuery('');
     }
@@ -167,37 +159,11 @@ const MedicationChatbot = () => {
 
   const handleReset = () => {
     setSelectedMedication(null);
-    setSelectedField(null);
     setSearchQuery('');
     setShowPredictions(false);
     searchInputRef.current?.focus();
   };
 
-  const formatFieldValue = (value, fieldKey) => {
-    if (!value || value === 'N/A' || value === 'Not specified') {
-      return <span className="field-value-empty">Not specified</span>;
-    }
-
-    // Special formatting for certain fields
-    if (fieldKey === 'infusionSteps' || fieldKey === 'notes' || fieldKey === 'specialDosing') {
-      return (
-        <div className="field-value-multiline">
-          {value.split('\n').map((line, index) => (
-            <p key={index}>{line}</p>
-          ))}
-        </div>
-      );
-    }
-
-    return <span className="field-value">{value}</span>;
-  };
-
-  const getFieldIcon = (fieldKey) => {
-    const fields = selectedMedication?.isHae ? haeMedicationFields : medicationFields;
-    const field = fields.find(f => f.key === fieldKey);
-    const IconComponent = field?.icon || Sparkles;
-    return <IconComponent size={20} style={{ color: field?.color || '#666' }} />;
-  };
 
   // Hide the chatbot on the terminal page
   if (location.pathname === '/terminal') {
@@ -306,7 +272,7 @@ const MedicationChatbot = () => {
           )}
           
           {/* Search Bar */}
-          {!selectedField && (
+          {!selectedMedication && (
             <div className="search-section">
               <div className="search-input-wrapper">
                 <Search size={18} className="search-icon" style={{ left: '18px' }} />
@@ -381,11 +347,11 @@ const MedicationChatbot = () => {
             </div>
           )}
 
-          {/* Field Selection Grid */}
-          {selectedMedication && !selectedField && (
-            <div className="field-selection">
-              <div className="selection-header">
-                <h3>Select Information to View</h3>
+          {/* All Fields Display with Banner Sections */}
+          {selectedMedication && (
+            <div className="medication-full-info">
+              <div className="medication-header-info">
+                <h3>Medication Information</h3>
                 <p className="medication-subtitle">
                   {selectedMedication.isHae ? (
                     `${selectedMedication.drug || 'N/A'} • ${selectedMedication.company || 'N/A'}`
@@ -394,79 +360,68 @@ const MedicationChatbot = () => {
                   )}
                 </p>
               </div>
-              <div className="field-buttons-grid">
+              
+              <div className="medication-fields-container">
                 {(selectedMedication.isHae ? haeMedicationFields : medicationFields).map((field) => {
                   const IconComponent = field.icon;
-                  const hasValue = selectedMedication[field.key] && 
-                                 selectedMedication[field.key] !== 'N/A';
+                  const value = selectedMedication[field.key];
+                  const hasValue = value && value !== 'N/A' && value !== 'Not specified';
+                  
+                  // Skip fields with no value
+                  if (!hasValue) return null;
                   
                   return (
-                    <button
-                      key={field.key}
-                      className={`field-button ${!hasValue ? 'empty' : ''}`}
-                      onClick={() => handleSelectField(field)}
-                      style={{
-                        '--field-color': field.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        background: 'white',
-                        border: '2px solid #e0e0e0'
-                      }}
-                    >
-                      <IconComponent size={20} className="field-icon" style={{ color: field.color }} />
-                      <span className="field-label">{field.label}</span>
-                      {!hasValue && <span className="empty-badge">N/A</span>}
-                    </button>
+                    <div key={field.key} className="field-section">
+                      <div className="field-banner" style={{ backgroundColor: field.color }}>
+                        <IconComponent size={18} className="field-banner-icon" />
+                        <span className="field-banner-label">{field.label}</span>
+                      </div>
+                      <div className="field-content">
+                        {/* Special formatting for multi-line content */}
+                        {(field.key === 'infusionSteps' || field.key === 'notes' || field.key === 'specialDosing' || field.key === 'extraNotes' || field.key === 'se') ? (
+                          <div className="field-value-multiline">
+                            {value.split('\n').map((line, index) => (
+                              <p key={index}>{line || '\u00A0'}</p>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="field-value-text">{value}</div>
+                        )}
+                        
+                        {/* Additional context for certain fields */}
+                        {field.key === 'dose' && selectedMedication.doseFrequency && (
+                          <div className="field-additional-info">
+                            <strong>Frequency:</strong> {selectedMedication.doseFrequency}
+                          </div>
+                        )}
+                        
+                        {field.key === 'reconstitutionSolution' && selectedMedication.reconstitutionVolume && (
+                          <div className="field-additional-info">
+                            <strong>Volume:</strong> {selectedMedication.reconstitutionVolume}
+                          </div>
+                        )}
+                        
+                        {field.key === 'infusionRate' && selectedMedication.normalSalineBag && (
+                          <div className="field-additional-info">
+                            <strong>NS Bag:</strong> {selectedMedication.normalSalineBag}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   );
                 })}
+                
+                {/* Show message if no fields have values */}
+                {(selectedMedication.isHae ? haeMedicationFields : medicationFields).every(field => {
+                  const value = selectedMedication[field.key];
+                  return !value || value === 'N/A' || value === 'Not specified';
+                }) && (
+                  <div className="no-data-message">
+                    <AlertCircle size={24} />
+                    <p>No detailed information available for this medication.</p>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-
-          {/* Field Value Display */}
-          {selectedMedication && selectedField && (
-            <div className="field-value-display">
-              <div className="value-header">
-                <div className="value-header-icon">
-                  {getFieldIcon(selectedField.key)}
-                </div>
-                <div className="value-header-text">
-                  <h3>{selectedField.label}</h3>
-                  <p>{selectedMedication.isHae ? (selectedMedication.brand || selectedMedication.drug) : selectedMedication.brandName}</p>
-                </div>
-              </div>
-              
-              <div className="value-content">
-                {formatFieldValue(selectedMedication[selectedField.key], selectedField.key)}
-              </div>
-
-              {/* Additional context for certain fields */}
-              {selectedField.key === 'dose' && selectedMedication.doseFrequency && (
-                <div className="additional-info">
-                  <strong>Frequency:</strong> {selectedMedication.doseFrequency}
-                </div>
-              )}
-              
-              {selectedField.key === 'reconstitutionSolution' && selectedMedication.reconstitutionVolume && (
-                <div className="additional-info">
-                  <strong>Volume:</strong> {selectedMedication.reconstitutionVolume}
-                </div>
-              )}
-
-              {selectedField.key === 'infusionRate' && selectedMedication.normalSalineBag && (
-                <div className="additional-info">
-                  <strong>NS Bag:</strong> {selectedMedication.normalSalineBag}
-                </div>
-              )}
-
-              <button 
-                className="back-to-fields-btn"
-                onClick={() => setSelectedField(null)}
-              >
-                <ChevronLeft size={16} />
-                Back to fields
-              </button>
             </div>
           )}
 

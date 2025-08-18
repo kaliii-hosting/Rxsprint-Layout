@@ -19,7 +19,8 @@ import {
   Settings,
   Palette,
   Terminal,
-  Brain
+  Brain,
+  Clock
 } from 'lucide-react';
 import { useCalculator } from '../../contexts/CalculatorContext';
 import { useSearch } from '../../contexts/SearchContext';
@@ -28,6 +29,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import VoiceTranscription from '../VoiceTranscription/VoiceTranscription';
 import CurlinPumpIcon from '../icons/CurlinPumpIcon';
 import PumpSimulator from '../PumpSimulator/PumpSimulator';
+import DigitalClock from '../DigitalClock/DigitalClock';
 import './Layout.css';
 
 const Layout = ({ children }) => {
@@ -39,6 +41,7 @@ const Layout = ({ children }) => {
   const [showVoiceTranscription, setShowVoiceTranscription] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showPumpSimulator, setShowPumpSimulator] = useState(false);
+  const [showDigitalClock, setShowDigitalClock] = useState(false);
   const { 
     searchQuery, 
     searchResults, 
@@ -324,6 +327,15 @@ const Layout = ({ children }) => {
               </button>
             )}
             
+            {/* Digital Clock Button */}
+            <button 
+              className="icon-button" 
+              title="Digital Clock"
+              onClick={() => setShowDigitalClock(true)}
+            >
+              <Clock size={20} />
+            </button>
+            
             {/* AI Terminal Button */}
             <button 
               className="icon-button" 
@@ -358,6 +370,12 @@ const Layout = ({ children }) => {
       <PumpSimulator
         isOpen={showPumpSimulator}
         onClose={() => setShowPumpSimulator(false)}
+      />
+      
+      {/* Digital Clock Modal */}
+      <DigitalClock
+        isOpen={showDigitalClock}
+        onClose={() => setShowDigitalClock(false)}
       />
     </div>
   );

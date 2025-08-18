@@ -177,7 +177,7 @@ const BookmarkManager = () => {
   const [currentFolder, setCurrentFolder] = useState(null);
   // Check if mobile device on initial load
   const isMobile = window.innerWidth <= 768;
-  const [viewMode, setViewMode] = useState(isMobile ? 'compact' : 'grid'); // grid, list, compact
+  const [viewMode, setViewMode] = useState('grid'); // grid, list, compact - default to grid for all devices
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);

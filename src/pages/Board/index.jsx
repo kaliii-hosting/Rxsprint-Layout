@@ -4,7 +4,6 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { firestore as db } from '../../config/firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
-import EnterpriseHeader, { TabGroup, TabButton, ActionGroup, ActionButton, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import './Board.css';
 
 const Board = () => {
@@ -551,7 +550,7 @@ const Board = () => {
       setCurrentColor('#ffff00');
       setStrokeWidth(20);
     } else if (tool === 'marker') {
-      setCurrentColor('#000000');
+      setCurrentColor('#000000'); // Default to black for marker
       setStrokeWidth(5);
     }
   };
@@ -703,117 +702,148 @@ const Board = () => {
 
   return (
     <div className={`board-page ${theme} page-container`}>
-      <EnterpriseHeader>
-        <TabGroup>
-          <TabButton
-            active={currentTool === 'highlighter'}
-            onClick={() => handleToolChange('highlighter')}
-            icon={Highlighter}
-          >
-            Highlighter
-          </TabButton>
-          <TabButton
-            active={currentTool === 'marker'}
-            onClick={() => handleToolChange('marker')}
-            icon={Pen}
-          >
-            Marker
-          </TabButton>
-          <TabButton
-            active={currentTool === 'move'}
-            onClick={() => handleToolChange('move')}
-            icon={Move}
-          >
-            Move
-          </TabButton>
-          <TabButton
-            active={currentTool === 'resize'}
-            onClick={() => handleToolChange('resize')}
-            icon={Maximize2}
-          >
-            Resize
-          </TabButton>
-        </TabGroup>
+      <div className="board-toolbar">
+        <div className="toolbar-row">
+          {/* Tool Selection Group */}
+          <div className="toolbar-group tool-group">
+            <button
+              className={`toolbar-btn tool-btn ${currentTool === 'highlighter' ? 'active' : ''}`}
+              onClick={() => handleToolChange('highlighter')}
+              title="Highlighter"
+            >
+              <Highlighter size={16} />
+              <span>Highlighter</span>
+            </button>
+            <button
+              className={`toolbar-btn tool-btn ${currentTool === 'marker' ? 'active' : ''}`}
+              onClick={() => handleToolChange('marker')}
+              title="Marker"
+            >
+              <Pen size={16} />
+              <span>Marker</span>
+            </button>
+            <button
+              className={`toolbar-btn tool-btn ${currentTool === 'move' ? 'active' : ''}`}
+              onClick={() => handleToolChange('move')}
+              title="Move"
+            >
+              <Move size={16} />
+              <span>Move</span>
+            </button>
+            <button
+              className={`toolbar-btn tool-btn ${currentTool === 'resize' ? 'active' : ''}`}
+              onClick={() => handleToolChange('resize')}
+              title="Resize"
+            >
+              <Maximize2 size={16} />
+              <span>Resize</span>
+            </button>
+          </div>
 
-        <HeaderDivider />
-
-        {(currentTool === 'highlighter' || currentTool === 'marker') && (
-          <>
-            <div className="stroke-width-controls">
-              <span className="control-label">Size:</span>
-              {[5, 10, 15, 20, 30].map(width => (
-                <button
-                  key={width}
-                  className={`stroke-btn ${strokeWidth === width ? 'active' : ''}`}
-                  onClick={() => handleStrokeWidthChange(width)}
-                >
-                  <div 
-                    className="stroke-preview"
-                    style={{
-                      width: `${Math.min(width, 20)}px`,
-                      height: `${Math.min(width, 20)}px`,
-                      borderRadius: '50%',
-                      background: currentColor
-                    }}
-                  />
-                </button>
-              ))}
+          {/* Size and Color wrapper for mobile */}
+          <div className="size-color-wrapper">
+            {/* Size Selection Group - Always visible */}
+            <div className="toolbar-group size-group">
+              <span className="toolbar-label">Size:</span>
+              <div className="size-buttons">
+                {[5, 10, 20, 30, 40].map(width => (
+                  <button
+                    key={width}
+                    className={`size-btn ${strokeWidth === width ? 'active' : ''} ${
+                      (currentTool !== 'highlighter' && currentTool !== 'marker') ? 'disabled' : ''
+                    }`}
+                    onClick={() => (currentTool === 'highlighter' || currentTool === 'marker') && handleStrokeWidthChange(width)}
+                    disabled={currentTool !== 'highlighter' && currentTool !== 'marker'}
+                    title={`Size ${width}`}
+                  >
+                    <div 
+                      className="size-indicator"
+                      style={{
+                        width: width <= 5 ? '4px' : width <= 10 ? '6px' : width <= 20 ? '8px' : width <= 30 ? '10px' : '12px',
+                        height: width <= 5 ? '4px' : width <= 10 ? '6px' : width <= 20 ? '8px' : width <= 30 ? '10px' : '12px',
+                        borderRadius: '50%'
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <HeaderDivider />
-
-            <div className="color-controls">
-              <span className="control-label">Color:</span>
-              {(currentTool === 'highlighter' ? [
-                '#ffff00', '#00ff00', '#ff6900', '#ff69b4', '#00bfff'
-              ] : [
-                '#000000', '#ff0000', '#0000ff', '#00ff00', '#ff6900'
-              ]).map(color => (
-                <button
-                  key={color}
-                  className={`color-btn ${currentColor === color ? 'active' : ''}`}
-                  onClick={() => handleColorChange(color)}
-                  style={{ background: color }}
-                />
-              ))}
+            {/* Color Selection Group - Always visible */}
+            <div className="toolbar-group color-group">
+              <span className="toolbar-label">Color:</span>
+              <div className="color-buttons">
+                {(() => {
+                  // Different colors for marker vs highlighter
+                  const colors = currentTool === 'marker' 
+                    ? ['#0000ff', '#ff0000', '#000000', '#00ff00', '#ff6900'] // Blue, Red, Black, Green, Orange for marker
+                    : ['#ffff00', '#00ff00', '#ff6900', '#ff69b4', '#00bfff']; // Yellow, Green, Orange, Pink, Blue for highlighter
+                  
+                  return colors.map(color => (
+                    <button
+                      key={color}
+                      className={`color-btn ${currentColor === color ? 'active' : ''} ${
+                        (currentTool !== 'highlighter' && currentTool !== 'marker') ? 'disabled' : ''
+                      }`}
+                      onClick={() => (currentTool === 'highlighter' || currentTool === 'marker') && handleColorChange(color)}
+                      disabled={currentTool !== 'highlighter' && currentTool !== 'marker'}
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ));
+                })()}
+              </div>
             </div>
+          </div>
 
-            <HeaderDivider />
-          </>
-        )}
-
-        <ActionGroup>
-          <ActionButton 
-            onClick={handleUndo} 
-            icon={Undo} 
-            secondary
-            disabled={historyIndex <= 0}
-          >
-            Undo
-          </ActionButton>
-          <ActionButton 
-            onClick={handleRedo} 
-            icon={Redo} 
-            secondary
-            disabled={historyIndex >= history.length - 1}
-          >
-            Redo
-          </ActionButton>
-          <ActionButton onClick={clearBoard} icon={Trash2} secondary>
-            Clear
-          </ActionButton>
-          <ActionButton 
-            onClick={saveAsNote} 
-            icon={Save}
-            disabled={isSaving}
-          >
-            {isSaving ? 'Saving...' : 'Save as Note'}
-          </ActionButton>
-          <ActionButton onClick={downloadBoard} icon={Download}>
-            Download
-          </ActionButton>
-        </ActionGroup>
-      </EnterpriseHeader>
+          {/* Action Buttons Group */}
+          <div className="toolbar-group action-group">
+            <button
+              className="toolbar-btn action-btn"
+              onClick={handleUndo}
+              disabled={historyIndex <= 0}
+              title="Undo"
+            >
+              <Undo size={16} />
+              <span>Undo</span>
+            </button>
+            <button
+              className="toolbar-btn action-btn"
+              onClick={handleRedo}
+              disabled={historyIndex >= history.length - 1}
+              title="Redo"
+            >
+              <Redo size={16} />
+              <span>Redo</span>
+            </button>
+            <button
+              className="toolbar-btn action-btn"
+              onClick={clearBoard}
+              title="Clear"
+            >
+              <Trash2 size={16} />
+              <span>Clear</span>
+            </button>
+            <button
+              className="toolbar-btn action-btn"
+              onClick={saveAsNote}
+              disabled={isSaving}
+              title="Save as Note"
+            >
+              <Save size={16} />
+              <span>{isSaving ? 'Saving...' : 'Save as Note'}</span>
+            </button>
+            <button
+              className="toolbar-btn action-btn"
+              onClick={downloadBoard}
+              title="Download"
+            >
+              <Download size={16} />
+              <span>Download</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className="board-content">
         <canvas

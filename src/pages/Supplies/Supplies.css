@@ -457,7 +457,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #FF6900 0%, #ff8533 100%);
+  background: linear-gradient(90deg, #00ff88 0%, #00ff88 100%);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -742,9 +742,9 @@
 
 /* Checked Row Styles */
 .table-row.checked {
-  background: linear-gradient(135deg, #FF6900 0%, #ff8533 100%);
-  border: 1px solid #2acc0a;
-  box-shadow: 0 0 20px rgba(57, 255, 20, 0.4), inset 0 0 10px rgba(57, 255, 20, 0.2);
+  background: linear-gradient(135deg, #00ff88 0%, #00ff88 100%);
+  border: 1px solid #00ff88;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.4), inset 0 0 10px rgba(0, 255, 136, 0.2);
   transform: scale(1.02);
   opacity: 1;
   animation: checkPulse 0.4s ease;
@@ -778,8 +778,8 @@
 }
 
 .table-row.checked .row-check svg {
-  color: #FF6900;
-  filter: drop-shadow(0 0 2px #FF6900);
+  color: #00ff88;
+  filter: drop-shadow(0 0 2px #00ff88);
 }
 
 .table-row.checked .cell-name {

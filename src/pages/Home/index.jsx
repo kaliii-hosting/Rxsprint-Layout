@@ -144,59 +144,14 @@ const africanLocations = [
   { lat: 9.1450, lng: 40.4897 }, // Harar, Ethiopia (East)
 ];
 
-// Asian locations - spread across the entire continent
-const asianLocations = [
-  { lat: 35.6762, lng: 139.6503 }, // Tokyo, Japan (East)
-  { lat: 39.9042, lng: 116.4074 }, // Beijing, China (North-East)
-  { lat: 31.2304, lng: 121.4737 }, // Shanghai, China (East)
-  { lat: 28.6139, lng: 77.2090 }, // New Delhi, India (South-Central)
-  { lat: 19.0760, lng: 72.8777 }, // Mumbai, India (South-West)
-  { lat: 13.7563, lng: 100.5018 }, // Bangkok, Thailand (South-East)
-  { lat: 1.3521, lng: 103.8198 }, // Singapore (South-East)
-  { lat: 37.5665, lng: 126.9780 }, // Seoul, South Korea (North-East)
-  { lat: 22.3193, lng: 114.1694 }, // Hong Kong (South-East)
-  { lat: -6.2088, lng: 106.8456 }, // Jakarta, Indonesia (South-East)
-  { lat: 25.0330, lng: 121.5654 }, // Taipei, Taiwan (East)
-  { lat: 14.5995, lng: 120.9842 }, // Manila, Philippines (South-East)
-  { lat: 3.1390, lng: 101.6869 }, // Kuala Lumpur, Malaysia (South-East)
-  { lat: 21.0285, lng: 105.8542 }, // Hanoi, Vietnam (South-East)
-  { lat: 23.8103, lng: 90.4125 }, // Dhaka, Bangladesh (South)
-  { lat: 12.9716, lng: 77.5946 }, // Bangalore, India (South)
-  { lat: 41.0082, lng: 28.9784 }, // Istanbul, Turkey (West)
-  { lat: 24.7136, lng: 46.6753 }, // Riyadh, Saudi Arabia (West)
-  { lat: 25.2760, lng: 55.2962 }, // Dubai, UAE (West)
-  { lat: 35.6892, lng: 51.3890 }, // Tehran, Iran (West)
-  { lat: 43.2551, lng: 76.9126 }, // Almaty, Kazakhstan (Central)
-  { lat: 41.2995, lng: 69.2401 }, // Tashkent, Uzbekistan (Central)
-  { lat: 56.8389, lng: 60.6057 }, // Yekaterinburg, Russia (North)
-  { lat: 55.7558, lng: 37.6173 }, // Moscow, Russia (North-West)
-  { lat: 43.8688, lng: 125.3226 }, // Changchun, China (North-East)
-  { lat: 22.5431, lng: 88.3179 }, // Kolkata, India (East)
-  { lat: 17.3850, lng: 78.4867 }, // Hyderabad, India (South-Central)
-  { lat: 13.0827, lng: 80.2707 }, // Chennai, India (South-East)
-  { lat: 31.5204, lng: 74.3587 }, // Lahore, Pakistan (Central)
-  { lat: 24.8607, lng: 67.0011 }, // Karachi, Pakistan (South-West)
-  { lat: 34.5553, lng: 69.2075 }, // Kabul, Afghanistan (Central-West)
-  { lat: 47.9105, lng: 106.9057 }, // Ulaanbaatar, Mongolia (North)
-  { lat: 27.7172, lng: 85.3240 }, // Kathmandu, Nepal (South-Central)
-  { lat: 6.9271, lng: 79.8612 }, // Colombo, Sri Lanka (South)
-  { lat: 16.8409, lng: 96.1735 }, // Yangon, Myanmar (South-East)
-  { lat: 11.5564, lng: 104.9282 }, // Phnom Penh, Cambodia (South-East)
-  { lat: 17.9757, lng: 102.6331 }, // Vientiane, Laos (South-East)
-  { lat: 4.2105, lng: 101.9758 }, // Cyberjaya, Malaysia (South-East)
-  { lat: -0.7893, lng: 113.9213 }, // Palangkaraya, Indonesia (South-East)
-  { lat: 7.8731, lng: 125.7275 }, // Davao, Philippines (South-East)
-];
 
 const Home = () => {
   const navigate = useNavigate();
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const [bookmarks, setBookmarks] = useState([]);
-  const [notes, setNotes] = useState([]);
   const [mapReady, setMapReady] = useState(false);
   const bookmarkMarkersRef = useRef([]);
-  const noteMarkersRef = useRef([]);
   const pageMarkersRef = useRef([]);
   const initializingRef = useRef(false);
   const [customPositions, setCustomPositions] = useState({});
@@ -454,7 +409,6 @@ const Home = () => {
             <div class="continent-buttons">
               <button class="continent-btn" data-continent="north-america">Pages</button>
               <button class="continent-btn" data-continent="africa">Bookmarks</button>
-              <button class="continent-btn" data-continent="asia">Notes</button>
               <button class="continent-btn" data-continent="world">World</button>
             </div>
           `;
@@ -518,9 +472,6 @@ const Home = () => {
                   break;
                 case 'africa':
                   map.setView([-2.0, 20.0], 2.8, { animate: true });
-                  break;
-                case 'asia':
-                  map.setView([30.0, 90.0], 2.5, { animate: true });
                   break;
                 case 'world':
                   // Use the minimum zoom level calculated based on viewport
@@ -738,85 +689,6 @@ const Home = () => {
     }
   }, []);
 
-  // Subscribe to notes from Firebase
-  useEffect(() => {
-    if (!db) {
-      console.error('Firestore database is not initialized');
-      // Set test notes as fallback
-      const testNotes = [
-        {
-          id: 'test-note-1',
-          title: 'Tokyo Note',
-          content: 'This is a test note in Tokyo',
-          userId: 'default-user'
-        },
-        {
-          id: 'test-note-2',
-          title: 'Beijing Note',
-          content: 'Another test note in Beijing',
-          userId: 'default-user'
-        }
-      ];
-      setNotes(testNotes);
-      return;
-    }
-    
-    console.log('Setting up notes subscription...');
-    
-    try {
-      const notesRef = collection(db, 'notes');
-      
-      const unsubscribe = onSnapshot(
-        notesRef,
-        (snapshot) => {
-          console.log('Notes snapshot received:', snapshot.size, 'documents');
-          
-          const notesData = [];
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            console.log('Note document:', doc.id, data);
-            notesData.push({
-              id: doc.id,
-              ...data
-            });
-          });
-          
-          // Use all notes (no userId filtering needed)
-          console.log('Total notes found:', notesData.length);
-          
-          // Use real notes if available, otherwise use test notes
-          if (notesData.length > 0) {
-            setNotes(notesData);
-          } else {
-            console.log('No user notes found, using test notes');
-            const testNotes = [
-              {
-                id: 'test-note-1',
-                title: 'Tokyo Note',
-                content: 'This is a test note in Tokyo',
-                userId: 'default-user'
-              },
-              {
-                id: 'test-note-2',
-                title: 'Beijing Note',
-                content: 'Another test note in Beijing',
-                userId: 'default-user'
-              }
-            ];
-            setNotes(testNotes);
-          }
-        },
-        (error) => {
-          console.error('Error fetching notes:', error);
-          console.error('Error details:', error.code, error.message);
-        }
-      );
-
-      return () => unsubscribe();
-    } catch (error) {
-      console.error('Error setting up notes listener:', error);
-    }
-  }, []);
 
   // Add bookmarks to map
   useEffect(() => {
@@ -907,92 +779,6 @@ const Home = () => {
     });
   }, [bookmarks, mapReady, customPositions]);
 
-  // Add notes to map
-  useEffect(() => {
-    if (!mapReady || !mapInstanceRef.current || !window.L || notes.length === 0) {
-      return;
-    }
-
-    // Remove existing note markers
-    noteMarkersRef.current.forEach(marker => {
-      try {
-        mapInstanceRef.current.removeLayer(marker);
-      } catch (e) {}
-    });
-    noteMarkersRef.current = [];
-
-    // Add note markers
-    notes.forEach((note, index) => {
-      // Check if there's a custom position for this note
-      const customPosKey = `note_${note.id}`;
-      const customPos = customPositions[customPosKey];
-      
-      let lat, lng;
-      if (customPos) {
-        lat = customPos.lat;
-        lng = customPos.lng;
-      } else {
-        const locationIndex = index % asianLocations.length;
-        // Add small random offset to prevent exact overlapping
-        const offset = 0.1; // Small offset in degrees
-        lat = asianLocations[locationIndex].lat + (Math.random() - 0.5) * offset;
-        lng = asianLocations[locationIndex].lng + (Math.random() - 0.5) * offset;
-      }
-      
-      const markerHtml = `
-        <div class="location-marker location-marker-small">
-          <div class="marker-icon-wrapper">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-          </div>
-          <div class="marker-title marker-title-small">
-            ${note.title || 'Note'}
-          </div>
-        </div>
-      `;
-
-      const customIcon = window.L.divIcon({
-        className: 'custom-marker-wrapper',
-        html: markerHtml,
-        iconSize: [36, 45],
-        iconAnchor: [18, 36],
-        popupAnchor: [0, -36]
-      });
-
-      const marker = window.L.marker([lat, lng], { 
-        icon: customIcon,
-        riseOnHover: true,
-        draggable: true,
-        zIndexOffset: 1000
-      });
-
-      marker.on('click', () => {
-        if (!isDraggingRef.current) {
-          navigate('/notes', { state: { selectedNoteId: note.id } });
-        }
-      });
-
-      marker.on('dragstart', () => {
-        isDraggingRef.current = true;
-      });
-
-      marker.on('dragend', (e) => {
-        const { lat, lng } = e.target.getLatLng();
-        saveMarkerPosition(note.id, 'note', lat, lng);
-        setTimeout(() => {
-          isDraggingRef.current = false;
-        }, 100);
-      });
-
-      marker.addTo(mapInstanceRef.current);
-      noteMarkersRef.current.push(marker);
-    });
-  }, [notes, navigate, mapReady, customPositions]);
 
   return (
     <div className="home-page page-container">

@@ -101,6 +101,7 @@
   right: 24px;
   width: 420px;
   height: 600px;
+  max-height: calc(100vh - 100px);
   background: white;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
@@ -111,6 +112,7 @@
   transform: translateY(20px) scale(0.95);
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
 .chat-widget.open {
@@ -118,6 +120,14 @@
   transform: translateY(0) scale(1);
   pointer-events: all;
   animation: slideInUp 0.3s ease-out;
+}
+
+/* Ensure content scrolls properly */
+.chat-widget .chat-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -193,21 +203,35 @@
 .chat-content {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   background: #f8f9fa;
   padding: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: #FF6900 #f1f1f1;
 }
 
+/* Enhanced scrollbar styling - always visible when content overflows */
 .chat-content::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  display: block;
 }
 
 .chat-content::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f1f1f1;
+  border-radius: 4px;
+  margin: 5px 0;
 }
 
 .chat-content::-webkit-scrollbar-thumb {
-  background: #ddd;
-  border-radius: 3px;
+  background: #FF6900;
+  border-radius: 4px;
+  border: 1px solid #f1f1f1;
+  min-height: 40px;
+}
+
+.chat-content::-webkit-scrollbar-thumb:hover {
+  background: #E55D00;
+  border-color: #E55D00;
 }
 
 /* Search Section */
@@ -702,4 +726,174 @@
     padding: 10px 36px 10px 50px !important;
     font-size: 14px;
   }
+}
+
+/* New Medication Full Information Display */
+.medication-full-info {
+  animation: fadeIn 0.3s ease;
+  height: calc(100% - 20px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 20px;
+  margin-right: -5px;
+  padding-right: 5px;
+}
+
+.medication-header-info {
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
+  border-bottom: 1px solid #e0e0e0;
+  margin: -20px -20px 0 -20px;
+  position: sticky;
+  top: -20px;
+  z-index: 10;
+}
+
+.medication-header-info h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.medication-subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.medication-fields-container {
+  padding: 20px 0;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Ensure search predictions also have scrollbar if needed */
+.search-predictions {
+  max-height: 250px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.search-predictions::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-predictions::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.search-predictions::-webkit-scrollbar-thumb {
+  background: #FF6900;
+  border-radius: 3px;
+}
+
+.search-predictions::-webkit-scrollbar-thumb:hover {
+  background: #E55D00;
+}
+
+/* Field Section with Banner */
+.field-section {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  background: white;
+  border: 1px solid #e8e8e8;
+}
+
+.field-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.field-banner-icon {
+  color: white;
+  flex-shrink: 0;
+}
+
+.field-banner-label {
+  flex: 1;
+}
+
+.field-content {
+  padding: 16px;
+  background: white;
+}
+
+.field-value-text {
+  font-size: 15px;
+  color: #333;
+  line-height: 1.6;
+}
+
+.field-additional-info {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #666;
+  border-left: 3px solid #FF6900;
+}
+
+.field-additional-info strong {
+  color: #333;
+  margin-right: 6px;
+}
+
+/* No Data Message */
+.no-data-message {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.no-data-message svg {
+  margin-bottom: 16px;
+  color: #ccc;
+}
+
+.no-data-message p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Scrollbar styling for medication info - always visible */
+.medication-full-info::-webkit-scrollbar {
+  width: 8px;
+  display: block;
+}
+
+.medication-full-info::-webkit-scrollbar-track {
+  background: #e8e8e8;
+  border-radius: 4px;
+}
+
+.medication-full-info::-webkit-scrollbar-thumb {
+  background: #FF6900;
+  border-radius: 4px;
+  min-height: 40px;
+  border: 1px solid #e8e8e8;
+}
+
+.medication-full-info::-webkit-scrollbar-thumb:hover {
+  background: #E55D00;
+  border-color: #E55D00;
+}
+
+/* Firefox scrollbar support */
+.medication-full-info {
+  scrollbar-width: thin;
+  scrollbar-color: #FF6900 #e8e8e8;
 }

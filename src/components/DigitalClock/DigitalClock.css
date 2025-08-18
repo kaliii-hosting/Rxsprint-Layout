@@ -1,0 +1,522 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Montserrat:wght@400;500;600&family=Roboto:wght@300;400&family=Open+Sans:wght@400&family=Roboto+Mono:wght@400;700&display=swap');
+
+.digital-clock-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0a0a0a;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.digital-clock-modal {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: clamp(5px, 2vh, 20px);
+  box-sizing: border-box;
+}
+
+.digital-clock-close {
+  position: fixed;
+  top: clamp(0.5rem, 2vh, 1.5rem);
+  right: clamp(0.5rem, 2vw, 1.5rem);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  padding: clamp(0.3rem, 1.5vw, 0.6rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10002;
+  width: clamp(32px, 6vw, 48px);
+  height: clamp(32px, 6vw, 48px);
+}
+
+.digital-clock-close:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.digital-clock-close svg {
+  width: clamp(16px, 3vw, 24px);
+  height: clamp(16px, 3vw, 24px);
+}
+
+.clock-container {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: clamp(12px, 2vw, 24px);
+  padding: clamp(10px, 3vw, 40px);
+  width: min(95vw, 90vh * 1.2);
+  max-width: 900px;
+  max-height: 95vh;
+  min-height: 60vh;
+  box-shadow: 
+    0 8px 32px rgba(255, 255, 255, 0.1),
+    0 2px 8px rgba(255, 255, 255, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: slideUp 0.5s ease-out;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.digital-clock-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 2vh, 1.5rem);
+  width: 100%;
+  height: 100%;
+  padding: clamp(5px, 1vw, 15px);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.clock-time-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.clock-time {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  font-family: 'Orbitron', 'Inter', monospace, sans-serif;
+  font-size: clamp(24px, 8vw, 120px);
+  font-weight: 900;
+  color: white;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  text-rendering: optimizeLegibility;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.3),
+    0 0 40px rgba(255, 255, 255, 0.2);
+  animation: pulseGlow 2s ease-in-out infinite;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    text-shadow: 
+      0 0 20px rgba(255, 255, 255, 0.3),
+      0 0 40px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    text-shadow: 
+      0 0 30px rgba(255, 255, 255, 0.5),
+      0 0 60px rgba(255, 255, 255, 0.3);
+  }
+}
+
+.time-hours,
+.time-minutes {
+  font-size: clamp(24px, 8vw, 120px);
+  font-weight: 900;
+}
+
+.time-seconds {
+  font-size: clamp(18px, 6vw, 80px);
+  font-weight: 700;
+  opacity: 0.8;
+  margin-left: 0.1em;
+}
+
+.time-separator {
+  font-size: clamp(20px, 7vw, 100px);
+  font-weight: 700;
+  margin: 0 0.05em;
+  animation: blink 1s ease-in-out infinite;
+}
+
+.time-period {
+  font-size: clamp(14px, 4vw, 40px);
+  font-weight: 600;
+  margin-left: 0.3em;
+  color: white;
+  opacity: 0.9;
+  font-family: 'Roboto', sans-serif;
+  align-self: center;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.clock-divider {
+  width: 80%;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.5) 20%, 
+    rgba(255, 255, 255, 0.5) 80%, 
+    transparent 100%);
+  margin: clamp(0.2rem, 1vh, 0.4rem) 0;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+/* Terminal Loading Bar */
+.terminal-loading {
+  font-family: 'Roboto Mono', monospace;
+  font-size: clamp(8px, 2.5vw, 14px);
+  color: white;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  letter-spacing: 0px;
+  margin: clamp(0.2rem, 1vh, 0.8rem) 0;
+  text-align: center;
+  font-weight: 400;
+  line-height: 1;
+  height: clamp(12px, 3vw, 18px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Date and Day Banners */
+.date-day-container {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 2vw, 15px);
+  width: 100%;
+  justify-content: center;
+  margin: clamp(0.2rem, 1vh, 0.8rem) 0;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.clock-day-banner,
+.clock-date-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(2px, 0.5vw, 5px);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: clamp(4px, 1.5vw, 10px) clamp(8px, 2.5vw, 20px);
+  border-radius: clamp(8px, 2vw, 16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 4px 16px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-sizing: border-box;
+  min-height: clamp(40px, 8vh, 70px);
+  justify-content: center;
+}
+
+.clock-day-banner {
+  flex: 1;
+  max-width: clamp(100px, 20vw, 160px);
+  min-width: clamp(80px, 15vw, 120px);
+}
+
+.clock-date-banner {
+  flex: 2;
+  max-width: clamp(160px, 35vw, 280px);
+  min-width: clamp(140px, 30vw, 200px);
+}
+
+.day-label,
+.date-label {
+  font-family: 'Open Sans', sans-serif;
+  font-size: clamp(6px, 1.5vw, 10px);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.day-value,
+.date-value {
+  font-family: 'Roboto', sans-serif;
+  font-size: clamp(10px, 3vw, 18px);
+  color: white;
+  text-align: center;
+  line-height: 1.1;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.day-value {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.date-value {
+  font-weight: 400;
+}
+
+.banner-divider {
+  width: 2px;
+  height: clamp(20px, 5vh, 35px);
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.5) 20%, 
+    rgba(255, 255, 255, 0.5) 80%, 
+    transparent 100%);
+  border-radius: 1px;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.clock-weather {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(0.3rem, 1.5vw, 0.6rem);
+  font-family: 'Open Sans', 'Lato', sans-serif;
+  font-size: clamp(10px, 3vw, 20px);
+  font-weight: 400;
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  padding: clamp(0.2rem, 1vw, 0.4rem) clamp(0.6rem, 2.5vw, 1.2rem);
+  border-radius: clamp(15px, 4vw, 40px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  margin-top: clamp(0.2rem, 1vh, 0.6rem);
+  animation: fadeInScale 0.6s ease-out 0.3s both;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.weather-icon {
+  font-size: clamp(12px, 4vw, 24px);
+  line-height: 1;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  flex-shrink: 0;
+}
+
+.weather-temp {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.weather-separator {
+  opacity: 0.6;
+  color: white;
+}
+
+.weather-location {
+  opacity: 0.9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mobile Portrait - Stack banners vertically */
+@media screen and (max-width: 767px) {
+  .clock-container {
+    width: min(95vw, 95vh * 0.8);
+    padding: clamp(8px, 2vw, 15px);
+  }
+  
+  .date-day-container {
+    flex-direction: column;
+    gap: clamp(6px, 1.5vw, 8px);
+  }
+  
+  .clock-day-banner,
+  .clock-date-banner {
+    width: 100%;
+    max-width: min(90%, 250px);
+    min-width: min(80%, 180px);
+  }
+  
+  .banner-divider {
+    width: clamp(30px, 10vw, 50px);
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(255, 255, 255, 0.5) 20%, 
+      rgba(255, 255, 255, 0.5) 80%, 
+      transparent 100%);
+  }
+}
+
+/* Mobile Landscape - Reduce spacing further */
+@media screen and (max-width: 767px) and (orientation: landscape) {
+  .clock-container {
+    width: min(95vw, 95vh * 1.5);
+    max-height: 90vh;
+    padding: clamp(6px, 1.5vw, 12px);
+  }
+  
+  .digital-clock-content {
+    gap: clamp(0.3rem, 1vh, 0.8rem);
+  }
+  
+  .terminal-loading {
+    margin: clamp(0.1rem, 0.5vh, 0.3rem) 0;
+  }
+  
+  .date-day-container {
+    margin: clamp(0.1rem, 0.5vh, 0.3rem) 0;
+    flex-direction: row;
+  }
+  
+  .clock-time {
+    font-size: clamp(20px, 6vw, 80px);
+  }
+  
+  .time-hours,
+  .time-minutes {
+    font-size: clamp(20px, 6vw, 80px);
+  }
+  
+  .time-seconds {
+    font-size: clamp(14px, 4vw, 60px);
+  }
+  
+  .time-separator {
+    font-size: clamp(16px, 5vw, 70px);
+  }
+  
+  .time-period {
+    font-size: clamp(12px, 3vw, 28px);
+  }
+}
+
+/* Very small screens - Extra compact */
+@media screen and (max-width: 480px) {
+  .clock-container {
+    width: min(98vw, 95vh * 0.75);
+    padding: clamp(6px, 1.5vw, 10px);
+    min-height: 50vh;
+  }
+  
+  .digital-clock-content {
+    gap: clamp(0.3rem, 1vh, 0.6rem);
+  }
+  
+  .clock-time {
+    font-size: clamp(18px, 6vw, 60px);
+  }
+  
+  .time-hours,
+  .time-minutes {
+    font-size: clamp(18px, 6vw, 60px);
+  }
+  
+  .time-seconds {
+    font-size: clamp(12px, 4vw, 40px);
+  }
+  
+  .time-separator {
+    font-size: clamp(14px, 5vw, 50px);
+  }
+  
+  .time-period {
+    font-size: clamp(10px, 2.5vw, 24px);
+  }
+}
+
+/* Tiny screens - Ultra compact */
+@media screen and (max-width: 320px) {
+  .digital-clock-modal {
+    padding: clamp(3px, 1vw, 8px);
+  }
+  
+  .clock-container {
+    width: min(99vw, 95vh * 0.7);
+    padding: clamp(5px, 1vw, 8px);
+    border-radius: clamp(6px, 1.5vw, 12px);
+  }
+  
+  .digital-clock-content {
+    gap: clamp(0.25rem, 0.8vh, 0.5rem);
+    padding: clamp(3px, 0.8vw, 8px);
+  }
+  
+  .clock-time {
+    font-size: clamp(16px, 5vw, 48px);
+  }
+  
+  .time-hours,
+  .time-minutes {
+    font-size: clamp(16px, 5vw, 48px);
+  }
+  
+  .time-seconds {
+    font-size: clamp(11px, 3.5vw, 32px);
+  }
+  
+  .time-separator {
+    font-size: clamp(13px, 4vw, 40px);
+  }
+  
+  .time-period {
+    font-size: clamp(9px, 2vw, 20px);
+    margin-left: 0.2em;
+  }
+}
