@@ -29,6 +29,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { firestore as db } from '../../config/firebase';
 import { collection, addDoc, updateDoc, doc, serverTimestamp, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import './NoteGenerator.css';
+import './BannerToolbarStyles.css';
 
 const NoteGenerator = () => {
   const { theme } = useTheme();
@@ -92,9 +93,9 @@ const NoteGenerator = () => {
     docId: null // Track the Firebase document ID
   });
   const [newBannerText, setNewBannerText] = useState('');
-  const [showBannerInput, setShowBannerInput] = useState(false);
+  const [showBannerInput, setShowBannerInput] = useState(true); // Always show input
   const [copiedBannerId, setCopiedBannerId] = useState(null);
-  const [bannerColorOrange, setBannerColorOrange] = useState(false);
+  const [bannerColor, setBannerColor] = useState('blue'); // Support multiple colors
   const [bannerLineBreak, setBannerLineBreak] = useState(false);
   const bannerInputRef = useRef(null);
   const bannerSectionRef = useRef(null);
@@ -745,17 +746,17 @@ const NoteGenerator = () => {
       text: newBannerText.trim(),
       createdAt: new Date(),
       newLine: bannerLineBreak,
-      isOrange: bannerColorOrange,
+      color: bannerColor, // Use color property
+      isOrange: bannerColor === 'orange', // Backward compatibility
       isDone: false
     };
     
     const updatedBanners = [...bannerNotes.banners, newBanner];
     setBannerNotes(prev => ({ ...prev, banners: updatedBanners }));
     
-    // Clear input and reset settings
+    // Clear input but keep settings
     setNewBannerText('');
-    setBannerLineBreak(false);
-    setBannerColorOrange(false);
+    // Keep line break and color settings for next banner
     
     // Auto-save to Notes collection if there's a title
     if (bannerNotes.title.trim()) {
@@ -917,7 +918,7 @@ const NoteGenerator = () => {
     });
     setNewBannerText('');
     setBannerLineBreak(false);
-    setBannerColorOrange(false);
+    setBannerColor('blue');
   };
 
   // Global event listeners for drag functionality
@@ -1379,60 +1380,80 @@ const NoteGenerator = () => {
                     document.body
                   )}
 
-                  {/* Banner Input Section - Matching Notes Page Layout */}
+                  {/* Banner Input Section - New Toolbar Design from Notes Page */}
                   <div className="editor-banner-controls-container">
-                    <div className="banner-input-row">
-                      <textarea
-                        ref={bannerInputRef}
-                        className="banner-input"
-                        placeholder="Enter banner text..."
-                        value={newBannerText}
-                        onChange={(e) => {
-                          setNewBannerText(e.target.value);
-                          // Auto-resize textarea
-                          e.target.style.height = 'auto';
-                          e.target.style.height = e.target.scrollHeight + 'px';
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey && newBannerText.trim()) {
-                            e.preventDefault();
-                            addBanner();
-                          }
-                        }}
-                        rows={1}
-                      />
-                    </div>
-                    <div className="banner-controls-row">
+                    <div className="banner-controls-single-row">
+                      {/* Search-style input */}
+                      <div className="banner-input-search-style">
+                        <Tag size={16} className="banner-input-icon" />
+                        <input
+                          ref={bannerInputRef}
+                          type="text"
+                          className="banner-input-redesign"
+                          placeholder="Enter banner text..."
+                          value={newBannerText}
+                          onChange={(e) => setNewBannerText(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && newBannerText.trim()) {
+                              e.preventDefault();
+                              addBanner();
+                            }
+                          }}
+                        />
+                      </div>
+                      
+                      <div className="controls-divider" />
+                      
+                      {/* Add banner button */}
                       <button
-                        className="add-banner-btn"
+                        className="filter-style-btn"
                         onClick={addBanner}
                         disabled={!newBannerText.trim()}
-                        title="Add new banner"
+                        title="Add Banner"
                       >
-                        <Tag size={16} />
-                        Add Banner
+                        <Tag size={14} />
+                        <span>Add Banner</span>
                       </button>
+                      
+                      {/* Line toggle button */}
+                      <div className="controls-divider" />
                       <button
-                        className="banner-toggle-btn"
+                        className={`line-toggle-btn ${bannerLineBreak ? 'active' : ''}`}
                         onClick={() => setBannerLineBreak(!bannerLineBreak)}
-                        title={bannerLineBreak ? "New line" : "Existing line"}
+                        title={bannerLineBreak ? "New line" : "Same line"}
                       >
-                        {bannerLineBreak ? "New Line" : "Existing Line"}
+                        <span className="line-toggle-icon">{bannerLineBreak ? "↵" : "→"}</span>
+                        <span>{bannerLineBreak ? "New Line" : "Same Line"}</span>
                       </button>
-                      <button
-                        className={`banner-color-toggle-btn ${bannerColorOrange ? 'orange' : 'blue'}`}
-                        onClick={() => setBannerColorOrange(!bannerColorOrange)}
-                        title={bannerColorOrange ? "Orange color" : "Blue color"}
-                        style={bannerColorOrange ? {
-                          background: '#FF6900',
-                          color: '#FFFFFF',
-                          borderColor: '#FF6900'
-                        } : {}}
-                      >
-                        <span style={bannerColorOrange ? { color: '#FFFFFF' } : {}}>
-                          {bannerColorOrange ? "Orange" : "Blue"}
-                        </span>
-                      </button>
+                      
+                      {/* Color selectors */}
+                      <div className="controls-divider" />
+                      <div className="color-selector-group">
+                        <button
+                          className={`color-circle-btn blue ${bannerColor === 'blue' ? 'active' : ''}`}
+                          onClick={() => setBannerColor('blue')}
+                          title="Blue"
+                          aria-label="Blue color"
+                        />
+                        <button
+                          className={`color-circle-btn orange ${bannerColor === 'orange' ? 'active' : ''}`}
+                          onClick={() => setBannerColor('orange')}
+                          title="Orange"
+                          aria-label="Orange color"
+                        />
+                        <button
+                          className={`color-circle-btn green ${bannerColor === 'green' ? 'active' : ''}`}
+                          onClick={() => setBannerColor('green')}
+                          title="Green"
+                          aria-label="Green color"
+                        />
+                        <button
+                          className={`color-circle-btn grey ${bannerColor === 'grey' ? 'active' : ''}`}
+                          onClick={() => setBannerColor('grey')}
+                          title="Grey"
+                          aria-label="Grey color"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -1445,7 +1466,11 @@ const NoteGenerator = () => {
                           <React.Fragment key={banner.id}>
                             {banner.newLine && index > 0 && <div className="banner-line-break" />}
                             <div 
-                              className={`banner-item ${banner.isOrange ? 'orange' : 'blue'} ${banner.isDone ? 'done' : ''} ${copiedBannerId === banner.id ? 'copied' : ''}`}
+                              className={`banner-item ${
+                                banner.color === 'orange' || banner.isOrange ? 'orange' : 
+                                banner.color === 'green' ? 'green' : 
+                                banner.color === 'grey' ? 'grey' : 'blue'
+                              } ${banner.isDone ? 'done' : ''} ${copiedBannerId === banner.id ? 'copied' : ''}`}
                               onClick={() => copyBannerToClipboard(banner)}
                               title="Click to copy banner text"
                             >

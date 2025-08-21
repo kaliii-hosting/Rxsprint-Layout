@@ -1,0 +1,218 @@
+/* Fix Editor Layout to Match Viewer Exactly */
+
+/* Ensure banners display properly in edit mode */
+.note-content-edit-area .content-banners-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  margin-bottom: 1.5rem !important;
+  width: 100% !important;
+  align-items: flex-start !important;
+}
+
+/* Regular banners should be inline in edit mode like viewer */
+.note-content-edit-area .content-banner-item:not(.title-banner):not(.callout-banner) {
+  display: inline-flex !important;
+  align-items: center !important;
+  width: auto !important;
+  max-width: fit-content !important;
+  padding: 0.625rem 1rem !important;
+  margin-right: 0.75rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Title banners take full width */
+.note-content-edit-area .content-banner-item.title-banner {
+  width: 100% !important;
+  display: block !important;
+  margin-right: 0 !important;
+  padding: 1rem 1.5rem !important;
+  text-align: left !important;
+}
+
+/* Callout banners take full width */
+.note-content-edit-area .content-banner-item.callout-banner {
+  width: 100% !important;
+  display: block !important;
+  margin-right: 0 !important;
+  padding: 1.25rem 1.75rem !important;
+}
+
+/* Remove the edit mode class differences */
+.content-banners-container.edit-mode {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  margin-bottom: 1.5rem !important;
+  width: 100% !important;
+}
+
+/* Banner grouping for proper line breaks */
+.banner-group {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+  width: 100% !important;
+  align-items: flex-start !important;
+}
+
+/* Ensure line breaks work properly */
+.banner-line-break {
+  width: 100% !important;
+  height: 0 !important;
+  margin: 0 !important;
+}
+
+/* Copy indicator color matching */
+.content-banner-item .banner-icon .copy-icon,
+.content-banner-item .banner-icon .copied-icon {
+  color: currentColor !important;
+  opacity: 0.7 !important;
+}
+
+/* Blue banner copy icon */
+.content-banner-item:not(.new-line):not(.done):not(.grey):not(.title-banner):not(.callout-banner) .banner-icon {
+  color: #1565C0 !important;
+}
+
+/* Orange banner copy icon */
+.content-banner-item.new-line .banner-icon {
+  color: #E65100 !important;
+}
+
+/* Green banner copy icon */
+.content-banner-item.done .banner-icon {
+  color: #2E7D32 !important;
+}
+
+/* Grey banner copy icon */
+.content-banner-item.grey .banner-icon {
+  color: #424242 !important;
+}
+
+/* Copy icon hover effect */
+.content-banner-item:hover .banner-icon {
+  opacity: 1 !important;
+}
+
+/* Copied state animation with color */
+.content-banner-item.copied .banner-icon .copied-icon {
+  animation: copySuccess 0.5s ease !important;
+  color: currentColor !important;
+}
+
+@keyframes copySuccess {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Line toggle button visible for all modes */
+.line-toggle-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--secondary-background, #F8F8F8) !important;
+  color: #666666 !important;
+  border: 1px solid var(--border-color, #E0E0E0) !important;
+  border-radius: 6px !important;
+  padding: 0.375rem 0.75rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  height: 32px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  gap: 0.25rem !important;
+}
+
+.line-toggle-btn:hover {
+  background: #FF6900 !important;
+  border-color: #FF6900 !important;
+  color: white !important;
+}
+
+.line-toggle-btn.active {
+  background: #FF6900 !important;
+  color: white !important;
+  border-color: #FF6900 !important;
+}
+
+/* Line toggle icon */
+.line-toggle-icon {
+  font-size: 1rem !important;
+  line-height: 1 !important;
+}
+
+/* Fix editor content area spacing */
+.note-content-edit-area {
+  padding: 0 !important;
+  width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Ensure proper banner display in both modes */
+.content-banner-item {
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  position: relative !important;
+}
+
+/* Hide copy functionality in edit mode */
+.note-content-edit-area .content-banner-item {
+  cursor: default !important;
+}
+
+.note-content-edit-area .banner-icon {
+  display: none !important;
+}
+
+/* Show copy icons in view mode */
+.note-content .banner-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 0.5rem !important;
+  opacity: 0.7 !important;
+  transition: opacity 0.2s ease !important;
+}
+
+.note-content .content-banner-item:hover .banner-icon {
+  opacity: 1 !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .note-content-edit-area .content-banner-item:not(.title-banner):not(.callout-banner) {
+    margin-right: 0.5rem !important;
+    margin-bottom: 0.375rem !important;
+  }
+  
+  .line-toggle-btn {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.8125rem !important;
+    height: 28px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .note-content-edit-area .content-banner-item:not(.title-banner):not(.callout-banner) {
+    max-width: calc(100% - 1rem) !important;
+  }
+  
+  .line-toggle-btn span {
+    display: none !important;
+  }
+  
+  .line-toggle-icon {
+    font-size: 1.125rem !important;
+  }
+}

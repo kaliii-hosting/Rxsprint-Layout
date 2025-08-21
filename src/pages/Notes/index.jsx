@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download, ChevronRight, Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, Heading3, Code, Strikethrough, Undo, Redo } from 'lucide-react';
+import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download, ChevronRight, Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, Heading3, Code, Strikethrough, Undo, Redo, Type, MessageSquare } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { firestore as db, storage } from '../../config/firebase';
@@ -19,6 +19,21 @@ import { observeTablesAndAddButtons } from '../../utils/tableCopyUtils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './Notes.css';
+import './NotesResponsiveFix.css';
+import './BannerFixes.css';
+import './BannerPaleColors.css';
+import './TitleBanners.css';
+import './BannerAlignmentFixes.css';
+import './CalloutBanners.css';
+import './EditorViewerConsistency.css';
+import './EditorViewerIdentical.css';
+import './BannerControlsRedesign.css';
+import './EditorLayoutFix.css';
+import './NeonColorCircles.css';
+import './EditorViewerIdenticalFix.css';
+import './CompleteFinalFix.css';
+import './UnifiedToolbarLayout.css';
+import './PerfectToolbarMatch.css';
 import EnterpriseHeader, { TabGroup, TabButton, ActionButton, ActionGroup, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import NoteDeleteConfirmPopup from '../../components/NoteDeleteConfirmPopup/NoteDeleteConfirmPopup';
 
@@ -46,7 +61,9 @@ const Notes = () => {
   const [copiedBannerId, setCopiedBannerId] = useState(null);
   const [bannerLineBreak, setBannerLineBreak] = useState(false); // false = existing line (default)
   const [currentLineNumber, setCurrentLineNumber] = useState(0); // Track which line we're on
-  const [bannerColorOrange, setBannerColorOrange] = useState(false); // false = blue (default), true = orange
+  const [bannerColor, setBannerColor] = useState('blue'); // 'blue', 'orange', 'green', or 'grey'
+  const [isTitleMode, setIsTitleMode] = useState(false); // false = banner mode, true = title mode
+  const [isCalloutMode, setIsCalloutMode] = useState(false); // false = banner/title mode, true = callout mode
   const bannerInputRef = useRef(null);
   const [hasUserInteracted, setHasUserInteracted] = useState(false); // Track if user has manually interacted
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, bannerId: null });
@@ -56,7 +73,7 @@ const Notes = () => {
   const [isLongPress, setIsLongPress] = useState(false);
   const [noteContextMenu, setNoteContextMenu] = useState({ visible: false, x: 0, y: 0, noteId: null });
   const noteLongPressTimer = useRef(null);
-  const [showBannerSection, setShowBannerSection] = useState(false);
+  const [showBannerSection, setShowBannerSection] = useState(true); // Always show banner section
   const editorRef = useRef(null);
   const noteContentRef = useRef(null);
   
@@ -530,9 +547,11 @@ const Notes = () => {
       id: Date.now().toString(),
       text: newBannerText.trim(),
       createdAt: new Date(),
-      newLine: bannerLineBreak,
-      isOrange: bannerColorOrange,  // Track if this banner should be orange
-      isDone: false  // Track if banner is marked as done
+      newLine: bannerLineBreak,  // This applies to ALL banner types and colors
+      color: isCalloutMode ? 'callout' : isTitleMode ? 'title' : bannerColor,  // 'blue', 'orange', 'green', 'grey', 'title', or 'callout'
+      isTitle: isTitleMode,  // Track if this is a title banner
+      isCallout: isCalloutMode,  // Track if this is a callout banner
+      isDone: bannerColor === 'green' ? false : false  // Track if banner is marked as done (green banners can also use line toggle)
     };
     
     const updatedBanners = [...(formData.banners || []), newBanner];
@@ -679,6 +698,14 @@ const Notes = () => {
         banner.id === bannerId ? { ...banner, text: editingBannerText.trim() } : banner
       );
       setFormData(prev => ({ ...prev, banners: updatedBanners }));
+      
+      // Also update selectedNote to reflect changes immediately in view mode
+      if (selectedNote) {
+        setSelectedNote(prev => ({
+          ...prev,
+          banners: updatedBanners
+        }));
+      }
       
       // Auto-save to Firebase if editing existing note
       if (selectedNote && !isCreating) {
@@ -974,24 +1001,25 @@ const Notes = () => {
       logoImg.crossOrigin = 'anonymous';
       logoImg.src = logoUrl;
     
-      // A4 dimensions: 210mm x 297mm
+      // A4 dimensions: 210mm x 297mm - Optimized for maximum content
       const pageWidth = 210;
       const pageHeight = 297;
-      const leftMargin = 20;
-      const rightMargin = 25; // Increased right margin to prevent overflow
-      const topMargin = 50; // Space for header
-      const bottomMargin = 30; // Space for footer
-      const contentWidth = pageWidth - leftMargin - rightMargin - 5; // Extra safety buffer
+      // Reduced margins for more content per page
+      const leftMargin = 20; // Reduced for more content
+      const rightMargin = 20; // Equal to left margin for centering
+      const topMargin = 35; // Reduced header space
+      const bottomMargin = 20; // Reduced footer space
+      const contentWidth = pageWidth - leftMargin - rightMargin; // Maximized content area
       const maxY = pageHeight - bottomMargin;
       
-      // Enterprise Typography settings
-      const titleSize = 18;
-      const headingSize = 14;
-      const bodySize = 10; // Smaller for more compact text
-      const metaSize = 9;
-      const lineSpacing = 1.0; // Tight enterprise line spacing
-      const paragraphSpacing = 1.5; // Minimal paragraph spacing for enterprise format
-      const sectionSpacing = 3; // Compact section spacing
+      // Optimized Typography settings for A4
+      const titleSize = 14;
+      const headingSize = 12;
+      const bodySize = 9; // Optimal for readability and space
+      const metaSize = 8;
+      const lineSpacing = 0.9; // Tighter line spacing for more content
+      const paragraphSpacing = 1.0; // Minimal paragraph spacing
+      const sectionSpacing = 2; // Compact section spacing
       
       let yPosition = topMargin;
       let pageNumber = 1;
@@ -1018,19 +1046,19 @@ const Notes = () => {
           pdf.setFillColor(255, 255, 255);
           pdf.rect(0, 0, pageWidth, pageHeight, 'F');
           
-          // Light header section
+          // Compact header section
           pdf.setFillColor(248, 250, 252);
-          pdf.rect(0, 0, pageWidth, 45, 'F');
+          pdf.rect(0, 0, pageWidth, 30, 'F');
           
           // Orange accent line
           pdf.setFillColor(255, 85, 0);
-          pdf.rect(0, 45, pageWidth, 2, 'F');
+          pdf.rect(0, 30, pageWidth, 1, 'F');
           
           // Logo or text fallback
           if (hasLogo && logoImg.complete) {
-            // Logo - maintain aspect ratio
-            const logoMaxWidth = 50;
-            const logoMaxHeight = 25;
+            // Logo - smaller for compact header
+            const logoMaxWidth = 35;
+            const logoMaxHeight = 15;
             const imgRatio = logoImg.width / logoImg.height;
             let logoWidth = logoMaxWidth;
             let logoHeight = logoMaxWidth / imgRatio;
@@ -1040,13 +1068,13 @@ const Notes = () => {
               logoWidth = logoMaxHeight * imgRatio;
             }
             
-            pdf.addImage(logoImg, 'PNG', 20, 10, logoWidth, logoHeight);
+            pdf.addImage(logoImg, 'PNG', leftMargin, 8, logoWidth, logoHeight);
           } else {
             // Fallback to text
             pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(18);
+            pdf.setFontSize(14);
             pdf.setTextColor(255, 85, 0);
-            pdf.text('RX SPRINT', 20, 25);
+            pdf.text('RX SPRINT', leftMargin, 18);
           }
           
           // Date and note info
@@ -1062,30 +1090,22 @@ const Notes = () => {
           });
           
           pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(10);
+          pdf.setFontSize(8);
           pdf.setTextColor(71, 85, 105);
-          pdf.text(`Generated: ${formattedDate} at ${formattedTime}`, pageWidth - 20, 20, { align: 'right' });
-          pdf.text(`Note ID: NOTE-${Date.now().toString().slice(-6)}`, pageWidth - 20, 30, { align: 'right' });
+          pdf.text(`${formattedDate} ${formattedTime}`, pageWidth - rightMargin, 12, { align: 'right' });
+          pdf.text(`Note: ${formData.title || 'Untitled'}`, pageWidth - rightMargin, 18, { align: 'right' });
           
-          // Add note title under the note ID
-          const noteTitle = formData.title || 'Untitled Note';
-          pdf.setFontSize(9);
-          pdf.setFont('helvetica', 'italic');
-          pdf.text(noteTitle, pageWidth - 20, 38, { align: 'right' });
-          
-          // Professional footer
+          // Compact footer
           pdf.setFillColor(248, 250, 252);
-          pdf.rect(0, pageHeight - 25, pageWidth, 25, 'F');
+          pdf.rect(0, pageHeight - 15, pageWidth, 15, 'F');
           pdf.setDrawColor(226, 232, 240);
-          pdf.line(0, pageHeight - 25, pageWidth, pageHeight - 25);
+          pdf.line(0, pageHeight - 15, pageWidth, pageHeight - 15);
           
           pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(8);
+          pdf.setFontSize(7);
           pdf.setTextColor(100, 116, 139);
-          const footerTitle = formData.title || 'Untitled Note';
-          pdf.text(footerTitle, 20, pageHeight - 12);
-          // Page number will be updated after total pages are known
-          pdf.text(`Page ${pageNum}`, pageWidth - 20, pageHeight - 12, { align: 'right' });
+          // Only show page number in footer to avoid duplication
+          pdf.text(`Page ${pageNum}`, pageWidth / 2, pageHeight - 8, { align: 'center' });
         };
         
         // Draw header and footer for first page
@@ -1097,7 +1117,7 @@ const Notes = () => {
           pdf.addPage();
           pageNumber++;
           drawHeaderFooter(pageNumber);
-          yPosition = 55; // Consistent spacing with first page
+          yPosition = 35; // Start content right after header
           // Reset font to ensure consistency on new page
           try {
             pdf.setFont('Roboto', 'normal');
@@ -1117,7 +1137,7 @@ const Notes = () => {
     };
     
     // Start content below header with appropriate spacing
-    yPosition = 55; // Reduced from 65 to avoid empty first page
+    yPosition = 35; // Optimized for compact A4 layout
     
     // Reset text formatting with Roboto font
     pdf.setTextColor(0);
@@ -1131,147 +1151,170 @@ const Notes = () => {
     
     // Add banners if any using direct PDF rendering for fast performance
     if (formData.banners && formData.banners.length > 0) {
-      const bannerPadding = 3;
-      const bannerGap = 3;
-      const bannerFontSize = 11;
-      const lineHeight = 4;
-      const minBannerHeight = 10;
+      const bannerPadding = 3; // Reduced padding for more content
+      const bannerGap = 2; // Reduced gap between banners
+      const bannerFontSize = 9; // Smaller font to fit more
+      const minBannerHeight = 8; // Reduced height for compactness
       
-      let currentX = leftMargin;
-      let lineStartY = yPosition;
-      const maxLineWidth = contentWidth;
-      let maxHeightInRow = minBannerHeight;
+      // Group banners by line breaks - same as editor/viewer
+      const bannerGroups = [];
+      let currentGroup = [];
       
-      // Process banners with dynamic height
       formData.banners.forEach((banner, index) => {
-        // Check for new line
-        if (banner.newLine && index > 0) {
-          yPosition += maxHeightInRow + bannerGap;
-          currentX = leftMargin;
-          lineStartY = yPosition;
-          maxHeightInRow = minBannerHeight;
+        if (banner.newLine && index > 0 && currentGroup.length > 0) {
+          bannerGroups.push(currentGroup);
+          currentGroup = [];
+        }
+        currentGroup.push(banner);
+      });
+      if (currentGroup.length > 0) {
+        bannerGroups.push(currentGroup);
+      }
+      
+      // Process each group of banners
+      bannerGroups.forEach((group, groupIndex) => {
+        // Add spacing between groups
+        if (groupIndex > 0) {
+          yPosition += 3;
         }
         
-        // Calculate banner content
-        pdf.setFontSize(bannerFontSize);
-        // Set font early for accurate text measurement - using helvetica bold for reliability
-        pdf.setFont('helvetica', 'bold');
+        // Initialize currentX for regular banners in this group
+        let currentX = leftMargin;
         
-        const prefix = banner.isDone ? '✓ ' : '';
-        const fullText = prefix + banner.text;
+        // Track position for regular banners
+        let lineHeight = 0;
         
-        // Calculate banner width and handle text wrapping
-        const maxBannerWidth = maxLineWidth; // Full width for multi-line
-        const minBannerWidth = 30; // Min 30mm
-        
-        // Split text into lines with conservative width to ensure content area compliance
-        const textMaxWidth = Math.min(maxBannerWidth - (bannerPadding * 4), contentWidth - (bannerPadding * 4));
-        let textLines = pdf.splitTextToSize(fullText, textMaxWidth);
-        let numLines = textLines.length;
-        let bannerHeight = Math.max(minBannerHeight, (numLines * lineHeight) + (bannerPadding * 2));
-        
-        // Calculate actual banner width with strict content area enforcement
-        let bannerWidth;
-        if (numLines > 1) {
-          // Multi-line banners always use full width but within content area
-          bannerWidth = Math.min(maxBannerWidth, contentWidth);
-        } else {
-          // Single line banners size to content but never exceed content area
-          const lineWidth = pdf.getTextWidth(fullText) + (bannerPadding * 4);
-          bannerWidth = Math.max(minBannerWidth, Math.min(lineWidth, Math.min(maxBannerWidth, contentWidth)));
-        }
-        
-        // Multi-line banners always go on new line and center
-        if (numLines > 1 || currentX + bannerWidth > leftMargin + maxLineWidth) {
-          if (currentX > leftMargin) {
-            // Move to next line if not at start
-            yPosition += maxHeightInRow + bannerGap;
+        // Process each banner in the group  
+        group.forEach((banner, bannerIndex) => {
+          // Handle title banners - full width, break line first
+          if (banner.isTitle || banner.color === 'title') {
+            // Finish current line if we have regular banners pending
+            if (currentX > leftMargin) {
+              yPosition += lineHeight + 3;
+              currentX = leftMargin;
+              lineHeight = 0;
+            }
+            
+            checkPageBreak(12);
+            // Title banner with yellowish salmon design matching viewer exactly
+            pdf.setFillColor(255, 212, 163); // Yellowish salmon background #FFD4A3
+            pdf.roundedRect(leftMargin, yPosition, contentWidth, 12, 2, 2, 'F');
+            pdf.setFont('helvetica', 'bold'); // Medium/bold weight to match viewer font-weight: 500
+            pdf.setFontSize(8.5); // Slightly larger to match 0.875rem
+            pdf.setTextColor(139, 69, 19); // Brown text #8B4513
+            const titleText = banner.text.toUpperCase(); // Uppercase to match CSS
+            // Perfect vertical centering for jsPDF text baseline
+            const titleTextY = yPosition + 7.5; // Center of 12px height banner
+            pdf.text(titleText, leftMargin + 6, titleTextY);
+            yPosition += 14;
+            return;
           }
-          currentX = leftMargin;
-          // Center multi-line banners
-          if (numLines > 1) {
-            currentX = leftMargin + (maxLineWidth - bannerWidth) / 2;
+        
+          // Handle callout banners - full width, break line first
+          if (banner.isCallout || banner.color === 'callout') {
+            // Finish current line if we have regular banners pending
+            if (currentX > leftMargin) {
+              yPosition += lineHeight + 3;
+              currentX = leftMargin;
+              lineHeight = 0;
+            }
+            
+            const calloutLines = pdf.splitTextToSize(banner.text, contentWidth - 10);
+            const calloutHeight = Math.max(12, calloutLines.length * 4 + 6);
+            checkPageBreak(calloutHeight + 4);
+            
+            // Callout with compact styling
+            pdf.setFillColor(250, 250, 250); // Light background
+            pdf.setDrawColor(230, 230, 230);
+            pdf.setLineWidth(0.3);
+            pdf.roundedRect(leftMargin, yPosition, contentWidth, calloutHeight, 2, 2, 'FD');
+            
+            // Orange left border
+            pdf.setFillColor(255, 105, 0);
+            pdf.rect(leftMargin, yPosition, 2, calloutHeight, 'F');
+            
+            // Text - centered vertically in callout
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(66, 66, 66);
+            // Calculate starting Y to center text block
+            const lineCount = calloutLines.length;
+            const textBlockHeight = (lineCount - 1) * 4; // Space between lines
+            const startY = yPosition + (calloutHeight - textBlockHeight) / 2 + 2;
+            let calloutY = startY;
+            calloutLines.forEach(line => {
+              pdf.text(line, leftMargin + 6, calloutY);
+              calloutY += 4;
+            });
+            yPosition += calloutHeight + 4;
+            return;
           }
-          lineStartY = yPosition;
-          maxHeightInRow = bannerHeight;
-        } else {
-          maxHeightInRow = Math.max(maxHeightInRow, bannerHeight);
-        }
         
-        // Check page break
-        checkPageBreak(bannerHeight + bannerGap);
-        
-        // Enforce banner position within content area boundaries
-        const maxRightPosition = leftMargin + contentWidth;
-        if (currentX + bannerWidth > maxRightPosition) {
-          // If banner would overflow, constrain it to fit within content area
-          bannerWidth = Math.max(minBannerWidth, maxRightPosition - currentX);
-          // Re-split text for the constrained width
-          const constrainedTextMaxWidth = bannerWidth - (bannerPadding * 4);
-          const newTextLines = pdf.splitTextToSize(fullText, constrainedTextMaxWidth);
-          const newNumLines = newTextLines.length;
-          const newBannerHeight = Math.max(minBannerHeight, (newNumLines * lineHeight) + (bannerPadding * 2));
-          // Update variables with constrained values
-          textLines.splice(0, textLines.length, ...newTextLines);
-          numLines = newNumLines;
-          bannerHeight = newBannerHeight;
-          maxHeightInRow = Math.max(maxHeightInRow, bannerHeight);
-        }
-        
-        // Set banner color
-        if (banner.isDone) {
-          pdf.setFillColor(0, 255, 136); // Bright green
-        } else if (banner.isOrange) {
-          pdf.setFillColor(255, 105, 0); // Orange
-        } else {
-          pdf.setFillColor(59, 130, 246); // Blue
-        }
-        
-        // Draw banner background
-        pdf.roundedRect(currentX, yPosition, bannerWidth, bannerHeight, 2, 2, 'F');
-        
-        // Set text color and font
-        pdf.setFontSize(bannerFontSize);
-        pdf.setFont('helvetica', 'bold');
-        
-        if (banner.isDone) {
-          pdf.setTextColor(0, 100, 0); // Dark green for done
-        } else {
-          pdf.setTextColor(255, 255, 255); // White
-        }
-        
-        // Add text - left aligned for multi-line, centered for single line with strict boundary enforcement
-        const textStartY = yPosition + (bannerHeight - (numLines * lineHeight)) / 2 + lineHeight;
-        const maxRightBoundary = leftMargin + contentWidth; // Strict content area boundary
-        
-        textLines.forEach((line, lineIndex) => {
-          let textX;
-          const textWidth = pdf.getTextWidth(line);
+          // Handle regular banners - inline layout
+          const fullText = banner.text;
+          pdf.setFontSize(bannerFontSize);
+          const textWidth = pdf.getTextWidth(fullText);
+          const bannerWidth = Math.max(textWidth + (bannerPadding * 2), 30); // Reduced min width
+          const bannerHeight = minBannerHeight;
           
-          if (numLines > 1) {
-            // Left align text in multi-line banners
-            textX = currentX + bannerPadding;
+          // Check if banner fits on current line
+          if (currentX > leftMargin && currentX + bannerWidth > leftMargin + contentWidth) {
+            // Move to next line
+            yPosition += lineHeight + 3; // Reduced spacing
+            currentX = leftMargin;
+            lineHeight = 0;
+          }
+          
+          checkPageBreak(bannerHeight + 3);
+          
+          // Set banner colors to match viewer exactly
+          if (banner.isDone || banner.color === 'green') {
+            pdf.setFillColor(232, 245, 233); // Pale green
+            pdf.setTextColor(46, 125, 50);
+          } else if (banner.color === 'orange' || banner.isOrange) {
+            pdf.setFillColor(255, 228, 209); // Pale orange
+            pdf.setTextColor(230, 81, 0);
+          } else if (banner.color === 'grey') {
+            pdf.setFillColor(245, 245, 245); // Grey
+            pdf.setTextColor(66, 66, 66);
           } else {
-            // Center text in single-line banners
-            textX = currentX + (bannerWidth - textWidth) / 2;
+            pdf.setFillColor(227, 242, 253); // Pale blue
+            pdf.setTextColor(21, 101, 192);
           }
           
-          // Enforce strict boundary - never allow text to extend beyond content area
-          const textEndX = textX + textWidth;
-          if (textEndX > maxRightBoundary) {
-            textX = Math.max(leftMargin, maxRightBoundary - textWidth);
+          // Draw banner with rounded corners like viewer
+          pdf.roundedRect(currentX, yPosition, bannerWidth, bannerHeight, 2, 2, 'F');
+          
+          // Add text
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(bannerFontSize);
+          
+          let displayText = fullText;
+          if (pdf.getTextWidth(displayText) > bannerWidth - (bannerPadding * 2)) {
+            while (pdf.getTextWidth(displayText + '...') > bannerWidth - (bannerPadding * 2) && displayText.length > 1) {
+              displayText = displayText.substring(0, displayText.length - 1);
+            }
+            displayText += '...';
           }
           
-          const textY = textStartY + (lineIndex * lineHeight);
-          pdf.text(line, textX, textY);
+          const textX = currentX + bannerPadding;
+          // Perfect vertical centering for jsPDF (baseline positioning)
+          const textY = yPosition + 5.5; // Center of 8px height banner
+          pdf.text(displayText, textX, textY);
+          
+          // Update position for next banner
+          currentX += bannerWidth + bannerGap;
+          lineHeight = Math.max(lineHeight, bannerHeight);
         });
         
-        // Move to next position
-        currentX += bannerWidth + bannerGap;
+        // Finish the line if there are pending regular banners
+        if (currentX > leftMargin) {
+          yPosition += lineHeight + 3;
+        }
       });
       
-      // Update final Y position and add adequate spacing after banners
-      yPosition += maxHeightInRow + sectionSpacing * 1.5;
+      // Add minimal spacing after all banners
+      yPosition += 4;
       
       // Reset text formatting
       pdf.setTextColor(0);
@@ -1312,14 +1355,14 @@ const Notes = () => {
             pdf.setFontSize(bodySize);
             pdf.setTextColor(0);
             
-            // Enterprise text formatting with proper margin constraints
-            const maxTextWidth = contentWidth - 2; // Keep text within content area with safety margin
+            // Center content with proper text formatting
+            const maxTextWidth = contentWidth; // Use full content width for better layout
             const optimizedLines = processEnterpriseText(text, maxTextWidth, pdf);
             
             optimizedLines.forEach(line => {
-              checkPageBreak(bodySize * lineSpacing + 1);
+              checkPageBreak(bodySize * lineSpacing + 2);
               pdf.text(line, leftMargin, yPosition);
-              yPosition += bodySize * lineSpacing + 0.3; // Ultra-compact line spacing
+              yPosition += bodySize * lineSpacing + 1; // Better line spacing
             });
           }
         } else if (node.nodeType === Node.ELEMENT_NODE) {
@@ -1682,14 +1725,14 @@ const Notes = () => {
         const totalPages = pdf.internal.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
           pdf.setPage(i);
-          // Cover the old page number with a white rectangle
+          // Cover the old page number with footer background color
           pdf.setFillColor(248, 250, 252);
-          pdf.rect(pageWidth - 60, pageHeight - 20, 50, 15, 'F');
-          // Add new page number with total
+          pdf.rect(pageWidth / 2 - 30, pageHeight - 12, 60, 8, 'F');
+          // Add updated page number centered
           pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(8);
+          pdf.setFontSize(7);
           pdf.setTextColor(100, 116, 139);
-          pdf.text(`Page ${i} of ${totalPages}`, pageWidth - 20, pageHeight - 12, { align: 'right' });
+          pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 8, { align: 'center' });
         }
         
         // Save the PDF
@@ -1852,7 +1895,9 @@ const Notes = () => {
                     // Reset line tracking for new note
                     setCurrentLineNumber(0);
                     setBannerLineBreak(false);
-                    setBannerColorOrange(false);
+                    setBannerColor('blue');
+                    setIsTitleMode(false);
+                    setIsCalloutMode(false);
                     // Activate banner field after creating note
                     setTimeout(() => {
                       if (bannerInputRef.current) {
@@ -1884,193 +1929,189 @@ const Notes = () => {
               >
                 {isEditing || isCreating ? (
                   <>
-                    {/* Editor Toolbar */}
-                    <div className="editor-toolbar-container">
-                      <div className="editor-toolbar-main">
-                        {/* Text formatting buttons */}
-                        <div className="toolbar-group">
-                          <button className="toolbar-btn" title="Bold">
-                            <Bold size={16} />
-                          </button>
-                          <button className="toolbar-btn" title="Italic">
-                            <Italic size={16} />
-                          </button>
-                          <button className="toolbar-btn" title="Strikethrough">
-                            <Strikethrough size={16} />
-                          </button>
-                          <button className="toolbar-btn" title="Code">
-                            <Code size={16} />
-                          </button>
+                    {/* Add Banner Controls - Exactly Like Header */}
+                    <div className="editor-banner-controls-container">
+                      <div className="banner-controls-single-row">
+                        {/* Search-style input wrapper matching header */}
+                        <div className="banner-input-search-style">
+                          <div className="banner-input-icon-btn">
+                            <Tag size={18} />
+                          </div>
+                          <input
+                            ref={bannerInputRef}
+                            type="text"
+                            className="banner-input-redesign"
+                            placeholder={isCalloutMode ? "Callout text..." : isTitleMode ? "Title text..." : "Banner text..."}
+                            value={newBannerText}
+                            onChange={(e) => setNewBannerText(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && newBannerText.trim()) {
+                                e.preventDefault();
+                                addBanner();
+                              }
+                            }}
+                            autoFocus={false}
+                          />
                         </div>
                         
-                        <div className="toolbar-group">
-                          <button className="toolbar-btn" title="Heading 1">
-                            <Heading1 size={16} />
-                          </button>
-                          <button className="toolbar-btn" title="Heading 2">
-                            <Heading2 size={16} />
-                          </button>
-                          <button className="toolbar-btn" title="Heading 3">
-                            <Heading3 size={16} />
-                          </button>
-                        </div>
-                        
-                        <div className="toolbar-group">
-                          <button className="toolbar-btn" title="Bullet List">
-                            <List size={16} />
-                          </button>
-                          <button className="toolbar-btn" title="Numbered List">
-                            <ListOrdered size={16} />
-                          </button>
-                          <button className="toolbar-btn" title="Quote">
-                            <Quote size={16} />
-                          </button>
-                        </div>
-                        
-                        <div className="toolbar-group">
-                          <button className="toolbar-btn" title="Undo">
-                            <Undo size={16} />
-                          </button>
-                          <button className="toolbar-btn" title="Redo">
-                            <Redo size={16} />
-                          </button>
-                        </div>
-                        
-                        {/* Action buttons */}
-                        <div className="toolbar-group toolbar-actions">
+                        {/* Right section with buttons - matches header actions */}
+                        <div className="banner-button-group">
+                          {/* Mode buttons */}
                           <button
-                            className={`toolbar-action-btn ${showBannerSection ? 'active' : ''}`}
-                            onClick={() => setShowBannerSection(!showBannerSection)}
-                            title="Toggle Banner Section"
+                            className={`filter-style-btn ${!isTitleMode && !isCalloutMode ? 'active' : ''}`}
+                            onClick={() => {
+                              if (newBannerText.trim()) {
+                                addBanner();
+                              } else {
+                                setIsTitleMode(false);
+                                setIsCalloutMode(false);
+                              }
+                            }}
+                            title="Add Banner"
                           >
-                            <Tag size={16} />
-                            <span>Banners</span>
+                            <Tag size={14} />
+                            <span>Banner</span>
                           </button>
+                          
+                          <button
+                            className={`filter-style-btn ${isTitleMode ? 'active' : ''}`}
+                            onClick={() => {
+                              setIsTitleMode(!isTitleMode);
+                              setIsCalloutMode(false);
+                            }}
+                            title="Title Mode"
+                          >
+                            <Type size={14} />
+                            <span>Title</span>
+                          </button>
+                          
+                          <button
+                            className={`filter-style-btn ${isCalloutMode ? 'active' : ''}`}
+                            onClick={() => {
+                              setIsCalloutMode(!isCalloutMode);
+                              setIsTitleMode(false);
+                            }}
+                            title="Callout Mode"
+                          >
+                            <MessageSquare size={14} />
+                            <span>Callout</span>
+                          </button>
+                          
+                          {/* Line toggle */}
+                          <button
+                            className={`line-toggle-btn ${bannerLineBreak ? 'active' : ''}`}
+                            onClick={() => setBannerLineBreak(!bannerLineBreak)}
+                            title={bannerLineBreak ? "New line" : "Same line"}
+                          >
+                            <span className="line-toggle-icon">{bannerLineBreak ? "↵" : "→"}</span>
+                            <span>{bannerLineBreak ? "New" : "Same"}</span>
+                          </button>
+                          
+                          {/* Color selectors - only for regular banners */}
+                          {!isTitleMode && !isCalloutMode && (
+                            <div className="color-selector-group">
+                              <button
+                                className={`color-circle-btn blue ${bannerColor === 'blue' ? 'active' : ''}`}
+                                onClick={() => setBannerColor('blue')}
+                                title="Blue"
+                                aria-label="Blue color"
+                              />
+                              <button
+                                className={`color-circle-btn orange ${bannerColor === 'orange' ? 'active' : ''}`}
+                                onClick={() => setBannerColor('orange')}
+                                title="Orange"
+                                aria-label="Orange color"
+                              />
+                              <button
+                                className={`color-circle-btn green ${bannerColor === 'green' ? 'active' : ''}`}
+                                onClick={() => setBannerColor('green')}
+                                title="Green"
+                                aria-label="Green color"
+                              />
+                              <button
+                                className={`color-circle-btn grey ${bannerColor === 'grey' ? 'active' : ''}`}
+                                onClick={() => setBannerColor('grey')}
+                                title="Grey"
+                                aria-label="Grey color"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
-
-                    {/* Add Banner Controls - Only show when toggled */}
-                    {showBannerSection && (
-                      <div className="editor-banner-controls-container">
-                      <div className="banner-input-row">
-                        <textarea
-                          ref={bannerInputRef}
-                          className="banner-input"
-                          placeholder="Enter banner text..."
-                          value={newBannerText}
-                          onChange={(e) => {
-                            setNewBannerText(e.target.value);
-                            // Auto-resize textarea
-                            e.target.style.height = 'auto';
-                            e.target.style.height = e.target.scrollHeight + 'px';
-                          }}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey && newBannerText.trim()) {
-                              e.preventDefault();
-                              addBanner();
-                            }
-                          }}
-                          rows={1}
-                        />
-                      </div>
-                      <div className="banner-controls-row">
-                        <button
-                          className="add-banner-btn"
-                          onClick={addBanner}
-                          disabled={!newBannerText.trim()}
-                          title="Add new banner"
-                        >
-                          <Tag size={16} />
-                          Add Banner
-                        </button>
-                        <button
-                          className="banner-toggle-btn"
-                          onClick={() => setBannerLineBreak(!bannerLineBreak)}
-                          title={bannerLineBreak ? "New line" : "Existing line"}
-                        >
-                          {bannerLineBreak ? "New Line" : "Existing Line"}
-                        </button>
-                        <button
-                          className={`banner-color-toggle-btn ${bannerColorOrange ? 'orange' : 'blue'}`}
-                          onClick={() => setBannerColorOrange(!bannerColorOrange)}
-                          title={bannerColorOrange ? "Orange color" : "Blue color"}
-                          style={bannerColorOrange ? {
-                            background: '#CB6015',
-                            color: '#FFFFFF',
-                            borderColor: '#CB6015'
-                          } : {}}
-                        >
-                          <span style={bannerColorOrange ? { color: '#FFFFFF' } : {}}>
-                            {bannerColorOrange ? "Orange" : "Blue"}
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-
-                    )}
 
                     <div className="note-content-edit-area">
-                      {/* Display banners in content area during edit mode */}
+                      {/* Display banners in content area during edit mode - identical to viewer */}
                       {formData.banners && formData.banners.length > 0 && (
                         <div className="content-banners-container edit-mode">
-                          {formData.banners.map((banner, index) => (
-                            <React.Fragment key={banner.id}>
-                              {banner.newLine && index > 0 && <div className="banner-line-break" />}
-                              {editingBannerId === banner.id ? (
-                                <div className="banner-edit-wrapper">
-                                  <input
-                                    type="text"
-                                    className="banner-edit-input"
-                                    value={editingBannerText}
-                                    onChange={(e) => setEditingBannerText(e.target.value)}
-                                    onKeyPress={(e) => {
-                                      if (e.key === 'Enter') {
-                                        saveEditedBanner(banner.id);
-                                      }
-                                    }}
-                                    autoFocus
-                                  />
-                                  <button
-                                    className="banner-edit-btn save"
-                                    onClick={() => saveEditedBanner(banner.id)}
-                                    title="Save"
-                                  >
-                                    <Check size={16} />
-                                  </button>
-                                  <button
-                                    className="banner-edit-btn cancel"
-                                    onClick={cancelEditingBanner}
-                                    title="Cancel"
-                                  >
-                                    <X size={16} />
-                                  </button>
-                                </div>
-                              ) : (
-                                <div 
-                                  className={`content-banner-item ${banner.isOrange ? 'new-line' : ''} ${banner.isDone ? 'done' : ''} ${copiedBannerId === banner.id ? 'copied' : ''}`}
-                                  onClick={() => !isLongPress && copyBannerToClipboard(banner)}
-                                  onContextMenu={(e) => handleContextMenu(e, banner.id)}
-                                  onTouchStart={() => handleTouchStart(banner.id)}
-                                  onTouchEnd={handleTouchEnd}
-                                  onTouchMove={handleTouchMove}
-                                  title="Click to copy, right-click for options"
-                                >
-                                  <span className="banner-text">{banner.text}</span>
-                                  <button
-                                    className="remove-banner-btn inline"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      removeBanner(banner.id);
-                                    }}
-                                    title="Remove banner"
-                                  >
-                                    <X size={16} />
-                                  </button>
-                                </div>
-                              )}
-                            </React.Fragment>
-                          ))}
+                          {(() => {
+                            // Group banners by line breaks
+                            const bannerGroups = [];
+                            let currentGroup = [];
+                            
+                            formData.banners.forEach((banner, index) => {
+                              if (banner.newLine && index > 0 && currentGroup.length > 0) {
+                                bannerGroups.push(currentGroup);
+                                currentGroup = [];
+                              }
+                              currentGroup.push(banner);
+                            });
+                            if (currentGroup.length > 0) {
+                              bannerGroups.push(currentGroup);
+                            }
+                            
+                            return bannerGroups.map((group, groupIndex) => (
+                              <div key={`group-${groupIndex}`} className="banner-line-wrapper">
+                                {group.map((banner) => (
+                                  <React.Fragment key={banner.id}>
+                                    {editingBannerId === banner.id ? (
+                                      <div className="banner-edit-wrapper">
+                                        <input
+                                          type="text"
+                                          className="banner-edit-input"
+                                          value={editingBannerText}
+                                          onChange={(e) => setEditingBannerText(e.target.value)}
+                                          onKeyPress={(e) => {
+                                            if (e.key === 'Enter') {
+                                              saveEditedBanner(banner.id);
+                                            }
+                                          }}
+                                          autoFocus
+                                        />
+                                        <button
+                                          className="banner-edit-btn save"
+                                          onClick={() => saveEditedBanner(banner.id)}
+                                          title="Save"
+                                        >
+                                          <Check size={16} />
+                                        </button>
+                                        <button
+                                          className="banner-edit-btn cancel"
+                                          onClick={cancelEditingBanner}
+                                          title="Cancel"
+                                        >
+                                          <X size={16} />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <div 
+                                        className={`content-banner-item ${
+                                          banner.isCallout || banner.color === 'callout' ? 'callout-banner' :
+                                          banner.isTitle || banner.color === 'title' ? 'title-banner' :
+                                          banner.color === 'orange' || banner.isOrange ? 'new-line' : 
+                                          banner.color === 'green' ? 'done' : 
+                                          banner.color === 'grey' ? 'grey' : ''
+                                        } ${banner.isDone ? 'done' : ''}`}
+                                        onContextMenu={(e) => handleContextMenu(e, banner.id)}
+                                      >
+                                        <span className="banner-text">{banner.text}</span>
+                                      </div>
+                                    )}
+                                  </React.Fragment>
+                                ))}
+                              </div>
+                            ));
+                          })()}
                         </div>
                       )}
 
@@ -2099,9 +2140,26 @@ const Notes = () => {
                     {/* Display banners in the content area when viewing */}
                     {getCurrentBanners().length > 0 && (
                       <div className="content-banners-container">
-                        {getCurrentBanners().map((banner, index) => (
-                          <React.Fragment key={banner.id}>
-                            {banner.newLine && index > 0 && <div className="banner-line-break" />}
+                        {(() => {
+                          // Group banners by line breaks - same as editor
+                          const bannerGroups = [];
+                          let currentGroup = [];
+                          
+                          getCurrentBanners().forEach((banner, index) => {
+                            if (banner.newLine && index > 0 && currentGroup.length > 0) {
+                              bannerGroups.push(currentGroup);
+                              currentGroup = [];
+                            }
+                            currentGroup.push(banner);
+                          });
+                          if (currentGroup.length > 0) {
+                            bannerGroups.push(currentGroup);
+                          }
+                          
+                          return bannerGroups.map((group, groupIndex) => (
+                            <div key={`group-${groupIndex}`} className="banner-line-wrapper">
+                              {group.map((banner) => (
+                                <React.Fragment key={banner.id}>
                             {editingBannerId === banner.id ? (
                               <div className="banner-edit-wrapper">
                                 <input
@@ -2133,8 +2191,14 @@ const Notes = () => {
                               </div>
                             ) : (
                               <div 
-                                className={`content-banner-item ${banner.isOrange ? 'new-line' : ''} ${banner.isDone ? 'done' : ''} ${copiedBannerId === banner.id ? 'copied' : ''}`}
-                                onClick={() => !isLongPress && copyBannerToClipboard(banner)}
+                                className={`content-banner-item ${
+                                  banner.isCallout || banner.color === 'callout' ? 'callout-banner' :
+                                  banner.isTitle || banner.color === 'title' ? 'title-banner' :
+                                  banner.color === 'orange' || banner.isOrange ? 'new-line' : 
+                                  banner.color === 'green' ? 'done' : 
+                                  banner.color === 'grey' ? 'grey' : ''
+                                } ${banner.isDone ? 'done' : ''} ${copiedBannerId === banner.id ? 'copied' : ''}`}
+                                onClick={() => !isLongPress && !banner.isTitle && !banner.isCallout && copyBannerToClipboard(banner)}
                                 onContextMenu={(e) => handleContextMenu(e, banner.id)}
                                 onTouchStart={() => handleTouchStart(banner.id)}
                                 onTouchEnd={handleTouchEnd}
@@ -2153,8 +2217,11 @@ const Notes = () => {
                                 </div>
                               </div>
                             )}
-                          </React.Fragment>
-                        ))}
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          ));
+                        })()}
                       </div>
                     )}
                     
@@ -2228,14 +2295,21 @@ const Notes = () => {
                           {/* Show banner pills if note has banners */}
                           {note.banners && note.banners.length > 0 && (
                             <div className="card-banner-preview">
-                              {note.banners.slice(0, 3).map((banner, idx) => (
-                                <span 
-                                  key={idx} 
-                                  className={`card-banner-pill ${banner.isOrange ? 'orange' : ''} ${banner.isDone ? 'done' : ''}`}
-                                >
-                                  {banner.text}
-                                </span>
-                              ))}
+                              {note.banners
+                                .filter(banner => !banner.isTitle && banner.color !== 'title' && !banner.isCallout && banner.color !== 'callout')
+                                .slice(0, 3)
+                                .map((banner, idx) => (
+                                  <span 
+                                    key={idx} 
+                                    className={`card-banner-pill ${
+                                      banner.color === 'orange' || banner.isOrange ? 'orange' : 
+                                      banner.color === 'green' ? 'done' : 
+                                      banner.color === 'grey' ? 'grey' : ''
+                                    } ${banner.isDone ? 'done' : ''}`}
+                                  >
+                                    {banner.text}
+                                  </span>
+                                ))}
                               {note.banners.length > 3 && (
                                 <span className="card-banner-pill">+{note.banners.length - 3} more</span>
                               )}

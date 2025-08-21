@@ -1,6 +1,9 @@
 /* Import Satoshi Font */
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,800,500,400&display=swap');
 
+/* Import Dongle Font for Banners */
+@import url('https://fonts.googleapis.com/css2?family=Dongle:wght@400&display=swap');
+
 /* Custom CSS Properties for Modern Design */
 :root {
   --primary-light-rgb: 59, 130, 246;
@@ -895,8 +898,9 @@
   background: #3b82f6;
   color: white;
   border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-family: 'Dongle', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 400;
   max-width: 150px;
   white-space: nowrap;
   overflow: hidden;
@@ -1143,7 +1147,9 @@
   }
   
   .card-banner-pill {
-    font-size: 0.65rem;
+    font-family: 'Dongle', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 400;
     padding: 0.15rem 0.4rem;
     max-width: 120px;
   }
@@ -1242,7 +1248,9 @@
   }
   
   .card-banner-pill {
-    font-size: 0.6rem;
+    font-family: 'Dongle', sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
     padding: 0.125rem 0.375rem;
     max-width: 100px;
     border-radius: 8px;
@@ -3493,8 +3501,9 @@
   border: none;
   border-radius: 10px;
   color: white;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-family: 'Dongle', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
@@ -3585,8 +3594,11 @@
 }
 
 .content-banner-item .banner-text {
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-family: 'Dongle', sans-serif;
+  font-weight: 400;
+  font-size: 1.75rem;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
 }
 
 .content-banner-item .banner-icon {
@@ -3961,14 +3973,15 @@ div.editor-banner-controls-container div.banner-controls-row button.add-banner-b
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   border-radius: 8px;
-  font-size: 1rem;
+  font-family: 'Dongle', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 400;
   color: var(--text-primary);
   transition: all 0.2s ease;
   min-height: 44px;
   resize: none;
   overflow: hidden;
-  font-family: inherit;
-  line-height: 1.4;
+  line-height: 1.2;
   box-sizing: border-box;
 }
 
@@ -4141,7 +4154,9 @@ div.editor-banner-controls-container div.banner-controls-row button.add-banner-b
   }
   
   .content-banner-item {
-    font-size: 0.875rem;
+    font-family: 'Dongle', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 400;
     padding: 0.625rem 1rem;
   }
   
@@ -4311,7 +4326,9 @@ div.editor-banner-controls-container div.banner-controls-row button.add-banner-b
 
 .content-banner-item.done .banner-text {
   color: #003d1f;
-  font-weight: 600;
+  font-family: 'Dongle', sans-serif;
+  font-weight: 400;
+  font-size: 1.75rem;
   text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
 }
 

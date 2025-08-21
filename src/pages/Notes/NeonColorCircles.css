@@ -1,0 +1,122 @@
+/* Neon/Bright Color Circles for Better Visibility */
+
+/* Color circle buttons with neon/bright colors */
+.color-circle-btn {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  border: 2px solid transparent !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.color-circle-btn:hover {
+  transform: scale(1.2) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.color-circle-btn.active {
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.15) !important;
+  transform: scale(1.1) !important;
+}
+
+.color-circle-btn.active::after {
+  content: '✓' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  color: #FFFFFF !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Bright Blue - More visible */
+.color-circle-btn.blue {
+  background: #00BFFF !important; /* Deep Sky Blue */
+  background: linear-gradient(135deg, #00BFFF 0%, #1E90FF 100%) !important;
+  border: 1px solid #0080FF !important;
+}
+
+/* Neon Orange - High visibility */
+.color-circle-btn.orange {
+  background: #FF6600 !important; /* Vivid Orange */
+  background: linear-gradient(135deg, #FF8C00 0%, #FF6600 100%) !important;
+  border: 1px solid #FF5500 !important;
+}
+
+/* Neon Green - Bright and visible */
+.color-circle-btn.green {
+  background: #00FF00 !important; /* Lime Green */
+  background: linear-gradient(135deg, #32FF32 0%, #00E600 100%) !important;
+  border: 1px solid #00CC00 !important;
+}
+
+/* Darker Grey - Better contrast */
+.color-circle-btn.grey {
+  background: #606060 !important; /* Dark Grey */
+  background: linear-gradient(135deg, #707070 0%, #505050 100%) !important;
+  border: 1px solid #404040 !important;
+}
+
+/* Add glow effect on hover for better visibility */
+.color-circle-btn.blue:hover {
+  box-shadow: 0 0 10px rgba(0, 191, 255, 0.6) !important;
+}
+
+.color-circle-btn.orange:hover {
+  box-shadow: 0 0 10px rgba(255, 102, 0, 0.6) !important;
+}
+
+.color-circle-btn.green:hover {
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.6) !important;
+}
+
+.color-circle-btn.grey:hover {
+  box-shadow: 0 0 10px rgba(96, 96, 96, 0.6) !important;
+}
+
+/* Active state with stronger glow */
+.color-circle-btn.blue.active {
+  box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.3), 0 0 15px rgba(0, 191, 255, 0.5) !important;
+}
+
+.color-circle-btn.orange.active {
+  box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.3), 0 0 15px rgba(255, 102, 0, 0.5) !important;
+}
+
+.color-circle-btn.green.active {
+  box-shadow: 0 0 0 3px rgba(0, 255, 0, 0.3), 0 0 15px rgba(0, 255, 0, 0.5) !important;
+}
+
+.color-circle-btn.grey.active {
+  box-shadow: 0 0 0 3px rgba(96, 96, 96, 0.3), 0 0 15px rgba(96, 96, 96, 0.5) !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .color-circle-btn {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  
+  .color-circle-btn.active::after {
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .color-circle-btn {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  
+  .color-circle-btn.active::after {
+    font-size: 11px !important;
+  }
+}

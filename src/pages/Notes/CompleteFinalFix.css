@@ -1,0 +1,209 @@
+/* Complete Final Fix - Editor Identical to Viewer with Proper Padding and Alignment */
+
+/* Add proper padding to editor content area - match viewer */
+.note-content-edit-area {
+  padding: 2.5rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+/* Responsive padding */
+@media (max-width: 768px) {
+  .note-content-edit-area {
+    padding: 1.5rem !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .note-content-edit-area {
+    padding: 3rem 4rem !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Fix banner container alignment */
+.content-banners-container.edit-mode {
+  display: block !important;
+  width: 100% !important;
+  margin-bottom: 2rem !important;
+  padding: 0 !important;
+}
+
+/* Banner line wrapper for proper grouping */
+.banner-line-wrapper {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+  align-items: center !important;
+  margin-bottom: 0.75rem !important;
+  width: 100% !important;
+}
+
+/* Regular banners - ensure proper alignment */
+.content-banner-item:not(.title-banner):not(.callout-banner) {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0.625rem 1rem !important;
+  border-radius: 8px !important;
+  font-size: 0.9rem !important;
+  font-weight: 400 !important;
+  width: auto !important;
+  min-width: fit-content !important;
+  max-width: fit-content !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  vertical-align: middle !important;
+}
+
+/* Title banners - full width and properly aligned */
+.banner-line-wrapper .content-banner-item.title-banner,
+.content-banners-container .content-banner-item.title-banner {
+  display: block !important;
+  width: 100% !important;
+  flex-basis: 100% !important;
+  padding: 1rem 1.5rem !important;
+  margin: 0 !important;
+  background: linear-gradient(135deg, #FFE5B4 0%, #FFD4A3 50%, #FFC68A 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 3px 10px rgba(255, 152, 0, 0.15) !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+}
+
+/* Callout banners - full width and properly aligned */
+.banner-line-wrapper .content-banner-item.callout-banner,
+.content-banners-container .content-banner-item.callout-banner {
+  display: block !important;
+  width: 100% !important;
+  flex-basis: 100% !important;
+  padding: 1.25rem 1.75rem !important;
+  margin: 0 !important;
+  background: #FAFAFA !important;
+  border-left: 4px solid #FF6900 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  box-sizing: border-box !important;
+}
+
+/* Title banner text */
+.content-banner-item.title-banner .banner-text {
+  font-family: 'Dongle', sans-serif !important;
+  font-size: 2rem !important;
+  font-weight: 400 !important;
+  color: #8B4513 !important;
+  letter-spacing: 0.05em !important;
+  line-height: 1.3 !important;
+  display: block !important;
+  width: 100% !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Callout banner text */
+.content-banner-item.callout-banner .banner-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  color: #424242 !important;
+  line-height: 1.6 !important;
+  display: block !important;
+  width: 100% !important;
+  text-align: left !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Handle line breaks properly */
+.banner-line-wrapper:has(.content-banner-item.title-banner),
+.banner-line-wrapper:has(.content-banner-item.callout-banner) {
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+
+/* Rich text editor spacing */
+.note-content-edit-area .rich-text-editor {
+  margin-top: 0 !important;
+  width: 100% !important;
+}
+
+.note-content-edit-area .ql-editor {
+  padding: 0 !important;
+  min-height: 300px !important;
+}
+
+/* Ensure no banner icons in edit mode */
+.content-banners-container.edit-mode .banner-icon {
+  display: none !important;
+}
+
+/* Banner edit wrapper alignment */
+.banner-edit-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* Fix vertical alignment of inline banners */
+.banner-line-wrapper > .content-banner-item:not(.title-banner):not(.callout-banner) {
+  align-self: flex-start !important;
+}
+
+/* Ensure proper spacing between different types */
+.banner-line-wrapper + .banner-line-wrapper {
+  margin-top: 0.75rem !important;
+}
+
+/* Fix for banners after titles or callouts */
+.content-banner-item.title-banner ~ .banner-line-wrapper,
+.content-banner-item.callout-banner ~ .banner-line-wrapper {
+  margin-top: 0.75rem !important;
+}
+
+/* Ensure consistent banner heights */
+.banner-line-wrapper .content-banner-item:not(.title-banner):not(.callout-banner) {
+  min-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .note-content-edit-area {
+    padding: 1.25rem !important;
+  }
+  
+  .content-banner-item.title-banner .banner-text {
+    font-size: 1.75rem !important;
+  }
+  
+  .content-banner-item.callout-banner {
+    padding: 1rem 1.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .note-content-edit-area {
+    padding: 1rem !important;
+  }
+  
+  .content-banner-item.title-banner .banner-text {
+    font-size: 1.5rem !important;
+  }
+  
+  .content-banner-item.callout-banner {
+    padding: 0.875rem 1rem !important;
+  }
+}

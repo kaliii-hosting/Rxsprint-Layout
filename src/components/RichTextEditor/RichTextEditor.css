@@ -8,6 +8,9 @@
   overflow: hidden;
   border: 1px solid var(--border-color);
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Loading state */
@@ -119,6 +122,10 @@
   word-wrap: break-word;
   white-space: pre-wrap;
   overflow-wrap: break-word;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Full-page display when table is present */

@@ -1,0 +1,196 @@
+/* Complete Fix - Make Editor Identical to Viewer */
+
+/* Reset and fix banner container in edit mode */
+.note-content-edit-area .content-banners-container,
+.content-banners-container.edit-mode {
+  display: block !important;
+  width: 100% !important;
+  margin-bottom: 1.5rem !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+/* Wrapper for each line of banners */
+.banner-line-wrapper {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+  margin-bottom: 0.75rem !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+}
+
+/* Line break handler */
+.banner-line-break {
+  flex-basis: 100% !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+/* Regular banners - inline display */
+.content-banner-item:not(.title-banner):not(.callout-banner) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0.625rem 1rem !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  font-size: 0.9rem !important;
+  font-weight: 400 !important;
+  width: auto !important;
+  max-width: fit-content !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Title banners - full width */
+.content-banner-item.title-banner {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 1rem 1.5rem !important;
+  margin: 0 0 0.75rem 0 !important;
+  background: linear-gradient(135deg, #FFE5B4 0%, #FFD4A3 50%, #FFC68A 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 3px 10px rgba(255, 152, 0, 0.15) !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+}
+
+.content-banner-item.title-banner .banner-text {
+  font-family: 'Dongle', sans-serif !important;
+  font-size: 2rem !important;
+  font-weight: 400 !important;
+  color: #8B4513 !important;
+  letter-spacing: 0.05em !important;
+  line-height: 1.3 !important;
+  display: block !important;
+  width: 100% !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Callout banners - full width */
+.content-banner-item.callout-banner {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 1.25rem 1.75rem !important;
+  margin: 0 0 0.75rem 0 !important;
+  background: #FAFAFA !important;
+  border-left: 4px solid #FF6900 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  box-sizing: border-box !important;
+}
+
+.content-banner-item.callout-banner .banner-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  color: #424242 !important;
+  line-height: 1.6 !important;
+  display: block !important;
+  width: 100% !important;
+  text-align: left !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Group banners properly */
+.content-banners-container.edit-mode > * {
+  margin-bottom: 0.75rem !important;
+}
+
+/* Handle inline banners on same line */
+.banner-inline-group {
+  display: inline-flex !important;
+  gap: 0.75rem !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* Ensure proper spacing between different banner types */
+.content-banner-item.title-banner + .content-banner-item:not(.title-banner),
+.content-banner-item.callout-banner + .content-banner-item:not(.callout-banner),
+.content-banner-item:not(.title-banner):not(.callout-banner) + .content-banner-item.title-banner,
+.content-banner-item:not(.title-banner):not(.callout-banner) + .content-banner-item.callout-banner {
+  margin-top: 0.75rem !important;
+}
+
+/* Fix editor area to prevent overflow */
+.note-content-edit-area {
+  width: 100% !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure no icons in edit mode */
+.content-banners-container.edit-mode .banner-icon,
+.note-content-edit-area .banner-icon {
+  display: none !important;
+}
+
+/* Banner edit wrapper */
+.banner-edit-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* Rich text editor area */
+.note-content-edit-area .rich-text-editor {
+  width: 100% !important;
+  margin-top: 1rem !important;
+}
+
+/* Specific fixes for edit mode layout */
+.content-banners-container.edit-mode {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+}
+
+/* Handle banner groups with line breaks */
+.content-banners-container.edit-mode .content-banner-item {
+  position: relative !important;
+}
+
+/* Ensure banners wrap properly */
+@media (max-width: 768px) {
+  .content-banner-item:not(.title-banner):not(.callout-banner) {
+    max-width: calc(100% - 1rem) !important;
+  }
+  
+  .content-banner-item.title-banner .banner-text {
+    font-size: 1.75rem !important;
+  }
+  
+  .content-banner-item.callout-banner .banner-text {
+    font-size: 0.9375rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-banner-item.title-banner .banner-text {
+    font-size: 1.5rem !important;
+  }
+  
+  .content-banner-item.callout-banner {
+    padding: 1rem 1.25rem !important;
+  }
+}

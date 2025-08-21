@@ -1,0 +1,254 @@
+/* Banner and Title Alignment Fixes */
+
+/* Container alignment fix */
+.content-banners-container {
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: visible !important;
+  align-items: flex-start; /* Align all items to start */
+}
+
+/* Regular banners - inline display */
+.content-banner-item:not(.title-banner) {
+  display: inline-flex !important;
+  align-items: center;
+  width: auto !important;
+  max-width: 100% !important;
+}
+
+/* Title Banner - Full Width with Left-Aligned Text */
+.content-banner-item.title-banner {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.875rem 1.5rem !important;
+  margin: 0 !important; /* Remove extra margins */
+  background: linear-gradient(90deg, #FFEFD5 0%, #FFE4B5 50%, #FFDAB9 100%) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 6px rgba(255, 140, 0, 0.08) !important;
+  cursor: default !important;
+  position: relative !important;
+  text-align: left !important; /* Left align */
+  flex: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Title text - left aligned */
+.content-banner-item.title-banner .banner-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  font-size: 1.125rem !important;
+  font-weight: 500 !important;
+  color: #8B4513 !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.4 !important;
+  display: block !important;
+  width: 100% !important;
+  text-align: left !important; /* Left align text */
+  text-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Title Mode Button - Match Add Banner Style */
+.add-title-btn {
+  padding: 0.75rem 1.25rem !important;
+  background: #FF6900 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  font-family: inherit !important; /* Use same font as Add Banner */
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  box-shadow: 0 2px 8px rgba(255, 105, 0, 0.2) !important;
+}
+
+.add-title-btn:hover {
+  background: #ff7a1a !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(255, 105, 0, 0.3) !important;
+}
+
+.add-title-btn.active {
+  background: #E65100 !important;
+}
+
+/* Color Selector Circles */
+.banner-color-selector {
+  display: inline-flex !important;
+  gap: 0.5rem !important;
+  align-items: center !important;
+  padding: 0.25rem !important;
+}
+
+.color-circle {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  border: 2px solid transparent !important;
+  position: relative !important;
+  display: inline-block !important;
+}
+
+.color-circle:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.color-circle.active {
+  border-color: #333 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Color circle variants */
+.color-circle.blue {
+  background: #E3F2FD !important;
+  border: 1px solid #BBDEFB !important;
+}
+
+.color-circle.orange {
+  background: #FFE4D1 !important;
+  border: 1px solid #FFCCAA !important;
+}
+
+.color-circle.green {
+  background: #E8F5E9 !important;
+  border: 1px solid #C8E6C9 !important;
+}
+
+.color-circle.grey {
+  background: #F5F5F5 !important;
+  border: 1px solid #E0E0E0 !important;
+}
+
+/* Grey banner style */
+.content-banner-item.grey {
+  background: #F5F5F5 !important;
+  color: #424242 !important;
+  border: 1px solid #E0E0E0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.content-banner-item.grey:hover {
+  background: #EEEEEE !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.content-banner-item.grey .banner-text {
+  color: #424242 !important;
+}
+
+.content-banner-item.grey .banner-icon {
+  color: #616161 !important;
+}
+
+/* Card pill for grey */
+.card-banner-pill.grey {
+  background: #F5F5F5 !important;
+  color: #424242 !important;
+  border: 1px solid #E0E0E0 !important;
+}
+
+/* Banner controls layout improvement */
+.banner-controls-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem !important;
+  padding: 0.5rem 0;
+  width: 100%;
+  max-width: 100%;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+
+/* Ensure proper banner grouping */
+.content-banners-container .banner-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  width: 100%;
+  align-items: center;
+}
+
+/* Title banners take full row */
+.content-banners-container .content-banner-item.title-banner {
+  flex-basis: 100% !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Regular banners wrap inline */
+.content-banners-container .content-banner-item:not(.title-banner) {
+  flex-basis: auto !important;
+  margin-bottom: 0 !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .content-banner-item.title-banner {
+    padding: 0.75rem 1.25rem !important;
+    border-radius: 8px !important;
+  }
+  
+  .content-banner-item.title-banner .banner-text {
+    font-size: 1rem !important;
+  }
+  
+  .color-circle {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  
+  .add-title-btn {
+    font-size: 0.9rem !important;
+    padding: 0.625rem 1rem !important;
+    min-height: 40px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-banner-item.title-banner {
+    padding: 0.625rem 1rem !important;
+  }
+  
+  .content-banner-item.title-banner .banner-text {
+    font-size: 0.9375rem !important;
+  }
+  
+  .color-circle {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  
+  .banner-color-selector {
+    gap: 0.375rem !important;
+  }
+}
+
+/* Override any conflicting styles */
+.notes-page .content-banner-item.title-banner,
+.note-content .content-banner-item.title-banner {
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
+
+.notes-page .content-banner-item.title-banner .banner-text,
+.note-content .content-banner-item.title-banner .banner-text {
+  text-align: left !important;
+}

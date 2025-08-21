@@ -1,0 +1,164 @@
+/* Editor and Viewer Consistency Styles */
+
+/* Remove toolbar space and adjust content area */
+.note-editor {
+  padding-top: 1rem !important;
+}
+
+/* Editor banner controls - always visible */
+.editor-banner-controls-container {
+  background: #FAFAFA !important;
+  padding: 1rem !important;
+  border-radius: 8px !important;
+  margin-bottom: 1.5rem !important;
+  border: 1px solid #E0E0E0 !important;
+}
+
+/* Ensure banners display consistently in both editor and viewer */
+.content-banners-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  margin-bottom: 2rem !important;
+  width: 100% !important;
+}
+
+.content-banners-container.edit-mode {
+  margin-bottom: 1.5rem !important;
+}
+
+/* Make editor content area match viewer */
+.note-content-edit-area {
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Remove editor toolbar container completely */
+.editor-toolbar-container {
+  display: none !important;
+}
+
+/* Hide RichTextEditor toolbar */
+.rich-text-editor .toolbar,
+.rich-text-editor .ql-toolbar,
+.rich-text-editor [class*="toolbar"],
+.ql-toolbar.ql-snow,
+.ql-container.ql-snow {
+  border: none !important;
+}
+
+.ql-toolbar {
+  display: none !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+}
+
+.ql-container {
+  border: none !important;
+  font-family: inherit !important;
+}
+
+.ql-editor {
+  padding: 1rem 0 !important;
+  min-height: 300px !important;
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Ensure banner edit inline matches viewer appearance */
+.banner-edit-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+}
+
+.banner-edit-input {
+  flex: 1 !important;
+  padding: 0.5rem 0.75rem !important;
+  border: 2px solid #2196F3 !important;
+  border-radius: 6px !important;
+  font-size: 0.9rem !important;
+  font-family: inherit !important;
+  background: white !important;
+}
+
+/* Banner consistency between modes */
+.content-banner-item {
+  transition: all 0.2s ease !important;
+  position: relative !important;
+}
+
+/* Hide remove button in view mode, show on hover in edit mode */
+.note-content .content-banner-item .remove-banner-btn {
+  display: none !important;
+}
+
+.content-banners-container.edit-mode .content-banner-item .remove-banner-btn {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease !important;
+}
+
+.content-banners-container.edit-mode .content-banner-item:hover .remove-banner-btn {
+  opacity: 1 !important;
+}
+
+/* Ensure proper spacing for content */
+.note-editor .note-content,
+.note-editor .note-content-edit-area {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Banner input always half-width and centered */
+.banner-input-row {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.banner-input-row textarea {
+  width: 50% !important;
+  max-width: 400px !important;
+  min-width: 280px !important;
+}
+
+/* Banner controls row - centered */
+.banner-controls-row {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  flex-wrap: wrap !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .editor-banner-controls-container {
+    padding: 0.75rem !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .banner-input-row textarea {
+    width: 70% !important;
+    min-width: 240px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .editor-banner-controls-container {
+    padding: 0.625rem !important;
+  }
+  
+  .banner-input-row textarea {
+    width: 85% !important;
+    min-width: 200px !important;
+  }
+  
+  .banner-controls-row {
+    gap: 0.5rem !important;
+  }
+}

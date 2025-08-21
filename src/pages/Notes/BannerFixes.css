@@ -1,0 +1,368 @@
+/* Banner Layout and Text Wrapping Fixes */
+
+/* Fix banner container layout */
+.content-banners-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: visible !important; /* Allow banners to expand vertically */
+}
+
+/* Fix individual banner items to wrap text properly */
+.content-banner-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-family: 'Dongle', sans-serif !important;
+  font-size: 1.75rem !important;
+  font-weight: 400 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  
+  /* Critical fixes for text wrapping */
+  white-space: normal !important; /* Allow text to wrap */
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  max-width: 100% !important; /* Take full width if needed */
+  min-width: 0 !important; /* Allow shrinking */
+  flex: 0 1 auto !important; /* Allow flexible sizing */
+  width: auto !important;
+  min-height: auto !important;
+  overflow: visible !important; /* Show all content */
+  text-overflow: clip !important; /* Don't use ellipsis */
+  line-height: 1.2 !important;
+}
+
+/* Banner text should wrap properly */
+.content-banner-item .banner-text {
+  font-family: 'Dongle', sans-serif !important;
+  font-weight: 400 !important;
+  font-size: 1.75rem !important;
+  letter-spacing: 0.03em;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+  display: inline !important;
+  line-height: 1.2 !important;
+}
+
+/* Orange banner variant */
+.content-banner-item.new-line {
+  background: linear-gradient(135deg, #CB6015 0%, #A04E11 100%);
+  box-shadow: 0 4px 12px rgba(203, 96, 21, 0.25);
+  white-space: normal !important;
+  max-width: 100% !important;
+}
+
+/* Done banner variant */
+.content-banner-item.done {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%) !important;
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2) !important;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  white-space: normal !important;
+  max-width: 100% !important;
+}
+
+/* Fix banner icon positioning */
+.content-banner-item .banner-icon {
+  display: flex;
+  align-items: center;
+  opacity: 0.9;
+  flex-shrink: 0; /* Don't shrink icon */
+  margin-left: auto; /* Push to right */
+}
+
+/* Fix remove button positioning */
+.content-banner-item .remove-banner-btn.inline {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.content-banner-item:hover .remove-banner-btn.inline {
+  opacity: 1;
+}
+
+/* Fix banner controls container to prevent glitching */
+.editor-banner-controls-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+  background: var(--bg-secondary, #f9fafb);
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+/* Fix banner input area */
+.banner-input-row {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0 1rem;
+}
+
+.banner-input {
+  width: 100%;
+  max-width: 800px;
+  padding: 0.75rem 1.25rem;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-family: 'Dongle', sans-serif !important;
+  font-size: 1.75rem !important;
+  font-weight: 400 !important;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+  min-height: 48px;
+  resize: vertical;
+  overflow: hidden;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
+/* Fix banner controls row */
+.banner-controls-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  width: 100%;
+  max-width: 100%;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+
+/* Fix note content edit area to accommodate banner section */
+.note-content-edit-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1rem 2rem;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-height: 0; /* Allow shrinking */
+}
+
+/* When banner section is visible, adjust layout */
+.note-editor:has(.editor-banner-controls-container) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.note-editor:has(.editor-banner-controls-container) .note-content-edit-area {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Card banner pills should also wrap */
+.card-banner-pill {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  background: #3b82f6;
+  color: white;
+  border-radius: 12px;
+  font-family: 'Dongle', sans-serif !important;
+  font-size: 1.25rem !important;
+  font-weight: 400 !important;
+  white-space: nowrap; /* Keep pills single line in cards */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px; /* Increase max width for better visibility */
+  line-height: 1.2 !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .content-banner-item {
+    font-family: 'Dongle', sans-serif !important;
+    font-size: 1.5rem !important;
+    font-weight: 400 !important;
+    padding: 0.625rem 1rem;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+  
+  .content-banner-item .banner-text {
+    font-family: 'Dongle', sans-serif !important;
+    font-size: 1.5rem !important;
+    font-weight: 400 !important;
+    line-height: 1.2 !important;
+  }
+  
+  .editor-banner-controls-container {
+    padding: 0.75rem;
+  }
+  
+  .banner-input-row {
+    padding: 0 0.5rem;
+  }
+  
+  .banner-input {
+    font-family: 'Dongle', sans-serif !important;
+    font-size: 1.5rem !important;
+    font-weight: 400 !important;
+    padding: 0.625rem 1rem;
+    max-width: 100%;
+  }
+  
+  .content-banners-container {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-banner-item {
+    font-family: 'Dongle', sans-serif !important;
+    font-size: 1.25rem !important;
+    font-weight: 400 !important;
+    padding: 0.5rem 0.75rem;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+  
+  .content-banner-item .banner-text {
+    font-family: 'Dongle', sans-serif !important;
+    font-size: 1.25rem !important;
+    font-weight: 400 !important;
+    line-height: 1.2 !important;
+  }
+  
+  .editor-banner-controls-container {
+    padding: 0.5rem;
+  }
+  
+  .banner-input {
+    font-family: 'Dongle', sans-serif !important;
+    font-size: 1.25rem !important;
+    font-weight: 400 !important;
+    padding: 0.5rem 0.75rem;
+    min-height: 40px;
+  }
+  
+  .content-banners-container {
+    gap: 0.375rem;
+    padding: 0 0.25rem;
+  }
+}
+
+/* Prevent layout shift when toggling banner section */
+.editor-toolbar-container {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-secondary, #f9fafb);
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+/* Smooth transition for banner section */
+.editor-banner-controls-container {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ensure proper stacking context */
+.notes-page {
+  position: relative;
+  z-index: 0;
+}
+
+.note-editor {
+  position: relative;
+  z-index: 1;
+}
+
+/* Fix for edit mode banner display */
+.content-banners-container.edit-mode {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  overflow: visible !important;
+}
+
+/* Ensure banners don't overflow viewport */
+.notes-content {
+  overflow-x: hidden !important;
+  width: 100% !important;
+}
+
+/* Force long banner text to wrap in all contexts */
+.content-banner-item * {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Fix banner spacing in view mode */
+.note-content .content-banners-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  overflow: visible !important;
+}
+
+/* Ensure proper text wrapping for all banner states */
+.content-banner-item.copied,
+.content-banner-item:hover,
+.content-banner-item.new-line,
+.content-banner-item.done {
+  white-space: normal !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}

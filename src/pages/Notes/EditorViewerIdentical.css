@@ -1,0 +1,284 @@
+/* Editor and Viewer Identical Layout */
+
+/* Hide copy icons in edit mode - banners should not have copy functionality in editor */
+.content-banners-container.edit-mode .banner-icon,
+.note-content-edit-area .banner-icon {
+  display: none !important;
+}
+
+/* Remove inline remove button in edit mode - use same style as viewer */
+.content-banners-container.edit-mode .remove-banner-btn.inline {
+  display: none !important;
+}
+
+/* Ensure banners in editor look exactly like viewer */
+.content-banners-container.edit-mode .content-banner-item,
+.note-content-edit-area .content-banner-item {
+  cursor: default !important;
+  position: relative !important;
+}
+
+/* Remove hover effects in edit mode */
+.content-banners-container.edit-mode .content-banner-item:hover {
+  transform: none !important;
+}
+
+/* Banner controls container - clean background */
+.editor-banner-controls-container {
+  background: transparent !important;
+  padding: 1rem 0 !important;
+  border: none !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Black buttons with white text and icons */
+.add-banner-btn,
+.add-title-btn,
+.add-callout-btn {
+  background: #000000 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #000000 !important;
+  padding: 0.75rem 1.25rem !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Hover state for black buttons */
+.add-banner-btn:hover,
+.add-title-btn:hover,
+.add-callout-btn:hover {
+  background: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Active state for black buttons */
+.add-banner-btn.active,
+.add-title-btn.active,
+.add-callout-btn.active {
+  background: #333333 !important;
+  border-color: #333333 !important;
+}
+
+/* Disabled state */
+.add-banner-btn:disabled,
+.add-title-btn:disabled,
+.add-callout-btn:disabled {
+  background: #666666 !important;
+  border-color: #666666 !important;
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Make button icons white */
+.add-banner-btn svg,
+.add-title-btn svg,
+.add-callout-btn svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+/* Banner toggle button - also black */
+.banner-toggle-btn {
+  background: #000000 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #000000 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-height: 38px !important;
+}
+
+.banner-toggle-btn:hover {
+  background: #1a1a1a !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Ensure consistent banner display */
+.content-banners-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  margin-bottom: 1.5rem !important;
+  width: 100% !important;
+}
+
+/* Banner item consistent styling */
+.content-banner-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0.625rem 1rem !important;
+  border-radius: 8px !important;
+  font-size: 0.9rem !important;
+  font-weight: 400 !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Title banner consistent styling */
+.content-banner-item.title-banner {
+  width: 100% !important;
+  display: block !important;
+  text-align: left !important;
+  padding: 1rem 1.5rem !important;
+}
+
+/* Callout banner consistent styling */
+.content-banner-item.callout-banner {
+  width: 100% !important;
+  display: block !important;
+  padding: 1.25rem 1.75rem !important;
+}
+
+/* Remove any edit mode specific styling that differs from viewer */
+.content-banners-container.edit-mode {
+  margin-bottom: 1.5rem !important;
+}
+
+/* Input field styling to match viewer */
+.banner-input-row {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.banner-input {
+  width: 50% !important;
+  max-width: 400px !important;
+  min-width: 280px !important;
+  margin: 0 auto !important;
+  padding: 0.75rem 1rem !important;
+  border: 2px solid #E0E0E0 !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  font-family: inherit !important;
+  background: #FFFFFF !important;
+  transition: all 0.2s ease !important;
+  resize: vertical !important;
+  min-height: 44px !important;
+}
+
+.banner-input:focus {
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
+  outline: none !important;
+}
+
+/* Controls row layout */
+.banner-controls-row {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  flex-wrap: wrap !important;
+  padding: 0 !important;
+}
+
+/* Color selector styling */
+.banner-color-selector {
+  display: inline-flex !important;
+  gap: 0.5rem !important;
+  align-items: center !important;
+  padding: 0 !important;
+}
+
+/* Line break button - also black */
+.banner-toggle-btn {
+  background: #000000 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #000000 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-height: 38px !important;
+}
+
+.banner-toggle-btn:hover {
+  background: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Note content area styling */
+.note-content-edit-area {
+  padding: 0 !important;
+  background: transparent !important;
+  width: 100% !important;
+}
+
+/* Rich text editor container */
+.note-content-edit-area .rich-text-editor {
+  border: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Rich text editor content */
+.note-content-edit-area .ql-editor,
+.note-content-edit-area .editor-content {
+  padding: 1rem 0 !important;
+  min-height: 300px !important;
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .add-banner-btn,
+  .add-title-btn,
+  .add-callout-btn {
+    font-size: 0.9rem !important;
+    padding: 0.625rem 1rem !important;
+    min-height: 40px !important;
+  }
+  
+  .banner-input {
+    width: 70% !important;
+    min-width: 240px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-banner-btn,
+  .add-title-btn,
+  .add-callout-btn {
+    font-size: 0.875rem !important;
+    padding: 0.5rem 0.875rem !important;
+    min-height: 36px !important;
+  }
+  
+  .banner-input {
+    width: 85% !important;
+    min-width: 200px !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .banner-controls-row {
+    gap: 0.5rem !important;
+  }
+}

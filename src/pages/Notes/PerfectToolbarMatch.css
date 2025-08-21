@@ -1,0 +1,438 @@
+/* Perfect Toolbar Match - Exact Header Replication */
+
+/* Remove ALL gaps and connect toolbars seamlessly */
+.note-header-compact {
+  margin-bottom: 0 !important;
+  border-bottom: 1px solid var(--border-color) !important; /* Keep border for header */
+  box-shadow: none !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  background: var(--bg-primary) !important;
+}
+
+/* Remove any spacing from all container elements that creates gap */
+.notes-page.editing-mode .notes-layout,
+.notes-page .notes-layout {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.notes-page.editing-mode .notes-content,
+.notes-page .notes-content {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.notes-page.editing-mode .note-editor,
+.notes-page .note-editor {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Force all container elements before the banner toolbar to have zero spacing */
+.notes-layout > *:not(.editor-banner-controls-container) {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.notes-content > *:not(.editor-banner-controls-container) {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.note-editor > *:not(.editor-banner-controls-container) {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Banner toolbar - positioned directly below header without gap */
+html body .notes-page .note-editor .editor-banner-controls-container,
+html body .notes-page.editing-mode .note-editor .editor-banner-controls-container,
+html body .notes-page .editor-banner-controls-container,
+html body .editor-banner-controls-container {
+  background: var(--bg-primary) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  width: 100% !important;
+  position: relative !important; /* Keep in document flow for visibility */
+  z-index: 99 !important;
+  display: block !important; /* Ensure visibility */
+  visibility: visible !important; /* Force visibility */
+}
+
+/* Ensure the parent container has relative positioning for absolute child */
+.notes-page .note-editor {
+  position: relative !important;
+}
+
+/* Make banner controls row EXACTLY like header */
+.banner-controls-single-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0.75rem 1rem !important; /* Exact header padding */
+  gap: 1rem !important; /* Exact header gap */
+  min-height: 56px !important; /* Exact header height */
+  background: var(--bg-primary) !important;
+  border-radius: 0 !important;
+  border: none !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  overflow: visible !important;
+  flex-wrap: nowrap !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  transition: box-shadow 0.3s ease !important;
+  visibility: visible !important; /* Force visibility */
+  opacity: 1 !important; /* Ensure opacity */
+}
+
+/* Light theme adjustments */
+[data-theme="light"] .banner-controls-single-row {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Input wrapper - matches header search */
+.banner-input-search-style {
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  position: relative !important;
+  gap: 0.75rem !important; /* Match header gap */
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+/* Icon button beside input - matches header back button */
+.banner-input-icon-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important; /* Exact header button size */
+  height: 36px !important;
+  background: var(--button-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 10px !important;
+  color: var(--text-secondary) !important;
+  cursor: default !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Banner input - EXACTLY like note title input */
+.banner-input-redesign {
+  flex: 1 !important;
+  font-size: 1.25rem !important; /* Exact header font size */
+  font-weight: 700 !important; /* Exact header font weight */
+  padding: 0.375rem 0.75rem !important; /* Exact header padding */
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important; /* Match header border */
+  border-radius: 8px !important; /* Exact header radius */
+  color: var(--text-primary) !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+  min-width: 0 !important;
+  height: auto !important;
+  line-height: 1.4 !important;
+}
+
+.banner-input-redesign:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 2px rgba(255, 85, 0, 0.1) !important;
+}
+
+.banner-input-redesign::placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.6 !important;
+  font-weight: 400 !important;
+}
+
+/* Button group */
+.banner-button-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important; /* Exact header button gap */
+  flex-shrink: 0 !important;
+}
+
+/* Action buttons - EXACTLY like header buttons */
+.filter-style-btn,
+.line-toggle-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.375rem !important;
+  padding: 0.5rem 1rem !important; /* Exact header button padding */
+  background: var(--button-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 10px !important; /* Exact header button radius */
+  font-size: 0.813rem !important; /* Exact header button font size */
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-height: 36px !important; /* Exact header button height */
+  white-space: nowrap !important;
+  font-family: inherit !important;
+  outline: none !important;
+  position: relative !important;
+}
+
+/* Hover effects - match header exactly */
+.filter-style-btn:hover:not(:disabled),
+.line-toggle-btn:hover {
+  background: var(--button-hover-bg) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.filter-style-btn:active:not(:disabled),
+.line-toggle-btn:active {
+  transform: translateY(0) !important;
+}
+
+/* Active state for mode buttons */
+.filter-style-btn.active,
+.line-toggle-btn.active {
+  background: var(--primary-color) !important;
+  color: white !important;
+  border-color: var(--primary-color) !important;
+}
+
+/* Save button style - orange like header */
+.filter-style-btn.primary,
+.filter-style-btn.save-style {
+  background: var(--primary-color) !important;
+  color: white !important;
+  border-color: var(--primary-color) !important;
+}
+
+.filter-style-btn.primary:hover,
+.filter-style-btn.save-style:hover {
+  background: var(--primary-color-hover) !important;
+  border-color: var(--primary-color-hover) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(255, 84, 0, 0.3) !important;
+}
+
+/* Icon sizes in buttons */
+.filter-style-btn svg,
+.line-toggle-btn svg {
+  width: 16px !important; /* Match header icon size */
+  height: 16px !important;
+  stroke-width: 2 !important;
+}
+
+/* Color circles - compact to fit */
+.color-selector-group {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important; /* Tighter gap */
+  padding: 0 !important;
+  margin-left: 0.5rem !important;
+}
+
+.color-circle-btn {
+  width: 20px !important; /* Smaller to fit */
+  height: 20px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+}
+
+.color-circle-btn:hover {
+  transform: scale(1.2) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+}
+
+.color-circle-btn.active {
+  border: 2px solid var(--primary-color) !important;
+  box-shadow: 0 0 0 2px rgba(255, 85, 0, 0.2) !important;
+}
+
+.color-circle-btn.active::after {
+  content: '✓' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  color: white !important;
+  font-size: 10px !important;
+  font-weight: bold !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Remove all dividers */
+.controls-divider {
+  display: none !important;
+}
+
+/* Make both toolbars form a single visual unit */
+.notes-page.editing-mode .note-header-compact,
+.notes-page.editing-mode .editor-banner-controls-container {
+  background: var(--bg-primary) !important;
+}
+
+/* Responsive - match header behavior */
+@media (max-width: 768px) {
+  html body .notes-page .note-editor .editor-banner-controls-container,
+  html body .notes-page.editing-mode .note-editor .editor-banner-controls-container,
+  html body .notes-page .editor-banner-controls-container,
+  html body .editor-banner-controls-container {
+    position: relative !important; /* Keep relative positioning on mobile */
+    margin-top: -2px !important; /* Minimal negative margin on mobile */
+  }
+  
+  .note-content-edit-area {
+    padding-top: 1rem !important; /* Normal spacing for mobile */
+  }
+  
+  .banner-controls-single-row {
+    padding: 0.5rem !important;
+    gap: 0.5rem !important;
+    min-height: auto !important;
+  }
+  
+  .banner-input-icon-btn {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  .banner-input-redesign {
+    font-size: 1rem !important;
+    padding: 0.5rem !important;
+  }
+  
+  .filter-style-btn,
+  .line-toggle-btn {
+    padding: 0.375rem 0.75rem !important;
+    min-height: 32px !important;
+    font-size: 0.75rem !important;
+  }
+  
+  /* Hide text on mobile */
+  .filter-style-btn span:not(.line-toggle-icon),
+  .line-toggle-btn span:not(.line-toggle-icon) {
+    display: none !important;
+  }
+  
+  .filter-style-btn svg,
+  .line-toggle-btn svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  .color-circle-btn {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-controls-single-row {
+    padding: 0.375rem !important;
+  }
+  
+  .banner-input-icon-btn {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  
+  .banner-input-redesign {
+    font-size: 1rem !important;
+  }
+  
+  .filter-style-btn,
+  .line-toggle-btn {
+    min-height: 28px !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+  
+  .color-circle-btn {
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .note-header-compact {
+    padding: 1rem 2rem !important;
+    min-height: 64px !important;
+  }
+  
+  /* Remove gap on desktop specifically with fixed positioning */
+  .notes-page.editing-mode .notes-layout,
+  .notes-page.editing-mode .notes-content,
+  .notes-page.editing-mode .note-editor {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  html body .notes-page .note-editor .editor-banner-controls-container,
+  html body .notes-page.editing-mode .note-editor .editor-banner-controls-container,
+  html body .notes-page .editor-banner-controls-container,
+  html body .editor-banner-controls-container {
+    position: relative !important; /* Keep relative positioning on desktop */
+    margin-top: -6px !important; /* Small negative margin on desktop */
+  }
+  
+  .banner-controls-single-row {
+    padding: 1rem 2rem !important;
+    min-height: 64px !important;
+  }
+  
+  .banner-input-redesign {
+    font-size: 1.5rem !important;
+    padding: 0.5rem 1rem !important;
+  }
+  
+  .banner-input-icon-btn {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  
+  .filter-style-btn,
+  .line-toggle-btn {
+    padding: 0.625rem 1.25rem !important;
+    font-size: 0.875rem !important;
+    min-height: 40px !important;
+  }
+  
+  .color-circle-btn {
+    width: 22px !important;
+    height: 22px !important;
+  }
+}
+
+/* Ensure proper content spacing below toolbar */
+.note-content-edit-area {
+  padding-top: 2rem !important; /* Normal spacing since toolbar is back in flow */
+}
+
+/* Combined shadow when scrolled */
+.notes-page.editing-mode .banner-controls-single-row {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Ensure continuous background between toolbars */
+.notes-page.editing-mode {
+  background: var(--bg-primary) !important;
+}
+
+/* Perfect alignment for the toolbar content */
+.note-header-compact .header-main-content,
+.banner-controls-single-row {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
