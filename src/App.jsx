@@ -9,7 +9,6 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { MedicationProvider } from './contexts/MedicationContext'
 import { ModelProvider } from './contexts/ModelContext'
-import MedicationChatbot from './components/MedicationChatbot/MedicationChatbot'
 import Home from './pages/Home'
 import Calculator from './pages/Calculator'
 import Medications from './pages/Medications'
@@ -58,7 +57,6 @@ function AppContent() {
                 <Route path="/terminal" element={<Terminal />} />
               </Routes>
                 </Layout>
-                <MedicationChatbot />
               </SearchProvider>
             </BrowserRouter>
           </ModelProvider>

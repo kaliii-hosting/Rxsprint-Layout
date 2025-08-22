@@ -225,6 +225,53 @@ const RichTextEditor = React.forwardRef(({
         return true;
       }
       
+      // Handle plain text with line breaks (preserve formatting)
+      if (plainText && !htmlData) {
+        event.preventDefault();
+        
+        // Split text by double line breaks for paragraphs
+        const paragraphs = plainText.split(/\n\n+/);
+        
+        // Convert to HTML preserving line breaks
+        let formattedHtml = '';
+        paragraphs.forEach(paragraph => {
+          // Replace single line breaks with <br> within paragraphs
+          const lines = paragraph.split('\n');
+          if (lines.length > 1) {
+            // Multiple lines in paragraph - preserve as separate lines
+            formattedHtml += '<p>' + lines.join('<br>') + '</p>';
+          } else if (paragraph.trim()) {
+            // Single line paragraph
+            formattedHtml += '<p>' + paragraph + '</p>';
+          }
+        });
+        
+        // If no paragraphs were created, handle single lines
+        if (!formattedHtml && plainText.trim()) {
+          const lines = plainText.split('\n');
+          if (lines.length > 1) {
+            // Multiple lines - preserve each as its own paragraph
+            formattedHtml = lines
+              .filter(line => line.trim())
+              .map(line => '<p>' + line + '</p>')
+              .join('');
+          } else {
+            // Single line
+            formattedHtml = '<p>' + plainText + '</p>';
+          }
+        }
+        
+        // Insert the formatted content
+        if (formattedHtml) {
+          editor.chain().focus().insertContent(formattedHtml, {
+            parseOptions: {
+              preserveWhitespace: true
+            }
+          }).run();
+        }
+        return true;
+      }
+      
       return false;
     };
 

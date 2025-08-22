@@ -68,7 +68,8 @@
 }
 
 /* Banner input - match note title input exactly */
-.banner-input-redesign {
+textarea.banner-input-redesign,
+input.banner-input-redesign {
   width: 100% !important;
   flex: 1 !important;
   font-size: 1.25rem !important;
@@ -81,17 +82,35 @@
   outline: none !important;
   transition: all 0.2s ease !important;
   min-width: 0 !important;
-  height: 40px !important;
+  min-height: 40px !important;
   line-height: 1.4 !important;
   font-family: inherit !important;
+  display: block !important;
+  box-sizing: border-box !important;
 }
 
-.banner-input-redesign:focus {
+/* Textarea specific styles for multiline support */
+textarea.banner-input-redesign {
+  resize: vertical !important;
+  overflow-y: auto !important;
+  height: auto !important;
+  max-height: 120px !important;
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+}
+
+input.banner-input-redesign {
+  height: 40px !important;
+}
+
+textarea.banner-input-redesign:focus,
+input.banner-input-redesign:focus {
   border-color: var(--primary-color) !important;
   box-shadow: 0 0 0 2px rgba(255, 85, 0, 0.1) !important;
 }
 
-.banner-input-redesign::placeholder {
+textarea.banner-input-redesign::placeholder,
+input.banner-input-redesign::placeholder {
   color: var(--text-secondary) !important;
   opacity: 0.6 !important;
   font-weight: 400 !important;
@@ -313,7 +332,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Banner Submit Button Styles */
+/* Banner Submit Button Styles - Always White Text */
 .banner-submit-btn {
   display: inline-flex !important;
   align-items: center !important;
@@ -336,13 +355,21 @@
 
 .banner-submit-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #FF5500 0%, #FF4400 100%) !important;
+  color: white !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 8px rgba(255, 85, 0, 0.3) !important;
 }
 
 .banner-submit-btn:active:not(:disabled) {
+  color: white !important;
   transform: translateY(0) !important;
   box-shadow: 0 1px 2px rgba(255, 85, 0, 0.2) !important;
+}
+
+.banner-submit-btn:focus {
+  color: white !important;
+  outline: 2px solid rgba(255, 255, 255, 0.3) !important;
+  outline-offset: 2px !important;
 }
 
 .banner-submit-btn:disabled {
@@ -352,10 +379,16 @@
   box-shadow: none !important;
 }
 
+.banner-submit-btn span {
+  color: white !important;
+}
+
 .banner-submit-btn svg {
   width: 16px !important;
   height: 16px !important;
   flex-shrink: 0 !important;
+  color: white !important;
+  fill: white !important;
 }
 
 /* Responsive adjustments */
@@ -368,6 +401,7 @@
   
   .banner-submit-btn span {
     display: none !important;
+    color: white !important;
   }
   
   .banner-submit-btn svg {

@@ -144,28 +144,26 @@ const DigitalClock = ({ isOpen, onClose }) => {
               </div>
             </div>
 
-            <div className="clock-divider"></div>
-
             {/* Terminal Loading Bar */}
             <div className="terminal-loading">
               {'['}{'█'.repeat(Math.floor(progress / 5))}{'░'.repeat(20 - Math.floor(progress / 5))}{']'}
             </div>
 
-            {/* Date and Day Display */}
-            <div className="date-day-container">
+            {/* Combined Date, Day and Weather Display */}
+            <div className="info-container">
               <span className="day-value">{formatDayOfWeek()}</span>
-              <span className="date-separator">•</span>
+              <span className="info-divider">|</span>
               <span className="date-value">{formatDate()}</span>
+              {weather && (
+                <>
+                  <span className="info-divider">|</span>
+                  <span className="weather-compact">
+                    <span className="weather-icon">{weather.condition}</span>
+                    <span className="weather-temp">{weather.temperature}°F</span>
+                  </span>
+                </>
+              )}
             </div>
-
-            {weather && (
-              <div className="clock-weather">
-                <span className="weather-icon">{weather.condition}</span>
-                <span className="weather-temp">{weather.temperature}°F</span>
-                <span className="weather-separator">|</span>
-                <span className="weather-location">{weather.location}</span>
-              </div>
-            )}
           </div>
         </div>
       </div>

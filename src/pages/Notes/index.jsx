@@ -2722,18 +2722,26 @@ const Notes = () => {
                           <div className="banner-input-icon-btn">
                             <Tag size={18} />
                           </div>
-                          <input
+                          <textarea
                             ref={bannerInputRef}
-                            type="text"
                             className="banner-input-redesign"
                             placeholder={isCalloutMode ? "Enter callout text..." : isTitleMode ? "Enter title text..." : "Enter banner text..."}
                             value={newBannerText}
                             onChange={(e) => setNewBannerText(e.target.value)}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter' && newBannerText.trim()) {
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey && newBannerText.trim()) {
                                 e.preventDefault();
                                 addBanner();
                               }
+                              // Allow Shift+Enter for new lines
+                            }}
+                            rows={1}
+                            style={{
+                              resize: 'vertical',
+                              minHeight: '38px',
+                              maxHeight: '120px',
+                              lineHeight: '1.5',
+                              overflow: 'auto'
                             }}
                             autoFocus={false}
                           />
@@ -2904,7 +2912,7 @@ const Notes = () => {
                                         } ${banner.isDone ? 'done' : ''}`}
                                         onContextMenu={(e) => handleContextMenu(e, banner.id)}
                                       >
-                                        <span className="banner-text">{banner.text}</span>
+                                        <span className="banner-text" style={{ whiteSpace: 'pre-wrap' }}>{banner.text}</span>
                                       </div>
                                     )}
                                   </React.Fragment>
@@ -3005,7 +3013,7 @@ const Notes = () => {
                                 onTouchMove={handleTouchMove}
                                 title="Click to copy, right-click for options"
                               >
-                                <span className="banner-text">{banner.text}</span>
+                                <span className="banner-text" style={{ whiteSpace: 'pre-wrap' }}>{banner.text}</span>
                                 <div className="banner-icon">
                                   {copiedBannerId === banner.id ? (
                                     <Check size={18} className="copied-icon" />

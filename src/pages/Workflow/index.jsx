@@ -8,7 +8,6 @@ import {
   ChevronUp,
   Check,
   Pill,
-  Home,
   Package,
   Mail,
   Users,
@@ -31,28 +30,711 @@ import {
   Zap,
   Eye,
   GitBranch,
-  ArrowRight
+  ArrowRight,
+  Plus,
+  PlusCircle,
+  ArrowLeft,
+  FileDown,
+  Square,
+  CheckSquare
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useNavigate } from 'react-router-dom';
+import { firestore } from '../../config/firebase';
+import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
 import './Workflow.css';
 import EnterpriseHeader, { TabGroup, TabButton, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
+import { exportWorkflowToPDF } from './ExportPDF';
+import { exportWorkflowToPDFWithScreenshots } from './ExportPDFWithScreenshot';
 
 const Workflow = () => {
   const { theme } = useTheme();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('lyso'); // lyso, hae, scd
   const [completedItems, setCompletedItems] = useState(new Set());
   const [completedCards, setCompletedCards] = useState(new Set());
-  const [expandedSections, setExpandedSections] = useState({
-    scenarioOverview: false,
-    newRxNoChanges: false,
-    sigDoseChanges: false,
-    infusionChanges: false,
-    maintenance: false
+  const [expandedSections, setExpandedSections] = useState({});
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, type: 'email', emailType: 'default', targetId: null, targetType: null });
+  const [workflowData, setWorkflowData] = useState({
+    lyso: {
+      sections: []
+    },
+    hae: {
+      sections: []
+    },
+    scd: {
+      sections: []
+    }
   });
-  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, emailType: 'default' });
-  
+  const [showAddSectionModal, setShowAddSectionModal] = useState(false);
+  const [showAddSubsectionModal, setShowAddSubsectionModal] = useState(false);
+  const [showEditSectionModal, setShowEditSectionModal] = useState(false);
+  const [showEditSubsectionModal, setShowEditSubsectionModal] = useState(false);
+  const [selectedSection, setSelectedSection] = useState(null);
+  const [selectedSubsection, setSelectedSubsection] = useState(null);
+  const [newSectionTitle, setNewSectionTitle] = useState('');
+  const [newSectionDescription, setNewSectionDescription] = useState('');
+  const [newSubsectionTitle, setNewSubsectionTitle] = useState('');
+  const [newSubsectionContent, setNewSubsectionContent] = useState('');
+  const [newSubsectionScreenshots, setNewSubsectionScreenshots] = useState([]);
+  const [newSubsectionTables, setNewSubsectionTables] = useState([]);
+  const [editSectionTitle, setEditSectionTitle] = useState('');
+  const [editSectionDescription, setEditSectionDescription] = useState('');
+  const [editSubsectionTitle, setEditSubsectionTitle] = useState('');
+  const [editSubsectionContent, setEditSubsectionContent] = useState('');
+  const [editSubsectionScreenshots, setEditSubsectionScreenshots] = useState([]);
+  const [editSubsectionTables, setEditSubsectionTables] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showExportSelection, setShowExportSelection] = useState(false);
+  const [selectedSectionsForExport, setSelectedSectionsForExport] = useState(new Set());
+  const [exportingPDF, setExportingPDF] = useState(false);
+  const [resizingImage, setResizingImage] = useState(null);
+  const [imageResizeStart, setImageResizeStart] = useState({ width: 0, x: 0 });
+  const [subsectionWidths, setSubsectionWidths] = useState({});
+  const [isResizing, setIsResizing] = useState(false); // Flag to prevent tab switching during resize
+
+  // Load workflow data from Firebase on mount
+  useEffect(() => {
+    loadWorkflowData();
+  }, []);
+
+  // Load workflow data from Firebase
+  const loadWorkflowData = async () => {
+    try {
+      setLoading(true);
+      
+      // Always start with default data
+      const defaultData = {
+        lyso: { sections: getDefaultLysoSections() },
+        hae: { sections: [] },
+        scd: { sections: [] }
+      };
+      
+      // Try to load from Firebase
+      try {
+        const workflowDoc = await getDoc(doc(firestore, 'workflow', 'data'));
+        
+        if (workflowDoc.exists()) {
+          const data = workflowDoc.data();
+          
+          // Load subsection widths
+          const widths = {};
+          Object.values(data).forEach(tabData => {
+            if (tabData.sections) {
+              tabData.sections.forEach(section => {
+                if (section.subsections) {
+                  section.subsections.forEach(sub => {
+                    if (sub.customWidth) {
+                      widths[sub.id] = sub.customWidth;
+                    }
+                  });
+                }
+              });
+            }
+          });
+          setSubsectionWidths(widths);
+          
+          // Always use default Lyso sections to preserve original content
+          // Only use Firebase data for HAE and SCD or for user-added sections
+          const mergedData = {
+            lyso: { 
+              sections: [
+                ...getDefaultLysoSections(),
+                ...(data.lyso?.sections?.filter(s => 
+                  !['scenarioOverview', 'newRxNoChanges', 'sigDoseChanges', 'infusionChanges', 'maintenance'].includes(s.id)
+                ) || [])
+              ]
+            },
+            hae: data.hae || { sections: [] },
+            scd: data.scd || { sections: [] }
+          };
+          
+          setWorkflowData(mergedData);
+        } else {
+          // First time - save defaults to Firebase
+          await setDoc(doc(firestore, 'workflow', 'data'), defaultData);
+          setWorkflowData(defaultData);
+        }
+      } catch (firebaseError) {
+        console.log('Firebase not available, using local defaults');
+        setWorkflowData(defaultData);
+      }
+    } catch (error) {
+      console.error('Error loading workflow data:', error);
+      // Use default data if anything fails
+      setWorkflowData({
+        lyso: { sections: getDefaultLysoSections() },
+        hae: { sections: [] },
+        scd: { sections: [] }
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get default Lyso sections (existing workflow content)
+  const getDefaultLysoSections = () => {
+    return [
+      {
+        id: 'scenarioOverview',
+        title: 'Scenario Overview',
+        cardTitle: 'Scenario Overview',
+        cardDescription: 'Click to view decision matrix',
+        icon: 'Activity',
+        iconBg: null,
+        iconColor: null,
+        type: 'compact',
+        content: {
+          type: 'decision-table',
+          data: {
+            headers: ['SCENARIO', 'Shipping pump', 'Send New Rx to Nursing Homecare'],
+            rows: [
+              ['New Rx with no changes', 'No', 'Yes (cc: RPh team)'],
+              ['Sig or Dose Changes only', 'No', 'Yes (cc: RPh team)'],
+              ['Changes to infusion rates, total volume, or total time', 'Yes', 'Yes (cc: RPh team)'],
+              ['Maintenance or Malfunction', 'Yes', 'No']
+            ]
+          }
+        }
+      },
+      {
+        id: 'newRxNoChanges',
+        title: 'New Rx with No Changes',
+        cardTitle: 'New Rx with No Changes',
+        cardDescription: 'No pump needed • Email to Nursing Homecare',
+        icon: 'FileText',
+        iconBg: '#fee2e2',
+        iconColor: '#dc2626',
+        type: 'compact',
+        subsections: [
+              {
+                id: 'new-rx-step-1',
+                title: 'Step 1: Check HHN Status',
+                icon: 'CircleDot',
+                itemIds: ['new-rx-check-hhn'],
+                items: [
+                  {
+                    id: 'new-rx-check-hhn',
+                    text: 'Check for HHN status in priority comments:',
+                    checklist: ['If not stated, investigate then update priority comments to either "No HHN" or "HHN"']
+                  }
+                ]
+              },
+              {
+                id: 'new-rx-step-2',
+                title: 'Step 2: Verify and Send',
+                icon: 'FileCheck',
+                itemIds: ['new-rx-1'],
+                items: [
+                  {
+                    id: 'new-rx-1',
+                    text: 'If new Rx has no changes:',
+                    checklist: [
+                      'Verify Rx, clean profile, and email new Rx to Nursing Homecare (cc: RPh Team)',
+                      'Not shipping pump (Holly Tucker is not involved since not shipping a new pump.)'
+                    ]
+                  }
+                ]
+              },
+              {
+                id: 'new-rx-step-3',
+                title: 'Step 3: Add Intervention Note',
+                icon: 'FileSignature',
+                itemIds: ['new-rx-2'],
+                items: [
+                  {
+                    id: 'new-rx-2',
+                    text: 'Add prescription management intervention note',
+                    checklist: ['Verified Rx (with HHN; no changes); sent new Rx to Nursing Homecare (cc: RPh Team)']
+                  }
+                ]
+              }
+            ]
+      },
+      {
+        id: 'sigDoseChanges',
+        title: 'Sig or Dose Changes Only',
+        cardTitle: 'Sig or Dose Changes Only',
+        cardDescription: 'No pump needed • Create pump sheet',
+        icon: 'Pill',
+        iconBg: '#dbeafe',
+        iconColor: '#2563eb',
+        type: 'compact',
+        subsections: [
+              {
+                id: 'sig-dose-step-1',
+                title: 'Step 1: Check HHN Status',
+                icon: 'CircleDot',
+                itemIds: ['sig-dose-check-hhn'],
+                items: [
+                  {
+                    id: 'sig-dose-check-hhn',
+                    text: 'Check for HHN status in priority comments:',
+                    checklist: ['If not stated, investigate then update priority comments to either "No HHN" or "HHN"']
+                  }
+                ]
+              },
+              {
+                id: 'sig-dose-step-2',
+                title: 'Step 2: Create Pump Sheet',
+                icon: 'FileText',
+                itemIds: ['sig-dose-1'],
+                items: [
+                  {
+                    id: 'sig-dose-1',
+                    text: 'If new Rx has changes to sig or dose only, create new pump sheet',
+                    checklist: [
+                      'Verify Rx, clean profile, then create new pump sheet',
+                      'Not shipping pump (Holly Tucker is not involved since not shipping a new pump.)'
+                    ]
+                  }
+                ]
+              },
+              {
+                id: 'sig-dose-step-3',
+                title: 'Step 3: Email to SPRx',
+                icon: 'Send',
+                itemIds: ['sig-dose-2', 'sig-dose-email-1'],
+                items: [
+                  {
+                    id: 'sig-dose-2',
+                    text: 'Make sure of the following and email new Rx and pump sheet',
+                    checklist: ['Email to SPRx and cc: Pump Sheets'],
+                    enableContextMenu: true,
+                    emailType: 'nursing'
+                  }
+                ]
+              }
+            ]
+      },
+      {
+        id: 'infusionChanges',
+        title: 'Infusion Changes',
+        cardTitle: 'Changes to Infusion',
+        cardDescription: 'Rate, volume, or time changes • Ship pump',
+        icon: 'Settings',
+        iconBg: '#f0fdf4',
+        iconColor: '#16a34a',
+        type: 'compact',
+        subsections: [
+              {
+                id: 'infusion-step-1',
+                title: 'Step 1: Create Pump Sheet',
+                icon: 'FileText',
+                itemIds: ['infusion-1'],
+                items: [
+                  {
+                    id: 'infusion-1',
+                    text: 'Create new pump sheet with updated infusion parameters',
+                    checklist: ['Update rates, volumes, and times as prescribed']
+                  }
+                ]
+              },
+              {
+                id: 'infusion-step-2',
+                title: 'Step 2: Email to Multiple Teams',
+                icon: 'Send',
+                itemIds: ['infusion-2'],
+                items: [
+                  {
+                    id: 'infusion-2',
+                    text: 'Email pump sheet to all required teams',
+                    checklist: [
+                      'SPRx & Tech Team',
+                      'Holly Tucker for pump scheduling',
+                      'Nursing Homecare (cc: RPh team)'
+                    ],
+                    enableContextMenu: true,
+                    emailType: 'infusion'
+                  }
+                ]
+              }
+            ]
+      },
+      {
+        id: 'maintenance',
+        title: 'Maintenance/Malfunction',
+        cardTitle: 'Maintenance or Malfunction',
+        cardDescription: 'Regular maintenance • Ship pump',
+        icon: 'Settings',
+        iconBg: '#fef3c7',
+        iconColor: '#d97706',
+        type: 'compact',
+        subsections: [
+              {
+                id: 'maintenance-step-1',
+                title: 'Step 1: Check SPRx',
+                icon: 'ClipboardCheck',
+                itemIds: ['maintenance-0'],
+                items: [
+                  {
+                    id: 'maintenance-0',
+                    text: 'Check if pump settings and maintenance orders match'
+                  }
+                ]
+              },
+              {
+                id: 'maintenance-step-2',
+                title: 'Step 2: Update Tracker',
+                icon: 'RefreshCcw',
+                itemIds: ['maintenance-1'],
+                items: [
+                  {
+                    id: 'maintenance-1',
+                    text: 'Update pump tracker (Tab#1 - Main Page)',
+                    checklist: ['Copy and paste sig onto pump sheet from drug Rx in SPRx']
+                  }
+                ]
+              },
+              {
+                id: 'maintenance-step-3',
+                title: 'Step 3: Create Pump Sheet',
+                icon: 'FolderOpen',
+                itemIds: ['maintenance-2', 'maintenance-email-1'],
+                items: [
+                  {
+                    id: 'maintenance-2',
+                    text: 'Create pump sheet'
+                  },
+                  {
+                    id: 'maintenance-email-1',
+                    type: 'email-template',
+                    header: {
+                      icon: 'Info',
+                      title: 'Example Pump Sheet'
+                    },
+                    content: `SPECIALTY PHARMACY
+PUMP CURLIN 6000CMB SHEET
+Pump settings: Variable
+
+Patient Information | Value
+DOB | 
+Drug Name: fep
+Remove: jjjj from Normal Saline IV bag (drug & bag overwt volume)`
+                  }
+                ]
+              },
+              {
+                id: 'maintenance-step-4',
+                title: 'Step 4: Email Pump Sheet',
+                icon: 'Send',
+                itemIds: ['maintenance-3', 'maintenance-email-2'],
+                items: [
+                  {
+                    id: 'maintenance-3',
+                    text: 'Make sure of the following and email pump sheet',
+                    checklist: [
+                      'Email to SPRx & Tech Team (cc Pump Sheets)',
+                      'Update subject line & STAO date',
+                      'Attach word document of pump sheet',
+                      'Add your signature'
+                    ],
+                    enableContextMenu: true,
+                    emailType: 'maintenance'
+                  },
+                  {
+                    id: 'maintenance-email-2',
+                    type: 'email',
+                    to: '8553658111@fax.cvhealth.com @ HAE Lyse Pharmacy Technician Team',
+                    cc: 'Pump Sheets (HAE/LSD)',
+                    subject: 'C08 - SPRX ACCOUNT# - PT\'S LAST NAME, PT\'S FIRST NAME - HIZENACAINE 1500 MG - PUMP MAINTENANCE SHEET - NO CHANGES',
+                    body: `ATTENTION INTAKE TEAM
+
+This Specialty Patient Requires Pump Maintenance
+
+See attached pump sheet for details.`
+                  }
+                ]
+              }
+            ]
+      }
+    ];
+  };
+
+  // Save workflow data to Firebase
+  const saveWorkflowData = async (data) => {
+    try {
+      let fullData;
+      
+      // Check if data is just sections array or full workflow data
+      if (Array.isArray(data)) {
+        // If it's just sections, construct the full data object
+        fullData = {
+          ...workflowData,
+          [activeTab]: {
+            sections: data
+          }
+        };
+      } else if (data && typeof data === 'object' && ('lyso' in data || 'hae' in data || 'scd' in data)) {
+        // If it's already the full workflow data
+        fullData = data;
+      } else {
+        // Handle unexpected format
+        console.error('Invalid data format for saveWorkflowData:', data);
+        return;
+      }
+      
+      // Only save user-added sections to Firebase for lyso, not the defaults
+      const dataToSave = {
+        lyso: {
+          sections: (fullData.lyso?.sections || []).filter(s => 
+            !['scenarioOverview', 'newRxNoChanges', 'sigDoseChanges', 'infusionChanges', 'maintenance'].includes(s.id)
+          )
+        },
+        hae: fullData.hae || { sections: [] },
+        scd: fullData.scd || { sections: [] }
+      };
+      
+      await setDoc(doc(firestore, 'workflow', 'data'), dataToSave);
+      setWorkflowData(fullData);
+    } catch (error) {
+      console.error('Error saving workflow data:', error);
+      // Still update local state even if Firebase fails
+      if (Array.isArray(data)) {
+        setWorkflowData({
+          ...workflowData,
+          [activeTab]: {
+            sections: data
+          }
+        });
+      } else {
+        setWorkflowData(data);
+      }
+    }
+  };
+
+  // Add new section
+  const addSection = async () => {
+    if (!newSectionTitle.trim()) return;
+    
+    const newSection = {
+      id: `section-${Date.now()}`,
+      title: newSectionTitle,
+      cardTitle: newSectionTitle,
+      cardDescription: newSectionDescription || 'Click to expand',
+      icon: 'FileText',
+      iconBg: '#f3f4f6',
+      iconColor: '#6b7280',
+      type: 'compact',
+      subsections: []
+    };
+
+    const updatedData = {
+      ...workflowData,
+      [activeTab]: {
+        ...workflowData[activeTab],
+        sections: [...workflowData[activeTab].sections, newSection]
+      }
+    };
+
+    await saveWorkflowData(updatedData);
+    setNewSectionTitle('');
+    setNewSectionDescription('');
+    setShowAddSectionModal(false);
+  };
+
+  // Add new subsection
+  const addSubsection = async () => {
+    if (!selectedSection) {
+      alert('Please select a section first');
+      return;
+    }
+    
+    if (!newSubsectionTitle || !newSubsectionTitle.trim()) {
+      alert('Please enter a subsection title');
+      return;
+    }
+
+    const timestamp = Date.now();
+    const itemId = `item-${timestamp}`;
+    
+    const newSubsection = {
+      id: `subsection-${timestamp}`,
+      title: newSubsectionTitle.trim(),
+      icon: 'FileText',
+      itemIds: [itemId],
+      items: [
+        {
+          id: itemId,
+          text: newSubsectionContent?.trim() || newSubsectionTitle.trim(),
+          checklist: [],
+          screenshots: newSubsectionScreenshots,
+          tables: newSubsectionTables
+        }
+      ]
+    };
+
+    const updatedSections = workflowData[activeTab].sections.map(section => {
+      if (section.id === selectedSection) {
+        // Initialize subsections if it doesn't exist
+        const currentSubsections = section.subsections || [];
+        
+        return {
+          ...section,
+          subsections: [...currentSubsections, newSubsection]
+        };
+      }
+      return section;
+    });
+
+    const updatedData = {
+      ...workflowData,
+      [activeTab]: {
+        ...workflowData[activeTab],
+        sections: updatedSections
+      }
+    };
+    
+    try {
+      await saveWorkflowData(updatedData);
+      
+      // Clear form and close modal
+      setNewSubsectionTitle('');
+      setNewSubsectionContent('');
+      setNewSubsectionScreenshots([]);
+      setNewSubsectionTables([]);
+      setSelectedSection(null);
+      setShowAddSubsectionModal(false);
+    } catch (error) {
+      console.error('Error saving subsection:', error);
+      alert('Failed to save subsection. Please try again.');
+    }
+  };
+
+  // Delete section
+  const deleteSection = async (sectionId) => {
+    // Don't allow deleting default sections
+    const defaultSectionIds = ['scenarioOverview', 'newRxNoChanges', 'sigDoseChanges', 'infusionChanges', 'maintenance'];
+    if (defaultSectionIds.includes(sectionId)) {
+      alert('Cannot delete default sections');
+      return;
+    }
+
+    if (confirm('Are you sure you want to delete this section?')) {
+      const updatedSections = workflowData[activeTab].sections.filter(s => s.id !== sectionId);
+      const updatedData = {
+        ...workflowData,
+        [activeTab]: {
+          ...workflowData[activeTab],
+          sections: updatedSections
+        }
+      };
+      await saveWorkflowData(updatedData);
+    }
+  };
+
+  // Delete subsection
+  const deleteSubsection = async (sectionId, subsectionId) => {
+    if (confirm('Are you sure you want to delete this subsection?')) {
+      const updatedSections = workflowData[activeTab].sections.map(section => {
+        if (section.id === sectionId && section.subsections) {
+          return {
+            ...section,
+            subsections: section.subsections.filter(sub => sub.id !== subsectionId)
+          };
+        }
+        return section;
+      });
+
+      const updatedData = {
+        ...workflowData,
+        [activeTab]: {
+          ...workflowData[activeTab],
+          sections: updatedSections
+        }
+      };
+      await saveWorkflowData(updatedData);
+    }
+  };
+
+  // Edit section
+  const editSection = async () => {
+    if (!selectedSection || !editSectionTitle.trim()) return;
+
+    const updatedSections = workflowData[activeTab].sections.map(section => {
+      if (section.id === selectedSection) {
+        return {
+          ...section,
+          title: editSectionTitle,
+          cardTitle: editSectionTitle,
+          description: editSectionDescription,
+          cardDescription: editSectionDescription || section.cardDescription
+        };
+      }
+      return section;
+    });
+
+    const updatedData = {
+      ...workflowData,
+      [activeTab]: {
+        ...workflowData[activeTab],
+        sections: updatedSections
+      }
+    };
+
+    await saveWorkflowData(updatedData);
+    setEditSectionTitle('');
+    setEditSectionDescription('');
+    setSelectedSection(null);
+    setShowEditSectionModal(false);
+  };
+
+  // Edit subsection
+  const editSubsection = async () => {
+    if (!selectedSection || !selectedSubsection || !editSubsectionTitle.trim()) return;
+
+    const updatedSections = workflowData[activeTab].sections.map(section => {
+      if (section.id === selectedSection && section.subsections) {
+        return {
+          ...section,
+          subsections: section.subsections.map(sub => {
+            if (sub.id === selectedSubsection) {
+              return {
+                ...sub,
+                title: editSubsectionTitle,
+                items: sub.items.map((item, idx) => {
+                  if (idx === 0) {
+                    return {
+                      ...item,
+                      text: editSubsectionContent || editSubsectionTitle,
+                      screenshots: editSubsectionScreenshots,
+                      tables: editSubsectionTables
+                    };
+                  }
+                  return item;
+                })
+              };
+            }
+            return sub;
+          })
+        };
+      }
+      return section;
+    });
+
+    const updatedData = {
+      ...workflowData,
+      [activeTab]: {
+        ...workflowData[activeTab],
+        sections: updatedSections
+      }
+    };
+
+    await saveWorkflowData(updatedData);
+    setEditSubsectionTitle('');
+    setEditSubsectionContent('');
+    setEditSubsectionScreenshots([]);
+    setEditSubsectionTables([]);
+    setSelectedSection(null);
+    setSelectedSubsection(null);
+    setShowEditSubsectionModal(false);
+  };
 
   // Toggle section expansion
   const toggleSection = (section) => {
+    // Don't toggle if we're in the middle of resizing
+    if (isResizing) return;
+    
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
@@ -74,12 +756,9 @@ const Workflow = () => {
 
   // Toggle card completion
   const toggleCardCompletion = (cardId, itemIds, e) => {
-    // Prevent event from bubbling to parent elements
     if (e) {
       e.stopPropagation();
     }
-    
-    console.log('Card clicked:', cardId); // Debug log
     
     setCompletedCards(prev => {
       const newSet = new Set(prev);
@@ -88,7 +767,6 @@ const Workflow = () => {
       } else {
         newSet.add(cardId);
       }
-      console.log('Completed cards:', Array.from(newSet)); // Debug log
       return newSet;
     });
 
@@ -98,13 +776,11 @@ const Workflow = () => {
         const newSet = new Set(prev);
         const isCardCompleted = completedCards.has(cardId);
         
-        itemIds.forEach(itemId => {
-          if (!isCardCompleted) {
-            // Card is being marked as complete, so mark all items
-            newSet.add(itemId);
+        itemIds.forEach(id => {
+          if (isCardCompleted) {
+            newSet.delete(id);
           } else {
-            // Card is being unmarked, so unmark all items
-            newSet.delete(itemId);
+            newSet.add(id);
           }
         });
         
@@ -119,20 +795,111 @@ const Workflow = () => {
   // Check if card is completed
   const isCardCompleted = (cardId) => completedCards.has(cardId);
 
-  // Handle right-click context menu
-  const handleContextMenu = (e, emailType = 'default') => {
+  // Handle right-click context menu for emails
+  const handleEmailContextMenu = (e, emailType = 'default') => {
     e.preventDefault();
+    e.stopPropagation();
     setContextMenu({
       visible: true,
       x: e.pageX,
       y: e.pageY,
-      emailType: emailType
+      type: 'email',
+      emailType: emailType,
+      targetId: null,
+      targetType: null
+    });
+  };
+
+  // Handle right-click context menu for sections
+  const handleSectionContextMenu = (e, sectionId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const section = workflowData[activeTab].sections.find(s => s.id === sectionId);
+    if (section) {
+      // Check if it's a default section
+      const defaultSectionIds = ['scenarioOverview', 'newRxNoChanges', 'sigDoseChanges', 'infusionChanges', 'maintenance'];
+      const isDefaultSection = activeTab === 'lyso' && defaultSectionIds.includes(sectionId);
+      
+      setContextMenu({
+        visible: true,
+        x: e.pageX,
+        y: e.pageY,
+        type: 'section',
+        targetId: sectionId,
+        targetType: 'section',
+        isDefaultSection: isDefaultSection,
+        emailType: 'default'
+      });
+    }
+  };
+
+  // Handle right-click context menu for subsections
+  const handleSubsectionContextMenu = (e, sectionId, subsectionId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setContextMenu({
+      visible: true,
+      x: e.pageX,
+      y: e.pageY,
+      type: 'subsection',
+      targetId: subsectionId,
+      targetType: 'subsection',
+      sectionId: sectionId,
+      emailType: 'default'
     });
   };
 
   // Hide context menu
   const hideContextMenu = () => {
-    setContextMenu({ visible: false, x: 0, y: 0, emailType: 'default' });
+    setContextMenu({ visible: false, x: 0, y: 0, type: 'email', emailType: 'default', targetId: null, targetType: null });
+  };
+
+  // Handle context menu action
+  const handleContextMenuAction = (action) => {
+    const { targetId, sectionId, targetType } = contextMenu;
+    
+    if (action === 'edit') {
+      if (targetType === 'section') {
+        const section = workflowData[activeTab].sections.find(s => s.id === targetId);
+        if (section) {
+          setSelectedSection(targetId);
+          setEditSectionTitle(section.title);
+          setEditSectionDescription(section.description || section.cardDescription || '');
+          setShowEditSectionModal(true);
+        }
+      } else if (targetType === 'subsection') {
+        const section = workflowData[activeTab].sections.find(s => s.id === sectionId);
+        if (section && section.subsections) {
+          const subsection = section.subsections.find(s => s.id === targetId);
+          if (subsection) {
+            setSelectedSection(sectionId);
+            setSelectedSubsection(targetId);
+            setEditSubsectionTitle(subsection.title);
+            setEditSubsectionContent(subsection.items[0]?.text || '');
+            setEditSubsectionScreenshots(subsection.items[0]?.screenshots || []);
+            setEditSubsectionTables(subsection.items[0]?.tables || []);
+            setShowEditSubsectionModal(true);
+          }
+        }
+      }
+    } else if (action === 'delete') {
+      if (targetType === 'section') {
+        deleteSection(targetId);
+      } else if (targetType === 'subsection') {
+        deleteSubsection(sectionId, targetId);
+      }
+    } else if (action === 'add-subsection') {
+      if (targetType === 'section') {
+        setSelectedSection(targetId);
+        setNewSubsectionTitle('');
+        setNewSubsectionContent('');
+        setShowAddSubsectionModal(true);
+      }
+    }
+    
+    hideContextMenu();
   };
 
   // Create email with template
@@ -145,19 +912,11 @@ const Workflow = () => {
       subject = 'SPOC - ACCT# - NAME - DRUG - PUMP SHEET - (SPECIFY CHANGES)';
       body = 'Hi Team, updated pump sheet (SPECIFY CHANGES) and new Rx attached.';
     } else if (emailType === 'infusion') {
-      // Multiple recipients for infusion changes
       to = '8553658111@fax.cvshealth.com,_haelysopharmacytechnicianteam@cvshealth.com,holly.tucker@cvshealth.com';
       cc = 'pumpsheetshae-lsd@cvshealth.com';
       subject = 'SPOC - ACCT# - NAME - DRUG - PUMP SHEET - (SPECIFY CHANGES)';
       body = 'ATTENTION INTAKE TEAM\nPlease index this as a document type PUMP PROGRAM SHEET [IRC 54915] and Rx.\n\nHI TECH TEAM\nPlease complete RX ENTRY for attached pump sheet STAO .\n\nHI HOLLY\nPlease schedule pump order.\n\nNO NEED TO RESPOND TO THIS EMAIL';
-    } else if (emailType === 'infusion-nursing') {
-      // Email for infusion changes to nursing
-      to = 'nursing.homecare@cvshealth.com';
-      cc = 'haelysopharmacistteam@cvshealth.com,hae_lyso_csr_team@cvshealth.com';
-      subject = 'SPOC - ACCT # - NAME - DRUG - PUMP SHEET (SPECIFY CHANGES)';
-      body = 'Hi Team, updated pump sheet (SPECIFY CHANGES) and new Rx attached. STAO';
     } else if (emailType === 'maintenance') {
-      // Email for maintenance/malfunction
       to = '8553658111@fax.cvshealth.com,_haelysopharmacytechnicianteam@cvshealth.com';
       cc = 'pumpsheetshae-lsd@cvshealth.com';
       subject = 'SPOC - ACCT # - NAME - DRUG - PUMP MAINTENANCE SHEET (NO CHANGES)';
@@ -174,14 +933,1031 @@ const Workflow = () => {
     hideContextMenu();
   };
 
+  // Collapse all sections
+  const collapseAll = () => {
+    setExpandedSections({});
+  };
+
+  // Expand all sections
+  const expandAll = () => {
+    const allSections = {};
+    workflowData[activeTab].sections.forEach(section => {
+      allSections[section.id] = true;
+    });
+    setExpandedSections(allSections);
+  };
+
+  // Reset all completions
+  const resetCompletions = () => {
+    setCompletedItems(new Set());
+    setCompletedCards(new Set());
+  };
+
+  // Handle paste event for modal textareas (Add/Edit Subsection)
+  const handleModalPaste = async (e, isEdit = false) => {
+    const clipboardData = e.clipboardData || window.clipboardData;
+    
+    // Check for images
+    const items = clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault();
+        const blob = items[i].getAsFile();
+        const reader = new FileReader();
+        
+        reader.onload = async (event) => {
+          const imageData = event.target.result;
+          const timestamp = Date.now();
+          const screenshot = {
+            id: `screenshot-${timestamp}`,
+            data: imageData,
+            width: 400,
+            timestamp: timestamp
+          };
+          
+          if (isEdit) {
+            setEditSubsectionScreenshots(prev => [...prev, screenshot]);
+          } else {
+            setNewSubsectionScreenshots(prev => [...prev, screenshot]);
+          }
+        };
+        
+        reader.readAsDataURL(blob);
+        return;
+      }
+    }
+    
+    // Check for HTML content (tables)
+    const htmlData = clipboardData.getData('text/html');
+    if (htmlData && htmlData.includes('<table')) {
+      e.preventDefault();
+      const timestamp = Date.now();
+      const table = {
+        id: `table-${timestamp}`,
+        html: htmlData,
+        timestamp: timestamp
+      };
+      
+      if (isEdit) {
+        setEditSubsectionTables(prev => [...prev, table]);
+      } else {
+        setNewSubsectionTables(prev => [...prev, table]);
+      }
+      return;
+    }
+    
+    // Regular text paste - let it happen normally
+  };
+
+  // Handle paste event for subsections
+  const handleSubsectionPaste = async (e, sectionId, subsectionId) => {
+    e.preventDefault();
+    
+    const clipboardData = e.clipboardData || window.clipboardData;
+    
+    // Check for images
+    const items = clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        const reader = new FileReader();
+        
+        reader.onload = async (event) => {
+          const imageData = event.target.result;
+          await addScreenshotToSubsection(sectionId, subsectionId, imageData);
+        };
+        
+        reader.readAsDataURL(blob);
+        return;
+      }
+    }
+    
+    // Check for HTML content (tables)
+    const htmlData = clipboardData.getData('text/html');
+    if (htmlData && htmlData.includes('<table')) {
+      await addTableToSubsection(sectionId, subsectionId, htmlData);
+      return;
+    }
+    
+    // Regular text paste - let it happen normally
+    return true;
+  };
+
+  // Add screenshot to subsection
+  const addScreenshotToSubsection = async (sectionId, subsectionId, imageData) => {
+    const timestamp = Date.now();
+    const screenshotId = `screenshot-${timestamp}`;
+    
+    const updatedSections = workflowData[activeTab].sections.map(section => {
+      if (section.id === sectionId && section.subsections) {
+        return {
+          ...section,
+          subsections: section.subsections.map(sub => {
+            if (sub.id === subsectionId) {
+              const updatedItems = sub.items.map((item, idx) => {
+                if (idx === 0) {
+                  const screenshots = item.screenshots || [];
+                  return {
+                    ...item,
+                    screenshots: [...screenshots, {
+                      id: screenshotId,
+                      data: imageData,
+                      width: 400, // Default width
+                      timestamp: timestamp
+                    }]
+                  };
+                }
+                return item;
+              });
+              return {
+                ...sub,
+                items: updatedItems
+              };
+            }
+            return sub;
+          })
+        };
+      }
+      return section;
+    });
+
+    setWorkflowData(prev => ({
+      ...prev,
+      [activeTab]: {
+        ...prev[activeTab],
+        sections: updatedSections
+      }
+    }));
+
+    // Save to Firebase
+    await saveWorkflowData(updatedSections);
+  };
+
+  // Add table to subsection
+  const addTableToSubsection = async (sectionId, subsectionId, htmlData) => {
+    const timestamp = Date.now();
+    const tableId = `table-${timestamp}`;
+    
+    const updatedSections = workflowData[activeTab].sections.map(section => {
+      if (section.id === sectionId && section.subsections) {
+        return {
+          ...section,
+          subsections: section.subsections.map(sub => {
+            if (sub.id === subsectionId) {
+              const updatedItems = sub.items.map((item, idx) => {
+                if (idx === 0) {
+                  const tables = item.tables || [];
+                  return {
+                    ...item,
+                    tables: [...tables, {
+                      id: tableId,
+                      html: htmlData,
+                      timestamp: timestamp
+                    }]
+                  };
+                }
+                return item;
+              });
+              return {
+                ...sub,
+                items: updatedItems
+              };
+            }
+            return sub;
+          })
+        };
+      }
+      return section;
+    });
+
+    setWorkflowData(prev => ({
+      ...prev,
+      [activeTab]: {
+        ...prev[activeTab],
+        sections: updatedSections
+      }
+    }));
+
+    // Save to Firebase
+    await saveWorkflowData(updatedSections);
+  };
+
+  // Delete screenshot from subsection
+  const deleteScreenshot = async (sectionId, subsectionId, screenshotId) => {
+    const updatedSections = workflowData[activeTab].sections.map(section => {
+      if (section.id === sectionId && section.subsections) {
+        return {
+          ...section,
+          subsections: section.subsections.map(sub => {
+            if (sub.id === subsectionId) {
+              const updatedItems = sub.items.map((item, idx) => {
+                if (idx === 0 && item.screenshots) {
+                  return {
+                    ...item,
+                    screenshots: item.screenshots.filter(s => s.id !== screenshotId)
+                  };
+                }
+                return item;
+              });
+              return {
+                ...sub,
+                items: updatedItems
+              };
+            }
+            return sub;
+          })
+        };
+      }
+      return section;
+    });
+
+    setWorkflowData(prev => ({
+      ...prev,
+      [activeTab]: {
+        ...prev[activeTab],
+        sections: updatedSections
+      }
+    }));
+
+    await saveWorkflowData(updatedSections);
+  };
+
+  // Delete table from subsection
+  const deleteTable = async (sectionId, subsectionId, tableId) => {
+    const updatedSections = workflowData[activeTab].sections.map(section => {
+      if (section.id === sectionId && section.subsections) {
+        return {
+          ...section,
+          subsections: section.subsections.map(sub => {
+            if (sub.id === subsectionId) {
+              const updatedItems = sub.items.map((item, idx) => {
+                if (idx === 0 && item.tables) {
+                  return {
+                    ...item,
+                    tables: item.tables.filter(t => t.id !== tableId)
+                  };
+                }
+                return item;
+              });
+              return {
+                ...sub,
+                items: updatedItems
+              };
+            }
+            return sub;
+          })
+        };
+      }
+      return section;
+    });
+
+    setWorkflowData(prev => ({
+      ...prev,
+      [activeTab]: {
+        ...prev[activeTab],
+        sections: updatedSections
+      }
+    }));
+
+    await saveWorkflowData(updatedSections);
+  };
+
+  // Handle image resize
+  const handleImageResize = async (sectionId, subsectionId, screenshotId, newWidth) => {
+    const updatedSections = workflowData[activeTab].sections.map(section => {
+      if (section.id === sectionId && section.subsections) {
+        return {
+          ...section,
+          subsections: section.subsections.map(sub => {
+            if (sub.id === subsectionId) {
+              const updatedItems = sub.items.map((item, idx) => {
+                if (idx === 0 && item.screenshots) {
+                  return {
+                    ...item,
+                    screenshots: item.screenshots.map(s => 
+                      s.id === screenshotId ? { ...s, width: newWidth } : s
+                    )
+                  };
+                }
+                return item;
+              });
+              return {
+                ...sub,
+                items: updatedItems
+              };
+            }
+            return sub;
+          })
+        };
+      }
+      return section;
+    });
+
+    setWorkflowData(prev => ({
+      ...prev,
+      [activeTab]: {
+        ...prev[activeTab],
+        sections: updatedSections
+      }
+    }));
+
+    await saveWorkflowData(updatedSections);
+  };
+
+  // Toggle section selection for PDF export
+  const toggleSectionForExport = (sectionId) => {
+    setSelectedSectionsForExport(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
+  };
+
+  // Export selected sections to PDF
+  const exportSelectedSectionsToPDF = async () => {
+    if (selectedSectionsForExport.size === 0) {
+      alert('Please select at least one section to export');
+      return;
+    }
+
+    setExportingPDF(true);
+    
+    // First, we need to expand the selected sections in the UI
+    const sectionsToExpand = Array.from(selectedSectionsForExport);
+    const originalExpandedState = { ...expandedSections };
+    
+    // Expand all selected sections
+    const newExpandedState = { ...expandedSections };
+    sectionsToExpand.forEach(sectionId => {
+      newExpandedState[sectionId] = true;
+    });
+    setExpandedSections(newExpandedState);
+    
+    // Wait for UI to update
+    setTimeout(async () => {
+      try {
+        // Use screenshot-based export for exact visual matching
+        await exportWorkflowToPDFWithScreenshots(
+          activeTab,
+          selectedSectionsForExport
+        );
+        
+        // Restore original expansion state
+        setExpandedSections(originalExpandedState);
+        setExportingPDF(false);
+        setShowExportSelection(false);
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error generating PDF. Please try again.');
+        setExpandedSections(originalExpandedState);
+        setExportingPDF(false);
+      }
+    }, 500); // Give time for sections to expand
+  };
+
+  // OLD EXPORT FUNCTION - COMMENTED OUT
+  /* const oldExportFunction = () => {
+      // Create PDF with A4 dimensions
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // PDF dimensions
+      const pageWidth = pdf.internal.pageSize.width;
+      const pageHeight = pdf.internal.pageSize.height;
+      const leftMargin = 15;
+      const rightMargin = 15;
+      const topMargin = 35;
+      const bottomMargin = 30;
+      const contentWidth = pageWidth - leftMargin - rightMargin;
+      
+      let yPosition = topMargin;
+      let pageNumber = 1;
+
+      // Load logo image
+      const logoUrl = 'https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii//rxsprint%20logo%20IIII.png';
+      const logoImg = new Image();
+      logoImg.crossOrigin = 'anonymous';
+      logoImg.src = logoUrl;
+
+      // Helper function to draw header and footer (matching Notes page exactly)
+      const drawHeaderFooter = (pageNum, hasLogo = false) => {
+        // Professional light theme header
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+        
+        // Header section with subtle gradient effect
+        pdf.setFillColor(248, 250, 252);
+        pdf.rect(0, 0, pageWidth, 25, 'F');
+        
+        // Header border line
+        pdf.setDrawColor(226, 232, 240);
+        pdf.setLineWidth(0.5);
+        pdf.line(0, 25, pageWidth, 25);
+        
+        // Add logo if available
+        if (hasLogo) {
+          try {
+            const logoWidth = 35;
+            const logoHeight = 12;
+            pdf.addImage(logoImg, 'PNG', leftMargin, 6, logoWidth, logoHeight);
+          } catch (e) {
+            console.log('Logo could not be added');
+          }
+        }
+        
+        // Header title - centered
+        pdf.setFontSize(16);
+        pdf.setTextColor(31, 41, 55);
+        pdf.setFont('helvetica', 'bold');
+        const title = `${activeTab.toUpperCase()} Workflow`;
+        pdf.text(title, pageWidth / 2, 15, { align: 'center' });
+        
+        // Date - right aligned
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(107, 114, 128);
+        const date = new Date().toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+        pdf.text(date, pageWidth - leftMargin, 15, { align: 'right' });
+        
+        // Footer section
+        pdf.setFillColor(248, 250, 252);
+        pdf.rect(0, pageHeight - 20, pageWidth, 20, 'F');
+        
+        // Footer border line
+        pdf.setDrawColor(226, 232, 240);
+        pdf.setLineWidth(0.5);
+        pdf.line(0, pageHeight - 20, pageWidth, pageHeight - 20);
+        
+        // Footer content - page number centered
+        pdf.setFontSize(10);
+        pdf.setTextColor(107, 114, 128);
+        pdf.text(`Page ${pageNum}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+        
+        // Footer text - company/copyright info
+        pdf.setFontSize(8);
+        pdf.setTextColor(156, 163, 175);
+        const footerText = 'RxSprint Workflow Management System';
+        pdf.text(footerText, leftMargin, pageHeight - 10);
+        
+        // Export timestamp
+        const timestamp = new Date().toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+        pdf.text(`Generated: ${timestamp}`, pageWidth - leftMargin, pageHeight - 10, { align: 'right' });
+      };
+
+      // Helper function to check if we need a new page
+      const checkNewPage = (requiredSpace) => {
+        if (yPosition + requiredSpace > pageHeight - bottomMargin) {
+          pdf.addPage();
+          pageNumber++;
+          drawHeaderFooter(pageNumber, logoLoaded);
+          yPosition = topMargin;
+          return true;
+        }
+        return false;
+      };
+
+      // Helper function to add wrapped text
+      const addWrappedText = (text, x, y, maxWidth, lineHeight = 5) => {
+        const lines = pdf.splitTextToSize(text, maxWidth);
+        lines.forEach((line, index) => {
+          checkNewPage(lineHeight);
+          pdf.text(line, x, y + (index * lineHeight));
+          yPosition = y + ((index + 1) * lineHeight);
+        });
+        return yPosition;
+      };
+
+      let logoLoaded = false;
+      
+      // Helper function to convert hex color to RGB
+      const hexToRGB = (hex) => {
+        if (!hex) return [200, 200, 200];
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? [
+          parseInt(result[1], 16),
+          parseInt(result[2], 16),
+          parseInt(result[3], 16)
+        ] : [200, 200, 200];
+      };
+
+      // Helper function to draw rounded rectangle with optional fill and stroke
+      const drawRoundedRect = (x, y, width, height, radius, fillColor = null, strokeColor = null, lineWidth = 0.5) => {
+        if (fillColor) {
+          pdf.setFillColor(...fillColor);
+        }
+        if (strokeColor) {
+          pdf.setDrawColor(...strokeColor);
+          pdf.setLineWidth(lineWidth);
+        }
+        pdf.roundedRect(x, y, width, height, radius, radius, fillColor && strokeColor ? 'FD' : (fillColor ? 'F' : 'D'));
+      };
+      
+      // Helper function to add shadow effect (simulated with multiple rectangles)
+      const drawShadow = (x, y, width, height, radius) => {
+        // Draw shadow layers
+        pdf.setDrawColor(0, 0, 0);
+        pdf.setGState(new pdf.GState({ opacity: 0.05 }));
+        drawRoundedRect(x + 1, y + 1, width, height, radius, null, [0, 0, 0], 0.1);
+        drawRoundedRect(x + 2, y + 2, width, height, radius, null, [0, 0, 0], 0.1);
+        pdf.setGState(new pdf.GState({ opacity: 1 }));
+      };
+
+      // Generate PDF content
+      const generatePDFContent = () => {
+        // Draw first page header
+        drawHeaderFooter(pageNumber, logoLoaded);
+        
+        // Get selected sections
+        const sectionsToExport = workflowData[activeTab].sections.filter(
+          section => selectedSectionsForExport.has(section.id)
+        );
+
+        // Main background color (light gray like the workflow page)
+        pdf.setFillColor(248, 250, 252);
+        pdf.rect(0, 25, pageWidth, pageHeight - 45, 'F');
+        
+        // Timeline vertical line position
+        const timelineX = leftMargin + 3;
+        
+        // Process each selected section
+        sectionsToExport.forEach((section, sectionIndex) => {
+          // Add section spacing
+          if (sectionIndex > 0) {
+            yPosition += 10;
+          }
+          
+          checkNewPage(30);
+          
+          // Draw continuous timeline line between sections
+          if (sectionIndex < sectionsToExport.length - 1) {
+            pdf.setDrawColor(219, 234, 254);
+            pdf.setLineWidth(3);
+            const nextY = yPosition + 30;
+            pdf.line(timelineX, yPosition + 15, timelineX, nextY);
+          }
+          
+          // SECTION CARD - Exact replica of workflow-card-compact
+          const cardHeight = 24;
+          const cardX = leftMargin + 10;
+          const cardWidth = contentWidth - 15;
+          
+          // Card shadow effect
+          pdf.setDrawColor(0, 0, 0);
+          pdf.setGState(new pdf.GState({ opacity: 0.08 }));
+          drawRoundedRect(cardX + 1, yPosition + 1, cardWidth, cardHeight, 3, null, [0, 0, 0], 0);
+          pdf.setGState(new pdf.GState({ opacity: 1 }));
+          
+          // Special background for overview card
+          if (section.id === 'scenarioOverview') {
+            // Gradient effect for overview card (light green to mint)
+            pdf.setFillColor(230, 255, 239);
+            drawRoundedRect(cardX, yPosition, cardWidth, cardHeight, 3, [230, 255, 239], [243, 156, 18], 2);
+          } else {
+            // Normal white card background
+            pdf.setFillColor(255, 255, 255);
+            drawRoundedRect(cardX, yPosition, cardWidth, cardHeight, 3, [255, 255, 255], [226, 232, 240], 2);
+          }
+          
+          // Icon container (white rounded square with shadow)
+          const iconContainerSize = 12;
+          const iconX = cardX + 6;
+          const iconY = yPosition + 6;
+          
+          // Icon shadow
+          pdf.setGState(new pdf.GState({ opacity: 0.1 }));
+          drawRoundedRect(iconX + 0.5, iconY + 0.5, iconContainerSize, iconContainerSize, 2, [0, 0, 0]);
+          pdf.setGState(new pdf.GState({ opacity: 1 }));
+          
+          // Icon background (white)
+          drawRoundedRect(iconX, iconY, iconContainerSize, iconContainerSize, 2, [255, 255, 255], [226, 232, 240], 0.5);
+          
+          // Colored icon inside
+          const iconBgColor = section.iconBg ? hexToRGB(section.iconBg) : null;
+          const iconColor = section.iconColor ? hexToRGB(section.iconColor) : [59, 130, 246];
+          
+          if (iconBgColor) {
+            // Draw colored background circle for icon
+            pdf.setFillColor(...iconBgColor);
+            pdf.circle(iconX + iconContainerSize/2, iconY + iconContainerSize/2, 4, 'F');
+          }
+          
+          // Draw icon symbol
+          pdf.setTextColor(...iconColor);
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'bold');
+          
+          // Use text symbols for icons
+          let iconSymbol = '📄';
+          if (section.icon === 'Activity') iconSymbol = '⚡';
+          else if (section.icon === 'FileText') iconSymbol = '📄';
+          else if (section.icon === 'Pill') iconSymbol = '💊';
+          else if (section.icon === 'Settings') iconSymbol = '⚙️';
+          else if (section.icon === 'AlertCircle') iconSymbol = '⚠️';
+          
+          pdf.text(iconSymbol, iconX + iconContainerSize/2, iconY + iconContainerSize/2 + 1, { align: 'center' });
+          
+          // Section title and description
+          const textX = iconX + iconContainerSize + 6;
+          
+          // Title
+          pdf.setTextColor(section.id === 'scenarioOverview' ? 51 : 31, section.id === 'scenarioOverview' ? 51 : 41, section.id === 'scenarioOverview' ? 51 : 55);
+          pdf.setFontSize(11);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(section.cardTitle || section.title, textX, yPosition + 10);
+          
+          // Description
+          if (section.cardDescription) {
+            pdf.setTextColor(section.id === 'scenarioOverview' ? 51 : 107, section.id === 'scenarioOverview' ? 51 : 114, section.id === 'scenarioOverview' ? 51 : 128);
+            pdf.setFontSize(8.5);
+            pdf.setFont('helvetica', 'normal');
+            const descLines = pdf.splitTextToSize(section.cardDescription, cardWidth - (textX - cardX) - 15);
+            if (descLines[0]) {
+              pdf.text(descLines[0], textX, yPosition + 16);
+            }
+          }
+          
+          // Chevron indicator (expanded state)
+          pdf.setTextColor(156, 163, 175);
+          pdf.setFontSize(12);
+          pdf.text('⌄', cardX + cardWidth - 8, yPosition + 14);
+          
+          yPosition += cardHeight + 8;
+          
+          // EXPANSION AREA - Content below the card
+          if (section.content?.type === 'decision-table' && section.content.data) {
+            checkNewPage(50);
+            
+            // Expansion area background (subtle white container)
+            const expansionX = cardX + 5;
+            const expansionWidth = cardWidth - 10;
+            
+            // Draw expansion container
+            drawRoundedRect(expansionX, yPosition, expansionWidth, 2, 2, [255, 255, 255], [226, 232, 240], 0.5);
+            yPosition += 8;
+            
+            const tableData = section.content.data.rows.map(row => row);
+            
+            autoTable(pdf, {
+              head: [section.content.data.headers],
+              body: tableData,
+              startY: yPosition,
+              margin: { left: expansionX + 5, right: rightMargin + 5 },
+              styles: {
+                fontSize: 8,
+                cellPadding: 4,
+                lineColor: [226, 232, 240],
+                lineWidth: 0.5,
+                font: 'helvetica'
+              },
+              headStyles: {
+                fillColor: [59, 130, 246],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                halign: 'center'
+              },
+              bodyStyles: {
+                textColor: [55, 65, 81]
+              },
+              alternateRowStyles: {
+                fillColor: [248, 250, 252]
+              },
+              columnStyles: {
+                0: { fontStyle: 'bold', fillColor: [241, 245, 249] },
+                1: { halign: 'center' },
+                2: { halign: 'left' }
+              },
+              didDrawPage: function(data) {
+                yPosition = data.cursor.y + 10;
+              }
+            });
+          }
+          
+          // SUBSECTIONS - Process subsections with proper expansion area
+          if (section.subsections && section.subsections.length > 0) {
+            // Expansion container
+            const expansionX = cardX;
+            const expansionWidth = cardWidth;
+            const expansionPadding = 8;
+            
+            // Draw subtle expansion background
+            drawRoundedRect(expansionX, yPosition - 3, expansionWidth, 5, 3, [255, 255, 255], [226, 232, 240], 0.3);
+            yPosition += 5;
+            
+            section.subsections.forEach((subsection, subIndex) => {
+              checkNewPage(30);
+              
+              // SUBSECTION HEADER - matching .subsection-header.rph-title style
+              const subHeaderX = expansionX + expansionPadding;
+              const subHeaderWidth = expansionWidth - (expansionPadding * 2);
+              
+              // Subsection title (uppercase, bold, with icon)
+              pdf.setTextColor(59, 130, 246);
+              pdf.setFontSize(9);
+              pdf.setFont('helvetica', 'bold');
+              
+              // Icon for subsection
+              const subIcon = subsection.icon === 'CircleDot' ? '◉' :
+                             subsection.icon === 'FileCheck' ? '✓' :
+                             subsection.icon === 'Send' ? '➤' :
+                             subsection.icon === 'FileText' ? '📄' :
+                             subsection.icon === 'RefreshCcw' ? '↻' :
+                             subsection.icon === 'ClipboardCheck' ? '📋' :
+                             subsection.icon === 'FolderOpen' ? '📁' :
+                             subsection.icon === 'FileSignature' ? '✎' : '▸';
+              
+              pdf.text(subIcon + ' ' + subsection.title.toUpperCase(), subHeaderX, yPosition);
+              yPosition += 8;
+              
+              // SUBSECTION CARD - matching .subsection-card style
+              const cardStartY = yPosition;
+              const cardX = subHeaderX;
+              const cardWidth = subHeaderWidth;
+              
+              // Calculate card height dynamically based on content
+              let cardContentHeight = 10; // Base padding
+              if (subsection.items) {
+                subsection.items.forEach(item => {
+                  if (item.type === 'email-template' || item.type === 'email') {
+                    cardContentHeight += 45;
+                  } else {
+                    cardContentHeight += 12;
+                    if (item.checklist && item.checklist.length > 0) {
+                      cardContentHeight += item.checklist.length * 5;
+                    }
+                  }
+                });
+              }
+              
+              // Check if card is completed
+              const isCardCompleted = completedCards.has(subsection.id);
+              
+              // Draw card with proper styling
+              if (isCardCompleted) {
+                // COMPLETED CARD - Bright green (#00ff88) with glow effect
+                // Glow shadow
+                pdf.setGState(new pdf.GState({ opacity: 0.3 }));
+                pdf.setDrawColor(0, 255, 136);
+                pdf.setLineWidth(4);
+                drawRoundedRect(cardX - 1, cardStartY - 1, cardWidth + 2, cardContentHeight + 2, 3, null, [0, 255, 136], 4);
+                pdf.setGState(new pdf.GState({ opacity: 1 }));
+                
+                // Main card
+                drawRoundedRect(cardX, cardStartY, cardWidth, cardContentHeight, 3, [0, 255, 136], [0, 255, 136], 3);
+                
+                // Completion checkmark in top-right
+                pdf.setFillColor(0, 0, 0);
+                pdf.circle(cardX + cardWidth - 10, cardStartY + 10, 5, 'F');
+                pdf.setTextColor(0, 255, 136);
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('✓', cardX + cardWidth - 10, cardStartY + 12, { align: 'center' });
+              } else {
+                // NORMAL CARD - White with subtle border
+                // Card shadow
+                pdf.setGState(new pdf.GState({ opacity: 0.05 }));
+                drawRoundedRect(cardX + 1, cardStartY + 1, cardWidth, cardContentHeight, 3, [0, 0, 0]);
+                pdf.setGState(new pdf.GState({ opacity: 1 }));
+                
+                // Main card
+                drawRoundedRect(cardX, cardStartY, cardWidth, cardContentHeight, 3, [255, 255, 255], [226, 232, 240], 1);
+              }
+              
+              yPosition = cardStartY + 8;
+              
+              // SUBSECTION ITEMS
+              if (subsection.items) {
+                subsection.items.forEach(item => {
+                  checkNewPage(20);
+                  
+                  if (item.type === 'email-template' || item.type === 'email') {
+                    // EMAIL TEMPLATE - Yellow/amber box design
+                    const emailBoxX = cardX + 6;
+                    const emailBoxWidth = cardWidth - 12;
+                    const emailStartY = yPosition;
+                    
+                    // Email template header background
+                    drawRoundedRect(emailBoxX, yPosition, emailBoxWidth, 10, 2, [254, 243, 199], [251, 191, 36], 0.5);
+                    
+                    // Email icon and title
+                    pdf.setTextColor(isCardCompleted ? 0 : 146, isCardCompleted ? 0 : 64, isCardCompleted ? 0 : 14);
+                    pdf.setFontSize(8);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text('📧 Email Template', emailBoxX + 4, yPosition + 6);
+                    yPosition += 12;
+                    
+                    if (item.type === 'email') {
+                      // Email field styling
+                      pdf.setTextColor(isCardCompleted ? 0 : 55, isCardCompleted ? 0 : 65, isCardCompleted ? 0 : 81);
+                      pdf.setFontSize(7);
+                      
+                      if (item.to) {
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.text('To:', emailBoxX + 4, yPosition);
+                        pdf.setFont('helvetica', 'normal');
+                        const toLines = pdf.splitTextToSize(item.to, emailBoxWidth - 20);
+                        pdf.text(toLines[0], emailBoxX + 14, yPosition);
+                        yPosition += 5;
+                      }
+                      
+                      if (item.cc) {
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.text('Cc:', emailBoxX + 4, yPosition);
+                        pdf.setFont('helvetica', 'normal');
+                        const ccLines = pdf.splitTextToSize(item.cc, emailBoxWidth - 20);
+                        pdf.text(ccLines[0], emailBoxX + 14, yPosition);
+                        yPosition += 5;
+                      }
+                      
+                      if (item.subject) {
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.text('Subject:', emailBoxX + 4, yPosition);
+                        pdf.setFont('helvetica', 'normal');
+                        const subjectLines = pdf.splitTextToSize(item.subject, emailBoxWidth - 30);
+                        pdf.text(subjectLines[0], emailBoxX + 24, yPosition);
+                        yPosition += 5;
+                      }
+                      
+                      if (item.body) {
+                        yPosition += 2;
+                        // Email body box
+                        const bodyLines = pdf.splitTextToSize(item.body, emailBoxWidth - 10);
+                        const bodyHeight = bodyLines.length * 3.5 + 4;
+                        drawRoundedRect(emailBoxX + 2, yPosition, emailBoxWidth - 4, bodyHeight, 1, 
+                                      isCardCompleted ? [0, 0, 0, 10] : [255, 251, 235], 
+                                      isCardCompleted ? [0, 0, 0] : [251, 191, 36], 0.3);
+                        
+                        pdf.setTextColor(isCardCompleted ? 0 : 92, isCardCompleted ? 0 : 45, 0);
+                        pdf.setFontSize(7);
+                        bodyLines.forEach((line, idx) => {
+                          pdf.text(line, emailBoxX + 4, yPosition + 3 + (idx * 3.5));
+                        });
+                        yPosition += bodyHeight + 2;
+                      }
+                    } else if (item.content) {
+                      pdf.setTextColor(isCardCompleted ? 0 : 55, isCardCompleted ? 0 : 65, isCardCompleted ? 0 : 81);
+                      pdf.setFontSize(7);
+                      pdf.setFont('helvetica', 'normal');
+                      const contentLines = pdf.splitTextToSize(item.content, emailBoxWidth - 8);
+                      contentLines.forEach((line, idx) => {
+                        pdf.text(line, emailBoxX + 4, yPosition + (idx * 3.5));
+                      });
+                      yPosition += contentLines.length * 3.5;
+                    }
+                    yPosition += 4;
+                    
+                  } else {
+                    // REGULAR ITEM with checkbox (matching .clickable-item style)
+                    const itemX = cardX + 8;
+                    const itemPadding = 6;
+                    
+                    // Checkbox indicator (matching .completion-indicator)
+                    const checkboxSize = 5;
+                    const isCompleted = completedItems.has(item.id);
+                    
+                    // Draw circular checkbox
+                    if (isCardCompleted && !isCompleted) {
+                      // Card completed but item not checked - show black circle
+                      pdf.setFillColor(0, 0, 0);
+                      pdf.circle(itemX + checkboxSize/2, yPosition - 1, checkboxSize/2, 'F');
+                    } else if (isCompleted) {
+                      // Item completed - green filled circle with checkmark
+                      pdf.setFillColor(16, 185, 129);
+                      pdf.circle(itemX + checkboxSize/2, yPosition - 1, checkboxSize/2, 'F');
+                      pdf.setTextColor(255, 255, 255);
+                      pdf.setFontSize(7);
+                      pdf.setFont('helvetica', 'bold');
+                      pdf.text('✓', itemX + checkboxSize/2, yPosition + 1, { align: 'center' });
+                    } else {
+                      // Empty circle
+                      pdf.setDrawColor(156, 163, 175);
+                      pdf.setLineWidth(0.5);
+                      pdf.circle(itemX + checkboxSize/2, yPosition - 1, checkboxSize/2, 'D');
+                    }
+                    
+                    // Item text (matching .item-content style)
+                    const textX = itemX + checkboxSize + 4;
+                    const textWidth = cardWidth - (textX - cardX) - itemPadding;
+                    
+                    pdf.setTextColor(isCardCompleted ? 0 : 31, isCardCompleted ? 0 : 41, isCardCompleted ? 0 : 55);
+                    pdf.setFontSize(8.5);
+                    pdf.setFont('helvetica', isCompleted ? 'normal' : 'bold');
+                    
+                    const textLines = pdf.splitTextToSize(item.text, textWidth);
+                    textLines.forEach((line, idx) => {
+                      pdf.text(line, textX, yPosition + (idx * 4));
+                    });
+                    yPosition += textLines.length * 4;
+                    
+                    // Checklist items (bullet points)
+                    if (item.checklist && item.checklist.length > 0) {
+                      pdf.setFontSize(7.5);
+                      pdf.setFont('helvetica', 'normal');
+                      pdf.setTextColor(isCardCompleted ? 0 : 75, isCardCompleted ? 0 : 85, isCardCompleted ? 0 : 99);
+                      
+                      item.checklist.forEach(checkItem => {
+                        checkNewPage(4);
+                        const bulletX = textX + 6;
+                        pdf.text('•', bulletX, yPosition);
+                        const checkItemLines = pdf.splitTextToSize(checkItem, textWidth - 12);
+                        checkItemLines.forEach((line, idx) => {
+                          pdf.text(line, bulletX + 4, yPosition + (idx * 3.5));
+                        });
+                        yPosition += checkItemLines.length * 3.5;
+                      });
+                    }
+                    
+                    // Context menu hint (if applicable)
+                    if (item.enableContextMenu) {
+                      pdf.setTextColor(156, 163, 175);
+                      pdf.setFontSize(6);
+                      pdf.setFont('helvetica', 'italic');
+                      pdf.text('💡 Right-click to create email', textX, yPosition);
+                      yPosition += 3;
+                    }
+                    
+                    yPosition += 3;
+                  }
+                });
+              }
+              
+              // Ensure we're at the bottom of the card
+              yPosition = cardStartY + cardContentHeight + 8;
+            });
+            
+            // Add spacing after subsections group
+            yPosition += 8;
+          }
+        });
+        
+        // Save the PDF
+        const fileName = `${activeTab}_workflow_${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(fileName);
+        
+        setExportingPDF(false);
+        setShowExportSelection(false);
+      };
+
+      // Try to load logo, then generate PDF
+      logoImg.onload = function() {
+        logoLoaded = true;
+        generatePDFContent();
+      };
+      
+      logoImg.onerror = function() {
+        logoLoaded = false;
+        generatePDFContent();
+      };
+      
+      // Timeout fallback if logo doesn't load
+      setTimeout(() => {
+        if (!exportingPDF) return;
+        generatePDFContent();
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating PDF. Please try again.');
+      setExportingPDF(false);
+    }
+  }; */
+
+  // Effect to handle clicks outside context menu
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (contextMenu.visible) {
+        hideContextMenu();
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [contextMenu.visible]);
+
   // Render clickable item
   const ClickableItem = ({ id, children, className = "", onClick, enableContextMenu = false, emailType = 'default' }) => (
     <div 
       className={`clickable-item ${isCompleted(id) ? 'completed' : ''} ${className}`}
       onClick={(e) => {
         if (onClick) onClick(e);
+        else toggleCompletion(id);
       }}
-      onContextMenu={enableContextMenu ? (e) => handleContextMenu(e, emailType) : undefined}
+      onContextMenu={enableContextMenu ? (e) => handleEmailContextMenu(e, emailType) : undefined}
     >
       <div className="completion-indicator">
         {isCompleted(id) ? <Check size={16} strokeWidth={3} /> : <div className="empty-circle" />}
@@ -203,64 +1979,540 @@ const Workflow = () => {
   // Render clickable email template
   const ClickableEmailTemplate = ({ id, children, onClick }) => (
     <div 
-      className={`email-template clickable`}
+      className={`email-template clickable ${isCompleted(id) ? 'completed' : ''}`}
       onClick={(e) => {
         if (onClick) onClick(e);
+        else toggleCompletion(id);
       }}
     >
+      <div className="email-checkbox">
+        {isCompleted(id) && <Check size={16} />}
+      </div>
       <div style={{ flex: 1 }}>
         {children}
       </div>
     </div>
   );
 
-  // Reset all completions
-  const resetCompletions = () => {
-    setCompletedItems(new Set());
-    setCompletedCards(new Set());
-  };
-
-  // Expand all sections
-  const expandAll = () => {
-    setExpandedSections({
-      scenarioOverview: true,
-      newRxNoChanges: true,
-      sigDoseChanges: true,
-      infusionChanges: true,
-      maintenance: true
-    });
-  };
-
-  // Collapse all sections
-  const collapseAll = () => {
-    setExpandedSections({
-      scenarioOverview: false,
-      newRxNoChanges: false,
-      sigDoseChanges: false,
-      infusionChanges: false,
-      maintenance: false
-    });
-  };
-
-  // Effect to handle clicks outside context menu
-  useEffect(() => {
-    const handleClickOutside = () => {
-      if (contextMenu.visible) {
-        hideContextMenu();
-      }
+  // Get icon component
+  const getIcon = (iconName) => {
+    const icons = {
+      Activity, FileText, AlertCircle, Settings, Pill, CircleDot, FileCheck,
+      FileSignature, Send, RefreshCcw, ClipboardCheck, FolderOpen, Info
     };
+    const IconComponent = icons[iconName] || FileText;
+    return IconComponent;
+  };
 
-    document.addEventListener('click', handleClickOutside);
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [contextMenu.visible]);
+  // Render section content based on active tab
+  const renderSectionContent = () => {
+    const currentSections = workflowData[activeTab]?.sections || [];
+    
+    if (loading) {
+      return <div className="loading-message">Loading workflow data...</div>;
+    }
+
+    if (currentSections.length === 0) {
+      return (
+        <div className="empty-state">
+          <FolderOpen size={48} />
+          <h3>No SOPs Yet</h3>
+          <p>Click "Add Section" to create your first SOP for {activeTab.toUpperCase()}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="workflow-timeline-content">
+        <div className="workflow-timeline-container">
+          <div className="timeline-line"></div>
+          
+          {currentSections.map(section => {
+            const IconComponent = getIcon(section.icon);
+            
+            return (
+              <div key={section.id} className="workflow-section-compact">
+                <div 
+                  className={`workflow-card-compact ${section.id}-card`}
+                  onClick={() => toggleSection(section.id)}
+                  onContextMenu={(e) => handleSectionContextMenu(e, section.id)}
+                >
+                  <div className="workflow-card-icon" style={section.iconBg ? { background: section.iconBg, color: section.iconColor } : {}}>
+                    <IconComponent size={24} />
+                  </div>
+                  <div className="workflow-card-content">
+                    <h3>{section.cardTitle}</h3>
+                    <p>{section.cardDescription}</p>
+                  </div>
+                  <div className="workflow-card-toggle">
+                    {expandedSections[section.id] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </div>
+                </div>
+                
+                {expandedSections[section.id] && (
+                  <div className="workflow-expansion">
+                    {/* Decision Table for Scenario Overview */}
+                    {section.content?.type === 'decision-table' && (
+                      <div className="decision-table-container">
+                        <table className="decision-table">
+                          <thead>
+                            <tr>
+                              {section.content.data.headers.map((header, idx) => (
+                                <th key={idx}>{header}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {section.content.data.rows.map((row, rowIdx) => (
+                              <tr key={rowIdx}>
+                                {row.map((cell, cellIdx) => (
+                                  <td key={cellIdx} className={
+                                    cell === 'No' ? 'no' : 
+                                    cell.includes('Yes') ? 'yes' : ''
+                                  }>
+                                    {cellIdx === 0 ? <strong>{cell}</strong> : cell}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                    
+                    {/* Subsections */}
+                    {section.subsections && section.subsections.length > 0 && (
+                      <div className="subsections-container">
+                        {section.subsections.map(subsection => {
+                          const SubIcon = getIcon(subsection.icon);
+                          
+                          return (
+                            <div 
+                              key={subsection.id} 
+                              className="subsection-wrapper"
+                              style={{
+                                width: subsectionWidths[subsection.id] ? `${subsectionWidths[subsection.id]}%` : 'auto',
+                                maxWidth: '100%',
+                                position: 'relative'
+                              }}
+                            >
+                              {/* Width resize handle for subsection */}
+                              <div 
+                                className="subsection-width-handle"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                }}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setIsResizing(true); // Set flag to prevent tab switching
+                                  const startX = e.clientX;
+                                  const subsectionElement = e.target.parentElement;
+                                  const parentWidth = subsectionElement.parentElement.offsetWidth;
+                                  const startWidth = subsectionElement.offsetWidth;
+                                  
+                                  const handleMouseMove = (moveEvent) => {
+                                    moveEvent.preventDefault();
+                                    moveEvent.stopPropagation();
+                                    setIsResizing(true); // Keep flag set during resize
+                                    const delta = moveEvent.clientX - startX;
+                                    const newWidth = Math.max(300, startWidth + delta);
+                                    const widthPercent = Math.min(100, (newWidth / parentWidth) * 100);
+                                    
+                                    setSubsectionWidths(prev => ({
+                                      ...prev,
+                                      [subsection.id]: widthPercent
+                                    }));
+                                  };
+                                  
+                                  const handleMouseUp = async () => {
+                                    document.removeEventListener('mousemove', handleMouseMove);
+                                    document.removeEventListener('mouseup', handleMouseUp);
+                                    setIsResizing(false); // Clear flag after subsection resize
+                                    
+                                    // Save subsection width to Firebase
+                                    const updatedSections = (workflowData[activeTab]?.sections || []).map(s => {
+                                      if (s.id === section.id && s.subsections) {
+                                        return {
+                                          ...s,
+                                          subsections: s.subsections.map(sub => {
+                                            if (sub.id === subsection.id) {
+                                              return {
+                                                ...sub,
+                                                customWidth: subsectionWidths[subsection.id]
+                                              };
+                                            }
+                                            return sub;
+                                          })
+                                        };
+                                      }
+                                      return s;
+                                    });
+                                    
+                                    // Pass the updated sections as an array
+                                    await saveWorkflowData(updatedSections);
+                                  };
+                                  
+                                  document.addEventListener('mousemove', handleMouseMove);
+                                  document.addEventListener('mouseup', handleMouseUp);
+                                }}
+                                title="Drag to resize subsection width"
+                              >
+                                ⟷
+                              </div>
+                              
+                              <div className="subsection-header rph-title" onContextMenu={(e) => handleSubsectionContextMenu(e, section.id, subsection.id)}>
+                                <SubIcon size={20} />
+                                <h3>{subsection.title}</h3>
+                              </div>
+                              
+                              <SubsectionCard id={subsection.id} itemIds={subsection.itemIds}>
+                                
+                                {subsection.items.map(item => {
+                                  if (item.type === 'email-template') {
+                                    const HeaderIcon = getIcon(item.header.icon);
+                                    return (
+                                      <ClickableEmailTemplate key={item.id} id={item.id}>
+                                        <div className="email-header">
+                                          <HeaderIcon size={20} />
+                                          <span>{item.header.title}</span>
+                                        </div>
+                                        <div className="email-content">
+                                          <pre style={{ whiteSpace: 'pre-wrap' }}>{item.content}</pre>
+                                        </div>
+                                      </ClickableEmailTemplate>
+                                    );
+                                  } else if (item.type === 'email') {
+                                    return (
+                                      <ClickableEmailTemplate key={item.id} id={item.id}>
+                                        <div className="email-header">
+                                          <div className="email-header-title">
+                                            <Mail size={20} />
+                                            <span>Email Template Example</span>
+                                          </div>
+                                          <div className="email-fields">
+                                            <div className="email-field">
+                                              <span className="email-field-label">To:</span>
+                                              <span className="email-field-value email-address">{item.to}</span>
+                                            </div>
+                                            <div className="email-field">
+                                              <span className="email-field-label">Cc:</span>
+                                              <span className="email-field-value email-address">{item.cc}</span>
+                                            </div>
+                                            <div className="email-field">
+                                              <span className="email-field-label">Subject:</span>
+                                              <span className="email-field-value">{item.subject}</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="email-content">
+                                          <div className="attention-box">
+                                            {item.body}
+                                          </div>
+                                        </div>
+                                      </ClickableEmailTemplate>
+                                    );
+                                  } else {
+                                    return (
+                                      <ClickableItem 
+                                        key={item.id} 
+                                        id={item.id}
+                                        enableContextMenu={item.enableContextMenu}
+                                        emailType={item.emailType}
+                                      >
+                                        <div className="checklist-item">
+                                          <strong>{item.text}</strong>
+                                          {item.checklist && item.checklist.length > 0 && (
+                                            <ul>
+                                              {item.checklist.map((checkItem, idx) => (
+                                                <li key={idx}>{checkItem}</li>
+                                              ))}
+                                            </ul>
+                                          )}
+                                          
+                                          {/* Display saved screenshots */}
+                                          {item.screenshots && item.screenshots.length > 0 && (
+                                            <div className="subsection-screenshots">
+                                              {item.screenshots.map(screenshot => (
+                                                <div 
+                                                  key={screenshot.id} 
+                                                  className="screenshot-container full-width"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                  }}>
+                                                  <img 
+                                                    src={screenshot.data} 
+                                                    alt="Screenshot"
+                                                    style={{ 
+                                                      width: screenshot.customWidth ? `${screenshot.customWidth}%` : '100%',
+                                                      maxWidth: '100%',
+                                                      height: 'auto'
+                                                    }}
+                                                    className="resizable-screenshot"
+                                                  />
+                                                  <div 
+                                                    className="image-resize-handle"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      e.preventDefault();
+                                                    }}
+                                                    onMouseDown={(e) => {
+                                                      e.preventDefault();
+                                                      e.stopPropagation();
+                                                      setIsResizing(true); // Set flag to prevent tab switching
+                                                      const startX = e.clientX;
+                                                      const container = e.target.parentElement;
+                                                      const img = container.querySelector('img');
+                                                      const startWidth = img.offsetWidth;
+                                                      const containerWidth = container.offsetWidth;
+                                                      
+                                                      const handleMouseMove = (moveEvent) => {
+                                                        moveEvent.preventDefault();
+                                                        moveEvent.stopPropagation();
+                                                        const delta = moveEvent.clientX - startX;
+                                                        const newWidth = Math.max(200, startWidth + delta);
+                                                        const widthPercent = Math.min(100, (newWidth / containerWidth) * 100);
+                                                        
+                                                        // Update screenshot width
+                                                        const updatedSections = workflowData[activeTab].sections.map(s => {
+                                                          if (s.id === section.id && s.subsections) {
+                                                            return {
+                                                              ...s,
+                                                              subsections: s.subsections.map(sub => {
+                                                                if (sub.id === subsection.id) {
+                                                                  return {
+                                                                    ...sub,
+                                                                    items: sub.items.map(i => {
+                                                                      if (i.screenshots) {
+                                                                        return {
+                                                                          ...i,
+                                                                          screenshots: i.screenshots.map(sc => 
+                                                                            sc.id === screenshot.id 
+                                                                              ? { ...sc, customWidth: widthPercent }
+                                                                              : sc
+                                                                          )
+                                                                        };
+                                                                      }
+                                                                      return i;
+                                                                    })
+                                                                  };
+                                                                }
+                                                                return sub;
+                                                              })
+                                                            };
+                                                          }
+                                                          return s;
+                                                        });
+                                                        
+                                                        setWorkflowData(prev => ({
+                                                          ...prev,
+                                                          [activeTab]: {
+                                                            ...prev[activeTab],
+                                                            sections: updatedSections
+                                                          }
+                                                        }));
+                                                      };
+                                                      
+                                                      const handleMouseUp = async () => {
+                                                        document.removeEventListener('mousemove', handleMouseMove);
+                                                        document.removeEventListener('mouseup', handleMouseUp);
+                                                        setIsResizing(false); // Clear flag after image resize
+                                                        // Save to Firebase - use the full workflow data to avoid errors
+                                                        const currentData = {
+                                                          ...workflowData,
+                                                          [activeTab]: {
+                                                            sections: workflowData[activeTab]?.sections || []
+                                                          }
+                                                        };
+                                                        await saveWorkflowData(currentData);
+                                                      };
+                                                      
+                                                      document.addEventListener('mousemove', handleMouseMove);
+                                                      document.addEventListener('mouseup', handleMouseUp);
+                                                    }}
+                                                    title="Drag to resize image"
+                                                  >
+                                                    ⟷
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                          
+                                          {/* Display saved tables */}
+                                          {item.tables && item.tables.length > 0 && (
+                                            <div className="subsection-tables">
+                                              {item.tables.map(table => (
+                                                <div 
+                                                  key={table.id} 
+                                                  className="table-container full-width"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                  }}>
+                                                  <div 
+                                                    className="table-scroll-wrapper expanded"
+                                                    style={{
+                                                      maxHeight: table.customHeight ? `${table.customHeight}px` : '400px'
+                                                    }}
+                                                    dangerouslySetInnerHTML={{ __html: table.html }}
+                                                  />
+                                                  <div 
+                                                    className="table-resize-handle"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      e.preventDefault();
+                                                    }}
+                                                    onMouseDown={(e) => {
+                                                      e.preventDefault();
+                                                      e.stopPropagation();
+                                                      setIsResizing(true); // Set flag to prevent tab switching
+                                                      const startY = e.clientY;
+                                                      const container = e.target.parentElement.querySelector('.table-scroll-wrapper');
+                                                      const startHeight = container.offsetHeight;
+                                                      
+                                                      const handleMouseMove = (moveEvent) => {
+                                                        moveEvent.preventDefault();
+                                                        moveEvent.stopPropagation();
+                                                        const delta = moveEvent.clientY - startY;
+                                                        const newHeight = Math.max(200, Math.min(800, startHeight + delta));
+                                                        
+                                                        // Update table height
+                                                        const updatedSections = workflowData[activeTab].sections.map(s => {
+                                                          if (s.id === section.id && s.subsections) {
+                                                            return {
+                                                              ...s,
+                                                              subsections: s.subsections.map(sub => {
+                                                                if (sub.id === subsection.id) {
+                                                                  return {
+                                                                    ...sub,
+                                                                    items: sub.items.map(i => {
+                                                                      if (i.tables) {
+                                                                        return {
+                                                                          ...i,
+                                                                          tables: i.tables.map(t => 
+                                                                            t.id === table.id 
+                                                                              ? { ...t, customHeight: newHeight }
+                                                                              : t
+                                                                          )
+                                                                        };
+                                                                      }
+                                                                      return i;
+                                                                    })
+                                                                  };
+                                                                }
+                                                                return sub;
+                                                              })
+                                                            };
+                                                          }
+                                                          return s;
+                                                        });
+                                                        
+                                                        setWorkflowData(prev => ({
+                                                          ...prev,
+                                                          [activeTab]: {
+                                                            ...prev[activeTab],
+                                                            sections: updatedSections
+                                                          }
+                                                        }));
+                                                      };
+                                                      
+                                                      const handleMouseUp = async () => {
+                                                        document.removeEventListener('mousemove', handleMouseMove);
+                                                        document.removeEventListener('mouseup', handleMouseUp);
+                                                        setIsResizing(false); // Clear flag after table resize
+                                                        // Save to Firebase - use the full workflow data to avoid errors
+                                                        const currentData = {
+                                                          ...workflowData,
+                                                          [activeTab]: {
+                                                            sections: workflowData[activeTab]?.sections || []
+                                                          }
+                                                        };
+                                                        await saveWorkflowData(currentData);
+                                                      };
+                                                      
+                                                      document.addEventListener('mousemove', handleMouseMove);
+                                                      document.addEventListener('mouseup', handleMouseUp);
+                                                    }}
+                                                    title="Drag to resize table height"
+                                                  >
+                                                    ⟶
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                          
+                                          {item.enableContextMenu && (
+                                            <div className="context-menu-hint">Right-click to create email</div>
+                                          )}
+                                        </div>
+                                      </ClickableItem>
+                                    );
+                                  }
+                                })}
+                              </SubsectionCard>
+                            </div>
+                          );
+                        })}
+                        
+                        {/* Add Subsection Button */}
+                        <button
+                          className="add-subsection-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedSection(section.id);
+                            setShowAddSubsectionModal(true);
+                          }}
+                        >
+                          <Plus size={16} />
+                          Add Subsection
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="workflow-page page-container">
+    <div className={`workflow-page page-container ${isResizing ? 'is-resizing' : ''}`}>
       {/* Enterprise Header */}
       <EnterpriseHeader>
+        <TabGroup>
+          <TabButton
+            active={activeTab === 'lyso'}
+            onClick={() => !isResizing && setActiveTab('lyso')}
+          >
+            LYSO
+          </TabButton>
+          <TabButton
+            active={activeTab === 'hae'}
+            onClick={() => !isResizing && setActiveTab('hae')}
+          >
+            HAE
+          </TabButton>
+          <TabButton
+            active={activeTab === 'scd'}
+            onClick={() => !isResizing && setActiveTab('scd')}
+          >
+            SCD
+          </TabButton>
+        </TabGroup>
+        
         <ActionGroup>
+          <ActionButton
+            onClick={() => setShowAddSectionModal(true)}
+            icon={PlusCircle}
+            primary
+          >
+            Add Section
+          </ActionButton>
           <ActionButton
             onClick={collapseAll}
             icon={ChevronUp}
@@ -278,1262 +2530,533 @@ const Workflow = () => {
           <ActionButton
             onClick={resetCompletions}
             icon={RefreshCcw}
+            secondary
           >
             Reset
           </ActionButton>
+          <ActionButton
+            onClick={() => {
+              setShowExportSelection(true);
+              // Initialize with all sections selected
+              const allSectionIds = workflowData[activeTab].sections.map(s => s.id);
+              setSelectedSectionsForExport(new Set(allSectionIds));
+            }}
+            icon={FileDown}
+            primary
+          >
+            Export PDF
+          </ActionButton>
         </ActionGroup>
       </EnterpriseHeader>
-      
-      <div className="workflow-timeline-content">
 
-        {/* Timeline Container */}
-        <div className="workflow-timeline-container">
-          <div className="timeline-line"></div>
-          
-          {/* Scenario Overview - Compact Card */}
-          <div className="workflow-section-compact">
-            <div 
-              className="workflow-card-compact overview-card"
-              onClick={() => toggleSection('scenarioOverview')}
+      {/* Main Content */}
+      {renderSectionContent()}
+
+      {/* Add Section Modal */}
+      {showAddSectionModal && (
+        <div className="modal-overlay" onClick={() => setShowAddSectionModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="modal-close-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowAddSectionModal(false);
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowAddSectionModal(false);
+              }}
+              aria-label="Close"
+              type="button"
             >
-              <div className="workflow-card-icon">
-                <Activity size={24} />
-              </div>
-              <div className="workflow-card-content">
-                <h3>Scenario Overview</h3>
-                <p>Click to view decision matrix</p>
-              </div>
-              <div className="workflow-card-toggle">
-                {expandedSections.scenarioOverview ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
+              ×
+            </button>
+            <h2>Add New Section</h2>
+            <input
+              type="text"
+              placeholder="Section Title"
+              value={newSectionTitle}
+              onChange={(e) => setNewSectionTitle(e.target.value)}
+              className="modal-input"
+            />
+            <textarea
+              placeholder="Section Description (optional)"
+              value={newSectionDescription}
+              onChange={(e) => setNewSectionDescription(e.target.value)}
+              className="modal-textarea"
+            />
+            <div className="modal-actions">
+              <button onClick={() => setShowAddSectionModal(false)} className="btn-cancel">
+                Cancel
+              </button>
+              <button onClick={addSection} className="btn-primary">
+                Add Section
+              </button>
             </div>
-            {expandedSections.scenarioOverview && (
-              <div className="workflow-expansion">
-                <div className="decision-table-container">
-                  <table className="decision-table">
-                    <thead>
-                      <tr>
-                        <th>SCENARIO</th>
-                        <th>Shipping pump</th>
-                        <th>Send New Rx to Nursing Homecare</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><strong>New Rx with no changes</strong></td>
-                        <td className="no">No</td>
-                        <td className="yes">Yes (cc: RPh team)</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Sig or Dose Changes only</strong></td>
-                        <td className="no">No</td>
-                        <td className="yes">Yes (cc: RPh team)</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Changes to infusion rates, total volume, or total time</strong></td>
-                        <td className="yes">Yes</td>
-                        <td className="yes">Yes (cc: RPh team)</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Maintenance or Malfunction</strong></td>
-                        <td className="yes">Yes</td>
-                        <td className="no">No</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* New Rx with No Changes Section */}
-          <div className="workflow-section-compact">
-            <div 
-              className="workflow-card-compact new-rx-card"
-              onClick={() => toggleSection('newRxNoChanges')}
-            >
-              <div className="workflow-card-icon" style={{ background: '#fee2e2', color: '#dc2626' }}>
-                <FileText size={24} />
-              </div>
-              <div className="workflow-card-content">
-                <h3>New Rx with No Changes</h3>
-                <p>No pump needed • Email to Nursing Homecare</p>
-              </div>
-              <div className="workflow-card-toggle">
-                {expandedSections.newRxNoChanges ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-            </div>
-            {expandedSections.newRxNoChanges && (
-              <div className="workflow-expansion">{/* Pump sheet for "New Rx with no changes" */}
-
-                    <div className="rph-section">
-                      <div className="subsection-header rph-title">
-                        <UserCheck size={20} />
-                        <h3>RPh A</h3>
-                      </div>
-                      
-                      <div className="subsections-grid">
-                        {/* Subsection Card 1: Check HHN Status */}
-                        <SubsectionCard id="new-rx-step-1" itemIds={["new-rx-check-hhn"]}>
-                          <div className="subsection-header">
-                            <CircleDot size={20} />
-                            <h3>Step 1: Check HHN Status</h3>
-                          </div>
-                          <ClickableItem id="new-rx-check-hhn">
-                            <div className="checklist-item">
-                              <strong>Check for HHN status in priority comments:</strong>
-                              <ul>
-                                <li>If not stated, investigate then update priority comments to either "No HHN" or "HHN"</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 2: Verify and Send */}
-                        <SubsectionCard id="new-rx-step-2" itemIds={["new-rx-1"]}>
-                          <div className="subsection-header">
-                            <FileCheck size={20} />
-                            <h3>Step 2: Verify and Send</h3>
-                          </div>
-                          <ClickableItem id="new-rx-1">
-                            <div className="checklist-item">
-                              <strong>If new Rx has no changes:</strong>
-                              <ul>
-                                <li>Verify Rx, clean profile, and email new Rx to Nursing Homecare (cc: RPh Team)</li>
-                                <li>Not shipping pump <em>(Holly Tucker is not involved since not shipping a new pump.)</em></li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 3: Add Intervention Note */}
-                        <SubsectionCard id="new-rx-step-3" itemIds={["new-rx-2"]}>
-                          <div className="subsection-header">
-                            <FileSignature size={20} />
-                            <h3>Step 3: Add Intervention Note</h3>
-                          </div>
-                          <ClickableItem id="new-rx-2">
-                            <div className="checklist-item">
-                              <strong>Add prescription management intervention note</strong>
-                              <ul>
-                                <li>Verified Rx (with HHN; no changes); sent new Rx to Nursing Homecare (cc: RPh Team)</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-                      </div>
-                    </div>
-              </div>
-            )}
-          </div>
-
-          {/* Sig or Dose Changes Section */}
-          <div className="workflow-section-compact">
-            <div 
-              className="workflow-card-compact sig-dose-card"
-              onClick={() => toggleSection('sigDoseChanges')}
-            >
-              <div className="workflow-card-icon" style={{ background: '#dbeafe', color: '#2563eb' }}>
-                <Pill size={24} />
-              </div>
-              <div className="workflow-card-content">
-                <h3>Sig or Dose Changes Only</h3>
-                <p>No pump needed • Create pump sheet</p>
-              </div>
-              <div className="workflow-card-toggle">
-                {expandedSections.sigDoseChanges ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-            </div>
-            {expandedSections.sigDoseChanges && (
-              <div className="workflow-expansion">{/* Pump sheet for "Sig or Dose Changes only" */}
-
-                    <div className="rph-section">
-                      <div className="subsection-header rph-title">
-                        <UserCheck size={20} />
-                        <h3>RPh A</h3>
-                      </div>
-                      
-                      <div className="subsections-grid">
-                        {/* Subsection Card 1: Check HHN Status */}
-                        <SubsectionCard id="sig-dose-step-1" itemIds={["sig-dose-check-hhn"]}>
-                          <div className="subsection-header">
-                            <CircleDot size={20} />
-                            <h3>Step 1: Check HHN Status</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-check-hhn">
-                            <div className="checklist-item">
-                              <strong>Check for HHN status in priority comments:</strong>
-                              <ul>
-                                <li>If not stated, investigate then update priority comments to either "No HHN" or "HHN"</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 2: Create Pump Sheet */}
-                        <SubsectionCard id="sig-dose-step-2" itemIds={["sig-dose-1"]}>
-                          <div className="subsection-header">
-                            <FileText size={20} />
-                            <h3>Step 2: Create Pump Sheet</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-1">
-                            <div className="checklist-item">
-                              <strong>If new Rx has <u>changes to sig or dose only</u>, create new pump sheet</strong>
-                              <ul>
-                                <li>Verify Rx, clean profile, then create new pump sheet</li>
-                                <li>Not shipping pump <em>(Holly Tucker is not involved since not shipping a new pump.)</em></li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 3: Email to SPRx */}
-                        <SubsectionCard id="sig-dose-step-3" itemIds={["sig-dose-2", "sig-dose-email-1"]}>
-                          <div className="subsection-header">
-                            <Send size={20} />
-                            <h3>Step 3: Email to SPRx</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-2" enableContextMenu={true}>
-                            <div className="checklist-item">
-                              <strong>Make sure of the following and email new Rx and pump sheet</strong>
-                              <ul>
-                                <li>Email to SPRx and cc: Pump Sheets</li>
-                                <li>Update subject line (specify changes)</li>
-                                <li>Attach word document of pump sheet</li>
-                                <li>Add your signature</li>
-                              </ul>
-                              <div className="context-menu-hint">Right-click to create email</div>
-                            </div>
-                          </ClickableItem>
-
-                          <ClickableEmailTemplate id="sig-dose-email-1">
-                            <div className="email-header">
-                              <div className="email-header-title">
-                                <Mail size={20} />
-                                <span>Email Template Example</span>
-                              </div>
-                              <div className="email-fields">
-                                <div className="email-field">
-                                  <span className="email-field-label">To:</span>
-                                  <span className="email-field-value email-address">8553658111@fax.cvhealth.com</span>
-                                </div>
-                                <div className="email-field">
-                                  <span className="email-field-label">Cc:</span>
-                                  <span className="email-field-value email-address">Pump Sheets (HAE/LSD)</span>
-                                </div>
-                                <div className="email-field">
-                                  <span className="email-field-label">Subject:</span>
-                                  <span className="email-field-value">C08 – SPRX ACCOUNT# – PT'S LAST NAME, PT'S FIRST NAME – POMBILITI 2370 MG – DOSE INCREASE</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="email-attachments">
-                              <div className="email-attachment">
-                                C08 - SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME - POMBILITI 2740 MG - DOSE INCREASE - PUMP SHEET.doc
-                                <span className="attachment-size">(40 KB)</span>
-                              </div>
-                            </div>
-                            <div className="email-content">
-                              <div className="attention-box">
-                                <strong>ATTENTION INTAKE TEAM</strong>
-                                <p>Please index this as a document type PUMP PROGRAM SHEET (IRC 54915) and Rx.</p>
-                              </div>
-                            </div>
-                          </ClickableEmailTemplate>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 4: Add Intervention Note */}
-                        <SubsectionCard id="sig-dose-step-4" itemIds={["sig-dose-3"]}>
-                          <div className="subsection-header">
-                            <FileSignature size={20} />
-                            <h3>Step 4: Add Intervention Note</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-3">
-                            <div className="checklist-item">
-                              <strong>Add dosing intervention note</strong>
-                              <ul>
-                                <li>[Pump Sheet] created and sent to SPRx for pump sheet (specify changes); pending Rx entry and verification.</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 5: Move to Drafts */}
-                        <SubsectionCard id="sig-dose-step-5" itemIds={["sig-dose-4"]}>
-                          <div className="subsection-header">
-                            <FolderOpen size={20} />
-                            <h3>Step 5: Move to Drafts</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-4">
-                            <div className="checklist-item">
-                              <strong>Move email to "Drafts" folder</strong>
-                              <ul>
-                                <li>Move email (with pump sheet attachment) to pump folder "Drafts" (for word document reference)</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 6: Add to Pump Tracker */}
-                        <SubsectionCard id="sig-dose-step-6" itemIds={["sig-dose-5"]}>
-                          <div className="subsection-header">
-                            <ClipboardCheck size={20} />
-                            <h3>Step 6: Add to Pump Tracker</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-5">
-                            <div className="checklist-item">
-                              <strong>Add patient to pump tracker (Tab#2 - Sig or Dose Changes only)</strong>
-                              <ul>
-                                <li>Update accordingly</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-                      </div>
-                    </div>
-
-                    <div className="rph-section">
-                      <div className="subsection-header rph-title">
-                        <UserCheck size={20} />
-                        <h3>RPh B</h3>
-                      </div>
-                      
-                      <div className="subsections-grid">
-                        {/* Subsection Card 1: Identify Patient in Tracker */}
-                        <SubsectionCard id="sig-dose-rph-b-step-7" itemIds={["sig-dose-6"]}>
-                          <div className="subsection-header">
-                            <ClipboardCheck size={20} />
-                            <h3>Step 7: Identify Patient in Tracker</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-6">
-                            <div className="checklist-item">
-                              <strong>Identify patient in pump tracker (Tab#2 - Sig or Dose Changes only)</strong>
-                              <ul>
-                                <li>Add RPh initials (to indicate you are currently working on the pump sheet) and update accordingly</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 2: Type Pump Sheet */}
-                        <SubsectionCard id="sig-dose-rph-b-step-8" itemIds={["sig-dose-7"]}>
-                          <div className="subsection-header">
-                            <FileText size={20} />
-                            <h3>Step 8: Type Pump Sheet</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-7">
-                            <div className="checklist-item">
-                              <strong>Type pump sheet (if Tech has not done so)</strong>
-                            </div>
-                          </ClickableItem>
-                          
-                          {/* Pump Sheet Entry Table */}
-                          <div className="pump-table-container">
-                            <table className="pump-table">
-                              <tr>
-                                <th>Drug</th>
-                                <td>PUMP CURLIN 6000CMB SHEET (IRC 54915)</td>
-                              </tr>
-                              <tr>
-                                <th>Written date</th>
-                                <td>Written date for main drug prescription</td>
-                              </tr>
-                              <tr>
-                                <th>Sig</th>
-                                <td>USE FOR INFUSION WITH &lt;DRUG&gt; INFUSION; DOSE/RANGE AS PER ATTACHED DETAILED PUMP SHEET</td>
-                              </tr>
-                              <tr>
-                                <th>Qty</th>
-                                <td>1</td>
-                              </tr>
-                              <tr>
-                                <th>Prescriber</th>
-                                <td>Prescriber who wrote main drug prescription</td>
-                              </tr>
-                              <tr>
-                                <th>Day supply</th>
-                                <td>1</td>
-                              </tr>
-                              <tr>
-                                <th>Refill</th>
-                                <td>0</td>
-                              </tr>
-                              <tr>
-                                <th>DAW</th>
-                                <td>0</td>
-                              </tr>
-                            </table>
-                          </div>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 3: Verify Pump Sheet */}
-                        <SubsectionCard id="sig-dose-rph-b-step-9" itemIds={["sig-dose-8"]}>
-                          <div className="subsection-header">
-                            <FileCheck size={20} />
-                            <h3>Step 9: Verify Pump Sheet</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-8">
-                            <div className="checklist-item">
-                              <strong>Verify pump sheet Rx and add annotation</strong>
-                              <ul>
-                                <li>[Pump Sheet] Double checked by –, RPh</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 4: Add Final Note */}
-                        <SubsectionCard id="sig-dose-rph-b-step-10" itemIds={["sig-dose-9"]}>
-                          <div className="subsection-header">
-                            <FileSignature size={20} />
-                            <h3>Step 10: Add Final Note</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-9">
-                            <div className="checklist-item">
-                              <strong>Add dosing intervention note</strong>
-                              <ul>
-                                <li>[Pump sheet] Double checked pump sheet (SPECIFY CHANGES), Rx verified, forwarded pump sheet and new Rx to Nursing Homecare and RPh Team.</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 5: Email to Nursing */}
-                        <SubsectionCard id="sig-dose-rph-b-step-11" itemIds={["sig-dose-10", "sig-dose-email-2"]}>
-                          <div className="subsection-header">
-                            <Send size={20} />
-                            <h3>Step 11: Email to Nursing</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-10" enableContextMenu={true} emailType="nursing">
-                            <div className="checklist-item">
-                              <strong>Make sure of the following and email new Rx and pump sheet</strong>
-                              <ul>
-                                <li>Email to Nursing homecare & RPh Team</li>
-                                <li>Update subject line (specify changes)</li>
-                                <li>Attach PDF of pump sheet and new Rx</li>
-                                <li>Add your signature</li>
-                              </ul>
-                              <div className="context-menu-hint">Right-click to create email</div>
-                            </div>
-                          </ClickableItem>
-                          
-                          <ClickableEmailTemplate id="sig-dose-email-2">
-                            <div className="email-header">
-                              <div className="email-header-title">
-                                <Mail size={20} />
-                                <span>Email Template Example</span>
-                              </div>
-                              <div className="email-fields">
-                                <div className="email-field">
-                                  <span className="email-field-label">To:</span>
-                                  <span className="email-field-value email-address">Nursing Homecare @ HAELysePharmacistTeam</span>
-                                </div>
-                                <div className="email-field">
-                                  <span className="email-field-label">Cc:</span>
-                                  <span className="email-field-value">RPh Team</span>
-                                </div>
-                                <div className="email-field">
-                                  <span className="email-field-label">Subject:</span>
-                                  <span className="email-field-value">C08 – SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME – POMBILITI 2370 MG – DOSE INCREASE</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="email-content">
-                              <p>Hi Team, updated pump sheet (SPECIFY CHANGES) and new Rx attached.</p>
-                            </div>
-                            <div className="email-attachments">
-                              <div className="email-attachment">C08 - SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME - POMBILITI 2740 MG - DOSE INCREASE - PUMP SHEET.doc <span className="attachment-size">(40 KB)</span></div>
-                              <div className="email-attachment">C08 - SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME - POMBILITI 2740 MG - DOSE INCREASE - PUMP SHEET.doc <span className="attachment-size">(40 KB)</span></div>
-                            </div>
-                          </ClickableEmailTemplate>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 6: Clear Tracker */}
-                        <SubsectionCard id="sig-dose-rph-b-step-12" itemIds={["sig-dose-11"]}>
-                          <div className="subsection-header">
-                            <Archive size={20} />
-                            <h3>Step 12: Clear Tracker</h3>
-                          </div>
-                          <ClickableItem id="sig-dose-11">
-                            <div className="checklist-item">
-                              <strong>Clear patient line from pump tracker (Tab#2 - Sig or Dose Changes only)</strong>
-                              <ul>
-                                <li>Since done with creating, verifying, and sending pump sheet & nursing orders to Nursing Homecare, can clear patient line from pump tracker.</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-                      </div>
-                    </div>
-              </div>
-            )}
-          </div>
-
-          {/* Infusion Changes Section */}
-          <div className="workflow-section-compact">
-            <div 
-              className="workflow-card-compact infusion-card"
-              onClick={() => toggleSection('infusionChanges')}
-            >
-              <div className="workflow-card-icon" style={{ background: '#d1fae5', color: '#10b981' }}>
-                <RefreshCcw size={24} />
-              </div>
-              <div className="workflow-card-content">
-                <h3>Infusion Rate/Volume/Time Changes</h3>
-                <p>Pump needed • Create pump sheet • Schedule with Holly</p>
-              </div>
-              <div className="workflow-card-toggle">
-                {expandedSections.infusionChanges ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-            </div>
-            {expandedSections.infusionChanges && (
-              <div className="workflow-expansion">
-{/* Pump sheet for "changes to infusion rates, total volume or time" */}
-
-                    <div className="rph-section">
-                      <div className="subsection-header rph-title">
-                        <UserCheck size={20} />
-                        <h3>RPh A</h3>
-                      </div>
-                      
-                      <div className="subsections-grid">
-                        {/* Subsection Card 1: Check HHN Status */}
-                        <SubsectionCard id="infusion-step-1" itemIds={["infusion-check-hhn"]}>
-                          <div className="subsection-header">
-                            <CircleDot size={20} />
-                            <h3>Step 1: Check HHN Status</h3>
-                          </div>
-                          <ClickableItem id="infusion-check-hhn">
-                            <div className="checklist-item">
-                              <strong>Check for HHN status in priority comments:</strong>
-                              <ul>
-                                <li>If not stated, investigate then update priority comments to either "No HHN" or "HHN"</li>
-                                <li>Verify Rx, clean up the profile, then create new pump sheet</li>
-                                <li>Need to ship new pump <em>(include Holly Tucker because shipping a new pump due to pump changes)</em></li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 2: Create Pump Sheet */}
-                        <SubsectionCard id="infusion-step-2" itemIds={["infusion-email-1"]}>
-                          <div className="subsection-header">
-                            <FolderOpen size={20} />
-                            <h3>Step 2: Create Pump Sheet</h3>
-                          </div>
-                          <ClickableEmailTemplate id="infusion-email-1">
-                            <div className="email-header">
-                              <Info size={20} />
-                              <span>Example Pump Sheet</span>
-                            </div>
-                            <div className="email-content">
-                              <p style={{ textAlign: 'center', fontWeight: 'bold' }}>SPECIALTY PHARMACY</p>
-                              <p style={{ textAlign: 'center', fontWeight: 'bold' }}>PUMP CURLIN 6000CMB SHEET</p>
-                              <p>Pump settings: Variable</p>
-                              <table style={{ width: '100%', margin: '10px 0' }}>
-                                <tr>
-                                  <td style={{ padding: '5px', border: '1px solid #ccc' }}><strong>Patient Information</strong></td>
-                                  <td style={{ padding: '5px', border: '1px solid #ccc' }}>Value</td>
-                                </tr>
-                                <tr>
-                                  <td style={{ padding: '5px', border: '1px solid #ccc' }}>DOB</td>
-                                  <td style={{ padding: '5px', border: '1px solid #ccc' }}></td>
-                                </tr>
-                              </table>
-                              <p>Drug Name: fep</p>
-                              <p>Remove: jjjj from Normal Saline IV bag (drug & bag overwt volume)</p>
-                            </div>
-                          </ClickableEmailTemplate>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 3: Email Pump Sheet */}
-                        <SubsectionCard id="infusion-step-3" itemIds={["infusion-2", "infusion-email-2"]}>
-                          <div className="subsection-header">
-                            <Send size={20} />
-                            <h3>Step 3: Email Pump Sheet</h3>
-                          </div>
-                          <ClickableItem id="infusion-2" enableContextMenu={true} emailType="infusion">
-                            <div className="checklist-item">
-                              <strong>2) Make sure of the following and email new Rx and pump sheet</strong>
-                              <ul>
-                                <li>Email to SPRx, Tech Team & Holly Tucker and cc: Pump Sheets</li>
-                                <li>Update subject line (SPECIFY CHANGES)</li>
-                                <li>Attach word document of pump sheet</li>
-                                <li>Add your signature</li>
-                              </ul>
-                              <div className="context-menu-hint">Right-click to create email</div>
-                            </div>
-                          </ClickableItem>
-
-                          <ClickableEmailTemplate id="infusion-email-2">
-                            <div className="email-header">
-                              <div className="email-header-title">
-                                <Mail size={20} />
-                                <span>Email Template Example</span>
-                              </div>
-                              <div className="email-fields">
-                                <div className="email-field">
-                                  <span className="email-field-label">To:</span>
-                                  <span className="email-field-value email-address">8553658111@fax.cvhealth.com @ HAE Lyse Pharmacy Technician Team @ Tucker, Holly A</span>
-                                </div>
-                                <div className="email-field">
-                                  <span className="email-field-label">Cc:</span>
-                                  <span className="email-field-value email-address">Pump Sheets (HAE/LSD)</span>
-                                </div>
-                                <div className="email-field">
-                                  <span className="email-field-label">Subject:</span>
-                                  <span className="email-field-value">SPOC - A/C/W - NAME - DRUG - PUMP SHEET - SPECIFY CHANGES</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="email-content">
-                              <div className="attention-box">
-                                <strong>ATTENTION INTAKE TEAM</strong><br />
-                                Please index this as a document type PUMP PROGRAM SHEET (IRC 54915) and Rx.
-                                <br /><br />
-                                <strong>HI TECH TEAM</strong><br />
-                                Please complete Rx ENTRY for attached pump sheet STAO.
-                                <br /><br />
-                                <strong>HI HOLLY</strong><br />
-                                Please schedule pump order.
-                                <br /><br />
-                                ** NO NEED TO RESPOND TO THIS EMAIL **
-                              </div>
-                            </div>
-                            <div className="email-attachments">
-                              <div className="email-attachment">C08 - SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME - POMBILITI 2740 MG - DOSE INCREASE - PUMP SHEET.doc <span className="attachment-size">(40 KB)</span></div>
-                            </div>
-                          </ClickableEmailTemplate>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 4: Add Intervention Note */}
-                        <SubsectionCard id="infusion-step-4" itemIds={["infusion-3"]}>
-                          <div className="subsection-header">
-                            <ClipboardCheck size={20} />
-                            <h3>Step 4: Add Intervention Note</h3>
-                          </div>
-                          <ClickableItem id="infusion-3">
-                            <div className="checklist-item">
-                              <strong>3) Add adherence intervention note</strong>
-                              <ul>
-                                <li>[Pump Sheet] Rx verified, created and sent to SPRx for pump sheet (SPECIFY CHANGES); pending Rx entry and verification; shipping new pump.</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 5: Archive Email */}
-                        <SubsectionCard id="infusion-step-5" itemIds={["infusion-4"]}>
-                          <div className="subsection-header">
-                            <Archive size={20} />
-                            <h3>Step 5: Archive Email</h3>
-                          </div>
-                          <ClickableItem id="infusion-4">
-                            <div className="checklist-item">
-                              <strong>4) Move email to "Drafts" folder</strong>
-                              <ul>
-                                <li>Move email (with pump sheet attachment) to pump folder "Drafts" (for word document reference)</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 6: Add to Pump Tracker */}
-                        <SubsectionCard id="infusion-step-6" itemIds={["infusion-5"]}>
-                          <div className="subsection-header">
-                            <ClipboardCheck size={20} />
-                            <h3>Step 6: Add to Pump Tracker</h3>
-                          </div>
-                          <ClickableItem id="infusion-5">
-                            <div className="checklist-item">
-                              <strong>5) Add patient to pump tracker (Tab#3 - Infusion Changes)</strong>
-                              <ul>
-                                <li>Update accordingly</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-                      </div>
-                    </div>
-
-                    <div className="rph-section">
-                      <div className="subsection-header rph-title">
-                        <UserCheck size={20} />
-                        <h3>RPh B</h3>
-                      </div>
-                      
-                      <div className="subsections-grid">
-                        {/* Subsection Card 1: Identify Patient in Tracker */}
-                        <SubsectionCard id="infusion-rph-b-step-7" itemIds={["infusion-rph-b-1"]}>
-                          <div className="subsection-header">
-                            <ClipboardCheck size={20} />
-                            <h3>Step 7: Identify Patient in Tracker</h3>
-                          </div>
-                          <ClickableItem id="infusion-rph-b-1">
-                            <div className="checklist-item">
-                              <strong>Identify patient in pump tracker (Tab#3 - Infusion Changes)</strong>
-                              <ul>
-                                <li>Add RPh initials (to indicate you are currently working on the pump sheet) and update accordingly</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 2: Type Pump Sheet */}
-                        <SubsectionCard id="infusion-rph-b-step-8" itemIds={["infusion-rph-b-2"]}>
-                          <div className="subsection-header">
-                            <FileText size={20} />
-                            <h3>Step 8: Type Pump Sheet</h3>
-                          </div>
-                          <ClickableItem id="infusion-rph-b-2">
-                            <div className="checklist-item">
-                              <strong>Type pump sheet (if Tech has not done so)</strong>
-                            </div>
-                          </ClickableItem>
-
-                          {/* Pump Sheet Entry Table */}
-                          <div className="pump-table-container">
-                            <table className="pump-table">
-                              <tr>
-                                <th>Drug</th>
-                                <td>PUMP CURLIN 6000CMB SHEET (IRC 54915)</td>
-                              </tr>
-                              <tr>
-                                <th>Written date</th>
-                                <td>Written date for main drug prescription</td>
-                              </tr>
-                              <tr>
-                                <th>Sig</th>
-                                <td>USE FOR INFUSION WITH &lt;DRUG&gt; INFUSION; DOSE/RANGE AS PER ATTACHED DETAILED PUMP SHEET</td>
-                              </tr>
-                              <tr>
-                                <th>Qty</th>
-                                <td>1</td>
-                              </tr>
-                              <tr>
-                                <th>Prescriber</th>
-                                <td>Prescriber who wrote main drug prescription</td>
-                              </tr>
-                              <tr>
-                                <th>Day supply</th>
-                                <td>1</td>
-                              </tr>
-                              <tr>
-                                <th>Refill</th>
-                                <td>0</td>
-                              </tr>
-                              <tr>
-                                <th>DAW</th>
-                                <td>0</td>
-                              </tr>
-                            </table>
-                          </div>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 3: Verify Pump Sheet */}
-                        <SubsectionCard id="infusion-rph-b-step-9" itemIds={["infusion-rph-b-3"]}>
-                          <div className="subsection-header">
-                            <FileCheck size={20} />
-                            <h3>Step 9: Verify Pump Sheet</h3>
-                          </div>
-                          <ClickableItem id="infusion-rph-b-3">
-                            <div className="checklist-item">
-                              <strong>Verify pump sheet Rx and add annotation</strong>
-                              <ul>
-                                <li>[Pump Sheet] Double checked by –, RPh</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 4: Calculate Pump Rate */}
-                        <SubsectionCard id="infusion-rph-b-step-10" itemIds={["infusion-rph-b-4"]}>
-                          <div className="subsection-header">
-                            <Calculator size={20} />
-                            <h3>Step 10: Calculate Pump Rate</h3>
-                          </div>
-                          <ClickableItem id="infusion-rph-b-4">
-                            <div className="checklist-item">
-                              <strong>Pump rate calculator</strong>
-                              <ul>
-                                <li>Using pump calculator, insert total volume and infusion duration to obtain infusion rate</li>
-                                <li>Compare with infusion rate in pump sheet (rates should match)</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 5: Add Final Note */}
-                        <SubsectionCard id="infusion-rph-b-step-11" itemIds={["infusion-rph-b-5"]}>
-                          <div className="subsection-header">
-                            <FileSignature size={20} />
-                            <h3>Step 11: Add Final Note</h3>
-                          </div>
-                          <ClickableItem id="infusion-rph-b-5">
-                            <div className="checklist-item">
-                              <strong>Add adherence intervention note</strong>
-                              <ul>
-                                <li>[Pump sheet] Double checked pump sheet (SPECIFY CHANGES), Rx verified, forwarded pump sheet and new Rx to Nursing Homecare and CSR Team.</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 6: Email to Nursing */}
-                        <SubsectionCard id="infusion-rph-b-step-12" itemIds={["infusion-rph-b-6", "infusion-rph-b-email"]}>
-                          <div className="subsection-header">
-                            <Send size={20} />
-                            <h3>Step 12: Email to Nursing</h3>
-                          </div>
-                          <ClickableItem id="infusion-rph-b-6" enableContextMenu={true} emailType="infusion-nursing">
-                            <div className="checklist-item">
-                              <strong>Make sure of the following and email new Rx and pump sheet</strong>
-                              <ul>
-                                <li>Email to Nursing homecare and cc: RPh & CSR Teams</li>
-                                <li>Update subject line (specify changes)</li>
-                                <li>Attach PDF of pump sheet and new Rx</li>
-                                <li>Add your signature</li>
-                              </ul>
-                              <div className="context-menu-hint">Right-click to create email</div>
-                            </div>
-                          </ClickableItem>
-
-                          <ClickableEmailTemplate id="infusion-rph-b-email">
-                            <div className="email-header">
-                              <div className="email-header-title">
-                                <Mail size={20} />
-                                <span>Email Template Example</span>
-                              </div>
-                              <div className="email-fields">
-                                <div className="email-field">
-                                  <span className="email-field-label">To:</span>
-                                  <span className="email-field-value email-address">Nursing Homecare @ HAELysePharmacistTeam</span>
-                                </div>
-                                <div className="email-field">
-                                  <span className="email-field-label">Cc:</span>
-                                  <span className="email-field-value">RPh Team @ CSR Team</span>
-                                </div>
-                                <div className="email-field">
-                                  <span className="email-field-label">Subject:</span>
-                                  <span className="email-field-value">C08 – SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME – DRUG – SPECIFY CHANGES</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="email-content">
-                              <p>Hi Team, updated pump sheet (SPECIFY CHANGES) and new Rx attached.</p>
-                            </div>
-                            <div className="email-attachments">
-                              <div className="email-attachment">C08 - SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME - DRUG - PUMP SHEET.pdf <span className="attachment-size">(40 KB)</span></div>
-                              <div className="email-attachment">C08 - SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME - DRUG - NEW RX.pdf <span className="attachment-size">(25 KB)</span></div>
-                            </div>
-                          </ClickableEmailTemplate>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 7: Clear Tracker */}
-                        <SubsectionCard id="infusion-rph-b-step-13" itemIds={["infusion-rph-b-7"]}>
-                          <div className="subsection-header">
-                            <Archive size={20} />
-                            <h3>Step 13: Clear Tracker</h3>
-                          </div>
-                          <ClickableItem id="infusion-rph-b-7">
-                            <div className="checklist-item">
-                              <strong>Clear patient line from pump tracker (Tab#3 - Infusion Changes)</strong>
-                              <ul>
-                                <li>Since done with creating, verifying, and sending pump sheet & nursing orders to Nursing Homecare, can clear patient line from pump tracker.</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-                      </div>
-                    </div>
-              </div>
-            )}
-          </div>
-
-          {/* Maintenance or Malfunction Section */}
-          <div className="workflow-section-compact">
-            <div 
-              className="workflow-card-compact maintenance-card"
-              onClick={() => toggleSection('maintenance')}
-            >
-              <div className="workflow-card-icon" style={{ background: '#e5e7eb', color: '#6b7280' }}>
-                <Settings size={24} />
-              </div>
-              <div className="workflow-card-content">
-                <h3>Maintenance or Malfunction</h3>
-                <p>Pump needed • Holly initiated • No Rx changes</p>
-              </div>
-              <div className="workflow-card-toggle">
-                {expandedSections.maintenance ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-            </div>
-            {expandedSections.maintenance && (
-              <div className="workflow-expansion">
-                    <div className="quick-info">
-                      <div className="info-badge">
-                        <FileCheck size={16} />
-                        <span>Pump sheet for "Maintenance or Malfunction" (no changes)</span>
-                      </div>
-                    </div>
-
-                    <div className="rph-section">
-                      <div className="subsection-header rph-title">
-                        <UserCheck size={20} />
-                        <h3>RPh A</h3>
-                      </div>
-                      
-                      <div className="subsections-grid">
-                        {/* Subsection Card 1: Check HHN Status */}
-                        <SubsectionCard id="maintenance-step-1" itemIds={["maintenance-check-hhn"]}>
-                          <div className="subsection-header">
-                            <CircleDot size={20} />
-                            <h3>Step 1: Check HHN Status</h3>
-                          </div>
-                          <ClickableItem id="maintenance-check-hhn">
-                            <div className="checklist-item">
-                              <strong>Check for HHN status in priority comments:</strong>
-                              <ul>
-                                <li>If not stated, investigate then update priority comments to either "No HHN" or "HHN"</li>
-                                <li>Add RPh initials (to indicate you are currently working on the pump sheet)</li>
-                                <li>Change "Order Status (RPh's)" to "5. RPh A – Pending Rx Entry Pump Sheet & Create Pump Sheet"</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 2: Update Tracker */}
-                        <SubsectionCard id="maintenance-step-2" itemIds={["maintenance-1"]}>
-                          <div className="subsection-header">
-                            <RefreshCcw size={20} />
-                            <h3>Step 2: Update Tracker</h3>
-                          </div>
-                          <ClickableItem id="maintenance-1">
-                            <div className="checklist-item">
-                              <strong>1) Update pump tracker (Tab#1 - Main Page)</strong>
-                              <ul>
-                                <li>Copy and paste sig onto pump sheet from drug Rx in SPRx</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 3: Create Pump Sheet */}
-                        <SubsectionCard id="maintenance-step-3" itemIds={["maintenance-2", "maintenance-email-1"]}>
-                          <div className="subsection-header">
-                            <FolderOpen size={20} />
-                            <h3>Step 3: Create Pump Sheet</h3>
-                          </div>
-                          <ClickableItem id="maintenance-2">
-                            <div className="checklist-item">
-                              <strong>2) Create pump sheet</strong>
-                            </div>
-                          </ClickableItem>
-
-                          <ClickableEmailTemplate id="maintenance-email-1">
-                            <div className="email-header">
-                              <Info size={20} />
-                              <span>Example Pump Sheet</span>
-                            </div>
-                            <div className="email-content">
-                              <p style={{ textAlign: 'center', fontWeight: 'bold' }}>SPECIALTY PHARMACY</p>
-                              <p style={{ textAlign: 'center', fontWeight: 'bold' }}>PUMP CURLIN 6000CMB SHEET</p>
-                              <p>Pump settings: Variable</p>
-                              <table style={{ width: '100%', margin: '10px 0' }}>
-                                <tr>
-                                  <td style={{ padding: '5px', border: '1px solid #ccc' }}><strong>Patient Information</strong></td>
-                                  <td style={{ padding: '5px', border: '1px solid #ccc' }}>Value</td>
-                                </tr>
-                                <tr>
-                                  <td style={{ padding: '5px', border: '1px solid #ccc' }}>DOB</td>
-                                  <td style={{ padding: '5px', border: '1px solid #ccc' }}></td>
-                                </tr>
-                              </table>
-                              <p>Drug Name: fep</p>
-                              <p>Remove: jjjj from Normal Saline IV bag (drug & bag overwt volume)</p>
-                            </div>
-                          </ClickableEmailTemplate>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 4: Email Pump Sheet */}
-                        <SubsectionCard id="maintenance-step-4" itemIds={["maintenance-3", "maintenance-email-2"]}>
-                          <div className="subsection-header">
-                            <Send size={20} />
-                            <h3>Step 4: Email Pump Sheet</h3>
-                          </div>
-                          <ClickableItem id="maintenance-3" enableContextMenu={true} emailType="maintenance">
-                            <div className="checklist-item">
-                              <strong>3) Make sure of the following and email pump sheet</strong>
-                              <ul>
-                                <li>Email to SPRx & Tech Team (cc Pump Sheets)</li>
-                                <li>Update subject line & STAO date</li>
-                                <li>Attach word document of pump sheet</li>
-                                <li>Add your signature</li>
-                              </ul>
-                              <div className="context-menu-hint">Right-click to create email</div>
-                            </div>
-                          </ClickableItem>
-
-                          <ClickableEmailTemplate id="maintenance-email-2">
-                            <div className="email-header">
-                              <div className="email-header-title">
-                                <Mail size={20} />
-                                <span>Email Template Example</span>
-                              </div>
-                              <div className="email-fields">
-                                <div className="email-field">
-                                  <span className="email-field-label">To:</span>
-                                  <span className="email-field-value email-address">8553658111@fax.cvhealth.com @ HAE Lyse Pharmacy Technician Team</span>
-                                </div>
-                                <div className="email-field">
-                                  <span className="email-field-label">Cc:</span>
-                                  <span className="email-field-value email-address">Pump Sheets (HAE/LSD)</span>
-                                </div>
-                                <div className="email-field">
-                                  <span className="email-field-label">Subject:</span>
-                                  <span className="email-field-value">C08 - SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME - HIZENACAINE 1500 MG - PUMP MAINTENANCE SHEET - NO CHANGES</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="email-content">
-                              <div className="attention-box">
-                                <strong>ATTENTION INTAKE TEAM</strong><br />
-                                Please index this as a document type PUMP PROGRAM SHEET (IRC 54915) and Rx.
-                                <br /><br />
-                                <strong>HI TECH</strong><br />
-                                Please complete RX ENTRY for attached pump sheet STAO 5/30
-                                <br /><br />
-                                <span className="highlight">** NO NEED TO RESPOND TO THIS EMAIL **</span>
-                              </div>
-                            </div>
-                            <div className="email-attachments">
-                              <div className="email-attachment">C08 - SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME - HIZENACAINE 1500 MG - PUMP MAINTENANCE SHEET - NO CHANGES.docx <span className="attachment-size">(26 KB)</span></div>
-                            </div>
-                          </ClickableEmailTemplate>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 5: Add Intervention Note */}
-                        <SubsectionCard id="maintenance-step-5" itemIds={["maintenance-4"]}>
-                          <div className="subsection-header">
-                            <ClipboardCheck size={20} />
-                            <h3>Step 5: Add Intervention Note</h3>
-                          </div>
-                          <ClickableItem id="maintenance-4">
-                            <div className="checklist-item">
-                              <strong>4) Add adherence intervention note</strong>
-                              <ul>
-                                <li>[Pump Sheet] created and sent to SPRx for pump maintenance sheet (no changes); pending Rx entry and verification.</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 6: Archive Email */}
-                        <SubsectionCard id="maintenance-step-6" itemIds={["maintenance-5"]}>
-                          <div className="subsection-header">
-                            <Archive size={20} />
-                            <h3>Step 6: Archive Email</h3>
-                          </div>
-                          <ClickableItem id="maintenance-5">
-                            <div className="checklist-item">
-                              <strong>5) Move email to "Drafts" folder</strong>
-                              <ul>
-                                <li>Move email (with pump sheet attachment) to pump folder "Drafts" (for word document reference).</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 7: Update Pump Tracker */}
-                        <SubsectionCard id="maintenance-step-7" itemIds={["maintenance-6"]}>
-                          <div className="subsection-header">
-                            <ClipboardCheck size={20} />
-                            <h3>Step 7: Update Pump Tracker</h3>
-                          </div>
-                          <ClickableItem id="maintenance-6">
-                            <div className="checklist-item">
-                              <strong>6) Update pump tracker (Tab#1 - Main Page)</strong>
-                              <ul>
-                                <li>Change "Order Status (RPh's)" to "6. RPh A – Send Email to Holly"</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-                      </div>
-                    </div>
-
-                    <div className="rph-section">
-                      <div className="subsection-header rph-title">
-                        <UserCheck size={20} />
-                        <h3>RPh B</h3>
-                      </div>
-                      
-                      <div className="subsections-grid">
-                        {/* Subsection Card 1: Type Pump Sheet */}
-                        <SubsectionCard id="maintenance-rph-b-step-8" itemIds={["maintenance-7"]}>
-                          <div className="subsection-header">
-                            <FileText size={20} />
-                            <h3>Step 8: Type Pump Sheet</h3>
-                          </div>
-                          <ClickableItem id="maintenance-7">
-                            <div className="checklist-item">
-                              <strong>Type pump sheet (if Tech has not done so)</strong>
-                            </div>
-                          </ClickableItem>
-
-                          {/* Pump Sheet Entry Table */}
-                          <div className="pump-table-container">
-                            <table className="pump-table">
-                              <tr>
-                                <th>Drug</th>
-                                <td>PUMP CURLIN 6000CMB SHEET (IRC 54915)</td>
-                              </tr>
-                              <tr>
-                                <th>Written date</th>
-                                <td>Written date for main drug prescription</td>
-                              </tr>
-                              <tr>
-                                <th>Sig</th>
-                                <td>USE FOR INFUSION WITH &lt;DRUG&gt; INFUSION; DOSE/RANGE AS PER ATTACHED DETAILED PUMP SHEET</td>
-                              </tr>
-                              <tr>
-                                <th>Qty</th>
-                                <td>1</td>
-                              </tr>
-                              <tr>
-                                <th>Prescriber</th>
-                                <td>Prescriber who wrote main drug prescription</td>
-                              </tr>
-                              <tr>
-                                <th>Day supply</th>
-                                <td>1</td>
-                              </tr>
-                              <tr>
-                                <th>Refill</th>
-                                <td>0</td>
-                              </tr>
-                              <tr>
-                                <th>DAW</th>
-                                <td>0</td>
-                              </tr>
-                            </table>
-                          </div>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 2: Verify Pump Sheet */}
-                        <SubsectionCard id="maintenance-rph-b-step-9" itemIds={["maintenance-8"]}>
-                          <div className="subsection-header">
-                            <FileCheck size={20} />
-                            <h3>Step 9: Verify Pump Sheet</h3>
-                          </div>
-                          <ClickableItem id="maintenance-8">
-                            <div className="checklist-item">
-                              <strong>Verify pump sheet Rx and add annotation</strong>
-                              <ul>
-                                <li>[Pump Sheet] Double checked by –, RPh</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 3: Send to Holly */}
-                        <SubsectionCard id="maintenance-rph-b-step-10" itemIds={["maintenance-9", "maintenance-email-3"]}>
-                          <div className="subsection-header">
-                            <Send size={20} />
-                            <h3>Step 10: Send to Holly</h3>
-                          </div>
-                          <ClickableItem id="maintenance-9">
-                            <div className="checklist-item">
-                              <strong>Email verified pump sheet to Holly Tucker</strong>
-                              <ul>
-                                <li>Attach PDF of pump sheet</li>
-                                <li>Update subject line</li>
-                                <li>Add your signature</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-
-                          <ClickableEmailTemplate id="maintenance-email-3">
-                            <div className="email-header">
-                              <div className="email-header-title">
-                                <Mail size={20} />
-                                <span>Email Template Example</span>
-                              </div>
-                              <div className="email-fields">
-                                <div className="email-field">
-                                  <span className="email-field-label">To:</span>
-                                  <span className="email-field-value email-address">Tucker, Holly A</span>
-                                </div>
-                                <div className="email-field">
-                                  <span className="email-field-label">Subject:</span>
-                                  <span className="email-field-value">C08 - SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME - DRUG - PUMP MAINTENANCE</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="email-content">
-                              <p>Hi Holly,</p>
-                              <p>Please schedule pump order for maintenance.</p>
-                              <p>Pump sheet attached.</p>
-                            </div>
-                            <div className="email-attachments">
-                              <div className="email-attachment">C08 - SPRX ACCOUNT# - PT'S LAST NAME, PT'S FIRST NAME - DRUG - PUMP MAINTENANCE SHEET.pdf <span className="attachment-size">(26 KB)</span></div>
-                            </div>
-                          </ClickableEmailTemplate>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 4: Add Final Note */}
-                        <SubsectionCard id="maintenance-rph-b-step-11" itemIds={["maintenance-10"]}>
-                          <div className="subsection-header">
-                            <FileSignature size={20} />
-                            <h3>Step 11: Add Final Note</h3>
-                          </div>
-                          <ClickableItem id="maintenance-10">
-                            <div className="checklist-item">
-                              <strong>Add adherence intervention note</strong>
-                              <ul>
-                                <li>[Pump sheet] Double checked pump sheet for maintenance (no changes), Rx verified, sent to Holly for pump scheduling.</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-
-                        {/* Subsection Card 5: Clear Tracker */}
-                        <SubsectionCard id="maintenance-rph-b-step-12" itemIds={["maintenance-11"]}>
-                          <div className="subsection-header">
-                            <Archive size={20} />
-                            <h3>Step 12: Clear Tracker</h3>
-                          </div>
-                          <ClickableItem id="maintenance-11">
-                            <div className="checklist-item">
-                              <strong>Clear patient line from pump tracker (Tab#1 - Main Page)</strong>
-                              <ul>
-                                <li>Since done with creating, verifying, and sending pump sheet to Holly, can clear patient line from pump tracker.</li>
-                              </ul>
-                            </div>
-                          </ClickableItem>
-                        </SubsectionCard>
-                      </div>
-                    </div>
-              </div>
-            )}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Add Subsection Modal */}
+      {showAddSubsectionModal && (
+        <div className="modal-overlay" onClick={() => setShowAddSubsectionModal(false)}>
+          <div className="modal-content subsection-modal" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="modal-close-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowAddSubsectionModal(false);
+                setNewSubsectionTitle('');
+                setNewSubsectionContent('');
+                setNewSubsectionScreenshots([]);
+                setNewSubsectionTables([]);
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowAddSubsectionModal(false);
+                setNewSubsectionTitle('');
+                setNewSubsectionContent('');
+                setNewSubsectionScreenshots([]);
+                setNewSubsectionTables([]);
+              }}
+              aria-label="Close"
+              type="button"
+            >
+              ×
+            </button>
+            <h2>Add New Subsection</h2>
+            <input
+              type="text"
+              placeholder="Subsection Title"
+              value={newSubsectionTitle}
+              onChange={(e) => setNewSubsectionTitle(e.target.value)}
+              className="modal-input"
+            />
+            
+            <div className="modal-content-area">
+              <textarea
+                placeholder="Subsection Content (paste screenshots or tables here)"
+                value={newSubsectionContent}
+                onChange={(e) => setNewSubsectionContent(e.target.value)}
+                onPaste={(e) => handleModalPaste(e, false)}
+                className="modal-textarea"
+              />
+              
+              {/* Display pasted screenshots */}
+              {newSubsectionScreenshots.length > 0 && (
+                <div className="modal-screenshots">
+                  <h4>Screenshots:</h4>
+                  {newSubsectionScreenshots.map((screenshot, index) => (
+                    <div key={screenshot.id} className="modal-screenshot-container">
+                      <img 
+                        src={screenshot.data} 
+                        alt={`Screenshot ${index + 1}`}
+                        style={{ width: `${screenshot.width}px`, maxWidth: '100%' }}
+                        className="modal-screenshot"
+                      />
+                      <div 
+                        className="modal-resize-handle"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          const startX = e.clientX;
+                          const startWidth = screenshot.width;
+                          
+                          const handleMouseMove = (moveEvent) => {
+                            const delta = moveEvent.clientX - startX;
+                            const newWidth = Math.max(100, Math.min(600, startWidth + delta));
+                            setNewSubsectionScreenshots(prev => 
+                              prev.map(s => s.id === screenshot.id ? { ...s, width: newWidth } : s)
+                            );
+                          };
+                          
+                          const handleMouseUp = () => {
+                            document.removeEventListener('mousemove', handleMouseMove);
+                            document.removeEventListener('mouseup', handleMouseUp);
+                          };
+                          
+                          document.addEventListener('mousemove', handleMouseMove);
+                          document.addEventListener('mouseup', handleMouseUp);
+                        }}
+                      />
+                      <button 
+                        className="modal-delete-btn"
+                        onClick={() => setNewSubsectionScreenshots(prev => 
+                          prev.filter(s => s.id !== screenshot.id)
+                        )}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Display pasted tables */}
+              {newSubsectionTables.length > 0 && (
+                <div className="modal-tables">
+                  <h4>Tables:</h4>
+                  {newSubsectionTables.map((table, index) => (
+                    <div key={table.id} className="modal-table-container">
+                      <div 
+                        className="modal-table-wrapper"
+                        dangerouslySetInnerHTML={{ __html: table.html }}
+                      />
+                      <button 
+                        className="modal-delete-table-btn"
+                        onClick={() => setNewSubsectionTables(prev => 
+                          prev.filter(t => t.id !== table.id)
+                        )}
+                      >
+                        Remove Table
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="modal-actions">
+              <button onClick={() => {
+                setShowAddSubsectionModal(false);
+                setNewSubsectionTitle('');
+                setNewSubsectionContent('');
+                setNewSubsectionScreenshots([]);
+                setNewSubsectionTables([]);
+              }} className="btn-cancel">
+                Cancel
+              </button>
+              <button 
+                onClick={addSubsection} 
+                className="btn-primary"
+                type="button"
+              >
+                Add Subsection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Section Modal */}
+      {showEditSectionModal && (
+        <div className="modal-overlay" onClick={() => setShowEditSectionModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="modal-close-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowEditSectionModal(false);
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowEditSectionModal(false);
+              }}
+              aria-label="Close"
+              type="button"
+            >
+              ×
+            </button>
+            <h2>Edit Section</h2>
+            <input
+              type="text"
+              placeholder="Section Title"
+              value={editSectionTitle}
+              onChange={(e) => setEditSectionTitle(e.target.value)}
+              className="modal-input"
+            />
+            <textarea
+              placeholder="Section Description"
+              value={editSectionDescription}
+              onChange={(e) => setEditSectionDescription(e.target.value)}
+              className="modal-textarea"
+            />
+            <div className="modal-actions">
+              <button onClick={() => setShowEditSectionModal(false)} className="btn-cancel">
+                Cancel
+              </button>
+              <button onClick={editSection} className="btn-primary">
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Subsection Modal */}
+      {showEditSubsectionModal && (
+        <div className="modal-overlay" onClick={() => setShowEditSubsectionModal(false)}>
+          <div className="modal-content subsection-modal" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="modal-close-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowEditSubsectionModal(false);
+                setEditSubsectionTitle('');
+                setEditSubsectionContent('');
+                setEditSubsectionScreenshots([]);
+                setEditSubsectionTables([]);
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowEditSubsectionModal(false);
+                setEditSubsectionTitle('');
+                setEditSubsectionContent('');
+                setEditSubsectionScreenshots([]);
+                setEditSubsectionTables([]);
+              }}
+              aria-label="Close"
+              type="button"
+            >
+              ×
+            </button>
+            <h2>Edit Subsection</h2>
+            <input
+              type="text"
+              placeholder="Subsection Title"
+              value={editSubsectionTitle}
+              onChange={(e) => setEditSubsectionTitle(e.target.value)}
+              className="modal-input"
+            />
+            
+            <div className="modal-content-area">
+              <textarea
+                placeholder="Subsection Content (paste screenshots or tables here)"
+                value={editSubsectionContent}
+                onChange={(e) => setEditSubsectionContent(e.target.value)}
+                onPaste={(e) => handleModalPaste(e, true)}
+                className="modal-textarea"
+              />
+              
+              {/* Display pasted screenshots */}
+              {editSubsectionScreenshots.length > 0 && (
+                <div className="modal-screenshots">
+                  <h4>Screenshots:</h4>
+                  {editSubsectionScreenshots.map((screenshot, index) => (
+                    <div key={screenshot.id} className="modal-screenshot-container">
+                      <img 
+                        src={screenshot.data} 
+                        alt={`Screenshot ${index + 1}`}
+                        style={{ width: `${screenshot.width}px`, maxWidth: '100%' }}
+                        className="modal-screenshot"
+                      />
+                      <div 
+                        className="modal-resize-handle"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          const startX = e.clientX;
+                          const startWidth = screenshot.width;
+                          
+                          const handleMouseMove = (moveEvent) => {
+                            const delta = moveEvent.clientX - startX;
+                            const newWidth = Math.max(100, Math.min(600, startWidth + delta));
+                            setEditSubsectionScreenshots(prev => 
+                              prev.map(s => s.id === screenshot.id ? { ...s, width: newWidth } : s)
+                            );
+                          };
+                          
+                          const handleMouseUp = () => {
+                            document.removeEventListener('mousemove', handleMouseMove);
+                            document.removeEventListener('mouseup', handleMouseUp);
+                          };
+                          
+                          document.addEventListener('mousemove', handleMouseMove);
+                          document.addEventListener('mouseup', handleMouseUp);
+                        }}
+                      />
+                      <button 
+                        className="modal-delete-btn"
+                        onClick={() => setEditSubsectionScreenshots(prev => 
+                          prev.filter(s => s.id !== screenshot.id)
+                        )}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Display pasted tables */}
+              {editSubsectionTables.length > 0 && (
+                <div className="modal-tables">
+                  <h4>Tables:</h4>
+                  {editSubsectionTables.map((table, index) => (
+                    <div key={table.id} className="modal-table-container">
+                      <div 
+                        className="modal-table-wrapper"
+                        dangerouslySetInnerHTML={{ __html: table.html }}
+                      />
+                      <button 
+                        className="modal-delete-table-btn"
+                        onClick={() => setEditSubsectionTables(prev => 
+                          prev.filter(t => t.id !== table.id)
+                        )}
+                      >
+                        Remove Table
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="modal-actions">
+              <button onClick={() => {
+                setShowEditSubsectionModal(false);
+                setEditSubsectionTitle('');
+                setEditSubsectionContent('');
+                setEditSubsectionScreenshots([]);
+                setEditSubsectionTables([]);
+              }} className="btn-cancel">
+                Cancel
+              </button>
+              <button onClick={editSubsection} className="btn-primary">
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Export Section Selection Modal */}
+      {showExportSelection && (
+        <div className="modal-overlay" onClick={() => setShowExportSelection(false)}>
+          <div className="modal-content export-selection-modal" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="modal-close-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowExportSelection(false);
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowExportSelection(false);
+              }}
+              aria-label="Close"
+              type="button"
+            >
+              ×
+            </button>
+            <h2>Select Sections to Export</h2>
+            <p className="modal-description">Choose which sections to include in the PDF export</p>
+            
+            <div className="section-selection-list">
+              {workflowData[activeTab].sections.map(section => (
+                <div key={section.id} className="section-selection-item">
+                  <label className="selection-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={selectedSectionsForExport.has(section.id)}
+                      onChange={() => toggleSectionForExport(section.id)}
+                      className="selection-checkbox"
+                    />
+                    <div className="selection-checkbox-custom">
+                      {selectedSectionsForExport.has(section.id) && <CheckSquare size={18} />}
+                      {!selectedSectionsForExport.has(section.id) && <Square size={18} />}
+                    </div>
+                    <div className="section-selection-info">
+                      <div className="section-selection-title">{section.title}</div>
+                      <div className="section-selection-description">{section.cardDescription}</div>
+                      {section.subsections && section.subsections.length > 0 && (
+                        <div className="section-selection-subsections">
+                          {section.subsections.length} subsection{section.subsections.length !== 1 ? 's' : ''}
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                </div>
+              ))}
+            </div>
+            
+            <div className="modal-actions">
+              <button 
+                onClick={() => {
+                  const allSectionIds = workflowData[activeTab].sections.map(s => s.id);
+                  setSelectedSectionsForExport(new Set(allSectionIds));
+                }} 
+                className="btn-secondary"
+              >
+                Select All
+              </button>
+              <button 
+                onClick={() => setSelectedSectionsForExport(new Set())} 
+                className="btn-secondary"
+              >
+                Deselect All
+              </button>
+              <div style={{ flex: 1 }}></div>
+              <button onClick={() => setShowExportSelection(false)} className="btn-cancel">
+                Cancel
+              </button>
+              <button 
+                onClick={exportSelectedSectionsToPDF} 
+                className="btn-primary"
+                disabled={selectedSectionsForExport.size === 0 || exportingPDF}
+              >
+                {exportingPDF ? 'Exporting...' : 'Export PDF'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Context Menu */}
       {contextMenu.visible && (
         <div 
-          className="workflow-context-menu"
-          style={{ 
-            position: 'fixed',
-            top: contextMenu.y,
-            left: contextMenu.x,
-            zIndex: 1000
-          }}
+          className="context-menu"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
         >
-          <button onClick={() => createEmail(contextMenu.emailType)} className="context-menu-item">
-            <Mail size={16} />
-            <span>Create Email</span>
-          </button>
+          {contextMenu.type === 'email' ? (
+            <button onClick={() => createEmail(contextMenu.emailType)}>
+              <Mail size={16} />
+              Create Email
+            </button>
+          ) : (
+            <>
+              {contextMenu.targetType === 'section' && (
+                <>
+                  <button onClick={() => handleContextMenuAction('add-subsection')}>
+                    <Plus size={16} />
+                    Add Subsection
+                  </button>
+                  {!contextMenu.isDefaultSection && (
+                    <>
+                      <button onClick={() => handleContextMenuAction('edit')}>
+                        <FileText size={16} />
+                        Edit Section
+                      </button>
+                      <button onClick={() => handleContextMenuAction('delete')} className="context-menu-delete">
+                        <AlertCircle size={16} />
+                        Delete Section
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+              {contextMenu.targetType === 'subsection' && (
+                <>
+                  <button onClick={() => handleContextMenuAction('edit')}>
+                    <FileText size={16} />
+                    Edit Subsection
+                  </button>
+                  <button onClick={() => handleContextMenuAction('delete')} className="context-menu-delete">
+                    <AlertCircle size={16} />
+                    Delete Subsection
+                  </button>
+                </>
+              )}
+            </>
+          )}
         </div>
       )}
     </div>

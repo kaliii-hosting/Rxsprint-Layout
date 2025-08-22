@@ -142,27 +142,30 @@
 }
 
 .action-btn.primary {
-  background: #FF6900;
-  color: white;
+  background: linear-gradient(135deg, #FF6900 0%, #FF5500 100%);
+  color: white !important;
   border-color: #FF6900;
-}
-
-.action-btn.primary span {
-  color: white;
-}
-
-.action-btn.primary svg {
-  color: white;
+  box-shadow: 0 2px 4px rgba(255, 85, 0, 0.2);
 }
 
 .action-btn.primary:hover {
-  background: #E55D00;
-  border-color: #E55D00;
+  background: linear-gradient(135deg, #FF5500 0%, #FF4400 100%);
+  color: white !important;
+  border-color: #FF5500;
+  box-shadow: 0 3px 6px rgba(255, 85, 0, 0.3);
+}
+
+.action-btn.primary span {
+  color: white !important;
+}
+
+.action-btn.primary svg {
+  color: white !important;
 }
 
 .action-btn.primary:hover span,
 .action-btn.primary:hover svg {
-  color: white;
+  color: white !important;
 }
 
 .action-btn.secondary {

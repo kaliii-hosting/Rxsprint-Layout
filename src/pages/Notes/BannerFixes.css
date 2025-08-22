@@ -32,7 +32,7 @@
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
   
   /* Critical fixes for text wrapping */
-  white-space: normal !important; /* Allow text to wrap */
+  white-space: pre-wrap !important; /* Preserve line breaks and wrap text */
   word-wrap: break-word !important;
   overflow-wrap: break-word !important;
   max-width: 100% !important; /* Take full width if needed */
@@ -51,12 +51,12 @@
   font-weight: 400 !important;
   font-size: 1.75rem !important;
   letter-spacing: 0.03em;
-  white-space: normal !important;
+  white-space: pre-wrap !important;
   word-wrap: break-word !important;
   overflow-wrap: break-word !important;
   word-break: break-word !important;
   max-width: 100% !important;
-  display: inline !important;
+  display: inline-block !important;
   line-height: 1.2 !important;
 }
 
@@ -64,7 +64,7 @@
 .content-banner-item.new-line {
   background: linear-gradient(135deg, #CB6015 0%, #A04E11 100%);
   box-shadow: 0 4px 12px rgba(203, 96, 21, 0.25);
-  white-space: normal !important;
+  white-space: pre-wrap !important;
   max-width: 100% !important;
 }
 
@@ -73,7 +73,7 @@
   background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%) !important;
   box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2) !important;
   border: 1px solid rgba(0, 255, 136, 0.3);
-  white-space: normal !important;
+  white-space: pre-wrap !important;
   max-width: 100% !important;
 }
 

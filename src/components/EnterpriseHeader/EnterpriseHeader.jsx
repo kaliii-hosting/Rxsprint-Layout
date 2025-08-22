@@ -34,9 +34,9 @@ export const ActionGroup = ({ children }) => (
   <div className="action-group">{children}</div>
 );
 
-export const ActionButton = ({ onClick, icon: Icon, children, secondary = false, disabled = false }) => (
+export const ActionButton = ({ onClick, icon: Icon, children, primary = false, secondary = false, disabled = false }) => (
   <button
-    className={`action-btn ${secondary ? 'secondary' : ''}`}
+    className={`action-btn ${primary ? 'primary' : ''} ${secondary ? 'secondary' : ''}`}
     onClick={onClick}
     disabled={disabled}
   >

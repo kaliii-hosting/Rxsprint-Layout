@@ -7,13 +7,14 @@
 .medications-page {
   background: var(--bg-secondary);
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  height: 100%;
+  min-height: 100vh;
   width: 100%;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
 }
 
@@ -293,11 +294,15 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
 /* Content Container - matching supplies-content */
 .medications-content {
   flex: 1;
-  overflow-y: auto;
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
   padding: 0;
   width: 100%;
   margin: 0;
   background: var(--bg-secondary);
+  height: auto !important;
+  max-height: none !important;
 }
 
 /* Dashboard Container - matching supplies-dashboard */
@@ -308,7 +313,7 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   width: 100%;
   margin: 0;
   padding: clamp(1rem, 2vw, 2rem);
-  min-height: 100%;
+  min-height: auto;
 }
 
 /* Dashboard Cards - Matching supplies styles */
@@ -477,29 +482,39 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   border: 1px solid var(--border-color);
 }
 
-/* Medications Container */
-.medications-container {
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  overflow: hidden;
-  min-height: 0;
+/* Medications Container - FORCE NO SCROLLING */
+.medications-page .medications-container {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  min-height: auto !important;
+  max-height: none !important;
+  height: auto !important;
 }
 
-/* Table Wrapper */
-.table-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: auto;
-  position: relative;
-  background: transparent;
-  min-height: 0;
-  padding: clamp(1rem, 2vw, 1.5rem);
+/* Table Wrapper - Override any global styles */
+.medications-page .table-wrapper {
+  width: 100% !important;
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  position: relative !important;
+  background: transparent !important;
+  min-height: auto !important;
+  max-height: none !important;
+  height: auto !important;
+  padding: clamp(1rem, 2vw, 1.5rem) !important;
+  margin: 0 !important;
+  border: none !important;
+  display: block !important;
 }
 
 /* When modal is open, prevent table scrolling and allow page scrolling */
@@ -509,30 +524,42 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
 }
 
 .medications-page.modal-open .table-wrapper {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .medications-page.modal-open .medications-content {
   overflow: visible;
 }
 
-/* Custom scrollbar styles */
-.table-wrapper::-webkit-scrollbar {
-  width: 8px;
+/* Hide scrollbars on table wrapper - OVERRIDE NOTES STYLES */
+.medications-page .table-wrapper::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-.table-wrapper::-webkit-scrollbar-track {
+.medications-page .table-wrapper {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
+/* Custom scrollbar styles for the whole page ONLY */
+.medications-page::-webkit-scrollbar {
+  width: 12px;
+}
+
+.medications-page::-webkit-scrollbar-track {
   background: var(--primary-light);
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
-.table-wrapper::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 4px;
+.medications-page::-webkit-scrollbar-thumb {
+  background: #FF6900;
+  border-radius: 6px;
 }
 
-.table-wrapper::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-hover);
+.medications-page::-webkit-scrollbar-thumb:hover {
+  background: #E55A00;
 }
 
 /* Prescriptions Table */
@@ -542,7 +569,6 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   border-spacing: 0;
   font-size: clamp(0.6875rem, 1.5vw, 0.8125rem);
   background: transparent;
-  min-width: clamp(600px, 80vw, 1000px);
 }
 
 @media (max-width: 768px) {
@@ -1005,17 +1031,20 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   }
   
   .table-wrapper {
-    overflow-x: auto;
+    overflow: visible;
   }
 }
 
 @media (max-width: 768px) {
   .medications-page {
     padding: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   
   .medications-content {
     padding: 0;
+    overflow: visible;
   }
   
   .medications-dashboard {
@@ -1029,6 +1058,7 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   
   .medications-container {
     margin: 0;
+    overflow: visible;
   }
   
   .filter-options {
@@ -1037,7 +1067,7 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   }
   
   .prescriptions-table {
-    min-width: 500px;
+    width: 100%;
   }
   
   /* Show fewer columns on mobile */
@@ -1065,7 +1095,7 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
 
 @media (max-width: 480px) {
   .prescriptions-table {
-    min-width: 400px;
+    width: 100%;
   }
   
   /* Show only essential columns on small mobile */
@@ -1085,6 +1115,7 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   
   .table-wrapper {
     padding-right: 0;
+    overflow: visible;
   }
 }
 
@@ -1119,4 +1150,30 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   .prescription-btn {
     width: 100%;
   }
+}
+
+/* FINAL OVERRIDES - MUST BE LAST TO ENSURE NO SCROLLBARS ON INTERNAL CONTAINERS */
+.medications-page,
+.medications-page * {
+  scrollbar-width: auto; /* Allow scrollbar on page only */
+}
+
+.medications-page .medications-content,
+.medications-page .medications-container,
+.medications-page .table-wrapper {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  max-height: none !important;
+  height: auto !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.medications-page .medications-content::-webkit-scrollbar,
+.medications-page .medications-container::-webkit-scrollbar,
+.medications-page .table-wrapper::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
