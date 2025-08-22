@@ -1,0 +1,374 @@
+/* Force visible scrollbars for all tables in Notes - Fixed Version */
+
+/* ========================================
+   RESET AND FORCE SCROLLBARS
+   ======================================== */
+
+/* Force ALL tables to have scrollbars */
+* table,
+table {
+  display: block !important;
+  overflow: scroll !important; /* Use scroll instead of auto to force scrollbars */
+  overflow-x: scroll !important;
+  overflow-y: scroll !important;
+  max-width: 100% !important;
+  max-height: 500px !important;
+  margin: 1rem 0 !important;
+  position: relative !important;
+}
+
+/* Force tables to be block elements for scrolling */
+.note-content table,
+.note-view-content table,
+.note-content-wrapper table,
+.note-content-edit-area table,
+.ProseMirror table,
+.tiptap-editor table,
+.rich-text-editor table,
+.ql-editor table {
+  display: block !important;
+  overflow: auto !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  max-width: calc(100% - 4px) !important;
+  max-height: 500px !important;
+  border: 2px solid #e0e0e0 !important;
+  border-radius: 6px !important;
+  background: white !important;
+  position: relative !important;
+  margin: 1.5rem 0 !important;
+  padding: 0 !important;
+}
+
+/* Table wrapper elements */
+.tableWrapper,
+.table-wrapper,
+.table-with-copy {
+  display: block !important;
+  overflow: auto !important;
+  max-width: 100% !important;
+  max-height: 500px !important;
+  border: 2px solid #e0e0e0 !important;
+  border-radius: 6px !important;
+  margin: 1.5rem 0 !important;
+  padding: 0 !important;
+  background: white !important;
+  position: relative !important;
+}
+
+/* Inner table should expand naturally */
+.tableWrapper > table,
+.table-wrapper > table,
+.table-with-copy > table,
+table > tbody,
+table > thead {
+  display: table !important;
+  width: auto !important;
+  min-width: 100% !important;
+  overflow: visible !important;
+}
+
+/* ========================================
+   FORCE SCROLLBAR VISIBILITY
+   ======================================== */
+
+/* Use overflow: scroll to ALWAYS show scrollbars */
+.note-content table,
+.note-view-content table,
+.note-content-wrapper table {
+  overflow: scroll !important; /* Forces scrollbars to always be visible */
+}
+
+/* For viewer mode specifically */
+.note-view-content table,
+.note-content:not(.note-content-edit-area) table {
+  overflow: scroll !important;
+  display: block !important;
+  max-height: 500px !important;
+  max-width: 100% !important;
+}
+
+/* ========================================
+   WEBKIT SCROLLBAR STYLING (Chrome/Safari)
+   ======================================== */
+
+/* Style all table scrollbars */
+table::-webkit-scrollbar,
+.tableWrapper::-webkit-scrollbar,
+.table-wrapper::-webkit-scrollbar,
+.table-with-copy::-webkit-scrollbar,
+.note-content table::-webkit-scrollbar,
+.note-view-content table::-webkit-scrollbar,
+.note-content-wrapper table::-webkit-scrollbar,
+.note-content-edit-area table::-webkit-scrollbar {
+  width: 16px !important;
+  height: 16px !important;
+  background-color: #f5f5f5 !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Scrollbar track */
+table::-webkit-scrollbar-track,
+.tableWrapper::-webkit-scrollbar-track,
+.table-wrapper::-webkit-scrollbar-track,
+.table-with-copy::-webkit-scrollbar-track,
+.note-content table::-webkit-scrollbar-track,
+.note-view-content table::-webkit-scrollbar-track {
+  background: #f0f0f0 !important;
+  border: 1px solid #ddd !important;
+  border-radius: 8px !important;
+  margin: 2px !important;
+}
+
+/* Scrollbar thumb */
+table::-webkit-scrollbar-thumb,
+.tableWrapper::-webkit-scrollbar-thumb,
+.table-wrapper::-webkit-scrollbar-thumb,
+.table-with-copy::-webkit-scrollbar-thumb,
+.note-content table::-webkit-scrollbar-thumb,
+.note-view-content table::-webkit-scrollbar-thumb {
+  background: #FF6900 !important;
+  border: 2px solid #f0f0f0 !important;
+  border-radius: 8px !important;
+  min-height: 40px !important;
+  cursor: pointer !important;
+}
+
+/* Scrollbar thumb hover */
+table::-webkit-scrollbar-thumb:hover,
+.tableWrapper::-webkit-scrollbar-thumb:hover,
+.table-wrapper::-webkit-scrollbar-thumb:hover,
+.note-content table::-webkit-scrollbar-thumb:hover,
+.note-view-content table::-webkit-scrollbar-thumb:hover {
+  background: #ff5500 !important;
+  border-color: #e0e0e0 !important;
+}
+
+/* Scrollbar corner */
+table::-webkit-scrollbar-corner,
+.tableWrapper::-webkit-scrollbar-corner,
+.table-wrapper::-webkit-scrollbar-corner,
+.note-content table::-webkit-scrollbar-corner,
+.note-view-content table::-webkit-scrollbar-corner {
+  background: #f0f0f0 !important;
+  border: 1px solid #ddd !important;
+}
+
+/* ========================================
+   FIREFOX SCROLLBAR STYLING
+   ======================================== */
+
+table,
+.tableWrapper,
+.table-wrapper,
+.table-with-copy,
+.note-content table,
+.note-view-content table,
+.note-content-wrapper table {
+  scrollbar-width: auto !important; /* Show normal scrollbars */
+  scrollbar-color: #FF6900 #f0f0f0 !important;
+  scrollbar-gutter: stable !important; /* Reserve space for scrollbar */
+}
+
+/* ========================================
+   TABLE STRUCTURE FIXES
+   ======================================== */
+
+/* Ensure tbody and thead work with scrolling */
+tbody {
+  display: table-row-group !important;
+}
+
+thead {
+  display: table-header-group !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  background: white !important;
+}
+
+/* Table cells */
+td, th {
+  padding: 10px 12px !important;
+  min-width: 100px !important;
+  border: 1px solid #ddd !important;
+  background: white !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+th {
+  background: #f8f8f8 !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid #ddd !important;
+}
+
+/* ========================================
+   VIEWER MODE SPECIFIC FIXES
+   ======================================== */
+
+/* Viewer mode container */
+.note-view-content,
+.note-content:not(.note-content-edit-area) {
+  position: relative !important;
+}
+
+/* Tables in viewer mode */
+.note-view-content table,
+.note-content:not(.note-content-edit-area) table,
+.note-content-wrapper:not(.editing) table {
+  display: block !important;
+  overflow: scroll !important; /* Force scrollbars */
+  max-height: 500px !important;
+  max-width: calc(100% - 4px) !important;
+  border: 2px solid #e0e0e0 !important;
+  margin: 1.5rem 0 !important;
+  padding: 0 !important;
+}
+
+/* ========================================
+   EDITOR MODE SPECIFIC FIXES
+   ======================================== */
+
+/* Editor mode tables */
+.note-content-edit-area table,
+.ProseMirror table,
+.tiptap-editor table,
+.ql-editor table {
+  display: block !important;
+  overflow: scroll !important; /* Force scrollbars */
+  max-height: 500px !important;
+  max-width: calc(100% - 4px) !important;
+}
+
+/* ========================================
+   INLINE TABLE EDITOR
+   ======================================== */
+
+.inline-revo-container,
+.inline-table-editor {
+  overflow: scroll !important;
+  max-height: 500px !important;
+  border: 2px solid #e0e0e0 !important;
+  border-radius: 6px !important;
+  margin: 1rem 0 !important;
+  display: block !important;
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+
+@media (max-width: 768px) {
+  table,
+  .tableWrapper,
+  .table-wrapper,
+  .note-content table,
+  .note-view-content table {
+    max-height: 400px !important;
+    font-size: 0.9rem !important;
+  }
+  
+  td, th {
+    padding: 8px !important;
+    min-width: 80px !important;
+  }
+  
+  table::-webkit-scrollbar,
+  .tableWrapper::-webkit-scrollbar {
+    width: 12px !important;
+    height: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  table,
+  .tableWrapper,
+  .table-wrapper,
+  .note-content table,
+  .note-view-content table {
+    max-height: 300px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  td, th {
+    padding: 6px !important;
+    min-width: 60px !important;
+  }
+}
+
+/* ========================================
+   DARK THEME SUPPORT
+   ======================================== */
+
+.dark-theme table,
+.dark-theme .tableWrapper,
+.dark-theme .table-wrapper {
+  background: #1a1a1a !important;
+  border-color: #444 !important;
+}
+
+.dark-theme table::-webkit-scrollbar-track,
+.dark-theme .tableWrapper::-webkit-scrollbar-track {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+}
+
+.dark-theme table::-webkit-scrollbar-thumb,
+.dark-theme .tableWrapper::-webkit-scrollbar-thumb {
+  background: #FF6900 !important;
+  border-color: #2a2a2a !important;
+}
+
+.dark-theme td,
+.dark-theme th {
+  background: #1a1a1a !important;
+  border-color: #444 !important;
+}
+
+.dark-theme th {
+  background: #2a2a2a !important;
+}
+
+/* ========================================
+   OVERRIDE ALL CONFLICTS
+   ======================================== */
+
+/* Maximum specificity to override any conflicting styles */
+html body .notes-page .note-content table,
+html body .notes-page .note-view-content table,
+html body .notes-page .note-content-wrapper table,
+html body .notes-page .note-content-edit-area table,
+html body .notes-page .ProseMirror table,
+html body .notes-page .tiptap-editor table {
+  display: block !important;
+  overflow: scroll !important;
+  max-height: 500px !important;
+  max-width: 100% !important;
+}
+
+/* Force scrollbars even for small content */
+html body table {
+  min-height: 100px !important;
+  overflow: scroll !important;
+}
+
+/* Ensure viewer mode gets scrollbars */
+html body .note-view-content table,
+html body .note-content:not(.note-content-edit-area) table {
+  display: block !important;
+  overflow: scroll !important;
+  overflow-x: scroll !important;
+  overflow-y: scroll !important;
+}
+
+/* Fix for any table without wrapper */
+html body table:not(.wrapped) {
+  display: block !important;
+  overflow: scroll !important;
+  max-height: 500px !important;
+  max-width: 100% !important;
+  border: 2px solid #e0e0e0 !important;
+  border-radius: 6px !important;
+}

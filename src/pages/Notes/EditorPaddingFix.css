@@ -1,0 +1,115 @@
+/* Editor Padding Fix - Ensure editor has same padding as viewer */
+/* This file has the highest priority to override all other styles */
+
+/* Remove all padding overrides that set padding to 0 */
+.note-content-edit-area {
+  padding: 2.5rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Very specific selectors to ensure padding is applied */
+div.note-content-edit-area,
+.note-editor div.note-content-edit-area,
+.notes-page .note-editor .note-content-edit-area,
+.notes-page.editing-mode .note-content-edit-area,
+.notes-page .note-content .note-content-edit-area {
+  padding: 2.5rem !important;
+  padding-left: 2.5rem !important;
+  padding-right: 2.5rem !important;
+  padding-top: 2.5rem !important;
+  padding-bottom: 2.5rem !important;
+}
+
+/* Override styles that might be removing padding */
+.note-editor:has(.editor-banner-controls-container) .note-content-edit-area {
+  padding: 2.5rem !important;
+  padding-left: 2.5rem !important;
+  padding-right: 2.5rem !important;
+}
+
+/* Ensure the editor content itself doesn't add extra padding */
+.note-content-edit-area > .rich-text-editor,
+.note-content-edit-area .rich-text-editor,
+.note-content-edit-area > div:first-child {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+/* Remove padding from the actual contenteditable areas */
+.note-content-edit-area .ql-container,
+.note-content-edit-area .ql-editor,
+.note-content-edit-area .ProseMirror,
+.note-content-edit-area .tiptap-editor,
+.note-content-edit-area [contenteditable="true"],
+.note-content-edit-area [data-gramm="false"] {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+/* Ensure banners have proper spacing */
+.note-content-edit-area .content-banners-container {
+  margin-bottom: 1.5rem !important;
+  width: 100% !important;
+}
+
+/* Match viewer's responsive padding */
+@media (max-width: 768px) {
+  div.note-content-edit-area,
+  .note-editor div.note-content-edit-area,
+  .notes-page .note-editor .note-content-edit-area,
+  .notes-page.editing-mode .note-content-edit-area,
+  .note-editor:has(.editor-banner-controls-container) .note-content-edit-area {
+    padding: 1.5rem !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  div.note-content-edit-area,
+  .note-editor div.note-content-edit-area,
+  .notes-page .note-editor .note-content-edit-area,
+  .notes-page.editing-mode .note-content-edit-area,
+  .note-editor:has(.editor-banner-controls-container) .note-content-edit-area {
+    padding: 1rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  div.note-content-edit-area,
+  .note-editor div.note-content-edit-area,
+  .notes-page .note-editor .note-content-edit-area,
+  .notes-page.editing-mode .note-content-edit-area,
+  .note-editor:has(.editor-banner-controls-container) .note-content-edit-area {
+    padding: 3rem 4rem !important;
+    padding-left: 4rem !important;
+    padding-right: 4rem !important;
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Override any inline styles or JavaScript-injected styles */
+[style*="padding: 0"] .note-content-edit-area {
+  padding: 2.5rem !important;
+}
+
+/* Ensure text content starts at the correct position */
+.note-content-edit-area > *:first-child {
+  margin-top: 0 !important;
+}
+
+.note-content-edit-area > *:last-child {
+  margin-bottom: 0 !important;
+}

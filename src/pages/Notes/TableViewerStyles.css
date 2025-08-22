@@ -1,0 +1,202 @@
+/* Table Viewer Styles for Notes Page */
+
+/* Wrapper for tables in note content */
+.note-content-wrapper table,
+.note-content-view table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 500px;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* Table scrollbar styling */
+.note-content-wrapper table::-webkit-scrollbar,
+.note-content-view table::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+.note-content-wrapper table::-webkit-scrollbar-track,
+.note-content-view table::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.note-content-wrapper table::-webkit-scrollbar-thumb,
+.note-content-view table::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.note-content-wrapper table::-webkit-scrollbar-thumb:hover,
+.note-content-view table::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Table container wrapper for better scroll control */
+.table-container {
+  position: relative;
+  width: 100%;
+  margin: 1rem 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.table-scroll-wrapper {
+  width: 100%;
+  max-height: 500px;
+  overflow-x: auto;
+  overflow-y: auto;
+  position: relative;
+}
+
+.table-scroll-wrapper table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+/* Table cell styles */
+.note-content-wrapper th,
+.note-content-wrapper td,
+.note-content-view th,
+.note-content-view td {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  text-align: left;
+  white-space: nowrap;
+  min-width: 100px;
+}
+
+.note-content-wrapper th,
+.note-content-view th {
+  background-color: #f0f0f0;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Make tables responsive */
+@media (max-width: 768px) {
+  .note-content-wrapper table,
+  .note-content-view table,
+  .table-scroll-wrapper {
+    max-height: 300px;
+  }
+  
+  .note-content-wrapper th,
+  .note-content-wrapper td,
+  .note-content-view th,
+  .note-content-view td {
+    padding: 6px 8px;
+    font-size: 0.9rem;
+    min-width: 80px;
+  }
+}
+
+/* Dark mode support */
+.dark-theme .note-content-wrapper table,
+.dark-theme .note-content-view table,
+.dark-mode .note-content-wrapper table,
+.dark-mode .note-content-view table {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+.dark-theme .note-content-wrapper th,
+.dark-theme .note-content-wrapper td,
+.dark-theme .note-content-view th,
+.dark-theme .note-content-view td,
+.dark-mode .note-content-wrapper th,
+.dark-mode .note-content-wrapper td,
+.dark-mode .note-content-view th,
+.dark-mode .note-content-view td {
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-theme .note-content-wrapper th,
+.dark-theme .note-content-view th,
+.dark-mode .note-content-wrapper th,
+.dark-mode .note-content-view th {
+  background-color: #333;
+}
+
+.dark-theme .table-scroll-wrapper::-webkit-scrollbar-track,
+.dark-mode .table-scroll-wrapper::-webkit-scrollbar-track {
+  background: #333;
+}
+
+.dark-theme .table-scroll-wrapper::-webkit-scrollbar-thumb,
+.dark-mode .table-scroll-wrapper::-webkit-scrollbar-thumb {
+  background: #666;
+}
+
+.dark-theme .table-scroll-wrapper::-webkit-scrollbar-thumb:hover,
+.dark-mode .table-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+/* Table hover effects */
+.note-content-wrapper tbody tr:hover,
+.note-content-view tbody tr:hover {
+  background-color: rgba(255, 105, 0, 0.05);
+}
+
+.dark-theme .note-content-wrapper tbody tr:hover,
+.dark-theme .note-content-view tbody tr:hover,
+.dark-mode .note-content-wrapper tbody tr:hover,
+.dark-mode .note-content-view tbody tr:hover {
+  background-color: rgba(255, 105, 0, 0.1);
+}
+
+/* Fix for table display in content area */
+.note-content-wrapper .table-wrapper,
+.note-content-view .table-wrapper {
+  width: 100%;
+  overflow: visible;
+}
+
+/* Ensure tables are scrollable in view mode */
+.note-content-view {
+  overflow-x: visible;
+}
+
+.note-content-view > * {
+  max-width: 100%;
+}
+
+/* Copy button for tables */
+.table-copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  background: #FF6900;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.table-container:hover .table-copy-btn {
+  opacity: 1;
+}
+
+.table-copy-btn:hover {
+  background: #FF5500;
+}

@@ -1,0 +1,175 @@
+/* Table Context Menu Styles */
+
+/* Context menu for tables */
+.table-context-menu {
+  background: var(--bg-primary, #FFFFFF);
+  border: 1px solid var(--border-color, #E0E0E0);
+  border-radius: 8px;
+  padding: 0.5rem 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  min-width: 180px;
+  font-size: 0.875rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.table-context-menu .context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary, #1A1A1A);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+}
+
+.table-context-menu .context-menu-item:hover {
+  background: var(--bg-secondary, #F5F5F5);
+  color: var(--primary-color, #FF6900);
+}
+
+.table-context-menu .context-menu-item svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+
+/* Divider between menu sections */
+.table-context-menu .context-menu-divider {
+  height: 1px;
+  background: var(--border-color, #E0E0E0);
+  margin: 0.25rem 0;
+  width: 100%;
+}
+
+/* Delete item styling */
+.table-context-menu .context-menu-item.delete {
+  color: #DC2626;
+}
+
+.table-context-menu .context-menu-item.delete:hover {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+
+/* Dark theme support */
+.dark-theme .table-context-menu {
+  background: var(--bg-primary, #2A2A2A);
+  border-color: var(--border-color, #444444);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .table-context-menu .context-menu-item {
+  color: var(--text-primary, #E0E0E0);
+}
+
+.dark-theme .table-context-menu .context-menu-item:hover {
+  background: var(--bg-secondary, #3A3A3A);
+  color: var(--primary-color, #FF6900);
+}
+
+/* Fix editor padding to match viewer - HIGHEST PRIORITY */
+.notes-page .note-content-edit-area {
+  padding: 2.5rem !important; /* Match viewer padding */
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Override any conflicting styles from other CSS files */
+.notes-page.editing-mode .note-content-edit-area,
+.notes-page .note-editor .note-content-edit-area,
+.note-content-edit-area {
+  padding: 2.5rem !important;
+  padding-left: 2.5rem !important;
+  padding-right: 2.5rem !important;
+  padding-top: 2.5rem !important;
+  padding-bottom: 2.5rem !important;
+}
+
+/* Ensure rich text editor inside doesn't add extra padding */
+.note-content-edit-area .rich-text-editor {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.note-content-edit-area .ql-container,
+.note-content-edit-area .ql-editor,
+.note-content-edit-area .ProseMirror,
+.note-content-edit-area .tiptap-editor,
+.note-content-edit-area [contenteditable] {
+  padding: 0 !important; /* Remove inner padding since parent has padding */
+  width: 100% !important;
+  min-height: 400px !important;
+}
+
+/* Ensure content banners container doesn't remove padding */
+.note-content-edit-area .content-banners-container {
+  margin-bottom: 1.5rem !important;
+}
+
+/* Responsive padding adjustments to match viewer */
+@media (max-width: 768px) {
+  .notes-page .note-content-edit-area,
+  .notes-page.editing-mode .note-content-edit-area,
+  .note-content-edit-area {
+    padding: 1.5rem !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .notes-page .note-content-edit-area,
+  .notes-page.editing-mode .note-content-edit-area,
+  .note-content-edit-area {
+    padding: 1rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .notes-page .note-content-edit-area,
+  .notes-page.editing-mode .note-content-edit-area,
+  .note-content-edit-area {
+    padding: 3rem 4rem !important;
+    padding-left: 4rem !important;
+    padding-right: 4rem !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Table editing styles */
+table td[contenteditable="true"],
+table th[contenteditable="true"] {
+  outline: 2px solid rgba(255, 105, 0, 0.3);
+  outline-offset: -1px;
+  transition: all 0.2s ease;
+}
+
+table td[contenteditable="true"]:focus,
+table th[contenteditable="true"]:focus {
+  outline: 2px solid #FF6900;
+  background: rgba(255, 105, 0, 0.05);
+}
+
+/* Animation for context menu */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

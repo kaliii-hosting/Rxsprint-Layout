@@ -1,0 +1,182 @@
+/* Table Content Flow - Tables follow same flow as banners, callouts, and titles */
+
+/* Ensure tables are part of the normal document flow */
+.note-content-wrapper table,
+.note-content-edit-area table,
+.ProseMirror table,
+.ql-editor table,
+.tiptap-editor table {
+  display: table !important;
+  width: 100% !important;
+  margin: 1.5rem 0 !important;
+  clear: both !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Remove any wrapper that might break the flow */
+.note-content-wrapper .table-with-copy,
+.note-content-wrapper .table-wrapper,
+.note-content-edit-area .table-with-copy,
+.note-content-edit-area .table-wrapper {
+  display: block !important;
+  width: 100% !important;
+  margin: 1.5rem 0 !important;
+  padding: 0 !important;
+  float: none !important;
+  clear: both !important;
+}
+
+/* Ensure content after tables flows properly */
+.note-content-wrapper table + *,
+.note-content-edit-area table + *,
+.note-content-wrapper .table-wrapper + *,
+.note-content-wrapper .table-with-copy + * {
+  clear: both !important;
+  margin-top: 1.5rem !important;
+}
+
+/* Tables should respect the same spacing as other block elements */
+.note-content-wrapper > table,
+.note-content-edit-area > table,
+.content-banners-container + table,
+table + .content-banners-container {
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Ensure proper spacing between different content types */
+.content-banner-item + table,
+table + .content-banner-item,
+.content-banner-item.title-banner + table,
+table + .content-banner-item.title-banner,
+.content-banner-item.callout-banner + table,
+table + .content-banner-item.callout-banner {
+  margin-top: 1.5rem !important;
+}
+
+/* Tables in the middle of content */
+p + table,
+table + p,
+ul + table,
+table + ul,
+ol + table,
+table + ol,
+blockquote + table,
+table + blockquote {
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Prevent tables from overlapping with banners */
+.content-banners-container {
+  clear: both !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.content-banners-container + table {
+  clear: both !important;
+}
+
+/* Ensure tables don't break the flow of inline banners */
+.content-banner-item:not(.title-banner):not(.callout-banner) + table {
+  display: block !important;
+  clear: both !important;
+  margin-top: 1.5rem !important;
+}
+
+/* Title and callout banners should force new line for tables */
+.content-banner-item.title-banner + table,
+.content-banner-item.callout-banner + table {
+  display: table !important;
+  width: 100% !important;
+  clear: both !important;
+}
+
+/* Ensure tables work with line breaks like banners */
+.banner-line-break + table {
+  clear: both !important;
+  display: table !important;
+  width: 100% !important;
+}
+
+/* Make sure table content is accessible for navigation */
+.note-content-wrapper table::after,
+.note-content-edit-area table::after {
+  content: '';
+  display: block;
+  clear: both;
+  height: 0;
+  visibility: hidden;
+}
+
+/* Add pseudo-element for cursor positioning after tables */
+.note-content-wrapper table + br,
+.note-content-edit-area table + br,
+.note-content-wrapper .table-wrapper + br,
+.note-content-edit-area .table-wrapper + br {
+  display: block !important;
+  height: 0.5rem !important;
+  clear: both !important;
+}
+
+/* Ensure proper paragraph spacing after tables */
+table + p:first-of-type,
+.table-wrapper + p:first-of-type,
+.table-with-copy + p:first-of-type {
+  margin-top: 1.5rem !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .note-content-wrapper table,
+  .note-content-edit-area table,
+  .note-content-wrapper .table-wrapper,
+  .note-content-edit-area .table-wrapper {
+    margin: 1rem 0 !important;
+  }
+  
+  .content-banners-container + table,
+  table + .content-banners-container,
+  table + p,
+  p + table {
+    margin-top: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .note-content-wrapper table,
+  .note-content-edit-area table,
+  .note-content-wrapper .table-wrapper,
+  .note-content-edit-area .table-wrapper {
+    margin: 0.75rem 0 !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+/* Ensure tables in editor mode follow the same flow */
+.ProseMirror table,
+.ql-editor table,
+.tiptap-editor table {
+  margin: 1.5rem 0 !important;
+  clear: both !important;
+}
+
+/* Fix for tables after being edited */
+table[data-editing="false"],
+table:not([data-editing]) {
+  display: table !important;
+  width: 100% !important;
+  position: relative !important;
+  clear: both !important;
+}
+
+/* Ensure navigation works after tables */
+.note-content-wrapper table:last-child::after,
+.note-content-edit-area table:last-child::after {
+  content: '\200B'; /* Zero-width space */
+  display: block;
+  height: 1px;
+  clear: both;
+}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download, ChevronRight, Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, Heading3, Code, Strikethrough, Undo, Redo, Type, MessageSquare } from 'lucide-react';
+import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download, ChevronRight, Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, Heading3, Code, Strikethrough, Undo, Redo, Type, MessageSquare, Table, TableProperties, RowsIcon, ColumnsIcon, GripVertical, GripHorizontal } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { firestore as db, storage } from '../../config/firebase';
@@ -15,7 +15,6 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
-import { observeTablesAndAddButtons } from '../../utils/tableCopyUtils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './Notes.css';
@@ -34,8 +33,16 @@ import './EditorViewerIdenticalFix.css';
 import './CompleteFinalFix.css';
 import './UnifiedToolbarLayout.css';
 import './PerfectToolbarMatch.css';
+import './TableContextMenu.css';
+import './TableResize.css';
+import './TableContentFlow.css';
+import './TableViewerStyles.css';
+import './TableVisibleScrollbars.css';
+import './TableScrollbarFix.css'; // Enhanced scrollbar fix
+import './EditorPaddingFix.css'; // Must be last to override all other styles
 import EnterpriseHeader, { TabGroup, TabButton, ActionButton, ActionGroup, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import NoteDeleteConfirmPopup from '../../components/NoteDeleteConfirmPopup/NoteDeleteConfirmPopup';
+import InlineTableEditor from '../../components/InlineTableEditor/InlineTableEditor';
 
 const Notes = () => {
   const { theme } = useTheme();
@@ -76,6 +83,10 @@ const Notes = () => {
   const [showBannerSection, setShowBannerSection] = useState(true); // Always show banner section
   const editorRef = useRef(null);
   const noteContentRef = useRef(null);
+  const [inlineTableEditors, setInlineTableEditors] = useState([]);
+  const [tableContextMenu, setTableContextMenu] = useState({ visible: false, x: 0, y: 0, table: null });
+  const [currentTableElement, setCurrentTableElement] = useState(null);
+  const [editingTable, setEditingTable] = useState(null);
   
   // Delete confirmation state
   const [showDeletePopup, setShowDeletePopup] = useState(false);
@@ -198,6 +209,40 @@ const Notes = () => {
       alert('Database connection not available. Please refresh the page and try again.');
       return;
     }
+    
+    // Get the current editor content and replace RevoGrid containers with updated HTML
+    let finalContent = formData.content;
+    if (editorRef.current) {
+      const editorContent = editorRef.current.querySelector('.ProseMirror') || 
+                          editorRef.current.querySelector('.ql-editor') || 
+                          editorRef.current;
+      
+      if (editorContent) {
+        // Clone the content to avoid modifying the actual editor
+        const contentClone = editorContent.cloneNode(true);
+        
+        // Find all inline RevoGrid containers in the clone
+        const containers = contentClone.querySelectorAll('.inline-revo-container');
+        containers.forEach(container => {
+          // Get updated HTML or use original
+          const updatedHtml = container.dataset.updatedHtml || container.dataset.originalHtml;
+          if (updatedHtml) {
+            // Create temporary div to hold the HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = updatedHtml;
+            const newTable = tempDiv.querySelector('table');
+            
+            if (newTable) {
+              // Replace container with the updated table
+              container.parentNode.replaceChild(newTable, container);
+            }
+          }
+        });
+        
+        // Use the modified content for saving
+        finalContent = contentClone.innerHTML;
+      }
+    }
 
     try {
       if (isCreating) {
@@ -205,7 +250,7 @@ const Notes = () => {
         
         const noteData = {
           title: formData.title,
-          content: formData.content,
+          content: finalContent,
           starred: formData.starred,
           images: formData.images || [],
           banners: formData.banners || [],
@@ -229,7 +274,7 @@ const Notes = () => {
         const noteRef = doc(db, 'notes', selectedNote.id);
         const updateData = {
           title: formData.title,
-          content: formData.content,
+          content: finalContent,
           starred: formData.starred,
           images: formData.images || [],
           banners: formData.banners || [],
@@ -384,44 +429,799 @@ const Notes = () => {
     return (isEditing || isCreating) ? formData.banners : selectedNote?.banners || [];
   };
 
-  // Add copy buttons to tables in view mode only
+  // Replace tables with RevoGrid editors in edit mode
   useEffect(() => {
-    // Only add buttons in view mode (not editing or creating)
-    if (!noteContentRef.current || isEditing || isCreating) {
-      // Clean up any existing buttons when entering edit mode
-      if (noteContentRef.current) {
-        const buttons = noteContentRef.current.querySelectorAll('.table-copy-btn');
-        buttons.forEach(btn => btn.remove());
+    if ((isEditing || isCreating) && editorRef.current) {
+      // Wait for editor to render and content to load
+      const setupEditors = () => {
+        const editorContent = editorRef.current.querySelector('.ProseMirror') || 
+                            editorRef.current.querySelector('.ql-editor') || 
+                            editorRef.current.querySelector('.tiptap-editor') ||
+                            editorRef.current;
         
-        // Unwrap tables if they were wrapped
-        const wrappedTables = noteContentRef.current.querySelectorAll('.table-with-copy');
-        wrappedTables.forEach(wrapper => {
-          const table = wrapper.querySelector('table');
-          if (table && wrapper.parentNode) {
-            wrapper.parentNode.insertBefore(table, wrapper);
-            wrapper.remove();
-          }
+        if (!editorContent) {
+          setTimeout(setupEditors, 200);
+          return;
+        }
+        
+        // Find all tables in the editor
+        const tables = editorContent.querySelectorAll('table:not([data-revo-replaced])');
+        
+        if (tables.length === 0) {
+          return;
+        }
+        
+        const newEditors = [];
+        
+        tables.forEach((table, index) => {
+          // Create a container for the RevoGrid editor
+          const container = document.createElement('div');
+          container.id = `inline-revo-${Date.now()}-${index}`;
+          container.className = 'inline-revo-container';
+          
+          // Store original HTML
+          container.dataset.originalHtml = table.outerHTML;
+          
+          // Replace table with container
+          table.parentNode.replaceChild(container, table);
+          
+          // Mark as replaced
+          table.dataset.revoReplaced = 'true';
+          
+          // Store info for React portal
+          newEditors.push({
+            id: `${Date.now()}-${index}`,
+            containerId: container.id,
+            tableElement: table,
+            originalHtml: table.outerHTML
+          });
         });
+        
+        if (newEditors.length > 0) {
+          setInlineTableEditors(newEditors);
+        }
+      };
+      
+      setTimeout(setupEditors, 500);
+    } else {
+      // Clear inline editors when not editing
+      setInlineTableEditors([]);
+    }
+  }, [isEditing, isCreating, formData.content]);
+
+  // Fix table scrollbars in viewer mode
+  useEffect(() => {
+    // Apply to viewer mode tables
+    if (!isEditing && !isCreating && selectedNote && noteContentRef.current) {
+      const fixTableScrollbars = () => {
+        const tables = noteContentRef.current.querySelectorAll('table');
+        tables.forEach(table => {
+          // Ensure table is block element for scrolling
+          table.style.display = 'block';
+          table.style.overflow = 'scroll';
+          table.style.maxHeight = '500px';
+          table.style.maxWidth = '100%';
+          table.style.border = '2px solid #e0e0e0';
+          table.style.borderRadius = '6px';
+          table.style.margin = '1.5rem 0';
+          
+          // Force scrollbar visibility
+          table.style.overflowX = 'scroll';
+          table.style.overflowY = 'scroll';
+        });
+      };
+      
+      // Run immediately and after a delay to catch dynamic content
+      fixTableScrollbars();
+      setTimeout(fixTableScrollbars, 100);
+      setTimeout(fixTableScrollbars, 500);
+    }
+  }, [isEditing, isCreating, selectedNote, formData.content]);
+
+  // Add right-click context menu for tables in editor mode
+  useEffect(() => {
+    if ((isEditing || isCreating)) {
+      const handleTableRightClick = (e) => {
+        // Check if right-click is on a table element
+        const clickedElement = e.target;
+        const table = clickedElement.closest('table');
+        const row = clickedElement.closest('tr');
+        
+        if (table) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          console.log('Table right-clicked:', table);
+          console.log('Row clicked:', row);
+          
+          // Store the clicked row for delete row functionality
+          setTableContextMenu({
+            visible: true,
+            x: e.clientX,
+            y: e.clientY,
+            table: table,
+            row: row
+          });
+          
+          return false; // Prevent default context menu
+        }
+      };
+      
+      // Add listener to document for broader coverage
+      const setupContextMenu = () => {
+        // Listen on document level to catch all table clicks
+        document.addEventListener('contextmenu', handleTableRightClick, true);
+        
+        return () => {
+          document.removeEventListener('contextmenu', handleTableRightClick, true);
+        };
+      };
+      
+      // Setup immediately
+      const cleanup = setupContextMenu();
+      
+      return cleanup;
+    }
+  }, [isEditing, isCreating]);
+
+  // Handle closing table context menu
+  const handleCloseTableContextMenu = () => {
+    setTableContextMenu({ visible: false, x: 0, y: 0, table: null });
+  };
+  
+  // Handle table editor save
+  const handleTableEditorSave = (tableHtml, tableData) => {
+    if (currentTableElement && editingTable) {
+      // Replace the old table with the new one
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = tableHtml;
+      const newTable = tempDiv.querySelector('table');
+      
+      if (newTable && currentTableElement.parentNode) {
+        // Copy classes and styles from original table
+        newTable.className = currentTableElement.className;
+        // Add Dongle font styling
+        newTable.style.fontFamily = '"Dongle", sans-serif';
+        newTable.style.fontSize = '1.8rem';
+        
+        // Show the new table
+        newTable.style.display = '';
+        currentTableElement.parentNode.replaceChild(newTable, currentTableElement);
+        
+        // Remove the editor container
+        if (editingTable && editingTable.parentNode) {
+          editingTable.parentNode.removeChild(editingTable);
+        }
       }
+      
+      // Save the updated content
+      const saveContent = () => {
+        if (isEditing || isCreating) {
+          // In editor mode
+          const editorContent = editorRef.current?.querySelector('.ProseMirror') || 
+                              editorRef.current?.querySelector('.ql-editor') || 
+                              editorRef.current;
+          if (editorContent) {
+            const updatedContent = editorContent.innerHTML;
+            setFormData(prev => ({ ...prev, content: updatedContent }));
+          }
+        } else if (noteContentRef.current) {
+          // In viewer mode
+          const updatedContent = noteContentRef.current.innerHTML;
+          setFormData(prev => ({ ...prev, content: updatedContent }));
+          if (selectedNote) {
+            handleSave();
+          }
+        }
+      };
+      
+      setTimeout(saveContent, 100);
+    }
+    
+    // Close the editor
+    setShowTableEditor(false);
+    setCurrentTableElement(null);
+    setEditingTable(null);
+  };
+  
+  const handleTableEditorClose = () => {
+    // Restore original table if closing without saving
+    if (currentTableElement && editingTable) {
+      currentTableElement.style.display = '';
+      if (editingTable && editingTable.parentNode) {
+        editingTable.parentNode.removeChild(editingTable);
+      }
+    }
+    
+    setShowTableEditor(false);
+    setCurrentTableElement(null);
+    setEditingTable(null);
+  };
+  
+  // Simplified table resizing for fallback
+  const makeTableResizable = (table) => {
+    if (!table) return;
+    
+    // Set table to fixed layout for better control
+    table.style.tableLayout = 'fixed';
+    table.setAttribute('data-resizable', 'true');
+    
+    // Add resize handles to table cells
+    const addResizeHandles = () => {
+      // Remove existing handles
+      table.querySelectorAll('.resize-handle').forEach(handle => handle.remove());
+      table.querySelectorAll('.resize-indicator').forEach(indicator => indicator.remove());
+      
+      // Get all cells for column handles
+      const firstRow = table.querySelector('tr');
+      if (!firstRow) return;
+      
+      const headerCells = firstRow.querySelectorAll('th, td');
+      
+      // Add column resize handles
+      headerCells.forEach((cell, colIndex) => {
+        // Set initial width if not set
+        if (!cell.style.width) {
+          cell.style.width = cell.offsetWidth + 'px';
+        }
+        
+        if (colIndex < headerCells.length - 1) { // Don't add to last column
+          const colHandle = document.createElement('div');
+          colHandle.className = 'resize-handle resize-handle-col';
+          colHandle.setAttribute('data-col-index', colIndex);
+          colHandle.style.cssText = `
+            position: absolute;
+            right: -4px;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            background: transparent;
+            cursor: col-resize;
+            z-index: 10;
+          `;
+          
+          let startX = 0;
+          let startWidth = 0;
+          let isResizing = false;
+          
+          // Add visual indicator line
+          const resizeLine = document.createElement('div');
+          resizeLine.className = 'resize-indicator resize-indicator-col';
+          resizeLine.style.cssText = `
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #FF6900;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1001;
+            transition: opacity 0.2s;
+          `;
+          
+          colHandle.onmouseenter = () => {
+            resizeLine.style.opacity = '0.5';
+          };
+          
+          colHandle.onmouseleave = () => {
+            if (!isResizing) {
+              resizeLine.style.opacity = '0';
+            }
+          };
+          
+          colHandle.onmousedown = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            isResizing = true;
+            startX = e.pageX;
+            startWidth = cell.offsetWidth;
+            
+            // Show resize line
+            resizeLine.style.opacity = '1';
+            
+            // Add resizing class to table
+            table.classList.add('resizing-table');
+            
+            // Create overlay to prevent text selection and cursor issues
+            const overlay = document.createElement('div');
+            overlay.className = 'resize-overlay';
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; cursor: col-resize; user-select: none;';
+            document.body.appendChild(overlay);
+            
+            const handleMouseMove = (e) => {
+              if (!isResizing) return;
+              e.preventDefault();
+              const width = Math.max(30, startWidth + (e.pageX - startX));
+              
+              // Update all cells in this column
+              table.querySelectorAll('tr').forEach(row => {
+                const targetCell = row.children[colIndex];
+                if (targetCell) {
+                  targetCell.style.width = width + 'px';
+                }
+              });
+              
+              // Update resize line position
+              const cellRect = cell.getBoundingClientRect();
+              const tableRect = table.getBoundingClientRect();
+              resizeLine.style.left = (cellRect.right - tableRect.left - 1) + 'px';
+            };
+            
+            const handleMouseUp = () => {
+              isResizing = false;
+              resizeLine.style.opacity = '0';
+              table.classList.remove('resizing-table');
+              document.removeEventListener('mousemove', handleMouseMove);
+              document.removeEventListener('mouseup', handleMouseUp);
+              document.querySelector('.resize-overlay')?.remove();
+              // Save the changes after a small delay
+              setTimeout(() => saveTableChanges(), 100);
+            };
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+          };
+          
+          cell.style.position = 'relative';
+          cell.appendChild(colHandle);
+          cell.appendChild(resizeLine);
+        }
+      });
+      
+      // Add row resize handles
+      const rows = table.querySelectorAll('tr');
+      rows.forEach((row, rowIndex) => {
+        // Set initial height if not set
+        if (!row.style.height) {
+          row.style.height = row.offsetHeight + 'px';
+        }
+        
+        if (rowIndex < rows.length - 1) { // Don't add to last row
+          const firstCell = row.querySelector('td, th');
+          if (firstCell) {
+            const rowHandle = document.createElement('div');
+            rowHandle.className = 'resize-handle resize-handle-row';
+            rowHandle.setAttribute('data-row-index', rowIndex);
+            rowHandle.style.cssText = `
+              position: absolute;
+              bottom: -4px;
+              left: 0;
+              right: 0;
+              height: 8px;
+              background: transparent;
+              cursor: row-resize;
+              z-index: 10;
+            `;
+            
+            // Add visual indicator line
+            const resizeLine = document.createElement('div');
+            resizeLine.className = 'resize-indicator resize-indicator-row';
+            resizeLine.style.cssText = `
+              position: absolute;
+              left: 0;
+              right: 0;
+              height: 2px;
+              background: #FF6900;
+              opacity: 0;
+              pointer-events: none;
+              z-index: 1001;
+              transition: opacity 0.2s;
+            `;
+            
+            rowHandle.onmouseenter = () => {
+              resizeLine.style.opacity = '0.5';
+            };
+            
+            rowHandle.onmouseleave = () => {
+              if (!isResizing) {
+                resizeLine.style.opacity = '0';
+              }
+            };
+            
+            let startY = 0;
+            let startHeight = 0;
+            let isResizing = false;
+            
+            rowHandle.onmousedown = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              isResizing = true;
+              startY = e.pageY;
+              startHeight = row.offsetHeight;
+              
+              // Show resize line
+              resizeLine.style.opacity = '1';
+              
+              // Add resizing class to table
+              table.classList.add('resizing-table');
+              
+              // Create overlay
+              const overlay = document.createElement('div');
+              overlay.className = 'resize-overlay';
+              overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; cursor: row-resize; user-select: none;';
+              document.body.appendChild(overlay);
+              
+              const handleMouseMove = (e) => {
+                if (!isResizing) return;
+                e.preventDefault();
+                const height = Math.max(20, startHeight + (e.pageY - startY));
+                row.style.height = height + 'px';
+                
+                // Update resize line position
+                const rowRect = row.getBoundingClientRect();
+                const tableRect = table.getBoundingClientRect();
+                resizeLine.style.top = (rowRect.bottom - tableRect.top - 1) + 'px';
+              };
+              
+              const handleMouseUp = () => {
+                isResizing = false;
+                resizeLine.style.opacity = '0';
+                table.classList.remove('resizing-table');
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+                document.querySelector('.resize-overlay')?.remove();
+                // Save the changes after a small delay
+                setTimeout(() => saveTableChanges(), 100);
+              };
+              
+              document.addEventListener('mousemove', handleMouseMove);
+              document.addEventListener('mouseup', handleMouseUp);
+            };
+            
+            firstCell.style.position = 'relative';
+            firstCell.appendChild(rowHandle);
+            firstCell.appendChild(resizeLine);
+          }
+        }
+      });
+    };
+    
+    // Save table changes to Firebase
+    const saveTableChanges = () => {
+      setTimeout(() => {
+        if (isEditing || isCreating) {
+          // In editor mode
+          const editorContent = editorRef.current?.querySelector('.ProseMirror') || 
+                              editorRef.current?.querySelector('.ql-editor') || 
+                              editorRef.current;
+          if (editorContent) {
+            const updatedContent = editorContent.innerHTML;
+            setFormData(prev => ({ ...prev, content: updatedContent }));
+          }
+        } else if (noteContentRef.current) {
+          // In viewer mode
+          const updatedContent = noteContentRef.current.innerHTML;
+          setFormData(prev => ({ ...prev, content: updatedContent }));
+          if (selectedNote) {
+            handleSave();
+          }
+        }
+      }, 100);
+    };
+    
+    addResizeHandles();
+  };
+  
+  const handleEditTable = () => {
+    if (!tableContextMenu.table) return;
+    
+    // If in viewer mode, switch to edit mode first
+    if (!isEditing && !isCreating) {
+      setIsEditing(true);
+      // Wait for editor to be ready before proceeding
+      setTimeout(() => {
+        // Find the table in the editor after mode switch
+        const editorContent = editorRef.current?.querySelector('.ProseMirror') || 
+                            editorRef.current?.querySelector('.ql-editor') || 
+                            editorRef.current;
+        if (editorContent) {
+          const tables = editorContent.querySelectorAll('table');
+          // Find matching table by content or position
+          tables.forEach(editorTable => {
+            if (editorTable.innerHTML === tableContextMenu.table.innerHTML) {
+              setupTableEditing(editorTable);
+            }
+          });
+        }
+      }, 300);
+    } else {
+      // Already in edit mode, proceed directly
+      setupTableEditing(tableContextMenu.table);
+    }
+    
+    setTableContextMenu({ visible: false, x: 0, y: 0, table: null });
+  };
+  
+  const setupTableEditing = (table) => {
+    if (!table) return;
+    
+    // Use Handsontable editor instead of inline editing
+    setCurrentTableElement(table);
+    setShowTableEditor(true);
+    setEditingTable(table);
+    
+    // Table editor will handle saving
+  };
+  
+  const handleAddTableRow = () => {
+    if (!tableContextMenu.table) return;
+    
+    const table = tableContextMenu.table;
+    const tbody = table.querySelector('tbody') || table;
+    const rows = tbody.querySelectorAll('tr');
+    const lastRow = rows[rows.length - 1];
+    
+    if (lastRow) {
+      // Clone the last row structure but with empty content
+      const newRow = lastRow.cloneNode(true);
+      
+      // Clear all cell contents in the new row
+      const newCells = newRow.querySelectorAll('td, th');
+      newCells.forEach(cell => {
+        // Clear content but preserve structure and styles
+        cell.innerHTML = '&nbsp;'; // Non-breaking space to maintain cell height
+        
+        // If it's a header cell in the body, convert it to td
+        if (cell.tagName === 'TH' && tbody.tagName === 'TBODY') {
+          const newTd = document.createElement('td');
+          // Copy all attributes and styles
+          Array.from(cell.attributes).forEach(attr => {
+            newTd.setAttribute(attr.name, attr.value);
+          });
+          newTd.innerHTML = '&nbsp;';
+          cell.parentNode.replaceChild(newTd, cell);
+        }
+      });
+      
+      // Append the new row to the table body
+      tbody.appendChild(newRow);
+      
+      // Save the updated content
+      const saveContent = () => {
+        if (isEditing || isCreating) {
+          // In editor mode
+          const editorContent = editorRef.current?.querySelector('.ProseMirror') || 
+                              editorRef.current?.querySelector('.ql-editor') || 
+                              editorRef.current;
+          if (editorContent) {
+            const updatedContent = editorContent.innerHTML;
+            setFormData(prev => ({ ...prev, content: updatedContent }));
+          }
+        } else if (noteContentRef.current) {
+          // In viewer mode
+          const updatedContent = noteContentRef.current.innerHTML;
+          setFormData(prev => ({ ...prev, content: updatedContent }));
+          if (selectedNote) {
+            handleSave();
+          }
+        }
+      };
+      
+      // Small delay to ensure DOM is updated
+      setTimeout(saveContent, 100);
+    }
+    
+    setTableContextMenu({ visible: false, x: 0, y: 0, table: null });
+  };
+  
+  const handleDeleteTable = () => {
+    if (!tableContextMenu.table) return;
+    
+    const table = tableContextMenu.table;
+    
+    console.log('Deleting table:', table);
+    
+    // Check if table is wrapped in a container
+    const wrapper = table.closest('.table-with-copy') || table.closest('.table-wrapper') || table.closest('.tableWrapper');
+    const elementToRemove = wrapper || table;
+    
+    // Remove the table or its wrapper
+    if (elementToRemove && elementToRemove.parentNode) {
+      elementToRemove.parentNode.removeChild(elementToRemove);
+      
+      // Force update the editor content
+      if (editorRef.current) {
+        const editor = editorRef.current.editor || window.editor;
+        if (editor && editor.commands) {
+          // For TipTap editor
+          const editorElement = editorRef.current.querySelector('.ProseMirror');
+          if (editorElement) {
+            // Get the updated HTML
+            const updatedHtml = editorElement.innerHTML;
+            // Set it back to trigger update
+            editor.commands.setContent(updatedHtml);
+          }
+        } else {
+          // For regular content editable
+          const editorContent = editorRef.current.querySelector('.ProseMirror') || 
+                              editorRef.current.querySelector('.ql-editor') || 
+                              editorRef.current.querySelector('.tiptap-editor') ||
+                              editorRef.current.querySelector('.note-content-edit-area') ||
+                              editorRef.current;
+          
+          if (editorContent) {
+            // Trigger input event to notify React
+            const event = new Event('input', { bubbles: true });
+            editorContent.dispatchEvent(event);
+            
+            // Update form data
+            const updatedContent = editorContent.innerHTML;
+            setFormData(prev => ({ ...prev, content: updatedContent }));
+          }
+        }
+      }
+    }
+    
+    setTableContextMenu({ visible: false, x: 0, y: 0, table: null, row: null });
+  };
+
+  // Delete a specific row from the table
+  const handleDeleteTableRow = () => {
+    if (!tableContextMenu.table || !tableContextMenu.row) return;
+    
+    const table = tableContextMenu.table;
+    const row = tableContextMenu.row;
+    
+    console.log('Deleting row:', row);
+    
+    // Count remaining rows
+    const tbody = table.querySelector('tbody') || table;
+    const allRows = tbody.querySelectorAll('tr');
+    
+    // Don't delete if it's the last row
+    if (allRows.length <= 1) {
+      alert('Cannot delete the last row. Use "Delete Table" instead.');
+      setTableContextMenu({ visible: false, x: 0, y: 0, table: null, row: null });
       return;
     }
     
-    let observer = null;
-    
-    // Small delay to ensure DOM is ready
-    const timeoutId = setTimeout(() => {
-      if (noteContentRef.current && !isEditing && !isCreating) {
-        observer = observeTablesAndAddButtons(noteContentRef.current, false);
+    // Remove the row
+    if (row.parentNode) {
+      row.parentNode.removeChild(row);
+      
+      // Force update the editor content
+      if (editorRef.current) {
+        const editor = editorRef.current.editor || window.editor;
+        if (editor && editor.commands) {
+          // For TipTap editor
+          const editorElement = editorRef.current.querySelector('.ProseMirror');
+          if (editorElement) {
+            // Get the updated HTML
+            const updatedHtml = editorElement.innerHTML;
+            // Set it back to trigger update
+            editor.commands.setContent(updatedHtml);
+          }
+        } else {
+          // For regular content editable
+          const editorContent = editorRef.current.querySelector('.ProseMirror') || 
+                              editorRef.current.querySelector('.ql-editor') || 
+                              editorRef.current.querySelector('.tiptap-editor') ||
+                              editorRef.current.querySelector('.note-content-edit-area') ||
+                              editorRef.current;
+          
+          if (editorContent) {
+            // Trigger input event to notify React
+            const event = new Event('input', { bubbles: true });
+            editorContent.dispatchEvent(event);
+            
+            // Update form data
+            const updatedContent = editorContent.innerHTML;
+            setFormData(prev => ({ ...prev, content: updatedContent }));
+          }
+        }
       }
-    }, 200);
+    }
     
-    return () => {
-      clearTimeout(timeoutId);
-      if (observer) {
-        observer.disconnect();
+    setTableContextMenu({ visible: false, x: 0, y: 0, table: null, row: null });
+  };
+
+  // Copy table content to clipboard
+  const handleCopyTable = () => {
+    if (!tableContextMenu.table) return;
+    
+    const table = tableContextMenu.table;
+    console.log('Copying table:', table);
+    
+    try {
+      // Convert table to tab-separated text
+      const rows = table.querySelectorAll('tr');
+      let tabDelimitedText = '';
+      
+      rows.forEach((row, rowIndex) => {
+        const cells = row.querySelectorAll('td, th');
+        const cellTexts = Array.from(cells).map(cell => {
+          return cell.textContent.trim().replace(/\t/g, ' ').replace(/\n/g, ' ');
+        });
+        
+        tabDelimitedText += cellTexts.join('\t');
+        if (rowIndex < rows.length - 1) {
+          tabDelimitedText += '\n';
+        }
+      });
+      
+      // Copy to clipboard
+      navigator.clipboard.writeText(tabDelimitedText).then(() => {
+        console.log('Table copied to clipboard');
+        // Show success feedback
+        const originalText = 'Copy Table';
+        const successText = 'Copied!';
+        
+        // Find the copy button and temporarily change its text
+        const copyButton = document.querySelector('.table-context-menu .context-menu-item span');
+        if (copyButton && copyButton.textContent === originalText) {
+          copyButton.textContent = successText;
+          setTimeout(() => {
+            if (copyButton.textContent === successText) {
+              copyButton.textContent = originalText;
+            }
+          }, 1500);
+        }
+      }).catch(err => {
+        console.error('Failed to copy table: ', err);
+        alert('Failed to copy table to clipboard');
+      });
+      
+    } catch (error) {
+      console.error('Error copying table:', error);
+      alert('Error copying table');
+    }
+    
+    setTableContextMenu({ visible: false, x: 0, y: 0, table: null, row: null });
+  };
+  
+  const handleAddTableColumn = () => {
+    if (!tableContextMenu.table) return;
+    
+    const table = tableContextMenu.table;
+    const rows = table.querySelectorAll('tr');
+    
+    rows.forEach((row, index) => {
+      const cells = row.querySelectorAll('td, th');
+      const lastCell = cells[cells.length - 1];
+      
+      if (lastCell) {
+        // Create new cell with same type (td or th)
+        const newCell = document.createElement(lastCell.tagName.toLowerCase());
+        newCell.innerHTML = '&nbsp;'; // Add non-breaking space
+        newCell.style.padding = lastCell.style.padding || '8px';
+        newCell.style.border = lastCell.style.border || '1px solid #ddd';
+        
+        // Copy other styles if needed
+        if (lastCell.tagName === 'TH') {
+          newCell.style.fontWeight = lastCell.style.fontWeight || 'bold';
+          newCell.style.backgroundColor = lastCell.style.backgroundColor || '#f0f0f0';
+        }
+        
+        row.appendChild(newCell);
+      }
+    });
+    
+    // Save the updated content
+    const saveContent = () => {
+      if (isEditing || isCreating) {
+        // In editor mode
+        const editorContent = editorRef.current?.querySelector('.ProseMirror') || 
+                            editorRef.current?.querySelector('.ql-editor') || 
+                            editorRef.current;
+        if (editorContent) {
+          const updatedContent = editorContent.innerHTML;
+          setFormData(prev => ({ ...prev, content: updatedContent }));
+        }
+      } else if (noteContentRef.current) {
+        // In viewer mode
+        const updatedContent = noteContentRef.current.innerHTML;
+        setFormData(prev => ({ ...prev, content: updatedContent }));
+        if (selectedNote) {
+          handleSave();
+        }
       }
     };
-  }, [selectedNote, isEditing, isCreating, formData.content]);
+    
+    // Small delay to ensure DOM is updated
+    setTimeout(saveContent, 100);
+    
+    setTableContextMenu({ visible: false, x: 0, y: 0, table: null });
+  };
 
   // Render content with HTML support
   const renderContent = (content) => {
@@ -472,13 +1272,14 @@ const Notes = () => {
     const handleClickOutside = () => {
       setNoteContextMenu({ visible: false, x: 0, y: 0, noteId: null });
       setContextMenu({ visible: false, x: 0, y: 0, bannerId: null });
+      setTableContextMenu({ visible: false, x: 0, y: 0, table: null });
     };
 
-    if (noteContextMenu.visible || contextMenu.visible) {
+    if (noteContextMenu.visible || contextMenu.visible || tableContextMenu.visible) {
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
-  }, [noteContextMenu.visible, contextMenu.visible]);
+  }, [noteContextMenu.visible, contextMenu.visible, tableContextMenu.visible]);
 
   // Handle drag and drop
   const handleDragOver = (e) => {
@@ -554,13 +1355,36 @@ const Notes = () => {
       isDone: bannerColor === 'green' ? false : false  // Track if banner is marked as done (green banners can also use line toggle)
     };
     
-    const updatedBanners = [...(formData.banners || []), newBanner];
+    // Insert banner directly into editor content at cursor position instead of separate array
+    if (editorRef.current?.editor) {
+      const editor = editorRef.current.editor;
+      
+      // Create banner HTML that will be embedded in the content
+      const bannerClass = isCalloutMode ? 'callout-banner' : 
+                         isTitleMode ? 'title-banner' : 
+                         bannerColor === 'orange' ? 'new-line' : 
+                         bannerColor === 'green' ? 'done' : 
+                         bannerColor === 'grey' ? 'grey' : 'banner-blue';
+      
+      const bannerHtml = `<div class="content-banner-item ${bannerClass}" data-banner-id="${newBanner.id}" data-banner-color="${newBanner.color}">
+        <span class="banner-text">${newBanner.text}</span>
+        <div class="banner-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="m5 5 6 6m4 0 6 6m-6-6 6-6m-6 6-6 6"></path>
+          </svg>
+        </div>
+      </div>`;
+      
+      // Insert at current cursor position
+      editor.chain().focus().insertContent(bannerHtml).run();
+    } else {
+      // Fallback to old method if editor not available
+      const updatedBanners = [...(formData.banners || []), newBanner];
+      setFormData({ ...formData, banners: updatedBanners });
+    }
     
-    setFormData(prev => ({
-      ...prev,
-      banners: updatedBanners
-    }));
-    
+    // Clear the input after adding banner
     setNewBannerText('');
     setShowBannerInput(false);
     
@@ -571,12 +1395,13 @@ const Notes = () => {
       }
     }, 100);
     
-    // Auto-save to Firebase if editing existing note
-    if (selectedNote && !isCreating) {
+    // Auto-save content to Firebase if editing existing note (banner is now part of content)
+    if (selectedNote && !isCreating && editorRef.current?.editor) {
       try {
         const noteRef = doc(db, 'notes', selectedNote.id);
+        const updatedContent = editorRef.current.editor.getHTML();
         await updateDoc(noteRef, {
-          banners: updatedBanners,
+          content: updatedContent,
           updatedAt: serverTimestamp()
         });
       } catch (error) {
@@ -1119,11 +1944,7 @@ const Notes = () => {
           drawHeaderFooter(pageNumber);
           yPosition = 35; // Start content right after header
           // Reset font to ensure consistency on new page
-          try {
-            pdf.setFont('Roboto', 'normal');
-          } catch (e) {
-            pdf.setFont('helvetica', 'normal');
-          }
+          pdf.setFont('helvetica', 'normal');
           pdf.setFontSize(bodySize);
           pdf.setTextColor(0);
         };
@@ -1141,11 +1962,7 @@ const Notes = () => {
     
     // Reset text formatting with Roboto font
     pdf.setTextColor(0);
-    try {
-      pdf.setFont('Roboto', 'normal');
-    } catch (e) {
-      pdf.setFont('helvetica', 'normal');
-    }
+    pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(bodySize);
     
     
@@ -1329,11 +2146,7 @@ const Notes = () => {
         yPosition += sectionSpacing * 1.0;
       }
       
-      try {
-        pdf.setFont('Roboto', 'normal');
-      } catch (e) {
-        pdf.setFont('helvetica', 'normal');
-      }
+      pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(bodySize);
       
       // Create a temporary div to parse HTML content
@@ -1346,12 +2159,8 @@ const Notes = () => {
           // Handle text nodes
           const text = node.textContent.trim();
           if (text) {
-            // Ensure consistent Roboto font for all text nodes
-            try {
-              pdf.setFont('Roboto', 'normal');
-            } catch (e) {
-              pdf.setFont('helvetica', 'normal');
-            }
+            // Ensure consistent helvetica font for all text nodes
+            pdf.setFont('helvetica', 'normal');
             pdf.setFontSize(bodySize);
             pdf.setTextColor(0);
             
@@ -1422,21 +2231,21 @@ const Notes = () => {
                 const estimatedTableHeight = (rows.length + 1) * 10; // Rough estimate
                 checkPageBreak(estimatedTableHeight);
                 
-                // Configure and add the table
+                // Configure and add the table with same font as banners
                 const tableConfig = {
                   head: headers.length > 0 ? [headers] : [],
                   body: rows,
                   startY: yPosition,
                   margin: { left: leftMargin, right: rightMargin },
                   styles: {
-                    font: 'Roboto',
+                    font: 'helvetica',
                     fontSize: bodySize - 1,
                     cellPadding: 3,
                     lineColor: [200, 200, 200],
                     lineWidth: 0.5,
                   },
                   headStyles: {
-                    font: 'Roboto',
+                    font: 'helvetica',
                     fillColor: [59, 130, 246],
                     textColor: [255, 255, 255],
                     fontStyle: 'bold',
@@ -1497,33 +2306,21 @@ const Notes = () => {
             if (text) {
               const fontSize = tagName === 'h1' ? 16 : tagName === 'h2' ? 14 : 12;
               pdf.setFontSize(fontSize);
-              try {
-                pdf.setFont('Roboto', 'bold');
-              } catch (e) {
-                pdf.setFont('helvetica', 'bold');
-              }
+              pdf.setFont('helvetica', 'bold');
               
               checkPageBreak(fontSize * lineSpacing);
               pdf.text(text, leftMargin, yPosition);
               yPosition += fontSize * lineSpacing + paragraphSpacing * 0.5;
               
-              try {
-                pdf.setFont('Roboto', 'normal');
-              } catch (e) {
-                pdf.setFont('helvetica', 'normal');
-              }
+              pdf.setFont('helvetica', 'normal');
               pdf.setFontSize(bodySize);
             }
           } else if (tagName === 'ul' || tagName === 'ol') {
             // Handle lists with proper font and wrapping
             const listItems = node.querySelectorAll('li');
             listItems.forEach((li, index) => {
-              // Ensure Roboto font for lists
-              try {
-                pdf.setFont('Roboto', 'normal');
-              } catch (e) {
-                pdf.setFont('helvetica', 'normal');
-              }
+              // Ensure helvetica font for lists
+              pdf.setFont('helvetica', 'normal');
               pdf.setFontSize(bodySize);
               pdf.setTextColor(0);
               
@@ -1555,11 +2352,7 @@ const Notes = () => {
             // Handle blockquotes with enterprise formatting
             const text = node.textContent.trim();
             if (text) {
-              try {
-                pdf.setFont('Roboto', 'italic');
-              } catch (e) {
-                pdf.setFont('helvetica', 'italic');
-              }
+              pdf.setFont('helvetica', 'italic');
               pdf.setTextColor(80); // Slightly darker for better readability
               
               // Advanced blockquote text processing
@@ -1573,11 +2366,7 @@ const Notes = () => {
               });
               yPosition += paragraphSpacing * 0.3; // Minimal blockquote spacing
               
-              try {
-                pdf.setFont('Roboto', 'normal');
-              } catch (e) {
-                pdf.setFont('helvetica', 'normal');
-              }
+              pdf.setFont('helvetica', 'normal');
               pdf.setTextColor(0);
             }
           } else if (tagName === 'img') {
@@ -1700,11 +2489,7 @@ const Notes = () => {
             }
           } else {
             // For other elements, ensure font is set and process their children
-            try {
-              pdf.setFont('Roboto', 'normal');
-            } catch (e) {
-              pdf.setFont('helvetica', 'normal');
-            }
+            pdf.setFont('helvetica', 'normal');
             pdf.setFontSize(bodySize);
             pdf.setTextColor(0);
             
@@ -1941,7 +2726,7 @@ const Notes = () => {
                             ref={bannerInputRef}
                             type="text"
                             className="banner-input-redesign"
-                            placeholder={isCalloutMode ? "Callout text..." : isTitleMode ? "Title text..." : "Banner text..."}
+                            placeholder={isCalloutMode ? "Enter callout text..." : isTitleMode ? "Enter title text..." : "Enter banner text..."}
                             value={newBannerText}
                             onChange={(e) => setNewBannerText(e.target.value)}
                             onKeyPress={(e) => {
@@ -2036,6 +2821,21 @@ const Notes = () => {
                               />
                             </div>
                           )}
+                          
+                          {/* Submit button - far right */}
+                          <button
+                            className="banner-submit-btn"
+                            onClick={() => {
+                              if (newBannerText.trim()) {
+                                addBanner();
+                              }
+                            }}
+                            disabled={!newBannerText.trim()}
+                            title="Submit (Enter)"
+                          >
+                            <Plus size={16} />
+                            <span>Submit</span>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -2384,6 +3184,16 @@ const Notes = () => {
               {formData.banners.find(b => b.id === contextMenu.bannerId)?.isDone ? 'Mark as Undone' : 'Mark as Done'}
             </span>
           </button>
+          <button
+            className="context-menu-item delete"
+            onClick={() => {
+              removeBanner(contextMenu.bannerId);
+              setContextMenu({ visible: false, x: 0, y: 0, bannerId: null });
+            }}
+          >
+            <Trash2 size={16} />
+            <span>Delete</span>
+          </button>
         </div>,
         document.body
       )}
@@ -2435,6 +3245,66 @@ const Notes = () => {
         document.body
       )}
 
+      {/* Table Context Menu */}
+      {tableContextMenu.visible && ReactDOM.createPortal(
+        <div 
+          className="table-context-menu"
+          style={{ 
+            position: 'fixed',
+            left: tableContextMenu.x, 
+            top: tableContextMenu.y,
+            zIndex: 2147483648
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="context-menu-item"
+            onClick={handleCopyTable}
+          >
+            <Copy size={16} />
+            <span>Copy Table</span>
+          </button>
+          <button
+            className="context-menu-item"
+            onClick={handleEditTable}
+          >
+            <Edit3 size={16} />
+            <span>Edit Table</span>
+          </button>
+          <button
+            className="context-menu-item"
+            onClick={handleAddTableRow}
+          >
+            <Plus size={16} />
+            <span>Add Row</span>
+          </button>
+          <button
+            className="context-menu-item"
+            onClick={handleAddTableColumn}
+          >
+            <Plus size={16} />
+            <span>Add Column</span>
+          </button>
+          <div className="context-menu-divider"></div>
+          {tableContextMenu.row && (
+            <button
+              className="context-menu-item delete"
+              onClick={handleDeleteTableRow}
+            >
+              <Trash2 size={16} />
+              <span>Delete Row</span>
+            </button>
+          )}
+          <button
+            className="context-menu-item delete"
+            onClick={handleDeleteTable}
+          >
+            <Trash2 size={16} />
+            <span>Delete Table</span>
+          </button>
+        </div>,
+        document.body
+      )}
       {/* Delete Confirmation Popup */}
       <NoteDeleteConfirmPopup
         isOpen={showDeletePopup}
@@ -2442,6 +3312,24 @@ const Notes = () => {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
+      
+      {/* Inline Table Editors for Edit Mode */}
+      {inlineTableEditors.map(editor => {
+        const container = document.getElementById(editor.containerId);
+        if (!container) return null;
+        
+        return ReactDOM.createPortal(
+          <InlineTableEditor
+            key={editor.id}
+            tableElement={editor.tableElement}
+            onUpdate={(htmlContent) => {
+              // Update the content when table is edited
+              container.dataset.updatedHtml = htmlContent;
+            }}
+          />,
+          container
+        );
+      })}
 
     </div>
   );

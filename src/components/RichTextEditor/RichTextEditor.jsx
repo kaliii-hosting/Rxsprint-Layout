@@ -21,7 +21,8 @@ import {
   Type,
   Heading1,
   Heading2,
-  Heading3
+  Heading3,
+  Table as TableIcon
 } from 'lucide-react';
 import './RichTextEditor.css';
 
@@ -183,7 +184,7 @@ const RichTextEditor = React.forwardRef(({
         cleanedHtml = cleanedHtml.replace(/width="[^"]*"/gi, ''); // Remove width attributes
         cleanedHtml = cleanedHtml.replace(/height="[^"]*"/gi, ''); // Remove height attributes
         
-        // Insert the cleaned table
+        // Insert the cleaned table at current cursor position
         editor.chain().focus().insertContent(cleanedHtml, {
           parseOptions: {
             preserveWhitespace: false
@@ -215,6 +216,7 @@ const RichTextEditor = React.forwardRef(({
         
         html += '</tbody></table>';
         
+        // Insert the table at current cursor position
         editor.chain().focus().insertContent(html, {
           parseOptions: {
             preserveWhitespace: false
@@ -359,6 +361,30 @@ const RichTextEditor = React.forwardRef(({
             </ToolbarButton>
           </div>
         )}
+
+        {/* Table */}
+        <div className="toolbar-group">
+          <ToolbarButton
+            onClick={() => {
+              editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+              // Add a small delay then trigger double-click on the new table
+              setTimeout(() => {
+                const newTable = editor.view.dom.querySelector('table:last-of-type');
+                if (newTable) {
+                  const event = new MouseEvent('dblclick', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                  });
+                  newTable.dispatchEvent(event);
+                }
+              }, 100);
+            }}
+            title="Insert Excel Table"
+          >
+            <TableIcon size={18} />
+          </ToolbarButton>
+        </div>
 
         {/* History - desktop only */}
         {!isMobile && (

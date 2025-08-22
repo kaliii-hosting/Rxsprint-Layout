@@ -536,10 +536,8 @@
 .notes-dynamic-header {
   position: relative;
   background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 50;
 }
 
@@ -5605,4 +5603,246 @@ body .notes-page:not(.editing-mode) .tableWrapper::-webkit-scrollbar-corner {
   .notes-grid-layout {
     display: grid !important;
   }
+}
+
+
+.banner-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.banner-table th,
+.banner-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid #e5e7eb;
+  white-space: nowrap;
+  color: #374151;
+}
+
+.banner-table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  color: #111827;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 2px solid #d1d5db;
+}
+
+.banner-table tr:nth-child(even) td {
+  background-color: #f9fafb;
+}
+
+.banner-table tr:hover td {
+  background-color: #eff6ff;
+}
+
+.table-header-row th {
+  background: linear-gradient(to bottom, #4f46e5, #4338ca);
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* Responsive table adjustments */
+@media (max-width: 768px) {
+  .banner-table {
+    font-size: 0.75rem;
+  }
+  
+  .banner-table th,
+  .banner-table td {
+    padding: 6px 8px;
+  }
+}
+
+/* Table inside banner items */
+.content-banner-item.callout-banner .banner-table-container,
+.content-banner-item.title-banner .banner-table-container {
+  margin: 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.content-banner-item .banner-table {
+  box-shadow: none;
+  border: none;
+}
+
+.content-banner-item .banner-table th {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.content-banner-item .banner-table td {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Banner table in preview mode */
+.banner-tag-modern .banner-table-container {
+  margin: 0;
+  max-height: 200px;
+}
+
+.banner-tag-modern .banner-table {
+  font-size: 0.75rem;
+}
+
+.banner-tag-modern .banner-table th,
+.banner-tag-modern .banner-table td {
+  padding: 4px 8px;
+}
+
+
+/* Update table font to match banner font (Dongle) */
+.note-content-wrapper table,
+.tiptap-editor table,
+.ProseMirror table,
+.note-content-wrapper table th,
+.note-content-wrapper table td,
+.tiptap-editor table th,
+.tiptap-editor table td,
+.ProseMirror table th,
+.ProseMirror table td {
+  font-family: "Dongle", sans-serif !important;
+  font-size: 1.8rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Ensure proper spacing after tables for navigation */
+.note-content-wrapper .tableWrapper,
+.tiptap-editor .tableWrapper,
+.ProseMirror .tableWrapper {
+  margin-bottom: 1.5rem !important;
+  display: block !important;
+}
+
+/* Add padding after table to allow cursor placement */
+.note-content-wrapper .tableWrapper::after,
+.tiptap-editor .tableWrapper::after,
+.ProseMirror .tableWrapper::after {
+  content: "";
+  display: block;
+  height: 20px;
+  cursor: text;
+}
+
+/* Ensure tables do not take full height */
+.note-content-wrapper table,
+.tiptap-editor table,
+.ProseMirror table {
+  max-height: calc(100vh - 400px) !important;
+}
+
+/* Allow text input after tables */
+.note-content-wrapper:has(.tableWrapper),
+.note-content-wrapper:has(table),
+.tiptap-editor:has(.tableWrapper),
+.tiptap-editor:has(table) {
+  padding-bottom: 50px !important;
+  min-height: calc(100vh - 200px) !important;
+}
+
+/* Ensure cursor can be placed after table */
+.ProseMirror {
+  min-height: 100% !important;
+  padding-bottom: 100px !important;
+}
+
+/* Embedded Banner Styles in Editor Content */
+.ProseMirror .content-banner-item,
+.note-content-wrapper .content-banner-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem 0;
+  border-radius: 8px;
+  font-family: 'Dongle', sans-serif;
+  font-size: 1.375rem;
+  font-weight: 400;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  background: #3b82f6;
+  color: white;
+  border: 2px solid transparent;
+  min-width: 120px;
+  max-width: fit-content;
+  white-space: nowrap;
+}
+
+/* Banner Color Variants for Embedded Banners */
+.ProseMirror .content-banner-item.new-line,
+.note-content-wrapper .content-banner-item.new-line {
+  background: #f97316;
+  color: white;
+}
+
+.ProseMirror .content-banner-item.done,
+.note-content-wrapper .content-banner-item.done {
+  background: #22c55e;
+  color: white;
+}
+
+.ProseMirror .content-banner-item.grey,
+.note-content-wrapper .content-banner-item.grey {
+  background: #64748b;
+  color: white;
+}
+
+.ProseMirror .content-banner-item.title-banner,
+.note-content-wrapper .content-banner-item.title-banner {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 600;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.ProseMirror .content-banner-item.callout-banner,
+.note-content-wrapper .content-banner-item.callout-banner {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: white;
+  font-size: 1.25rem;
+  padding: 0.625rem 1rem;
+  border-radius: 10px;
+  border-left: 4px solid #0284c7;
+}
+
+/* Banner text and icon styles */
+.ProseMirror .content-banner-item .banner-text,
+.note-content-wrapper .content-banner-item .banner-text {
+  flex: 1;
+  margin-right: 0.5rem;
+}
+
+.ProseMirror .content-banner-item .banner-icon,
+.note-content-wrapper .content-banner-item .banner-icon {
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.ProseMirror .content-banner-item:hover .banner-icon,
+.note-content-wrapper .content-banner-item:hover .banner-icon {
+  opacity: 1;
+}
+
+/* Fix table header font weight */
+.note-content-wrapper table th,
+.tiptap-editor table th,
+.ProseMirror table th {
+  font-weight: 700 !important;
 }

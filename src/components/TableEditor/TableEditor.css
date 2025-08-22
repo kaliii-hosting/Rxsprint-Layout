@@ -1,0 +1,182 @@
+/* RevoGrid Table Editor - Using Original RevoGrid Design */
+
+/* Modal overlay */
+.revo-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+/* Modal container */
+.revo-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  height: 85vh;
+  max-width: 1400px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Inline container */
+.revo-container-inline {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 20px 0;
+  height: 600px;
+}
+
+/* Simple header */
+.revo-header {
+  padding: 10px 15px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.revo-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.revo-info {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Simple toolbar */
+.revo-toolbar {
+  padding: 8px 10px;
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.revo-btn {
+  padding: 5px 10px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.revo-btn:hover {
+  background: #f0f0f0;
+}
+
+.revo-btn-save {
+  background: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+}
+
+.revo-btn-save:hover {
+  background: #45a049;
+}
+
+.revo-btn-close {
+  background: #f44336;
+  color: white;
+  border-color: #f44336;
+}
+
+.revo-btn-close:hover {
+  background: #da190b;
+}
+
+.revo-toolbar-spacer {
+  flex: 1;
+}
+
+/* Grid wrapper - let RevoGrid handle its own styling */
+.revo-grid-wrapper {
+  flex: 1;
+  overflow: visible;
+  position: relative;
+}
+
+/* Let RevoGrid use its default styles */
+.revo-grid-wrapper revo-grid {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Force scrollbars to always be visible */
+.revo-grid-wrapper ::-webkit-scrollbar {
+  width: 16px !important;
+  height: 16px !important;
+  background: #f1f1f1;
+  border-radius: 0;
+}
+
+.revo-grid-wrapper ::-webkit-scrollbar-track {
+  background: #f1f1f1 !important;
+  border-radius: 0;
+}
+
+.revo-grid-wrapper ::-webkit-scrollbar-thumb {
+  background: #888 !important;
+  border-radius: 4px;
+  border: 2px solid #f1f1f1;
+}
+
+.revo-grid-wrapper ::-webkit-scrollbar-thumb:hover {
+  background: #555 !important;
+}
+
+.revo-grid-wrapper ::-webkit-scrollbar-corner {
+  background: #f1f1f1 !important;
+}
+
+/* Ensure RevoGrid shows scrollbars */
+.revo-grid-wrapper revo-grid,
+.revo-grid-wrapper revo-grid * {
+  scrollbar-width: auto !important;
+  scrollbar-color: #888 #f1f1f1 !important;
+}
+
+/* Force visibility of RevoGrid internal scrollbars */
+.revo-grid-wrapper .rgViewport {
+  overflow: auto !important;
+  scrollbar-width: auto !important;
+}
+
+.revo-grid-wrapper .rg-viewport {
+  overflow: auto !important;
+  scrollbar-width: auto !important;
+}
+
+/* Simple footer */
+.revo-footer {
+  padding: 8px 15px;
+  background: #f5f5f5;
+  border-top: 1px solid #ddd;
+  font-size: 12px;
+  color: #666;
+}

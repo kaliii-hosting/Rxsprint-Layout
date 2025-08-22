@@ -93,59 +93,8 @@ export const copyTableToClipboard = async (tableElement) => {
 };
 
 export const addCopyButtonToTable = (table, isEditMode = false) => {
-  // Don't add buttons in edit mode or if button already exists
-  if (isEditMode) {
-    return;
-  }
-  
-  // Check if button already exists
-  if (table.querySelector('.table-copy-btn')) {
-    return;
-  }
-  
-  // Check if table is already wrapped
-  let wrapper = table.closest('.table-with-copy');
-  if (wrapper) {
-    // If already wrapped, just check for button
-    if (!wrapper.querySelector('.table-copy-btn')) {
-      // Add button to existing wrapper
-      const button = createCopyButton(table);
-      wrapper.appendChild(button);
-    }
-    return;
-  }
-  
-  // Only wrap the table if it's not already wrapped and not in a ProseMirror editor
-  const isInEditor = table.closest('.ProseMirror');
-  if (isInEditor) {
-    // For tables in editor, don't wrap them as it can break the editor
-    return;
-  }
-  
-  // Create wrapper for tables not in editor
-  wrapper = document.createElement('div');
-  wrapper.className = 'table-with-copy';
-  wrapper.style.position = 'relative';
-  wrapper.style.display = 'block';
-  wrapper.style.width = '100%';
-  wrapper.style.overflowX = 'auto';
-  wrapper.style.overflowY = 'auto';
-  wrapper.style.maxHeight = 'calc(100vh - 300px)';
-  wrapper.style.border = '1px solid #e0e0e0';
-  wrapper.style.borderRadius = '8px';
-  wrapper.style.padding = '10px';
-  wrapper.style.background = 'white';
-  
-  // Only wrap if we can safely do so
-  if (table.parentNode) {
-    table.parentNode.insertBefore(wrapper, table);
-    wrapper.appendChild(table);
-  } else {
-    return;
-  }
-  
-  const button = createCopyButton(table);
-  wrapper.appendChild(button);
+  // Don't add buttons anymore - using right-click context menu instead
+  return;
 };
 
 // Helper function to create copy button
@@ -226,53 +175,12 @@ const createCopyButton = (table) => {
 };
 
 export const addCopyButtonsToAllTables = (container, isEditMode = false) => {
-  if (!container) return;
-  
-  // Don't add buttons in edit mode
-  if (isEditMode) return;
-  
-  const tables = container.querySelectorAll('table');
-  tables.forEach(table => {
-    addCopyButtonToTable(table, isEditMode);
-  });
+  // Don't add buttons anymore - using right-click context menu instead
+  return;
 };
 
 export const observeTablesAndAddButtons = (container, isEditMode = false) => {
-  if (!container) return null;
-  
-  // Don't observe in edit mode
-  if (isEditMode) return null;
-  
-  // Add buttons to existing tables
-  addCopyButtonsToAllTables(container, isEditMode);
-  
-  // Watch for new tables
-  const observer = new MutationObserver((mutations) => {
-    // Skip if container is in edit mode
-    if (container.closest('.editing-mode') || container.closest('.ProseMirror')) {
-      return;
-    }
-    
-    mutations.forEach(mutation => {
-      if (mutation.type === 'childList') {
-        mutation.addedNodes.forEach(node => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            if (node.tagName === 'TABLE') {
-              addCopyButtonToTable(node, isEditMode);
-            } else if (node.querySelectorAll) {
-              const tables = node.querySelectorAll('table');
-              tables.forEach(table => addCopyButtonToTable(table, isEditMode));
-            }
-          }
-        });
-      }
-    });
-  });
-  
-  observer.observe(container, {
-    childList: true,
-    subtree: true
-  });
-  
-  return observer;
+  // Don't add buttons anymore - using right-click context menu instead
+  // This function is kept for backward compatibility but does nothing
+  return null;
 };

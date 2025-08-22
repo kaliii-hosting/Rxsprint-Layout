@@ -151,19 +151,11 @@ const DigitalClock = ({ isOpen, onClose }) => {
               {'['}{'█'.repeat(Math.floor(progress / 5))}{'░'.repeat(20 - Math.floor(progress / 5))}{']'}
             </div>
 
-            {/* Date and Day Banners */}
+            {/* Date and Day Display */}
             <div className="date-day-container">
-              <div className="clock-day-banner">
-                <span className="day-label">DAY</span>
-                <span className="day-value">{formatDayOfWeek()}</span>
-              </div>
-
-              <div className="banner-divider"></div>
-
-              <div className="clock-date-banner">
-                <span className="date-label">DATE</span>
-                <span className="date-value">{formatDate()}</span>
-              </div>
+              <span className="day-value">{formatDayOfWeek()}</span>
+              <span className="date-separator">•</span>
+              <span className="date-value">{formatDate()}</span>
             </div>
 
             {weather && (

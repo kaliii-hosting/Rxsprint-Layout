@@ -1,0 +1,325 @@
+/* Table Resize Styles - Excel-like behavior */
+
+/* Make tables resizable in edit mode */
+table[data-resizable="true"] {
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  position: relative !important;
+}
+
+/* Prevent table from jumping when hovering */
+table {
+  transition: none !important;
+}
+
+table td,
+table th {
+  transition: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Resize handles for columns and rows - invisible until hover */
+.resize-handle {
+  position: absolute;
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Show handles on hover */
+.resize-handle:hover {
+  opacity: 1;
+}
+
+.resize-handle-col {
+  cursor: col-resize;
+  width: 8px !important;
+  right: -4px;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+}
+
+.resize-handle-row {
+  cursor: row-resize;
+  height: 8px !important;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+/* Visual indicator lines */
+.resize-indicator {
+  position: absolute;
+  background: #FF6900;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1001;
+  transition: opacity 0.2s ease;
+}
+
+.resize-indicator-col {
+  width: 2px;
+  top: 0;
+  bottom: 0;
+}
+
+.resize-indicator-row {
+  height: 2px;
+  left: 0;
+  right: 0;
+}
+
+/* Visual feedback during resize */
+.resizing-table {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+.resizing-table * {
+  cursor: inherit !important;
+  user-select: none !important;
+}
+
+/* Table cells in edit mode */
+table[data-resizable="true"] td,
+table[data-resizable="true"] th {
+  position: relative;
+  min-width: 30px;
+  min-height: 20px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Prevent content from affecting resize */
+table[data-resizable="true"] td *,
+table[data-resizable="true"] th * {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Allow interaction with content when not resizing */
+table[data-resizable="true"]:not(.resizing-table) td[contenteditable="true"],
+table[data-resizable="true"]:not(.resizing-table) th[contenteditable="true"] {
+  pointer-events: auto;
+  user-select: text;
+}
+
+table[data-resizable="true"]:not(.resizing-table) td[contenteditable="true"] *,
+table[data-resizable="true"]:not(.resizing-table) th[contenteditable="true"] * {
+  pointer-events: auto;
+  user-select: text;
+}
+
+/* Excel-like resize cursor areas */
+table[data-resizable="true"] td:not(:last-child),
+table[data-resizable="true"] th:not(:last-child) {
+  border-right: 1px solid transparent;
+}
+
+table[data-resizable="true"] tr:not(:last-child) td,
+table[data-resizable="true"] tr:not(:last-child) th {
+  border-bottom: 1px solid transparent;
+}
+
+/* Show resize cursor when near borders */
+table[data-resizable="true"] td,
+table[data-resizable="true"] th {
+  position: relative;
+}
+
+/* Column resize area */
+table[data-resizable="true"] td::after,
+table[data-resizable="true"] th::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  z-index: 5;
+  pointer-events: none;
+}
+
+table[data-resizable="true"] td:last-child::after,
+table[data-resizable="true"] th:last-child::after {
+  display: none;
+}
+
+/* Row resize area */
+table[data-resizable="true"] tr:not(:last-child) td::before,
+table[data-resizable="true"] tr:not(:last-child) th::before {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: row-resize;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Resize overlay */
+.resize-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: transparent;
+}
+
+/* Visual indicator for resizable tables */
+table[contenteditable="true"] td,
+table[contenteditable="true"] th,
+td[contenteditable="true"],
+th[contenteditable="true"] {
+  position: relative;
+}
+
+/* Excel-like visual feedback */
+table[data-resizable="true"] {
+  outline: 1px solid rgba(255, 105, 0, 0.2);
+}
+
+table[data-resizable="true"]:hover {
+  outline: 1px solid rgba(255, 105, 0, 0.3);
+}
+
+/* Highlight resize areas on hover */
+.resize-handle-col:hover ~ .resize-indicator-col,
+.resize-handle-row:hover ~ .resize-indicator-row {
+  opacity: 0.5;
+}
+
+/* Active resize state */
+.resizing-table .resize-indicator {
+  opacity: 1 !important;
+}
+
+/* Table wrapper for overflow handling */
+.resizable-table-wrapper {
+  position: relative;
+  overflow: auto;
+  max-width: 100%;
+}
+
+/* Column width indicators */
+.col-width-indicator {
+  position: absolute;
+  top: -20px;
+  font-size: 11px;
+  color: #666;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 4px;
+  border-radius: 2px;
+  pointer-events: none;
+  white-space: nowrap;
+  display: none;
+}
+
+.resize-handle-col:hover + .col-width-indicator,
+.resize-handle-col.resizing + .col-width-indicator {
+  display: block;
+}
+
+/* Row height indicators */
+.row-height-indicator {
+  position: absolute;
+  left: -30px;
+  font-size: 11px;
+  color: #666;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 4px;
+  border-radius: 2px;
+  pointer-events: none;
+  white-space: nowrap;
+  display: none;
+}
+
+.resize-handle-row:hover + .row-height-indicator,
+.resize-handle-row.resizing + .row-height-indicator {
+  display: block;
+}
+
+/* Dark theme support */
+.dark-theme .col-width-indicator,
+.dark-theme .row-height-indicator {
+  background: rgba(42, 42, 42, 0.9);
+  color: #E0E0E0;
+}
+
+.dark-theme .resize-handle:hover {
+  background: rgba(255, 105, 0, 0.6) !important;
+}
+
+/* Mobile adjustments - larger touch targets */
+@media (max-width: 768px) {
+  .resize-handle-col {
+    width: 12px !important;
+    right: -6px;
+  }
+  
+  .resize-handle-row {
+    height: 12px !important;
+    bottom: -6px;
+  }
+  
+  .resize-indicator {
+    width: 3px;
+    height: 3px;
+  }
+  
+  table[data-resizable="true"] td::after,
+  table[data-resizable="true"] th::after {
+    width: 12px;
+    right: -6px;
+  }
+  
+  table[data-resizable="true"] tr:not(:last-child) td::before,
+  table[data-resizable="true"] tr:not(:last-child) th::before {
+    height: 12px;
+    bottom: -6px;
+  }
+}
+
+/* Ensure smooth resizing without glitches */
+table[data-resizable="true"] {
+  will-change: transform;
+}
+
+table[data-resizable="true"] td,
+table[data-resizable="true"] th {
+  will-change: width, height;
+}
+
+/* Prevent layout shift on hover */
+table {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Preserve resized dimensions */
+table[data-resizable="true"] td[style*="width"],
+table[data-resizable="true"] th[style*="width"] {
+  box-sizing: border-box !important;
+}
+
+table[data-resizable="true"] tr[style*="height"] {
+  box-sizing: border-box !important;
+}
+
+/* Smooth transitions for non-resize interactions */
+table:not(.resizing-table) td,
+table:not(.resizing-table) th {
+  transition: background-color 0.2s ease, outline 0.2s ease;
+}

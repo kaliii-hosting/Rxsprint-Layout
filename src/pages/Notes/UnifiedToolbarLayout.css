@@ -81,7 +81,7 @@
   outline: none !important;
   transition: all 0.2s ease !important;
   min-width: 0 !important;
-  height: auto !important;
+  height: 40px !important;
   line-height: 1.4 !important;
   font-family: inherit !important;
 }
@@ -311,4 +311,90 @@
 /* Combined shadow for both toolbars when scrolled */
 .notes-page.editing-mode .editor-banner-controls-container .banner-controls-single-row {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Banner Submit Button Styles */
+.banner-submit-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.375rem !important;
+  padding: 0.5rem 1rem !important;
+  background: linear-gradient(135deg, #FF6900 0%, #FF5500 100%) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+  min-height: 36px !important;
+  margin-left: auto !important;
+  box-shadow: 0 2px 4px rgba(255, 85, 0, 0.2) !important;
+}
+
+.banner-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #FF5500 0%, #FF4400 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(255, 85, 0, 0.3) !important;
+}
+
+.banner-submit-btn:active:not(:disabled) {
+  transform: translateY(0) !important;
+  box-shadow: 0 1px 2px rgba(255, 85, 0, 0.2) !important;
+}
+
+.banner-submit-btn:disabled {
+  background: #E0E0E0 !important;
+  color: #9E9E9E !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+.banner-submit-btn svg {
+  width: 16px !important;
+  height: 16px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .banner-submit-btn {
+    padding: 0.375rem 0.75rem !important;
+    min-height: 32px !important;
+    font-size: 0.8125rem !important;
+  }
+  
+  .banner-submit-btn span {
+    display: none !important;
+  }
+  
+  .banner-submit-btn svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-submit-btn {
+    padding: 0.25rem 0.5rem !important;
+    min-height: 28px !important;
+  }
+}
+
+/* Ensure submit button stays on the far right */
+.banner-button-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  flex-wrap: nowrap !important;
+}
+
+.banner-button-group .banner-submit-btn {
+  margin-left: 1rem !important;
+  flex-shrink: 0 !important;
+}
+
+
 }

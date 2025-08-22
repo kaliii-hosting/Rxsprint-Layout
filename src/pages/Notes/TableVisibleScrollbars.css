@@ -1,0 +1,291 @@
+/* Always visible scrollbars for Excel/table content in Notes */
+
+/* ==========================================
+   TABLE WRAPPER SCROLLBAR STYLES
+   ========================================== */
+
+/* Force visible scrollbars on all table containers */
+.note-content-wrapper .tableWrapper,
+.note-content-wrapper .table-wrapper,
+.note-content-wrapper .table-with-copy,
+.note-content-edit-area .tableWrapper,
+.note-content-edit-area .table-wrapper,
+.note-content-edit-area .table-with-copy,
+.note-content table,
+.note-view-content table,
+.ProseMirror .tableWrapper,
+.tiptap-editor .tableWrapper,
+.rich-text-editor .tableWrapper {
+  overflow: scroll !important; /* Force scrollbars to always show */
+  overflow-x: scroll !important;
+  overflow-y: scroll !important;
+  max-width: 100% !important;
+  max-height: 500px !important; /* Limit height to trigger vertical scroll */
+  border: 2px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  padding: 0 !important;
+  margin: 1.5rem 0 !important;
+  position: relative !important;
+  background: white !important;
+  display: block !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* Wrapper div for tables to ensure scrolling */
+.tableWrapper,
+.table-wrapper,
+.table-with-copy {
+  display: block !important;
+  overflow: scroll !important; /* Always show scrollbars */
+  max-height: 500px !important;
+  max-width: 100% !important;
+  position: relative !important;
+}
+
+/* Ensure tables can extend beyond container for scrolling */
+.note-content-wrapper table,
+.note-content-edit-area table,
+.note-content table,
+.note-view-content table,
+.ProseMirror table,
+.tiptap-editor table,
+.tableWrapper table,
+.table-wrapper table {
+  width: auto !important;
+  min-width: 100% !important;
+  border-collapse: collapse !important;
+  table-layout: auto !important;
+  display: table !important;
+}
+
+/* ==========================================
+   WEBKIT SCROLLBAR STYLES (Chrome, Safari)
+   ========================================== */
+
+/* Make scrollbars always visible and styled */
+.tableWrapper::-webkit-scrollbar,
+.table-wrapper::-webkit-scrollbar,
+.table-with-copy::-webkit-scrollbar,
+.note-content-wrapper table::-webkit-scrollbar,
+.note-content-edit-area table::-webkit-scrollbar {
+  width: 14px !important;
+  height: 14px !important;
+  display: block !important;
+  background: #f5f5f5 !important;
+  border: 1px solid #ddd !important;
+}
+
+/* Scrollbar track */
+.tableWrapper::-webkit-scrollbar-track,
+.table-wrapper::-webkit-scrollbar-track,
+.table-with-copy::-webkit-scrollbar-track,
+.note-content-wrapper table::-webkit-scrollbar-track,
+.note-content-edit-area table::-webkit-scrollbar-track {
+  background: #f9f9f9 !important;
+  border-radius: 4px !important;
+  border: 1px solid #e0e0e0 !important;
+}
+
+/* Scrollbar thumb */
+.tableWrapper::-webkit-scrollbar-thumb,
+.table-wrapper::-webkit-scrollbar-thumb,
+.table-with-copy::-webkit-scrollbar-thumb,
+.note-content-wrapper table::-webkit-scrollbar-thumb,
+.note-content-edit-area table::-webkit-scrollbar-thumb {
+  background: #FF6900 !important;
+  border-radius: 4px !important;
+  border: 1px solid #ff5500 !important;
+  min-height: 30px !important;
+  min-width: 30px !important;
+}
+
+/* Scrollbar thumb on hover */
+.tableWrapper::-webkit-scrollbar-thumb:hover,
+.table-wrapper::-webkit-scrollbar-thumb:hover,
+.table-with-copy::-webkit-scrollbar-thumb:hover,
+.note-content-wrapper table::-webkit-scrollbar-thumb:hover,
+.note-content-edit-area table::-webkit-scrollbar-thumb:hover {
+  background: #ff5500 !important;
+  border: 1px solid #ff4400 !important;
+}
+
+/* Corner where scrollbars meet */
+.tableWrapper::-webkit-scrollbar-corner,
+.table-wrapper::-webkit-scrollbar-corner,
+.table-with-copy::-webkit-scrollbar-corner,
+.note-content-wrapper table::-webkit-scrollbar-corner,
+.note-content-edit-area table::-webkit-scrollbar-corner {
+  background: #f5f5f5 !important;
+  border: 1px solid #ddd !important;
+}
+
+/* ==========================================
+   FIREFOX SCROLLBAR STYLES
+   ========================================== */
+
+/* Firefox scrollbar styles */
+.tableWrapper,
+.table-wrapper,
+.table-with-copy,
+.note-content-wrapper table,
+.note-content-edit-area table {
+  scrollbar-width: auto !important; /* Show normal width scrollbars */
+  scrollbar-color: #FF6900 #f5f5f5 !important;
+}
+
+/* ==========================================
+   TABLE CELL STYLES
+   ========================================== */
+
+/* Ensure cells have proper sizing for content */
+.note-content-wrapper td,
+.note-content-wrapper th,
+.note-content-edit-area td,
+.note-content-edit-area th,
+.tableWrapper td,
+.tableWrapper th {
+  padding: 10px 12px !important;
+  min-width: 120px !important;
+  max-width: 500px !important;
+  border: 1px solid #ddd !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+}
+
+/* Header cells styling */
+.note-content-wrapper th,
+.note-content-edit-area th,
+.tableWrapper th {
+  background: #f5f5f5 !important;
+  font-weight: 600 !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  border-bottom: 2px solid #ddd !important;
+}
+
+/* ==========================================
+   INLINE TABLE EDITOR SCROLLBARS
+   ========================================== */
+
+/* Inline table editors should also have visible scrollbars */
+.inline-revo-container,
+.inline-table-editor,
+.revo-grid {
+  overflow: scroll !important;
+  max-height: 500px !important;
+  border: 2px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  margin: 1rem 0 !important;
+}
+
+/* ==========================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================== */
+
+@media (max-width: 768px) {
+  .tableWrapper,
+  .table-wrapper,
+  .table-with-copy,
+  .note-content-wrapper table,
+  .note-content-edit-area table {
+    max-height: 400px !important;
+  }
+  
+  .note-content-wrapper td,
+  .note-content-wrapper th,
+  .note-content-edit-area td,
+  .note-content-edit-area th {
+    min-width: 100px !important;
+    padding: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .tableWrapper,
+  .table-wrapper,
+  .table-with-copy,
+  .note-content-wrapper table,
+  .note-content-edit-area table {
+    max-height: 300px !important;
+  }
+  
+  .note-content-wrapper td,
+  .note-content-wrapper th,
+  .note-content-edit-area td,
+  .note-content-edit-area th {
+    min-width: 80px !important;
+    padding: 6px !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+/* ==========================================
+   DARK THEME SUPPORT
+   ========================================== */
+
+.dark-theme .tableWrapper,
+.dark-theme .table-wrapper,
+.dark-theme .table-with-copy {
+  background: #1a1a1a !important;
+  border-color: #444 !important;
+}
+
+.dark-theme .tableWrapper::-webkit-scrollbar-track,
+.dark-theme .table-wrapper::-webkit-scrollbar-track,
+.dark-theme .table-with-copy::-webkit-scrollbar-track {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+}
+
+.dark-theme .tableWrapper::-webkit-scrollbar-thumb,
+.dark-theme .table-wrapper::-webkit-scrollbar-thumb,
+.dark-theme .table-with-copy::-webkit-scrollbar-thumb {
+  background: #FF6900 !important;
+  border-color: #ff5500 !important;
+}
+
+.dark-theme td,
+.dark-theme th {
+  border-color: #444 !important;
+}
+
+.dark-theme th {
+  background: #2a2a2a !important;
+}
+
+/* ==========================================
+   OVERRIDE CONFLICTING STYLES
+   ========================================== */
+
+/* Ensure our styles take precedence */
+html body .note-content-wrapper .tableWrapper,
+html body .note-content-edit-area .tableWrapper,
+html body .note-content table,
+html body .ProseMirror .tableWrapper {
+  overflow: scroll !important;
+  overflow-x: scroll !important;
+  overflow-y: scroll !important;
+}
+
+/* Force scrollbar visibility even if content fits */
+html body .tableWrapper {
+  min-height: 150px !important;
+  overflow: scroll !important;
+}
+
+/* Ensure edit mode tables have scrollbars */
+html body .notes-page.editing-mode .tableWrapper,
+html body .notes-page.editing-mode table {
+  overflow: scroll !important;
+  max-height: 500px !important;
+}
+
+/* Fix for view mode tables */
+html body .note-view-content table,
+html body .note-view-content .tableWrapper {
+  overflow: scroll !important;
+  display: block !important;
+  max-height: 500px !important;
+}
