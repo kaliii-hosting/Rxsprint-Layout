@@ -1,6 +1,8 @@
 /* Enterprise Grade Header Design System */
 .enterprise-header {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   background: var(--card-background, #ffffff);
   border-bottom: 1px solid var(--border-color, #e1e4e8);
   margin-bottom: 1rem;

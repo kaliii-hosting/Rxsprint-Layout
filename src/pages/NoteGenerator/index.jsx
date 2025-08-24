@@ -71,6 +71,7 @@ const NoteGenerator = () => {
   const toggleRefs = useRef({});
   const [isPatientInfoExpanded, setIsPatientInfoExpanded] = useState(false);
   const [isBannerNotesExpanded, setIsBannerNotesExpanded] = useState(false);
+  const [isInterventionExpanded, setIsInterventionExpanded] = useState(false);
   const dragStartPosition = useRef(null);
   const lastUpdateTime = useRef(0);
   const animationFrameRef = useRef(null);
@@ -135,6 +136,8 @@ const NoteGenerator = () => {
     allergyChangesDetails: '',
     hasMedicationChanges: '',
     medicationChangesDetails: '',
+    hasAdditional: '',
+    additionalDetails: '',
     nextDoseDate: '',
     lastDoseDate2: '', // Second instance of last dose
     compliance: '',
@@ -562,6 +565,11 @@ const NoteGenerator = () => {
       fields.push(`Patient had recent changes to medications${interventionForm.medicationChangesDetails ? `, ${interventionForm.medicationChangesDetails}` : ''}`);
     } else if (interventionForm.hasMedicationChanges === 'no') {
       fields.push('Patient has no recent changes to medications');
+    }
+    
+    // Additional Information (before Next dose)
+    if (interventionForm.hasAdditional === 'yes' && interventionForm.additionalDetails) {
+      fields.push(interventionForm.additionalDetails);
     }
     
     // Dosing Schedule
@@ -1187,54 +1195,41 @@ const NoteGenerator = () => {
                 </div>
                 
                 {/* Generated Patient Info Note - Matching Intervention Note Design */}
-                <div className="generated-note-section intervention-style">
-                  <h4 className="section-title">
-                    <FileText size={16} />
-                    Generated Patient Information Note
-                  </h4>
-                  <div className="note-output-container">
-                    {isEditingNote ? (
-                      <textarea
-                        ref={noteTextareaRef}
-                        className="note-edit-textarea"
-                        value={editedNote}
-                        onChange={(e) => setEditedNote(e.target.value)}
-                        onBlur={() => {
-                          setIsEditingNote(false);
-                          setEditedNote('');
-                        }}
-                      />
-                    ) : (
-                      <div className="note-display" onClick={() => {
-                        const note = generatePatientInfoNote();
-                        if (note) {
-                          setEditedNote(note);
-                          setIsEditingNote(true);
-                          setTimeout(() => noteTextareaRef.current?.focus(), 0);
-                        }
+                <div className="dashboard-card note-output-card" style={{ marginTop: '1.5rem' }}>
+                  <div className="card-header">
+                    <h3>Generated Patient Information Note</h3>
+                    <div className="header-actions">
+                      <button className="reset-btn" onClick={() => {
+                        setPatientInfoForm({
+                          unitNumber: '',
+                          accountNumber: '',
+                          patientName: '',
+                          medicationName: '',
+                          changes: ''
+                        });
                       }}>
-                        {generatePatientInfoNote() || 'Fill in the fields above to generate the note'}
-                      </div>
-                    )}
-                    <div className="note-actions">
-                      <button
-                        className="edit-note-btn"
-                        onClick={() => {
-                          const note = generatePatientInfoNote();
-                          if (note) {
-                            setEditedNote(note);
-                            setIsEditingNote(true);
-                            setTimeout(() => noteTextareaRef.current?.focus(), 0);
-                          }
-                        }}
-                        disabled={!generatePatientInfoNote()}
-                      >
-                        <Edit size={16} />
-                        Edit Note
+                        <RefreshCw size={16} />
+                        Reset Form
                       </button>
-                      <button
+                    </div>
+                  </div>
+                  <div className="card-body">
+                    <div 
+                      className="generated-note-output"
+                      onClick={() => copyToClipboard(generatePatientInfoNote(), 'patient')}
+                    >
+                      <p>{generatePatientInfoNote() || 'Fill in the fields above to generate the note'}</p>
+                      {copiedNote === 'patient' && (
+                        <div className="copied-indicator">
+                          <Check size={16} />
+                          Copied to clipboard!
+                        </div>
+                      )}
+                    </div>
+                    <div className="note-actions">
+                      <button 
                         className="copy-note-btn primary"
-                        onClick={() => copyToClipboard(editedNote || generatePatientInfoNote(), 'patient')}
+                        onClick={() => copyToClipboard(generatePatientInfoNote(), 'patient')}
                         disabled={!generatePatientInfoNote()}
                       >
                         {copiedNote === 'patient' ? (
@@ -1503,12 +1498,18 @@ const NoteGenerator = () => {
             )}
           </div>
 
-          {/* Intervention Note Form */}
+          {/* Intervention Note Form - Collapsible Dropdown */}
           <div className="dashboard-card note-form-card">
-            <div className="card-header">
-              <h3>Intervention Note Information</h3>
-              <Activity size={20} />
+            <div className="card-header collapsible-header" onClick={() => setIsInterventionExpanded(!isInterventionExpanded)}>
+              <div className="header-left">
+                <h3>Intervention Note Information</h3>
+                <Activity size={20} />
+              </div>
+              <div className="collapse-indicator">
+                {isInterventionExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+              </div>
             </div>
+            {isInterventionExpanded && (
             <div className="card-body">
               <div className="intervention-form-container">
                 {/* All fields in requested order */}
@@ -1669,6 +1670,35 @@ const NoteGenerator = () => {
                           placeholder="Enter medication changes details"
                           className={`note-input ${filledFields.has('medicationChangesDetails') ? 'filled' : ''}`}
                           style={{ textTransform: 'uppercase', marginTop: '0.5rem' }}
+                        />
+                      )}
+                    </div>
+
+                    {/* Additional Information */}
+                    <div className="input-group">
+                      <label>Additional</label>
+                      {renderSwitchToggle('hasAdditional', 'yes', 'no')}
+                      {interventionForm.hasAdditional === 'yes' && (
+                        <textarea
+                          ref={el => formRefs.current['additionalDetails'] = el}
+                          value={interventionForm.additionalDetails}
+                          onChange={(e) => updateInterventionField('additionalDetails', e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              handleKeyPress(e, 'additionalDetails');
+                            }
+                          }}
+                          placeholder="Enter additional information"
+                          className={`note-input ${filledFields.has('additionalDetails') ? 'filled' : ''}`}
+                          style={{ 
+                            textTransform: 'uppercase', 
+                            marginTop: '0.5rem',
+                            minHeight: '80px',
+                            resize: 'vertical',
+                            width: '100%'
+                          }}
+                          rows="3"
                         />
                       )}
                     </div>
@@ -1948,81 +1978,82 @@ const NoteGenerator = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Intervention Note Output */}
-          <div className="dashboard-card note-output-card">
-            <div className="card-header">
-              <h3>Generated Intervention Note</h3>
-              <div className="header-actions">
-                <button className="reset-btn" onClick={resetInterventionForm}>
-                  <RefreshCw size={16} />
-                  Reset Form
-                </button>
-              </div>
-            </div>
-            <div className="card-body">
-              {isEditingNote ? (
-                <div className="note-edit-container">
-                  <textarea
-                    ref={noteTextareaRef}
-                    className="note-edit-textarea"
-                    value={editedNote}
-                    onChange={(e) => setEditedNote(e.target.value)}
-                    placeholder="Edit your note here..."
-                  />
-                  <div className="edit-actions">
-                    <button 
-                      className="edit-action-btn cancel"
-                      onClick={handleCancelEdit}
-                    >
-                      <X size={16} />
-                      Cancel
-                    </button>
-                    <button 
-                      className="edit-action-btn save"
-                      onClick={handleSaveEdit}
-                    >
-                      <Save size={16} />
-                      Save Changes
-                    </button>
+                
+                {/* Generated Intervention Note - Inside the Intervention Section */}
+                <div className="dashboard-card note-output-card" style={{ marginTop: '1.5rem' }}>
+                  <div className="card-header">
+                    <h3>Generated Intervention Note</h3>
+                    <div className="header-actions">
+                      <button className="reset-btn" onClick={resetInterventionForm}>
+                        <RefreshCw size={16} />
+                        Reset Form
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <>
-                  <div 
-                    className="generated-note-output"
-                    onClick={() => copyToClipboard(getCurrentNoteText())}
-                  >
-                    <p>{getCurrentNoteText()}</p>
-                    {copiedNote && (
-                      <div className="copied-indicator">
-                        <Check size={16} />
-                        Copied to clipboard!
+                  <div className="card-body">
+                    {isEditingNote ? (
+                      <div className="note-edit-container">
+                        <textarea
+                          ref={noteTextareaRef}
+                          className="note-edit-textarea"
+                          value={editedNote}
+                          onChange={(e) => setEditedNote(e.target.value)}
+                          placeholder="Edit your note here..."
+                        />
+                        <div className="edit-actions">
+                          <button 
+                            className="edit-action-btn cancel"
+                            onClick={handleCancelEdit}
+                          >
+                            <X size={16} />
+                            Cancel
+                          </button>
+                          <button 
+                            className="edit-action-btn save"
+                            onClick={handleSaveEdit}
+                          >
+                            <Save size={16} />
+                            Save Changes
+                          </button>
+                        </div>
                       </div>
+                    ) : (
+                      <>
+                        <div 
+                          className="generated-note-output"
+                          onClick={() => copyToClipboard(getCurrentNoteText())}
+                        >
+                          <p>{getCurrentNoteText()}</p>
+                          {copiedNote && (
+                            <div className="copied-indicator">
+                              <Check size={16} />
+                              Copied to clipboard!
+                            </div>
+                          )}
+                        </div>
+                        <div className="note-actions">
+                          <button 
+                            className="edit-note-btn"
+                            onClick={handleEditNote}
+                          >
+                            <Edit size={16} />
+                            Edit Note
+                          </button>
+                          <button 
+                            className="copy-note-btn primary"
+                            onClick={() => copyToClipboard(getCurrentNoteText())}
+                          >
+                            <Copy size={16} />
+                            Copy Note to Clipboard
+                          </button>
+                        </div>
+                      </>
                     )}
                   </div>
-                  <div className="note-actions">
-                    <button 
-                      className="edit-note-btn"
-                      onClick={handleEditNote}
-                    >
-                      <Edit size={16} />
-                      Edit Note
-                    </button>
-                    <button 
-                      className="copy-note-btn primary"
-                      onClick={() => copyToClipboard(getCurrentNoteText())}
-                    >
-                      <Copy size={16} />
-                      Copy Note to Clipboard
-                    </button>
-                  </div>
-                </>
-              )}
+                </div>
+              </div>
             </div>
+            )}
           </div>
         </div>
       </div>

@@ -70,6 +70,9 @@ const Workflow = () => {
   const [showAddSubsectionModal, setShowAddSubsectionModal] = useState(false);
   const [showEditSectionModal, setShowEditSectionModal] = useState(false);
   const [showEditSubsectionModal, setShowEditSubsectionModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteModalType, setDeleteModalType] = useState('');
+  const [deleteConfirmResolve, setDeleteConfirmResolve] = useState(null);
   const [selectedSection, setSelectedSection] = useState(null);
   const [selectedSubsection, setSelectedSubsection] = useState(null);
   const [newSectionTitle, setNewSectionTitle] = useState('');
@@ -610,7 +613,9 @@ See attached pump sheet for details.`
       return;
     }
 
-    if (confirm('Are you sure you want to delete this section?')) {
+    // Show styled confirmation modal
+    const confirmed = await showDeleteConfirmation('section');
+    if (confirmed) {
       const updatedSections = workflowData[activeTab].sections.filter(s => s.id !== sectionId);
       const updatedData = {
         ...workflowData,
@@ -625,7 +630,9 @@ See attached pump sheet for details.`
 
   // Delete subsection
   const deleteSubsection = async (sectionId, subsectionId) => {
-    if (confirm('Are you sure you want to delete this subsection?')) {
+    // Show styled confirmation modal
+    const confirmed = await showDeleteConfirmation('subsection');
+    if (confirmed) {
       const updatedSections = workflowData[activeTab].sections.map(section => {
         if (section.id === sectionId && section.subsections) {
           return {
@@ -839,6 +846,10 @@ See attached pump sheet for details.`
     e.preventDefault();
     e.stopPropagation();
     
+    // Find if subsection is marked as 2-column
+    const section = workflowData[activeTab].sections.find(s => s.id === sectionId);
+    const subsection = section?.subsections?.find(s => s.id === subsectionId);
+    
     setContextMenu({
       visible: true,
       x: e.pageX,
@@ -847,7 +858,8 @@ See attached pump sheet for details.`
       targetId: subsectionId,
       targetType: 'subsection',
       sectionId: sectionId,
-      emailType: 'default'
+      emailType: 'default',
+      is2Column: subsection?.is2Column || false
     });
   };
 
@@ -857,7 +869,7 @@ See attached pump sheet for details.`
   };
 
   // Handle context menu action
-  const handleContextMenuAction = (action) => {
+  const handleContextMenuAction = async (action) => {
     const { targetId, sectionId, targetType } = contextMenu;
     
     if (action === 'edit') {
@@ -896,6 +908,131 @@ See attached pump sheet for details.`
         setNewSubsectionTitle('');
         setNewSubsectionContent('');
         setShowAddSubsectionModal(true);
+      }
+    } else if (action === 'toggle-2column') {
+      if (targetType === 'subsection') {
+        // Toggle 2-column layout for subsection
+        const updatedSections = workflowData[activeTab].sections.map(section => {
+          if (section.id === sectionId && section.subsections) {
+            return {
+              ...section,
+              subsections: section.subsections.map(sub => {
+                if (sub.id === targetId) {
+                  return {
+                    ...sub,
+                    is2Column: !sub.is2Column
+                  };
+                }
+                return sub;
+              })
+            };
+          }
+          return section;
+        });
+        
+        await saveWorkflowData(updatedSections);
+      }
+    } else if (action === 'copy-text') {
+      if (targetType === 'subsection') {
+        // Copy all text content from subsection
+        const section = workflowData[activeTab].sections.find(s => s.id === sectionId);
+        const subsection = section?.subsections?.find(s => s.id === targetId);
+        
+        if (subsection) {
+          // Start with title
+          let textContent = `${subsection.title}\n\n`;
+          
+          // Track what we've already added to prevent duplicates
+          const processedItems = new Set();
+          
+          // Process items if they exist
+          if (subsection.items && Array.isArray(subsection.items)) {
+            subsection.items.forEach((item, index) => {
+              // Skip if item is undefined or null
+              if (!item) return;
+              
+              // Create a unique key for this item to prevent duplicates
+              const itemKey = JSON.stringify({
+                text: item.text || '',
+                content: item.content || '',
+                type: item.type || '',
+                index: index
+              });
+              
+              // Skip if we've already processed this item
+              if (processedItems.has(itemKey)) return;
+              processedItems.add(itemKey);
+              
+              // Handle different item structures - only process once
+              if (item.text && !item.type) {
+                // Standard text item with optional checklist
+                textContent += item.text;
+                if (item.checklist && Array.isArray(item.checklist)) {
+                  item.checklist.forEach(checkItem => {
+                    textContent += `\n  • ${checkItem}`;
+                  });
+                }
+                textContent += '\n\n';
+              } else if (item.type === 'email' || item.type === 'email-template') {
+                // Email template item
+                if (item.header && item.header.title) {
+                  textContent += `${item.header.title}\n`;
+                }
+                if (item.to) textContent += `To: ${item.to}\n`;
+                if (item.cc) textContent += `Cc: ${item.cc}\n`;
+                if (item.subject) textContent += `Subject: ${item.subject}\n`;
+                if (item.body) textContent += `Body: ${item.body}\n`;
+                if (item.content && !item.body) textContent += `${item.content}\n`;
+                textContent += '\n';
+              } else if (item.content && !item.text && item.type !== 'email' && item.type !== 'email-template') {
+                // Generic content item (only if not already handled)
+                textContent += `${item.content}\n\n`;
+              }
+              
+              // Handle screenshots description if exists (only once per item)
+              if (item.screenshots && Array.isArray(item.screenshots) && item.screenshots.length > 0) {
+                item.screenshots.forEach(screenshot => {
+                  if (screenshot.description) {
+                    textContent += `[Image: ${screenshot.description}]\n`;
+                  }
+                });
+              }
+              
+              // Handle tables if exists (only once per item)
+              if (item.tables && Array.isArray(item.tables) && item.tables.length > 0) {
+                item.tables.forEach(table => {
+                  if (table.data) {
+                    textContent += '[Table data]\n';
+                  }
+                });
+              }
+            });
+          }
+          
+          // Copy to clipboard
+          try {
+            await navigator.clipboard.writeText(textContent);
+            console.log('Text copied to clipboard');
+            // Optionally show a success message
+          } catch (err) {
+            console.error('Failed to copy text:', err);
+            // Fallback method for copying
+            const textArea = document.createElement('textarea');
+            textArea.value = textContent;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+              document.execCommand('copy');
+              console.log('Text copied using fallback method');
+            } catch (err2) {
+              console.error('Fallback copy also failed:', err2);
+            }
+            document.body.removeChild(textArea);
+          }
+        }
       }
     }
     
@@ -951,6 +1088,35 @@ See attached pump sheet for details.`
   const resetCompletions = () => {
     setCompletedItems(new Set());
     setCompletedCards(new Set());
+  };
+  
+  // Show delete confirmation modal
+  const showDeleteConfirmation = (type) => {
+    return new Promise((resolve) => {
+      setDeleteModalType(type);
+      setShowDeleteModal(true);
+      setDeleteConfirmResolve(() => resolve);
+    });
+  };
+  
+  // Handle delete confirmation
+  const handleDeleteConfirm = () => {
+    if (deleteConfirmResolve) {
+      deleteConfirmResolve(true);
+    }
+    setShowDeleteModal(false);
+    setDeleteModalType('');
+    setDeleteConfirmResolve(null);
+  };
+  
+  // Handle delete cancel
+  const handleDeleteCancel = () => {
+    if (deleteConfirmResolve) {
+      deleteConfirmResolve(false);
+    }
+    setShowDeleteModal(false);
+    setDeleteModalType('');
+    setDeleteConfirmResolve(null);
   };
 
   // Handle paste event for modal textareas (Add/Edit Subsection)
@@ -1967,10 +2133,11 @@ See attached pump sheet for details.`
   );
 
   // Render subsection card
-  const SubsectionCard = ({ id, itemIds, children, className = "" }) => (
+  const SubsectionCard = ({ id, itemIds, children, className = "", sectionId, subsectionId }) => (
     <div 
       className={`subsection-card ${isCardCompleted(id) ? 'completed' : ''} ${className}`}
       onClick={(e) => toggleCardCompletion(id, itemIds, e)}
+      onContextMenu={(e) => handleSubsectionContextMenu(e, sectionId, subsectionId)}
     >
       {children}
     </div>
@@ -2082,21 +2249,24 @@ See attached pump sheet for details.`
                     
                     {/* Subsections */}
                     {section.subsections && section.subsections.length > 0 && (
-                      <div className="subsections-container">
-                        {section.subsections.map(subsection => {
-                          const SubIcon = getIcon(subsection.icon);
-                          
-                          return (
-                            <div 
-                              key={subsection.id} 
-                              className="subsection-wrapper"
-                              style={{
-                                width: subsectionWidths[subsection.id] ? `${subsectionWidths[subsection.id]}%` : 'auto',
-                                maxWidth: '100%',
-                                position: 'relative'
-                              }}
-                            >
-                              {/* Width resize handle for subsection */}
+                      <>
+                        <div className="subsections-container">
+                          {section.subsections.map(subsection => {
+                            const SubIcon = getIcon(subsection.icon);
+                            
+                            return (
+                              <div 
+                                key={subsection.id} 
+                                data-subsection-id={subsection.id}
+                                className={`subsection-wrapper ${subsection.is2Column ? 'is-2column' : ''}`}
+                                style={{
+                                  width: subsection.is2Column ? 'calc(50% - 0.375rem)' : (subsectionWidths[subsection.id] || subsection.customWidth ? `${subsectionWidths[subsection.id] || subsection.customWidth}%` : '100%'),
+                                  maxWidth: subsection.is2Column ? 'calc(50% - 0.375rem)' : '100%',
+                                  position: 'relative'
+                                }}
+                              >
+                              {/* Width resize handle removed - using 2-column option instead */}
+                              {false && (
                               <div 
                                 className="subsection-width-handle"
                                 onClick={(e) => {
@@ -2126,10 +2296,16 @@ See attached pump sheet for details.`
                                     }));
                                   };
                                   
-                                  const handleMouseUp = async () => {
+                                  const handleMouseUp = async (e) => {
                                     document.removeEventListener('mousemove', handleMouseMove);
                                     document.removeEventListener('mouseup', handleMouseUp);
                                     setIsResizing(false); // Clear flag after subsection resize
+                                    
+                                    // Get the final width from the element
+                                    const subsectionElement = document.querySelector(`[data-subsection-id="${subsection.id}"]`) || e.target.parentElement;
+                                    const parentWidth = subsectionElement.parentElement.offsetWidth;
+                                    const finalWidth = subsectionElement.offsetWidth;
+                                    const finalWidthPercent = Math.min(100, (finalWidth / parentWidth) * 100);
                                     
                                     // Save subsection width to Firebase
                                     const updatedSections = (workflowData[activeTab]?.sections || []).map(s => {
@@ -2140,7 +2316,7 @@ See attached pump sheet for details.`
                                             if (sub.id === subsection.id) {
                                               return {
                                                 ...sub,
-                                                customWidth: subsectionWidths[subsection.id]
+                                                customWidth: finalWidthPercent
                                               };
                                             }
                                             return sub;
@@ -2161,13 +2337,16 @@ See attached pump sheet for details.`
                               >
                                 ⟷
                               </div>
+                              )}
                               
                               <div className="subsection-header rph-title" onContextMenu={(e) => handleSubsectionContextMenu(e, section.id, subsection.id)}>
-                                <SubIcon size={20} />
                                 <h3>{subsection.title}</h3>
+                                {subsection.is2Column && (
+                                  <span className="column-indicator" title="2 Column Layout">2col</span>
+                                )}
                               </div>
                               
-                              <SubsectionCard id={subsection.id} itemIds={subsection.itemIds}>
+                              <SubsectionCard id={subsection.id} itemIds={subsection.itemIds} sectionId={section.id} subsectionId={subsection.id}>
                                 
                                 {subsection.items.map(item => {
                                   if (item.type === 'email-template') {
@@ -2244,13 +2423,9 @@ See attached pump sheet for details.`
                                                   <img 
                                                     src={screenshot.data} 
                                                     alt="Screenshot"
-                                                    style={{ 
-                                                      width: screenshot.customWidth ? `${screenshot.customWidth}%` : '100%',
-                                                      maxWidth: '100%',
-                                                      height: 'auto'
-                                                    }}
                                                     className="resizable-screenshot"
                                                   />
+                                                  {/* Image resize handle removed - images now scale with subsection
                                                   <div 
                                                     className="image-resize-handle"
                                                     onClick={(e) => {
@@ -2335,6 +2510,7 @@ See attached pump sheet for details.`
                                                   >
                                                     ⟷
                                                   </div>
+                                                  */}
                                                 </div>
                                               ))}
                                             </div>
@@ -2357,6 +2533,7 @@ See attached pump sheet for details.`
                                                     }}
                                                     dangerouslySetInnerHTML={{ __html: table.html }}
                                                   />
+                                                  {/* Table resize handle removed - tables now scale with subsection
                                                   <div 
                                                     className="table-resize-handle"
                                                     onClick={(e) => {
@@ -2438,6 +2615,7 @@ See attached pump sheet for details.`
                                                   >
                                                     ⟶
                                                   </div>
+                                                  */}
                                                 </div>
                                               ))}
                                             </div>
@@ -2454,9 +2632,10 @@ See attached pump sheet for details.`
                               </SubsectionCard>
                             </div>
                           );
-                        })}
+                          })}
+                        </div>
                         
-                        {/* Add Subsection Button */}
+                        {/* Add Subsection Button - Outside container to prevent overlap */}
                         <button
                           className="add-subsection-btn"
                           onClick={(e) => {
@@ -2468,7 +2647,7 @@ See attached pump sheet for details.`
                           <Plus size={16} />
                           Add Subsection
                         </button>
-                      </div>
+                      </>
                     )}
                   </div>
                 )}
@@ -2514,25 +2693,19 @@ See attached pump sheet for details.`
             Add Section
           </ActionButton>
           <ActionButton
-            onClick={collapseAll}
-            icon={ChevronUp}
+            onClick={() => {
+              // Check if any sections are expanded
+              const hasExpanded = Object.values(expandedSections).some(isExpanded => isExpanded);
+              if (hasExpanded) {
+                collapseAll();
+              } else {
+                expandAll();
+              }
+            }}
+            icon={Object.values(expandedSections).some(isExpanded => isExpanded) ? ChevronUp : ChevronDown}
             secondary
           >
-            Collapse All
-          </ActionButton>
-          <ActionButton
-            onClick={expandAll}
-            icon={ChevronDown}
-            secondary
-          >
-            Expand All
-          </ActionButton>
-          <ActionButton
-            onClick={resetCompletions}
-            icon={RefreshCcw}
-            secondary
-          >
-            Reset
+            {Object.values(expandedSections).some(isExpanded => isExpanded) ? 'Collapse All' : 'Expand All'}
           </ActionButton>
           <ActionButton
             onClick={() => {
@@ -2591,7 +2764,7 @@ See attached pump sheet for details.`
               <button onClick={() => setShowAddSectionModal(false)} className="btn-cancel">
                 Cancel
               </button>
-              <button onClick={addSection} className="btn-primary">
+              <button onClick={addSection} className="btn-primary" style={{ color: 'white' }}>
                 Add Section
               </button>
             </div>
@@ -2733,6 +2906,7 @@ See attached pump sheet for details.`
                 onClick={addSubsection} 
                 className="btn-primary"
                 type="button"
+                style={{ color: 'white !important', color: '#ffffff !important' }}
               >
                 Add Subsection
               </button>
@@ -2780,7 +2954,7 @@ See attached pump sheet for details.`
               <button onClick={() => setShowEditSectionModal(false)} className="btn-cancel">
                 Cancel
               </button>
-              <button onClick={editSection} className="btn-primary">
+              <button onClick={editSection} className="btn-primary" style={{ color: 'white !important', color: '#ffffff !important' }}>
                 Save Changes
               </button>
             </div>
@@ -2918,7 +3092,7 @@ See attached pump sheet for details.`
               }} className="btn-cancel">
                 Cancel
               </button>
-              <button onClick={editSubsection} className="btn-primary">
+              <button onClick={editSubsection} className="btn-primary" style={{ color: 'white !important', color: '#ffffff !important' }}>
                 Save Changes
               </button>
             </div>
@@ -2978,33 +3152,67 @@ See attached pump sheet for details.`
               ))}
             </div>
             
-            <div className="modal-actions">
-              <button 
-                onClick={() => {
-                  const allSectionIds = workflowData[activeTab].sections.map(s => s.id);
-                  setSelectedSectionsForExport(new Set(allSectionIds));
-                }} 
-                className="btn-secondary"
-              >
-                Select All
-              </button>
-              <button 
-                onClick={() => setSelectedSectionsForExport(new Set())} 
-                className="btn-secondary"
-              >
-                Deselect All
-              </button>
-              <div style={{ flex: 1 }}></div>
-              <button onClick={() => setShowExportSelection(false)} className="btn-cancel">
+            <div className="modal-actions" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0 0' }}>
+              <ActionGroup>
+                <ActionButton 
+                  onClick={() => {
+                    const allSectionIds = workflowData[activeTab].sections.map(s => s.id);
+                    setSelectedSectionsForExport(new Set(allSectionIds));
+                  }} 
+                  secondary
+                >
+                  Select All
+                </ActionButton>
+                <ActionButton 
+                  onClick={() => setSelectedSectionsForExport(new Set())} 
+                  secondary
+                >
+                  Deselect All
+                </ActionButton>
+              </ActionGroup>
+              <ActionGroup>
+                <ActionButton onClick={() => setShowExportSelection(false)} secondary>
+                  Cancel
+                </ActionButton>
+                <ActionButton 
+                  onClick={exportSelectedSectionsToPDF} 
+                  primary
+                  icon={FileDown}
+                  disabled={selectedSectionsForExport.size === 0 || exportingPDF}
+                >
+                  {exportingPDF ? 'Exporting...' : 'Export PDF'}
+                </ActionButton>
+              </ActionGroup>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={handleDeleteCancel}>
+          <div className="delete-confirmation-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="delete-modal-icon">
+              <AlertCircle size={48} className="warning-icon" />
+            </div>
+            <h2 className="delete-modal-title">Confirm Deletion</h2>
+            <p className="delete-modal-message">
+              Are you sure you want to delete this {deleteModalType}?
+            </p>
+            <p className="delete-modal-warning">
+              This action cannot be undone.
+            </p>
+            <div className="delete-modal-actions">
+              <ActionButton onClick={handleDeleteCancel} secondary>
                 Cancel
-              </button>
-              <button 
-                onClick={exportSelectedSectionsToPDF} 
-                className="btn-primary"
-                disabled={selectedSectionsForExport.size === 0 || exportingPDF}
+              </ActionButton>
+              <ActionButton 
+                onClick={handleDeleteConfirm} 
+                primary
+                style={{ background: '#ef4444', borderColor: '#ef4444' }}
               >
-                {exportingPDF ? 'Exporting...' : 'Export PDF'}
-              </button>
+                Delete {deleteModalType}
+              </ActionButton>
             </div>
           </div>
         </div>
@@ -3045,6 +3253,14 @@ See attached pump sheet for details.`
               )}
               {contextMenu.targetType === 'subsection' && (
                 <>
+                  <button onClick={() => handleContextMenuAction('copy-text')}>
+                    <FileText size={16} />
+                    Copy Text
+                  </button>
+                  <button onClick={() => handleContextMenuAction('toggle-2column')}>
+                    <FileText size={16} />
+                    {contextMenu.is2Column ? 'Remove 2 Column' : 'Mark as 2 Column'}
+                  </button>
                   <button onClick={() => handleContextMenuAction('edit')}>
                     <FileText size={16} />
                     Edit Subsection
