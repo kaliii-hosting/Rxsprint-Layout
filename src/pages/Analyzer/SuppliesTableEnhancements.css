@@ -1,0 +1,391 @@
+/* SUPPLIES TABLE ENHANCEMENTS - CLICK HIGHLIGHT & COLUMN IMPROVEMENTS */
+
+/* ========================================
+   SOLID NEON ROW HIGHLIGHT - NO GLOW
+   ======================================== */
+.supply-table-section tr.neon-selected {
+  background: #00ffaa !important;
+  border: 1px solid #00ffaa !important;
+  box-shadow: none !important;
+  transform: none !important;
+  opacity: 1;
+  animation: none !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Make text more readable on neon background */
+.supply-table-section tr.neon-selected td {
+  background: #00ffaa !important;
+  color: #000000 !important; /* Black text for contrast */
+  font-weight: 600 !important;
+  border-color: #00ffaa !important;
+}
+
+/* Status badges - CONTAINED WITHIN COLUMN */
+.supply-table-section .status-badge {
+  font-size: 0.6rem !important;
+  padding: 0.15rem 0.25rem !important;
+  border-radius: 3px !important;
+  display: inline-block !important;
+  max-width: 100% !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+  line-height: 1.0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure status badges remain visible on selected rows */
+.supply-table-section tr.neon-selected .status-badge {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid #00ffaa !important;
+  color: #000 !important;
+  font-size: 0.6rem !important;
+  padding: 0.15rem 0.25rem !important;
+  max-width: 100% !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+}
+
+/* Add hover effect for rows */
+.supply-table-section tr:hover:not(.neon-selected) {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+  transition: background-color 0.2s ease;
+}
+
+/* ========================================
+   MEDICATION HEADER CENTERING
+   ======================================== */
+.supply-table-section .analysis-table th:nth-child(4) {
+  text-align: center !important; /* Center the header */
+}
+
+/* Keep medication data left-aligned */
+.supply-table-section .analysis-table td:nth-child(4) {
+  text-align: left !important;
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+/* ========================================
+   RX NUMBER COLUMN - TEXT WRAPPING
+   ======================================== */
+/* RX Number column - FORCE TEXT WRAPPING */
+.supply-table-section .analysis-table td:nth-child(2),
+.supply-table-section .analysis-table th:nth-child(2) {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-all !important; /* Break long RX numbers */
+  overflow-wrap: anywhere !important;
+  hyphens: auto !important;
+  max-width: 80px !important;
+  min-width: 50px !important;
+  line-height: 1.2 !important;
+}
+
+/* ========================================
+   COLUMN WIDTH OPTIMIZATION FOR MORE MEDICATION SPACE
+   ======================================== */
+
+/* Status column - PROPER BADGE CONTAINMENT */
+.supply-table-section .analysis-table th:nth-child(1) {
+  width: 90px !important;
+  min-width: 90px !important;
+  max-width: 90px !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  word-break: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  padding: 0.3rem 0.25rem !important;
+  line-height: 1.2 !important;
+  vertical-align: top !important;
+  font-size: 0.75rem !important;
+  box-sizing: border-box !important;
+}
+.supply-table-section .analysis-table td:nth-child(1) {
+  width: 90px !important;
+  min-width: 90px !important;
+  max-width: 90px !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  overflow: hidden !important; /* Contain badges within column */
+  padding: 0.1rem 0.1rem !important;
+  line-height: 1.1 !important;
+  vertical-align: top !important;
+  font-size: 0.65rem !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+
+/* RX Number column - FIXED WIDTH NO OVERLAP */
+.supply-table-section .analysis-table th:nth-child(2) {
+  width: 85px !important;
+  min-width: 85px !important;
+  max-width: 85px !important;
+  padding: 0.3rem 0.25rem !important;
+  vertical-align: top !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  word-break: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+  font-size: 0.75rem !important;
+  box-sizing: border-box !important;
+}
+.supply-table-section .analysis-table td:nth-child(2) {
+  width: 85px !important;
+  min-width: 85px !important;
+  max-width: 85px !important;
+  padding: 0.15rem 0.15rem !important;
+  vertical-align: top !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  overflow: hidden !important;
+  line-height: 1.1 !important;
+  font-size: 0.7rem !important;
+  box-sizing: border-box !important;
+}
+
+/* Medication column - COMPACT FOR 2-LINE WRAPPING */
+.supply-table-section .analysis-table th:nth-child(4) {
+  width: auto !important;
+  min-width: 140px !important; /* Reduced to give space to Form/QTY */
+  max-width: 200px !important; /* Smaller max width */
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  hyphens: auto !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.3 !important;
+  padding: 0.3rem 0.15rem !important;
+  vertical-align: top !important;
+  font-size: 0.8rem !important;
+}
+.supply-table-section .analysis-table td:nth-child(4) {
+  width: auto !important;
+  min-width: 140px !important; /* Reduced width */
+  max-width: 200px !important; /* Compact max width */
+  white-space: normal !important; /* Allow 2-line wrapping */
+  overflow: visible !important;
+  text-overflow: unset !important;
+  hyphens: auto !important; /* Smart hyphenation */
+  word-wrap: break-word !important;
+  overflow-wrap: anywhere !important; /* Force wrapping for long names */
+  word-break: break-word !important;
+  line-height: 1.1 !important; /* Tighter line spacing for 2 lines */
+  padding: 0.1rem 0.1rem !important; /* Reduced padding */
+  vertical-align: top !important;
+  font-size: 0.7rem !important; /* Smaller font for compactness */
+  max-height: 2.4em !important; /* Limit to ~2 lines */
+}
+
+/* Strength column - COMPACT WRAPPING LIKE FORM/QTY/SUPPLY */
+.supply-table-section .analysis-table th:nth-child(6) {
+  width: 70px !important;
+  min-width: 70px !important;
+  max-width: 70px !important;
+  white-space: nowrap !important; /* Prevent header wrapping */
+  word-wrap: normal !important;
+  word-break: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+  font-size: 0.8rem !important;
+  padding: 0.3rem 0.2rem !important;
+  vertical-align: top !important;
+  box-sizing: border-box !important;
+}
+.supply-table-section .analysis-table td:nth-child(6) {
+  width: 70px !important;
+  min-width: 70px !important;
+  max-width: 70px !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  line-height: 1.1 !important;
+  font-size: 0.75rem !important;
+  padding: 0.05rem 0.1rem !important;
+  vertical-align: top !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* Form column - MORE SPACE FOR TEXT */
+.supply-table-section .analysis-table th:nth-child(7) {
+  width: 80px !important; /* Increased from 65px */
+  min-width: 80px !important;
+  max-width: 80px !important;
+  white-space: nowrap !important; /* Prevent header wrapping */
+  word-wrap: normal !important;
+  word-break: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+  font-size: 0.8rem !important;
+  padding: 0.3rem 0.25rem !important; /* More padding */
+  vertical-align: top !important;
+}
+.supply-table-section .analysis-table td:nth-child(7) {
+  width: 80px !important; /* Increased from 65px */
+  min-width: 80px !important;
+  max-width: 80px !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  line-height: 1.1 !important;
+  font-size: 0.75rem !important;
+  padding: 0.1rem 0.15rem !important; /* More padding */
+  vertical-align: top !important;
+}
+
+/* QTY column - MORE SPACE FOR TEXT */
+.supply-table-section .analysis-table th:nth-child(8) {
+  width: 65px !important; /* Increased from 50px */
+  min-width: 65px !important;
+  max-width: 65px !important;
+  white-space: nowrap !important; /* Prevent header wrapping */
+  word-wrap: normal !important;
+  word-break: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+  font-size: 0.8rem !important;
+  padding: 0.3rem 0.25rem !important; /* More padding */
+  vertical-align: top !important;
+}
+.supply-table-section .analysis-table td:nth-child(8) {
+  width: 65px !important; /* Increased from 50px */
+  min-width: 65px !important;
+  max-width: 65px !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  line-height: 1.1 !important;
+  font-size: 0.75rem !important;
+  padding: 0.1rem 0.15rem !important; /* More padding */
+  vertical-align: top !important;
+}
+
+/* Supply column - wider header, less wrapping */
+.supply-table-section .analysis-table th:nth-child(9) {
+  width: 60px !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
+  white-space: nowrap !important; /* Prevent header wrapping */
+  word-wrap: normal !important;
+  word-break: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+  font-size: 0.8rem !important;
+  padding: 0.3rem 0.2rem !important;
+  vertical-align: top !important;
+}
+.supply-table-section .analysis-table td:nth-child(9) {
+  width: 60px !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  line-height: 1.1 !important;
+  font-size: 0.75rem !important;
+  padding: 0.05rem 0.1rem !important;
+  vertical-align: top !important;
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+@media (max-width: 1200px) {
+  /* Give even more space to medication on smaller screens */
+  .supply-table-section .analysis-table td:nth-child(4) {
+    max-width: 45% !important;
+  }
+  
+  /* Make other columns even more compact */
+  .supply-table-section .analysis-table td:nth-child(1),
+  .supply-table-section .analysis-table td:nth-child(2),
+  .supply-table-section .analysis-table td:nth-child(6),
+  .supply-table-section .analysis-table td:nth-child(7),
+  .supply-table-section .analysis-table td:nth-child(8),
+  .supply-table-section .analysis-table td:nth-child(9) {
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.15rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* On mobile, allow medication to wrap */
+  .supply-table-section .analysis-table td:nth-child(4) {
+    white-space: normal !important;
+    max-width: none !important;
+    min-width: 100px !important;
+  }
+  
+  /* Ultra compact other columns */
+  .supply-table-section .analysis-table td {
+    font-size: 0.7rem !important;
+    padding: 0.25rem 0.1rem !important;
+  }
+}
+
+/* ========================================
+   CURSOR POINTER FOR CLICKABLE ROWS
+   ======================================== */
+.supply-table-section tbody tr {
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Add visual feedback on hover */
+.supply-table-section tbody tr:hover {
+  transform: translateX(2px);
+  transition: transform 0.1s ease;
+}
+
+/* ========================================
+   ENSURE PROPER SPACING AND NO OVERLAP
+   ======================================== */
+.supply-table-section .analysis-table {
+  border-collapse: separate !important;
+  border-spacing: 2px !important; /* Increased spacing to prevent overlap */
+  table-layout: fixed !important; /* Fixed layout for consistent column widths */
+  width: 100% !important;
+}
+
+.supply-table-section .analysis-table th,
+.supply-table-section .analysis-table td {
+  border: 1px solid #e0e0e0 !important;
+  text-align: center !important;
+  vertical-align: top !important;
+  overflow: hidden !important; /* Prevent content overflow */
+  position: relative !important;
+  box-sizing: border-box !important; /* Include padding/border in width */
+}
+
+/* Headers should be single sentence and wrapped */
+.supply-table-section .analysis-table th {
+  font-weight: 600 !important;
+  background-color: #f8f9fa !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  line-height: 1.2 !important;
+  padding: 0.4rem 0.3rem !important;
+}

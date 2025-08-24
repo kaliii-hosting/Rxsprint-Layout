@@ -7,7 +7,7 @@ export default function Terminal() {
             <iframe 
                 src="https://rxsprint-ai.ngrok.app"
                 title="RX Sprint AI"
-                style={{ width: '100%', height: '100vh', border: 'none' }}
+                className="rxsprint-iframe"
                 allow="microphone; camera; clipboard-write; clipboard-read"
             />
         </div>

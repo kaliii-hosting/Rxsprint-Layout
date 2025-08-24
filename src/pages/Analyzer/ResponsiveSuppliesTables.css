@@ -1,0 +1,440 @@
+/* RESPONSIVE SUPPLIES TABLES - FULL SCREEN ADAPTATION */
+
+/* ========================================
+   BASE LAYOUT - SIDE BY SIDE ON DESKTOP
+   ======================================== */
+.supplies-tables-container {
+  display: flex !important;
+  gap: 1rem !important;
+  width: 100% !important;
+  padding: 0 10px !important;
+  margin: 0 !important;
+  flex-wrap: wrap !important;
+}
+
+.supply-table-section {
+  flex: 1 1 45% !important;
+  min-width: 0 !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  overflow: visible !important;
+  margin-bottom: 1rem !important;
+}
+
+/* ========================================
+   TABLE STRUCTURE - ALWAYS SHOW ALL
+   ======================================== */
+.supply-table-section .table-wrapper {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+  width: 100% !important;
+}
+
+.supply-table-section .analysis-table {
+  width: 100% !important;
+  table-layout: auto !important; /* Changed from fixed to auto for better responsiveness */
+  border-collapse: collapse !important;
+  border: 1px solid #e5e7eb !important;
+  font-size: clamp(0.75rem, 1.5vw, 0.95rem) !important; /* Responsive font size */
+}
+
+/* ========================================
+   TEXT WRAPPING - ALL COLUMNS
+   ======================================== */
+.supply-table-section .analysis-table th,
+.supply-table-section .analysis-table td {
+  border: 1px solid #e5e7eb !important;
+  padding: 0.5rem 0.25rem !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  
+  /* Auto wrap text */
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  hyphens: auto !important;
+  
+  /* Minimum and maximum widths for readability */
+  min-width: 40px !important;
+  max-width: 200px !important;
+}
+
+/* Special handling for medication column - LEFT ALIGNED with tighter wrapping */
+.supply-table-section .analysis-table td:nth-child(4),
+.supply-table-section .analysis-table th:nth-child(4) {
+  text-align: left !important;
+  padding-left: 0.4rem !important;
+  padding-right: 0.4rem !important;
+  max-width: 250px !important;
+  min-width: 100px !important;
+  line-height: 1.2 !important; /* Tighter line spacing */
+  word-spacing: -0.05em !important; /* Slightly reduce space between words */
+}
+
+/* Headers styling */
+.supply-table-section .analysis-table th {
+  background: #f9fafb !important;
+  font-weight: 600 !important;
+  font-size: clamp(0.7rem, 1.4vw, 0.9rem) !important;
+  padding: 0.6rem 0.3rem !important;
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINTS
+   ======================================== */
+
+/* Large Desktop (1920px and up) */
+@media (min-width: 1920px) {
+  .supply-table-section .analysis-table {
+    font-size: 1rem !important;
+  }
+  
+  .supply-table-section .analysis-table th {
+    font-size: 0.95rem !important;
+  }
+  
+  .supply-table-section .analysis-table th,
+  .supply-table-section .analysis-table td {
+    padding: 0.75rem 0.5rem !important;
+  }
+}
+
+/* Desktop (1200px to 1919px) */
+@media (min-width: 1200px) and (max-width: 1919px) {
+  .supply-table-section {
+    flex: 1 1 48% !important;
+  }
+  
+  .supply-table-section .analysis-table {
+    font-size: 0.9rem !important;
+  }
+  
+  .supply-table-section .analysis-table th {
+    font-size: 0.85rem !important;
+  }
+}
+
+/* Tablet Landscape (992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .supply-table-section {
+    flex: 1 1 48% !important;
+  }
+  
+  .supply-table-section .analysis-table {
+    font-size: 0.85rem !important;
+  }
+  
+  .supply-table-section .analysis-table th {
+    font-size: 0.8rem !important;
+  }
+  
+  .supply-table-section .analysis-table th,
+  .supply-table-section .analysis-table td {
+    padding: 0.4rem 0.3rem !important;
+  }
+}
+
+/* Tablet Portrait (768px to 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .supplies-tables-container {
+    flex-direction: column !important;
+  }
+  
+  .supply-table-section {
+    flex: 1 1 100% !important;
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .supply-table-section .analysis-table {
+    font-size: 0.85rem !important;
+  }
+  
+  .supply-table-section .analysis-table th {
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Mobile Landscape (576px to 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+  .supplies-tables-container {
+    flex-direction: column !important;
+    padding: 0 5px !important;
+  }
+  
+  .supply-table-section {
+    flex: 1 1 100% !important;
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .supply-table-section .analysis-table {
+    font-size: 0.8rem !important;
+  }
+  
+  .supply-table-section .analysis-table th {
+    font-size: 0.75rem !important;
+  }
+  
+  .supply-table-section .analysis-table th,
+  .supply-table-section .analysis-table td {
+    padding: 0.35rem 0.2rem !important;
+    max-width: 150px !important;
+  }
+}
+
+/* Mobile Portrait (less than 576px) */
+@media (max-width: 575px) {
+  .supplies-tables-container {
+    flex-direction: column !important;
+    padding: 0 3px !important;
+    gap: 0.5rem !important;
+  }
+  
+  .supply-table-section {
+    flex: 1 1 100% !important;
+    margin-bottom: 1rem !important;
+    border-radius: 0 !important;
+  }
+  
+  /* Stack label above table on mobile */
+  .supply-table-section h3 {
+    font-size: 1rem !important;
+    padding: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .supply-table-section .analysis-table {
+    font-size: 0.75rem !important;
+  }
+  
+  .supply-table-section .analysis-table th {
+    font-size: 0.7rem !important;
+    padding: 0.3rem 0.15rem !important;
+  }
+  
+  .supply-table-section .analysis-table td {
+    font-size: 0.72rem !important;
+    padding: 0.3rem 0.15rem !important;
+    max-width: 120px !important;
+  }
+  
+  /* Make status badges smaller on mobile */
+  .status-badge {
+    font-size: 0.65rem !important;
+    padding: 2px 6px !important;
+    min-width: 60px !important;
+  }
+  
+  .status-badge svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+}
+
+/* ========================================
+   ZOOM LEVEL ADAPTATIONS - PREVENT OVERLAP
+   ======================================== */
+
+/* Desktop Zoom Prevention - Dynamic Column Adjustment */
+@media (min-width: 992px) {
+  /* When viewport gets smaller due to zoom, prevent overlap */
+  .supply-table-section .analysis-table {
+    table-layout: auto !important; /* Allow table to adjust column widths */
+  }
+  
+  .supply-table-section .analysis-table th,
+  .supply-table-section .analysis-table td {
+    /* Remove max-width constraints on zoom to prevent overlap */
+    max-width: none !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  
+  /* Medication column stays wrapped */
+  .supply-table-section .analysis-table td:nth-child(4) {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+  }
+}
+
+/* Zoom 110% - 125% */
+@media (min-width: 992px) and (max-width: 1400px) {
+  .supply-table-section .analysis-table {
+    font-size: 0.82rem !important;
+  }
+  
+  .supply-table-section .analysis-table th,
+  .supply-table-section .analysis-table td {
+    padding: 0.35rem 0.2rem !important;
+  }
+  
+  /* Reduce column widths slightly */
+  .supply-table-section .analysis-table td:nth-child(4) {
+    max-width: 200px !important;
+  }
+}
+
+/* Zoom 125% - 150% */
+@media (min-width: 768px) and (max-width: 991px) {
+  .supplies-tables-container {
+    flex-direction: column !important; /* Stack tables */
+  }
+  
+  .supply-table-section .analysis-table {
+    font-size: 0.78rem !important;
+  }
+  
+  .supply-table-section .analysis-table th,
+  .supply-table-section .analysis-table td {
+    padding: 0.3rem 0.15rem !important;
+  }
+}
+
+/* Zoom 150% - 175% */
+@media (max-width: 767px) {
+  .supplies-tables-container {
+    flex-direction: column !important;
+  }
+  
+  .supply-table-section {
+    flex: 1 1 100% !important;
+  }
+  
+  .supply-table-section .analysis-table {
+    font-size: 0.72rem !important;
+  }
+  
+  .supply-table-section .analysis-table th,
+  .supply-table-section .analysis-table td {
+    padding: 0.25rem 0.12rem !important;
+  }
+  
+  /* Very compact column widths */
+  .supply-table-section .analysis-table td {
+    min-width: 30px !important;
+  }
+  
+  .supply-table-section .analysis-table td:nth-child(4) {
+    min-width: 80px !important;
+    max-width: 150px !important;
+  }
+}
+
+/* Zoom 175% - 200% and above */
+@media (max-width: 575px) {
+  .supply-table-section .analysis-table {
+    font-size: 0.68rem !important;
+  }
+  
+  .supply-table-section .analysis-table th,
+  .supply-table-section .analysis-table td {
+    padding: 0.2rem 0.1rem !important;
+  }
+  
+  /* Ultra compact for extreme zoom */
+  .status-badge {
+    font-size: 0.6rem !important;
+    padding: 1px 4px !important;
+    min-width: 50px !important;
+  }
+}
+
+/* ========================================
+   COLUMN WIDTH OPTIMIZATION - FLEXIBLE
+   ======================================== */
+
+/* Status column - narrow */
+.supply-table-section .analysis-table th:nth-child(1),
+.supply-table-section .analysis-table td:nth-child(1) {
+  width: auto !important;
+  min-width: 65px !important;
+  max-width: 90px !important;
+}
+
+/* RX Number column */
+.supply-table-section .analysis-table th:nth-child(2),
+.supply-table-section .analysis-table td:nth-child(2) {
+  width: auto !important;
+  min-width: 55px !important;
+  max-width: 100px !important;
+}
+
+/* Medication column - wider and flexible */
+.supply-table-section .analysis-table th:nth-child(4),
+.supply-table-section .analysis-table td:nth-child(4) {
+  width: auto !important;
+  min-width: 120px !important;
+  max-width: 35% !important; /* Percentage for flexibility */
+}
+
+/* Strength column */
+.supply-table-section .analysis-table th:nth-child(6),
+.supply-table-section .analysis-table td:nth-child(6) {
+  width: auto !important;
+  min-width: 50px !important;
+  max-width: 120px !important;
+}
+
+/* Dosage Form column */
+.supply-table-section .analysis-table th:nth-child(7),
+.supply-table-section .analysis-table td:nth-child(7) {
+  width: auto !important;
+  min-width: 60px !important;
+  max-width: 130px !important;
+}
+
+/* QTY column - compact */
+.supply-table-section .analysis-table th:nth-child(8),
+.supply-table-section .analysis-table td:nth-child(8) {
+  width: auto !important;
+  min-width: 35px !important;
+  max-width: 60px !important;
+}
+
+/* Supply column - compact */
+.supply-table-section .analysis-table th:nth-child(9),
+.supply-table-section .analysis-table td:nth-child(9) {
+  width: auto !important;
+  min-width: 35px !important;
+  max-width: 60px !important;
+}
+
+/* ========================================
+   ENSURE VISIBILITY - NO SCROLLBARS
+   ======================================== */
+.analyzer-page .supplies-results-section,
+.analyzer-page .supplies-results-section *,
+.analyzer-page .supply-table-section,
+.analyzer-page .supply-table-section * {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  max-height: none !important;
+  -webkit-overflow-scrolling: unset !important;
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+@media print {
+  .supplies-tables-container {
+    flex-direction: column !important;
+  }
+  
+  .supply-table-section {
+    page-break-inside: avoid !important;
+    flex: 1 1 100% !important;
+    margin-bottom: 2rem !important;
+  }
+  
+  .supply-table-section .analysis-table {
+    font-size: 10pt !important;
+  }
+  
+  .supply-table-section .analysis-table th,
+  .supply-table-section .analysis-table td {
+    padding: 4pt !important;
+  }
+}

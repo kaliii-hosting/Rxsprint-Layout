@@ -2,6 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Upload, X, ScanLine, Check, X as XIcon, AlertCircle, RotateCcw, FileText, ChevronDown, Package, GitCompare, TrendingUp, TrendingDown, ImageIcon, Plus } from 'lucide-react';
 import './Analyzer.css';
+import './SuppliesTableFixes.css';
+import './SuppliesTableOverrides.css';
+import './ResponsiveSuppliesTables.css';
+import './SuppliesTableEnhancements.css';
 import EnterpriseHeader, { TabGroup, TabButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 
 const Analyzer = () => {
@@ -35,6 +39,7 @@ const Analyzer = () => {
   const [isPasteFocused, setIsPasteFocused] = useState({ previous: false, current: false });
   const [activeFilter, setActiveFilter] = useState(null); // null, 'all', 'matched', 'changed', 'new', or 'missing'
   const [analysisProgress, setAnalysisProgress] = useState(''); // Progress message for supplies analyzer
+  const [selectedRows, setSelectedRows] = useState({ previous: new Set(), current: new Set() }); // Track multiple selected rows
   
   // Legacy single file states for backward compatibility
   const previousSupplyFile = previousSupplyFiles[0] || null;
@@ -2401,13 +2406,32 @@ const Analyzer = () => {
   Matches - Prescriber: ${prescriberMatch}, Qty: ${quantityMatch}, Days: ${daySupplyMatch}
   MATCHED: YES`);
         
-        // If medication and strength match, mark as matched (user wants green highlight for matching meds)
-        results.matching.push({
-          ...currentOrder,
-          previousOrder: prevOrder,
-          status: 'matched'
-        });
-        results.summary.matching++;
+        // Check if quantities or days supply are different for matching medications
+        const qtyDifferent = !quantityMatch;
+        const daysDifferent = !daySupplyMatch;
+        
+        if (qtyDifferent || daysDifferent) {
+          // Mark as changed if quantities or days supply are different
+          const changes = {};
+          if (qtyDifferent) changes.quantity = true;
+          if (daysDifferent) changes.daySupply = true;
+          
+          results.changed.push({
+            ...currentOrder,
+            previousOrder: prevOrder,
+            status: 'changed',
+            changes: changes
+          });
+          results.summary.changed++;
+        } else {
+          // If medication and strength match exactly, mark as matched
+          results.matching.push({
+            ...currentOrder,
+            previousOrder: prevOrder,
+            status: 'matched'
+          });
+          results.summary.matching++;
+        }
         
         if (currentOrder.rxNumber) {
           matchedCurrentRxNumbers.add(currentOrder.rxNumber);
@@ -2433,13 +2457,34 @@ const Analyzer = () => {
   Previous: RX#${prevOrder.rxNumber} (normalized: ${normalizedPrevRx}) - "${prevOrder.medication}"
   Current:  RX#${currentOrder.rxNumber} (normalized: ${normalizeRxNumber(currentOrder.rxNumber)}) - "${currentOrder.medication}"`);
             
-            // Found match by normalized RX and medication
-            results.matching.push({
-              ...currentOrder,
-              previousOrder: prevOrder,
-              status: 'matched'
-            });
-            results.summary.matching++;
+            // Check if quantities or days supply are different for matching medications
+            const quantityMatch = valuesMatch(currentOrder.quantity, prevOrder.quantity);
+            const daySupplyMatch = valuesMatch(currentOrder.daySupply, prevOrder.daySupply);
+            const qtyDifferent = !quantityMatch;
+            const daysDifferent = !daySupplyMatch;
+            
+            if (qtyDifferent || daysDifferent) {
+              // Mark as changed if quantities or days supply are different
+              const changes = {};
+              if (qtyDifferent) changes.quantity = true;
+              if (daysDifferent) changes.daySupply = true;
+              
+              results.changed.push({
+                ...currentOrder,
+                previousOrder: prevOrder,
+                status: 'changed',
+                changes: changes
+              });
+              results.summary.changed++;
+            } else {
+              // Found match by normalized RX and medication
+              results.matching.push({
+                ...currentOrder,
+                previousOrder: prevOrder,
+                status: 'matched'
+              });
+              results.summary.matching++;
+            }
             matchedCurrentRxNumbers.add(currentOrder.rxNumber);
             foundMatch = true;
             break;
@@ -2895,7 +2940,7 @@ const Analyzer = () => {
                             <FileText size={20} />
                             Prescribed
                           </h3>
-                          <div className="table-wrapper">
+                          <div className="table-wrapper" style={{ overflow: 'visible', maxHeight: 'none', height: 'auto' }}>
                             <table className="analysis-table">
                               <thead>
                                 <tr>
@@ -2957,7 +3002,7 @@ const Analyzer = () => {
                             <FileText size={20} />
                             Data Entered
                           </h3>
-                          <div className="table-wrapper">
+                          <div className="table-wrapper" style={{ overflow: 'visible', maxHeight: 'none', height: 'auto' }}>
                             <table className="analysis-table">
                               <thead>
                                 <tr>
@@ -3025,7 +3070,7 @@ const Analyzer = () => {
                       <FileText size={20} />
                       Prescribed
                     </h3>
-                    <div className="table-wrapper">
+                    <div className="table-wrapper" style={{ overflow: 'visible', maxHeight: 'none', height: 'auto' }}>
                       <table className="analysis-table">
                         <thead>
                           <tr>
@@ -3087,7 +3132,7 @@ const Analyzer = () => {
                       <FileText size={20} />
                       Data Entered
                     </h3>
-                    <div className="table-wrapper">
+                    <div className="table-wrapper" style={{ overflow: 'visible', maxHeight: 'none', height: 'auto' }}>
                       <table className="analysis-table">
                         <thead>
                           <tr>
@@ -3246,7 +3291,7 @@ const Analyzer = () => {
                     <FileText size={20} />
                     Previous Orders
                   </h3>
-                  <div className="table-wrapper">
+                  <div className="table-wrapper" style={{ overflow: 'visible', maxHeight: 'none', height: 'auto' }}>
                     <table className="analysis-table">
                       <thead>
                         <tr>
@@ -3256,9 +3301,9 @@ const Analyzer = () => {
                           <th>Medication</th>
                           <th>MD Last Name</th>
                           <th>Strength</th>
-                          <th>Dosage Form</th>
-                          <th>Quantity Dispensed</th>
-                          <th>Day Supply</th>
+                          <th>Form</th>
+                          <th>QTY</th>
+                          <th>Supply</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -3315,8 +3360,23 @@ const Analyzer = () => {
                               statusBadge = <span className="status-badge matched"><Check size={14} /> Matched</span>;
                             }
                             
+                            const isSelected = selectedRows.previous.has(idx);
+                            
                             return (
-                              <tr key={idx} className={rowClass}>
+                              <tr 
+                                key={idx} 
+                                className={`${rowClass} ${isSelected ? 'neon-selected' : ''}`}
+                                onClick={() => {
+                                  const newPrevious = new Set(selectedRows.previous);
+                                  if (isSelected) {
+                                    newPrevious.delete(idx);
+                                  } else {
+                                    newPrevious.add(idx);
+                                  }
+                                  setSelectedRows({ ...selectedRows, previous: newPrevious });
+                                }}
+                                style={{ cursor: 'pointer' }}
+                              >
                                 <td>{statusBadge}</td>
                                 <td>{order.rxNumber || '-'}</td>
                                 <td>{order.org || '-'}</td>
@@ -3347,7 +3407,7 @@ const Analyzer = () => {
                     <FileText size={20} />
                     Current Orders
                   </h3>
-                  <div className="table-wrapper">
+                  <div className="table-wrapper" style={{ overflow: 'visible', maxHeight: 'none', height: 'auto' }}>
                     <table className="analysis-table">
                       <thead>
                         <tr>
@@ -3357,9 +3417,9 @@ const Analyzer = () => {
                           <th>Medication</th>
                           <th>MD Last Name</th>
                           <th>Strength</th>
-                          <th>Dosage Form</th>
-                          <th>Quantity Dispensed</th>
-                          <th>Day Supply</th>
+                          <th>Form</th>
+                          <th>QTY</th>
+                          <th>Supply</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -3414,18 +3474,18 @@ const Analyzer = () => {
                               rowClass = 'changed-row';
                               statusBadge = <span className="status-badge changed"><RotateCcw size={14} /> Changed</span>;
                               
-                              // Show changed values with arrow
+                              // Show only current values for changed quantities in current order table
                               if (changedOrder.changes?.quantity && changedOrder.previousOrder) {
                                 quantityDisplay = (
                                   <span className="changed-value">
-                                    {changedOrder.previousOrder.quantity} → {order.quantity}
+                                    {order.quantity}
                                   </span>
                                 );
                               }
                               if (changedOrder.changes?.daySupply && changedOrder.previousOrder) {
                                 daySupplyDisplay = (
                                   <span className="changed-value">
-                                    {changedOrder.previousOrder.daySupply} → {order.daySupply}
+                                    {order.daySupply}
                                   </span>
                                 );
                               }
@@ -3461,8 +3521,23 @@ const Analyzer = () => {
                               }
                             }
                             
+                            const isSelected = selectedRows.current.has(idx);
+                            
                             return (
-                              <tr key={idx} className={rowClass}>
+                              <tr 
+                                key={idx} 
+                                className={`${rowClass} ${isSelected ? 'neon-selected' : ''}`}
+                                onClick={() => {
+                                  const newCurrent = new Set(selectedRows.current);
+                                  if (isSelected) {
+                                    newCurrent.delete(idx);
+                                  } else {
+                                    newCurrent.add(idx);
+                                  }
+                                  setSelectedRows({ ...selectedRows, current: newCurrent });
+                                }}
+                                style={{ cursor: 'pointer' }}
+                              >
                                 <td>{statusBadge}</td>
                                 <td>{order.rxNumber || '-'}</td>
                                 <td>{order.org || '-'}</td>

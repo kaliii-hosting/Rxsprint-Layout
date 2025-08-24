@@ -1,0 +1,426 @@
+/* SUPPLIES ANALYZER TABLE RESTORATION - RECREATING LOST WORK */
+
+/* CRITICAL: Remove all scrollbars from supplies tables - show all rows at all times */
+.analyzer-page .supplies-results-section,
+.analyzer-page .supply-table-section,
+.analyzer-page .supplies-results-section .table-wrapper,
+.analyzer-page .supply-table-section .table-wrapper,
+.analyzer-page .supplies-tables-container,
+.analyzer-page .analysis-table-container,
+.supplies-results-section .table-wrapper,
+.supply-table-section .table-wrapper {
+  overflow: visible !important;
+  overflow-y: visible !important;
+  overflow-x: visible !important;
+  max-height: none !important;
+  min-height: auto !important;
+  height: auto !important;
+  -webkit-overflow-scrolling: auto !important;
+  scroll-behavior: auto !important;
+}
+
+/* Override conflicting table-wrapper styles from Analyzer.css */
+.analyzer-page .table-wrapper,
+.supplies-results-section .table-wrapper,
+.supply-table-section .table-wrapper {
+  overflow: visible !important;
+  overflow-y: visible !important;
+  overflow-x: visible !important;
+  flex: unset !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+/* Remove scrollbar styling completely */
+.analyzer-page .table-wrapper::-webkit-scrollbar,
+.supplies-results-section .table-wrapper::-webkit-scrollbar,
+.supply-table-section .table-wrapper::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Force table to show all content without any scrolling */
+.analysis-table {
+  overflow: visible !important;
+  display: table !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.analysis-table tbody {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Hide MD Last Name and Org columns */
+.supply-table-section .analysis-table th:nth-child(3),
+.supply-table-section .analysis-table td:nth-child(3) {
+  display: none !important; /* Hide Org column */
+}
+
+.supply-table-section .analysis-table th:nth-child(5),
+.supply-table-section .analysis-table td:nth-child(5) {
+  display: none !important; /* Hide MD Last Name column */
+}
+
+/* Full width tables with minimal gaps */
+.supplies-results-section {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 10px !important;
+  margin: 0 !important;
+}
+
+.supplies-tables-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  gap: 1rem !important;
+  display: flex !important;
+}
+
+.supply-table-section {
+  flex: 1 !important;
+  background: white !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: 1px solid #e5e7eb !important;
+  overflow: visible !important;
+}
+
+/* Borders between all table fields */
+.supply-table-section .analysis-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.supply-table-section .analysis-table th,
+.supply-table-section .analysis-table td {
+  border: 1px solid #e5e7eb !important;
+  padding: 0.75rem 0.5rem !important;
+}
+
+.supply-table-section .analysis-table th {
+  background: #f9fafb !important;
+  font-weight: 600 !important;
+}
+
+/* CRITICAL: Consistent status row highlighting across both tables with higher specificity */
+/* Pale red for missing status */
+.analyzer-page tr.missing-row,
+.supply-table-section tr.missing-row,
+.supplies-results-section tr.missing-row {
+  background-color: #fee2e2 !important; /* Pale red - more opaque */
+}
+
+.analyzer-page tr.missing-row:hover,
+.supply-table-section tr.missing-row:hover {
+  background-color: #fecaca !important;
+}
+
+/* Pale yellow for changed status */
+.analyzer-page tr.changed-row,
+.analyzer-page tr.quantity-changed-row,
+.supply-table-section tr.changed-row,
+.supply-table-section tr.quantity-changed-row,
+.supplies-results-section tr.changed-row {
+  background-color: #fef9c3 !important; /* Pale yellow - more opaque */
+}
+
+.analyzer-page tr.changed-row:hover,
+.analyzer-page tr.quantity-changed-row:hover,
+.supply-table-section tr.changed-row:hover {
+  background-color: #fef08a !important;
+}
+
+/* Pale green for matching status */
+.analyzer-page tr.matched-row,
+.analyzer-page tr.matching-row,
+.supply-table-section tr.matched-row,
+.supply-table-section tr.matching-row,
+.supplies-results-section tr.matching-row {
+  background-color: #dcfce7 !important; /* Pale green - more opaque */
+}
+
+.analyzer-page tr.matched-row:hover,
+.analyzer-page tr.matching-row:hover,
+.supply-table-section tr.matching-row:hover {
+  background-color: #bbf7d0 !important;
+}
+
+/* Pale blue for new status */
+.analyzer-page tr.new-row,
+.supply-table-section tr.new-row,
+.supplies-results-section tr.new-row {
+  background-color: #dbeafe !important; /* Pale blue - more opaque */
+}
+
+.analyzer-page tr.new-row:hover,
+.supply-table-section tr.new-row:hover {
+  background-color: #bfdbfe !important;
+}
+
+/* Red font with badges for changed qty and days */
+.changed-value {
+  color: #dc2626 !important;
+  font-weight: 600 !important;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
+  padding: 4px 8px !important;
+  border-radius: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid #fecaca !important;
+  font-size: 0.8rem !important;
+  min-width: 60px !important;
+  text-align: center !important;
+}
+
+/* Status badges for all status types */
+.status-badge {
+  padding: 4px 12px !important;
+  border-radius: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  white-space: nowrap !important;
+  min-width: 80px !important;
+  text-align: center !important;
+}
+
+.status-badge.missing {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+
+.status-badge.new {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+}
+
+.status-badge.matched {
+  background: #d1fae5 !important;
+  color: #166534 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+.status-badge.changed,
+.status-badge.quantity-changed {
+  background: #fef9c3 !important;
+  color: #854d0e !important;
+  border: 1px solid #facc15 !important;
+}
+
+/* Summary cards always show their colors */
+.summary-card.total,
+.alert-banner:nth-child(1) {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+  border-left-color: #3b82f6 !important;
+}
+
+.summary-card.matching,
+.alert-banner:nth-child(2) {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+  border-left-color: #22c55e !important;
+}
+
+.summary-card.changed,
+.alert-banner:nth-child(3) {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+  border-left-color: #f59e0b !important;
+}
+
+.summary-card.new,
+.alert-banner:nth-child(4) {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+  border-left-color: #60a5fa !important;
+}
+
+.summary-card.missing,
+.alert-banner:nth-child(5) {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
+  border-left-color: #ef4444 !important;
+}
+
+/* Text wrapping and center alignment */
+.analysis-table th,
+.analysis-table td {
+  text-align: center !important;
+  vertical-align: middle !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.2 !important;
+  hyphens: auto !important;
+}
+
+/* Column widths for proper display - adjusted for hidden columns */
+.analysis-table th:nth-child(1),
+.analysis-table td:nth-child(1) {
+  width: 12% !important;
+  min-width: 100px !important;
+}
+
+.analysis-table th:nth-child(2),
+.analysis-table td:nth-child(2) {
+  width: 12% !important;
+  min-width: 80px !important;
+}
+
+/* Column 3 (Org) is hidden */
+
+.analysis-table th:nth-child(4),
+.analysis-table td:nth-child(4) {
+  width: 35% !important; /* Medication column - wider since we hid others */
+  min-width: 200px !important;
+}
+
+/* Column 5 (MD Last Name) is hidden */
+
+.analysis-table th:nth-child(6),
+.analysis-table td:nth-child(6) {
+  width: 15% !important;
+  min-width: 100px !important;
+}
+
+.analysis-table th:nth-child(7),
+.analysis-table td:nth-child(7) {
+  width: 13% !important;
+  min-width: 100px !important;
+}
+
+.analysis-table th:nth-child(8),
+.analysis-table td:nth-child(8) {
+  width: 13% !important;
+  min-width: 100px !important;
+}
+
+/* Highlight changed quantity and days supply columns in pale yellow */
+.analysis-table td:nth-child(8), /* Quantity Dispensed column */
+.analysis-table td:nth-child(9) { /* Day Supply column */
+  background-color: rgba(254, 249, 195, 0.3) !important; /* Pale yellow background */
+}
+
+/* Enhanced highlighting for changed values in quantity and days columns */
+tr.changed-row td:nth-child(8), /* Quantity Dispensed in changed rows */
+tr.changed-row td:nth-child(9) { /* Day Supply in changed rows */
+  background-color: #fef9c3 !important; /* Stronger pale yellow for changed rows */
+}
+
+/* Remove oval circles from summary card icons */
+.alert-icon,
+.summary-icon {
+  background: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  opacity: 1 !important;
+}
+
+.alert-icon svg,
+.summary-icon svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* Mobile responsive - no scrollbars, show all content */
+@media (max-width: 768px) {
+  .supplies-tables-container {
+    flex-direction: column !important;
+    padding: 0 5px !important;
+    overflow: visible !important;
+  }
+  
+  .supply-table-section {
+    margin-bottom: 1rem !important;
+    overflow: visible !important;
+  }
+  
+  .analysis-table {
+    font-size: 0.8125rem !important;
+    min-width: 100% !important; /* Changed from 700px to 100% */
+    width: 100% !important;
+    overflow: visible !important;
+  }
+  
+  .supply-table-section .table-wrapper {
+    overflow: visible !important; /* Changed from auto to visible */
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: auto !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+  
+  /* Ensure all table content is visible on mobile */
+  .analysis-table tbody,
+  .analysis-table thead {
+    overflow: visible !important;
+    display: table-row-group !important;
+  }
+}
+
+/* Zoom responsive fixes */
+.analysis-table {
+  font-size: clamp(0.875rem, 1.2vw, 1rem) !important;
+  table-layout: fixed !important;
+}
+
+@media (max-width: 1200px) {
+  .analysis-table {
+    font-size: 0.875rem !important;
+  }
+  
+  .status-badge {
+    font-size: 0.7rem !important;
+    padding: 3px 10px !important;
+  }
+}
+
+/* Ensure cells inherit row background colors properly with higher specificity */
+.analyzer-page tr.missing-row td,
+.supply-table-section tr.missing-row td {
+  background-color: transparent !important;
+}
+
+.analyzer-page tr.changed-row td,
+.analyzer-page tr.quantity-changed-row td,
+.supply-table-section tr.changed-row td {
+  background-color: transparent !important;
+}
+
+.analyzer-page tr.matched-row td,
+.analyzer-page tr.matching-row td,
+.supply-table-section tr.matching-row td {
+  background-color: transparent !important;
+}
+
+.analyzer-page tr.new-row td,
+.supply-table-section tr.new-row td {
+  background-color: transparent !important;
+}
+
+/* Keep font colors unchanged - only background colors are modified */
+tr td {
+  color: inherit !important;
+}
+
+/* Maintain quantity/days column highlighting on top of row colors */
+.analysis-table td:nth-child(8), /* Quantity Dispensed column */
+.analysis-table td:nth-child(9) { /* Day Supply column */
+  background-color: rgba(254, 249, 195, 0.2) !important; /* Very pale yellow background */
+}
+
+/* Enhanced highlighting for changed values in quantity and days columns */
+tr.changed-row td:nth-child(8), /* Quantity Dispensed in changed rows */
+tr.changed-row td:nth-child(9) { /* Day Supply in changed rows */
+  background-color: rgba(254, 249, 195, 0.8) !important; /* Stronger pale yellow for changed rows */
+}
