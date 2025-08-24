@@ -20,7 +20,9 @@ import {
   Palette,
   Terminal,
   Brain,
-  Clock
+  Clock,
+  Menu,
+  X
 } from 'lucide-react';
 import { useCalculator } from '../../contexts/CalculatorContext';
 import { useSearch } from '../../contexts/SearchContext';
@@ -88,6 +90,11 @@ const Layout = ({ children }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [setShowDropdown, setShowSuggestions]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -196,7 +203,10 @@ const Layout = ({ children }) => {
 
   return (
     <div className="layout">
-      <aside className="sidebar">
+      {/* Mobile menu backdrop */}
+      {isMobileMenuOpen && <div className="mobile-menu-backdrop" onClick={() => setIsMobileMenuOpen(false)} />}
+      
+      <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="logo" onClick={lock} style={{ cursor: 'pointer' }} title="Lock App">
           <img 
             src="https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii//rxsprint%20logo%20IIII.png" 
@@ -216,6 +226,7 @@ const Layout = ({ children }) => {
                 to={item.path}
                 className={`nav-item ${isActive ? 'active' : ''}`}
                 title={item.label}
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Icon size={24} />
               </Link>
@@ -226,6 +237,15 @@ const Layout = ({ children }) => {
 
       <div className="main-container">
         <header className="header">
+          {/* Mobile menu toggle button */}
+          <button 
+            className="mobile-menu-toggle" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            title="Toggle Menu"
+          >
+            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+          
           <div className="search-container" ref={searchRef}>
             <input
               type="text"
