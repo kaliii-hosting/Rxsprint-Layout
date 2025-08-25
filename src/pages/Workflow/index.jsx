@@ -42,6 +42,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { firestore } from '../../config/firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
+import { saveWorkflowWithStorage, loadWorkflowWithStorage, getWorkflowStorageInfo } from '../../utils/workflowStorageV2';
 import './Workflow.css';
 import EnterpriseHeader, { TabGroup, TabButton, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import { exportWorkflowToPDF } from './ExportPDF';
@@ -122,16 +123,28 @@ const Workflow = () => {
         scd: workflowDataRef.current.scd || { sections: [] }
       };
       
-      await setDoc(doc(firestore, 'workflow', 'data'), dataToSave);
+      // Use new storage solution with compression and Firebase Storage
+      const result = await saveWorkflowWithStorage(dataToSave);
+      
+      console.log(`Auto-save successful: ${result.method}, Original: ${(result.originalSize / 1024).toFixed(1)}KB, Final: ${(result.finalSize / 1024).toFixed(1)}KB`);
+      
       setSaveStatus('saved');
       setLastSaveTime(new Date());
       hasUnsavedChanges.current = false;
-      console.log('Auto-save successful at', new Date().toLocaleTimeString());
+      
     } catch (error) {
       console.error('Auto-save failed:', error);
       setSaveStatus('error');
-      // Show user-friendly error notification
-      alert('Warning: Your changes could not be saved to the cloud. Please check your internet connection. Your work is still saved locally.');
+      
+      // More specific error message
+      let errorMessage = 'Warning: ';
+      if (error.message) {
+        errorMessage += error.message;
+      } else {
+        errorMessage += 'Your changes could not be saved to the cloud.';
+      }
+      
+      alert(errorMessage);
     }
   }, []);
 
@@ -209,12 +222,11 @@ const Workflow = () => {
         scd: { sections: [] }
       };
       
-      // Try to load from Firebase
+      // Try to load from Firebase using new storage solution
       try {
-        const workflowDoc = await getDoc(doc(firestore, 'workflow', 'data'));
+        const data = await loadWorkflowWithStorage();
         
-        if (workflowDoc.exists()) {
-          const data = workflowDoc.data();
+        if (data) {
           
           // Load subsection widths
           const widths = {};
@@ -250,8 +262,8 @@ const Workflow = () => {
           
           setWorkflowData(mergedData);
         } else {
-          // First time - save defaults to Firebase
-          await setDoc(doc(firestore, 'workflow', 'data'), defaultData);
+          // First time - save defaults to Firebase using new storage solution
+          await saveWorkflowWithStorage(defaultData);
           setWorkflowData(defaultData);
         }
       } catch (firebaseError) {
@@ -593,7 +605,11 @@ See attached pump sheet for details.`
           scd: fullData.scd || { sections: [] }
         };
         
-        await setDoc(doc(firestore, 'workflow', 'data'), dataToSave);
+        // Use new storage solution with compression and Firebase Storage
+        const result = await saveWorkflowWithStorage(dataToSave);
+        
+        console.log(`Save successful: ${result.method}, Original: ${(result.originalSize / 1024).toFixed(1)}KB, Final: ${(result.finalSize / 1024).toFixed(1)}KB`);
+        
         setSaveStatus('saved');
         setLastSaveTime(new Date());
         hasUnsavedChanges.current = false;
