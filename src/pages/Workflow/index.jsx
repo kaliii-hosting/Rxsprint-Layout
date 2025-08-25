@@ -2401,7 +2401,7 @@ See attached pump sheet for details.`
                                         emailType={item.emailType}
                                       >
                                         <div className="checklist-item">
-                                          <strong>{item.text}</strong>
+                                          <strong style={{ whiteSpace: 'pre-wrap', display: 'block' }}>{item.text}</strong>
                                           {item.checklist && item.checklist.length > 0 && (
                                             <ul>
                                               {item.checklist.map((checkItem, idx) => (

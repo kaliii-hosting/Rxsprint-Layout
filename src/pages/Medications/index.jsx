@@ -17,7 +17,7 @@ import ExcelOptionsPopup from '../../components/ExcelOptionsPopup/ExcelOptionsPo
 import { generateMedicationCode } from '../../utils/medicationCode';
 import { useLocation } from 'react-router-dom';
 import { useSearch } from '../../contexts/SearchContext';
-import EnterpriseHeader, { TabGroup, TabButton, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
+import EnterpriseHeader, { TabGroup, TabButton, HeaderDivider, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import './Medications.css';
 
 const Medications = () => {
@@ -1251,26 +1251,43 @@ const Medications = () => {
                 ))}
               </TabGroup>
             )}
+            
+            <HeaderDivider />
+            
+            {/* Action Buttons */}
+            <ActionGroup>
+              <ActionButton
+                onClick={() => handleCreateMedication()}
+                icon={Plus}
+                primary
+              >
+                Add
+              </ActionButton>
+              <ActionButton
+                onClick={() => handleEditSelected()}
+                icon={Edit2}
+                secondary
+              >
+                Edit
+              </ActionButton>
+              <ActionButton
+                onClick={() => handleDeleteSelected()}
+                icon={Trash2}
+                secondary
+              >
+                Delete
+              </ActionButton>
+            </ActionGroup>
           </EnterpriseHeader>
           
-          <div className="medications-content">
-            <div className="medications-dashboard">
-              <div className="dashboard-card">
-                <div className="card-header">
-                  <h3>Medication Database</h3>
-                  <div className="results-count">{displayMedications.length} Results</div>
-                </div>
-                <div className="card-body">
-                  
-                  <div className="medications-container">
+          <div className="medications-content fullscreen">
         {loading ? (
           <div className="loading-state">
             <div className="spinner" />
             <p>Loading medications...</p>
           </div>
         ) : (
-          <div className="table-wrapper">
-            <table className="prescriptions-table">
+            <table className="prescriptions-table fullscreen-table">
               <thead>
                 <tr>
                   <th className="checkbox-cell">
@@ -1380,18 +1397,7 @@ const Medications = () => {
                 )}
               </tbody>
             </table>
-            
-            <div className="prescription-actions">
-              <button className="prescription-btn add-medication" onClick={() => handleCreateMedication()} style={{ color: 'white' }}>Add Medication</button>
-              <button className="prescription-btn edit" onClick={() => handleEditSelected()} style={{ color: 'white' }}>Edit</button>
-              <button className="prescription-btn delete" onClick={() => handleDeleteSelected()} style={{ color: 'white' }}>Delete</button>
-            </div>
-          </div>
         )}
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </>
       )}

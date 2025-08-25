@@ -1,19 +1,76 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
 
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = []
+
+# Proxy redirects for tunnel - using enhanced proxy function
+[[redirects]]
+  from = "/api/tunnel/*"
+  to = "/.netlify/functions/tunnel-proxy/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/tunnel"
+  to = "/.netlify/functions/tunnel-proxy"
+  status = 200
+  force = true
+
+# SPA fallback - must be after API routes
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
+# Headers for Netlify Functions
+[[headers]]
+  for = "/.netlify/functions/tunnel"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+    Access-Control-Allow-Credentials = "true"
+
+[[headers]]
+  for = "/.netlify/functions/tunnel/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+    Access-Control-Allow-Credentials = "true"
+
+[[headers]]
+  for = "/.netlify/functions/tunnel-proxy"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+    Access-Control-Allow-Credentials = "true"
+
+[[headers]]
+  for = "/.netlify/functions/tunnel-proxy/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+    Access-Control-Allow-Credentials = "true"
+
+# General security headers (excluding pages that use iframes)
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+[dev]
+  port = 5173
+  targetPort = 5173
+  autoLaunch = false

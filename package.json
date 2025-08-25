@@ -7,6 +7,9 @@
     "dev": "npx kill-port 5173 && vite",
     "dev:force": "npx kill-port 5173 && vite --force",
     "dev:clean": "npx kill-port 5173 5174 5175 && vite",
+    "dev:full": "npx kill-port 5173 3001 && npm run server & npm run dev",
+    "server": "node server/server.js",
+    "server:dev": "nodemon server/server.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -21,8 +24,11 @@
     "@tiptap/extension-table-row": "^2.25.0",
     "@tiptap/react": "^2.25.0",
     "@tiptap/starter-kit": "^2.25.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
     "firebase": "^11.9.1",
     "gsap": "^3.13.0",
+    "http-proxy-middleware": "^3.0.3",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "liquidfun-wasm": "^7.0.0",
@@ -44,6 +50,7 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "kill-port": "^2.0.1",
+    "nodemon": "^3.1.9",
     "vite": "^6.3.5"
   },
   "optionalDependencies": {

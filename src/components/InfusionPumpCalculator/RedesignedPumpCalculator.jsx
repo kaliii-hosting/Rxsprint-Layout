@@ -521,6 +521,26 @@ const CustomVialCalculator = ({
 };
 
 const RedesignedPumpCalculator = () => {
+  // Merge custom medications from localStorage with database
+  const [mergedMedications, setMergedMedications] = useState(() => {
+    const customMeds = JSON.parse(localStorage.getItem('customMedications') || '{}');
+    return { ...pumpDatabase.medications, ...customMeds };
+  });
+
+  // Listen for medication additions
+  useEffect(() => {
+    const handleMedicationAdded = (event) => {
+      const { key, data } = event.detail;
+      setMergedMedications(prev => ({
+        ...prev,
+        [key]: data
+      }));
+    };
+
+    window.addEventListener('medicationAdded', handleMedicationAdded);
+    return () => window.removeEventListener('medicationAdded', handleMedicationAdded);
+  }, []);
+
   // Theme detection
   const [theme, setTheme] = useState('light');
   
@@ -632,21 +652,22 @@ const RedesignedPumpCalculator = () => {
     return specialDosingMap[medKey] || [];
   };
 
-  // Get medications list
+  // Get medications list (now using merged medications)
   const medications = useMemo(() => {
-    return Object.entries(pumpDatabase.medications).map(([key, med]) => ({
+    return Object.entries(mergedMedications).map(([key, med]) => ({
       key,
       ...med,
       color: med.brandColor || '#ff5500',
       hasMultipleVials: med.vialSizes && med.vialSizes.length > 1,
-      hasSpecialDosing: getSpecialDosingOptions(key).length > 0
+      hasSpecialDosing: getSpecialDosingOptions(key).length > 0,
+      isCustom: !pumpDatabase.medications[key] // Mark custom medications
     }));
-  }, []);
+  }, [mergedMedications]);
 
-  // Get selected medication data
+  // Get selected medication data (now using merged medications)
   const selectedMedicationData = useMemo(() => {
-    return selectedMedication ? pumpDatabase.medications[selectedMedication] : null;
-  }, [selectedMedication]);
+    return selectedMedication ? mergedMedications[selectedMedication] : null;
+  }, [selectedMedication, mergedMedications]);
 
   // Filter medications based on search term for custom dropdown
   const filteredMedicationsDropdown = useMemo(() => {

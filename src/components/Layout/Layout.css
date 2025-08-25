@@ -377,80 +377,15 @@
   }
 }
 
-/* Mobile menu toggle button */
-.mobile-menu-toggle {
-  display: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-  background-color: var(--button-bg);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.mobile-menu-toggle:hover {
-  color: var(--text-primary);
-  background-color: var(--button-hover-bg);
-  border-color: var(--border-color);
-  transform: scale(1.05);
-}
-
-.mobile-menu-toggle:active {
-  transform: scale(0.95);
-}
-
-/* Mobile menu backdrop */
-.mobile-menu-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 150;
-  animation: backdropFadeIn 0.2s ease-out;
-}
 
 /* Mobile and Tablet Responsive Styles */
 @media (max-width: 768px) {
-  .layout {
-    position: relative;
-  }
-
-  .mobile-menu-toggle {
-    display: flex;
-  }
-
   .sidebar {
-    position: fixed;
-    top: 0;
-    left: -100px;
-    width: 80px;
+    width: 70px;
     padding: 15px 0;
     height: 100vh;
     display: flex;
     flex-direction: column;
-    z-index: 200;
-    transition: left 0.3s ease;
-    background-color: var(--bg-secondary);
-    border-right: 1px solid var(--border-color);
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  }
-
-  .sidebar.mobile-open {
-    left: 0;
-  }
-
-  .main-container {
-    width: 100%;
-    margin-left: 0;
   }
 
   .logo {
@@ -549,8 +484,8 @@
   }
 
   .sidebar {
-    left: -70px;
-    width: 70px;
+    left: 0;
+    width: 60px;
     padding: 10px 0;
     height: 100vh;
     display: flex;
@@ -969,6 +904,14 @@
   }
 }
 
+/* Ensure content adjusts for sidebar on mobile */
+@media (max-width: 480px) {
+  .content {
+    margin-left: 60px !important;
+    width: calc(100% - 60px) !important;
+  }
+}
+
 /* Very small devices */
 @media (max-width: 360px) {
   .mobile-menu-toggle {
@@ -977,12 +920,17 @@
   }
 
   .sidebar {
-    left: -60px;
-    width: 60px;
+    left: 0;
+    width: 50px;
     padding: 8px 0;
     height: 100vh;
     display: flex;
     flex-direction: column;
+  }
+  
+  .content {
+    margin-left: 50px !important;
+    width: calc(100% - 50px) !important;
   }
   
   .logo {

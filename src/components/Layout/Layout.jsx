@@ -21,8 +21,7 @@ import {
   Terminal,
   Brain,
   Clock,
-  Menu,
-  X
+  Plus
 } from 'lucide-react';
 import { useCalculator } from '../../contexts/CalculatorContext';
 import { useSearch } from '../../contexts/SearchContext';
@@ -32,6 +31,7 @@ import VoiceTranscription from '../VoiceTranscription/VoiceTranscription';
 import CurlinPumpIcon from '../icons/CurlinPumpIcon';
 import PumpSimulator from '../PumpSimulator/PumpSimulator';
 import DigitalClock from '../DigitalClock/DigitalClock';
+import MedicationForm from '../MedicationForm/MedicationForm';
 import './Layout.css';
 
 const Layout = ({ children }) => {
@@ -41,9 +41,9 @@ const Layout = ({ children }) => {
   const { theme } = useTheme();
   const { lock } = useAuth();
   const [showVoiceTranscription, setShowVoiceTranscription] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showPumpSimulator, setShowPumpSimulator] = useState(false);
   const [showDigitalClock, setShowDigitalClock] = useState(false);
+  const [showMedicationForm, setShowMedicationForm] = useState(false);
   const { 
     searchQuery, 
     searchResults, 
@@ -91,10 +91,6 @@ const Layout = ({ children }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [setShowDropdown, setShowSuggestions]);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location.pathname]);
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -203,10 +199,7 @@ const Layout = ({ children }) => {
 
   return (
     <div className="layout">
-      {/* Mobile menu backdrop */}
-      {isMobileMenuOpen && <div className="mobile-menu-backdrop" onClick={() => setIsMobileMenuOpen(false)} />}
-      
-      <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+      <aside className="sidebar">
         <div className="logo" onClick={lock} style={{ cursor: 'pointer' }} title="Lock App">
           <img 
             src="https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii//rxsprint%20logo%20IIII.png" 
@@ -226,7 +219,6 @@ const Layout = ({ children }) => {
                 to={item.path}
                 className={`nav-item ${isActive ? 'active' : ''}`}
                 title={item.label}
-                onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Icon size={24} />
               </Link>
@@ -237,14 +229,6 @@ const Layout = ({ children }) => {
 
       <div className="main-container">
         <header className="header">
-          {/* Mobile menu toggle button */}
-          <button 
-            className="mobile-menu-toggle" 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            title="Toggle Menu"
-          >
-            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
           
           <div className="search-container" ref={searchRef}>
             <input
@@ -338,13 +322,22 @@ const Layout = ({ children }) => {
           
           <div className="header-actions">
             {location.pathname === '/pump' && (
-              <button 
-                className="icon-button" 
-                title="Curling Pump"
-                onClick={() => setShowPumpSimulator(true)}
-              >
-                <CurlinPumpIcon size={20} />
-              </button>
+              <>
+                <button 
+                  className="icon-button" 
+                  title="Add Medication"
+                  onClick={() => setShowMedicationForm(true)}
+                >
+                  <Plus size={20} />
+                </button>
+                <button 
+                  className="icon-button" 
+                  title="Curling Pump"
+                  onClick={() => setShowPumpSimulator(true)}
+                >
+                  <CurlinPumpIcon size={20} />
+                </button>
+              </>
             )}
             
             {/* Digital Clock Button */}
@@ -396,6 +389,12 @@ const Layout = ({ children }) => {
       <DigitalClock
         isOpen={showDigitalClock}
         onClose={() => setShowDigitalClock(false)}
+      />
+      
+      {/* Medication Form Modal */}
+      <MedicationForm
+        isOpen={showMedicationForm}
+        onClose={() => setShowMedicationForm(false)}
       />
     </div>
   );
