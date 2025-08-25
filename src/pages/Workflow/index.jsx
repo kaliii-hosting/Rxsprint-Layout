@@ -42,7 +42,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { firestore } from '../../config/firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
-import { saveWorkflowWithStorage, loadWorkflowWithStorage } from '../../utils/workflowStorageV2';
+import { saveWithRetry, loadWorkflowFromStorage, saveToLocalBackup, loadFromLocalBackup } from '../../utils/workflowStorageDirect';
 import './Workflow.css';
 import EnterpriseHeader, { TabGroup, TabButton, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import { exportWorkflowToPDF } from './ExportPDF';
@@ -123,10 +123,13 @@ const Workflow = () => {
         scd: workflowDataRef.current.scd || { sections: [] }
       };
       
-      // Save to Firebase Storage with authentication
-      const result = await saveWorkflowWithStorage(dataToSave);
+      // Save to local backup first
+      saveToLocalBackup(dataToSave);
       
-      console.log(`Auto-save successful: ${result.method}, Size: ${(result.originalSize / 1024).toFixed(1)}KB → ${(result.finalSize / 1024).toFixed(1)}KB`);
+      // Then save to Firestore with retry
+      const result = await saveWithRetry(dataToSave, 2);
+      
+      console.log(`Auto-save successful to Firebase Storage: ${(result.size / 1024).toFixed(1)}KB`);
       
       setSaveStatus('saved');
       setLastSaveTime(new Date());
@@ -222,9 +225,15 @@ const Workflow = () => {
         scd: { sections: [] }
       };
       
-      // Try to load from Firebase with authentication
+      // Try to load from Firebase Storage, then local backup as fallback
       try {
-        const data = await loadWorkflowWithStorage();
+        let data = await loadWorkflowFromStorage();
+        
+        // If no data in Firebase Storage, try local backup
+        if (!data) {
+          console.log('No data in Firebase Storage, trying local backup...');
+          data = loadFromLocalBackup();
+        }
         
         if (data) {
           
@@ -262,8 +271,9 @@ const Workflow = () => {
           
           setWorkflowData(mergedData);
         } else {
-          // First time - save defaults to Firebase Storage
-          await saveWorkflowWithStorage(defaultData);
+          // First time - save defaults
+          await saveWithRetry(defaultData, 2);
+          saveToLocalBackup(defaultData);
           setWorkflowData(defaultData);
         }
       } catch (firebaseError) {
@@ -605,10 +615,13 @@ See attached pump sheet for details.`
           scd: fullData.scd || { sections: [] }
         };
         
-        // Save to Firebase Storage with authentication
-        const result = await saveWorkflowWithStorage(dataToSave);
+        // Save to local backup first
+        saveToLocalBackup(dataToSave);
         
-        console.log(`Save successful: ${result.method}, Size: ${(result.originalSize / 1024).toFixed(1)}KB → ${(result.finalSize / 1024).toFixed(1)}KB`);
+        // Then save to Firestore with retry
+        const result = await saveWithRetry(dataToSave, 3);
+        
+        console.log(`Save successful to Firebase Storage: ${(result.size / 1024).toFixed(1)}KB`);
         
         setSaveStatus('saved');
         setLastSaveTime(new Date());

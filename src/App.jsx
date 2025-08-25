@@ -9,7 +9,6 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { MedicationProvider } from './contexts/MedicationContext'
 import { ModelProvider } from './contexts/ModelContext'
-import simpleAuth from './services/authServiceSimple'
 import Home from './pages/Home'
 import Calculator from './pages/Calculator'
 import Medications from './pages/Medications'
@@ -28,14 +27,6 @@ import './App.css'
 
 function AppContent() {
   const { isUnlocked, unlock } = useAuth()
-  
-  // Initialize Firebase anonymous auth on app load
-  useEffect(() => {
-    simpleAuth.ensureAuth().then(
-      user => console.log('Firebase Auth ready:', user?.uid),
-      error => console.error('Firebase Auth error:', error)
-    );
-  }, []);
 
   if (!isUnlocked) {
     return <PinLock onUnlock={unlock} />
