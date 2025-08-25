@@ -3122,36 +3122,48 @@ See attached pump sheet for details.`
       {showAddSubsectionModal && (
         <div className="modal-overlay modal-fullscreen" onClick={() => setShowAddSubsectionModal(false)}>
           <div className="modal-content modal-fullscreen-content" onClick={(e) => e.stopPropagation()}>
-            <button 
-              className="modal-close-btn"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowAddSubsectionModal(false);
-                setNewSubsectionTitle('');
-                setNewSubsectionContent('');
-                setNewSubsectionScreenshots([]);
-                setNewSubsectionTables([]);
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowAddSubsectionModal(false);
-                setNewSubsectionTitle('');
-                setNewSubsectionContent('');
-                setNewSubsectionScreenshots([]);
-                setNewSubsectionTables([]);
-              }}
-              aria-label="Close"
-              type="button"
-            >
-              ×
-            </button>
-            <div className="modal-header">
+            <div className="modal-header-with-actions">
               <h2>Add New Subsection</h2>
+              <div className="modal-header-buttons">
+                <button 
+                  onClick={() => {
+                    setShowAddSubsectionModal(false);
+                    setNewSubsectionTitle('');
+                    setNewSubsectionContent('');
+                    setNewSubsectionScreenshots([]);
+                    setNewSubsectionTables([]);
+                  }} 
+                  className="btn-header-cancel"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={addSubsection} 
+                  className="btn-header-primary"
+                  disabled={!newSubsectionTitle.trim()}
+                >
+                  Add Subsection
+                </button>
+                <button 
+                  className="modal-close-btn"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowAddSubsectionModal(false);
+                    setNewSubsectionTitle('');
+                    setNewSubsectionContent('');
+                    setNewSubsectionScreenshots([]);
+                    setNewSubsectionTables([]);
+                  }}
+                  aria-label="Close"
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
             </div>
             
-            <div className="modal-body">
+            <div className="modal-body-scrollable">
               <div className="modal-field">
                 <label className="modal-label">Subsection Title</label>
                 <input
@@ -3252,27 +3264,6 @@ See attached pump sheet for details.`
               )}
               </div>
             </div>
-            
-            <div className="modal-footer">
-              <button onClick={() => {
-                setShowAddSubsectionModal(false);
-                setNewSubsectionTitle('');
-                setNewSubsectionContent('');
-                setNewSubsectionScreenshots([]);
-                setNewSubsectionTables([]);
-              }} className="btn-cancel">
-                Cancel
-              </button>
-              <button 
-                onClick={addSubsection} 
-                className="btn-primary"
-                type="button"
-                disabled={!newSubsectionTitle.trim()}
-                style={{ color: 'white !important', color: '#ffffff !important' }}
-              >
-                Add Subsection
-              </button>
-            </div>
           </div>
         </div>
       )}
@@ -3328,41 +3319,56 @@ See attached pump sheet for details.`
       {showEditSubsectionModal && (
         <div className="modal-overlay modal-fullscreen" onClick={() => setShowEditSubsectionModal(false)}>
           <div className="modal-content modal-fullscreen-content" onClick={(e) => e.stopPropagation()}>
-            <button 
-              className="modal-close-btn"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowEditSubsectionModal(false);
-                setEditSubsectionTitle('');
-                setEditSubsectionContent('');
-                setEditSubsectionScreenshots([]);
-                setEditSubsectionTables([]);
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowEditSubsectionModal(false);
-                setEditSubsectionTitle('');
-                setEditSubsectionContent('');
-                setEditSubsectionScreenshots([]);
-                setEditSubsectionTables([]);
-              }}
-              aria-label="Close"
-              type="button"
-            >
-              ×
-            </button>
-            <h2>Edit Subsection</h2>
-            <input
-              type="text"
-              placeholder="Subsection Title"
-              value={editSubsectionTitle}
-              onChange={(e) => setEditSubsectionTitle(e.target.value)}
-              className="modal-input"
-            />
-            
-            <div className="modal-content-area">
+            <div className="modal-header-with-actions">
+              <h2>Edit Subsection</h2>
+              <div className="modal-header-buttons">
+                <button 
+                  onClick={() => {
+                    setShowEditSubsectionModal(false);
+                    setEditSubsectionTitle('');
+                    setEditSubsectionContent('');
+                    setEditSubsectionScreenshots([]);
+                    setEditSubsectionTables([]);
+                  }} 
+                  className="btn-header-cancel"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={editSubsection} 
+                  className="btn-header-primary"
+                  disabled={!editSubsectionTitle.trim()}
+                >
+                  Save Changes
+                </button>
+                <button 
+                  className="modal-close-btn"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowEditSubsectionModal(false);
+                    setEditSubsectionTitle('');
+                    setEditSubsectionContent('');
+                    setEditSubsectionScreenshots([]);
+                    setEditSubsectionTables([]);
+                  }}
+                  aria-label="Close"
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <div className="modal-body-scrollable">
+              <input
+                type="text"
+                placeholder="Subsection Title"
+                value={editSubsectionTitle}
+                onChange={(e) => setEditSubsectionTitle(e.target.value)}
+                className="modal-input"
+              />
+              
+              <div className="modal-content-area">
               <textarea
                 placeholder="Subsection Content (paste screenshots or tables here)"
                 value={editSubsectionContent}
@@ -3442,21 +3448,7 @@ See attached pump sheet for details.`
                   ))}
                 </div>
               )}
-            </div>
-            
-            <div className="modal-actions">
-              <button onClick={() => {
-                setShowEditSubsectionModal(false);
-                setEditSubsectionTitle('');
-                setEditSubsectionContent('');
-                setEditSubsectionScreenshots([]);
-                setEditSubsectionTables([]);
-              }} className="btn-cancel">
-                Cancel
-              </button>
-              <button onClick={editSubsection} className="btn-primary" style={{ color: 'white !important', color: '#ffffff !important' }}>
-                Save Changes
-              </button>
+              </div>
             </div>
           </div>
         </div>

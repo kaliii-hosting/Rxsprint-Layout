@@ -33,6 +33,7 @@ import PumpSimulator from '../PumpSimulator/PumpSimulator';
 import DigitalClock from '../DigitalClock/DigitalClock';
 import MedicationForm from '../MedicationForm/MedicationForm';
 import './Layout.css';
+import './TabletLayout.css';
 
 const Layout = ({ children }) => {
   const location = useLocation();

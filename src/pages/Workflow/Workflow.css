@@ -1065,7 +1065,7 @@
 }
 
 /* Modal Styles */
-.modal-overlay {
+.modal-overlay:not(.modal-fullscreen) {
   position: fixed !important;
   top: 80px !important; /* Below header (header is 80px) */
   left: 88px !important; /* After sidebar */
@@ -1482,95 +1482,142 @@ button.btn-primary:not(.btn-cancel) {
   transform: translateY(-1px);
 }
 
-/* Fullscreen Modal Styles - Contained within main content area */
+/* Fullscreen Modal Styles - Fill entire content area */
 .workflow-page .modal-overlay.modal-fullscreen,
 .modal-overlay.modal-fullscreen {
   position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
+  top: 80px !important; /* Below header */
+  left: 88px !important; /* After sidebar */
   right: 0 !important;
   bottom: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background: transparent !important;
+  width: calc(100vw - 88px) !important;
+  height: calc(100vh - 80px) !important;
+  background: rgba(0, 0, 0, 0.6) !important;
   z-index: 9999 !important;
   display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
   padding: 0 !important;
   overflow: hidden !important;
-  pointer-events: none !important;
+  pointer-events: all !important;
 }
 
 .workflow-page .modal-fullscreen-content,
 .modal-overlay.modal-fullscreen .modal-fullscreen-content,
 .modal-fullscreen-content {
-  position: fixed !important;
-  top: 0 !important; /* Start from very top */
-  left: 88px !important; /* After sidebar (70px) + small padding (18px) */
-  right: 0 !important; /* Extend to right edge */
-  bottom: 0 !important; /* Extend to bottom edge */
-  width: calc(100vw - 88px) !important; /* Full width minus sidebar */
-  height: 100vh !important; /* Full viewport height */
-  max-width: calc(100vw - 88px) !important;
-  max-height: 100vh !important;
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
-  border-radius: 0 !important; /* No rounded corners for full area */
+  border-radius: 0 !important; /* No border radius for full screen */
   display: flex !important;
   flex-direction: column !important;
   background: var(--bg-primary) !important;
   overflow: hidden !important;
-  box-shadow: none !important; /* Remove shadow for full area */
-  border: none !important; /* Remove border for full area */
+  box-shadow: none !important; /* No shadow for full screen */
+  border: none !important; /* No border for full screen */
   pointer-events: all !important;
-  z-index: 10000 !important; /* Ensure it's above everything */
+  z-index: 10000 !important;
 }
 
-/* Dark overlay behind modal */
+/* Dark overlay behind modal - removed since background is on parent */
 .modal-overlay.modal-fullscreen::before {
-  content: '' !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 88px !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  background: rgba(0, 0, 0, 0.7) !important;
-  pointer-events: all !important;
+  display: none !important;
 }
 
 /* Adjust for mobile/tablet where sidebar might be smaller */
 @media (max-width: 1024px) {
-  .workflow-page .modal-fullscreen-content,
-  .modal-fullscreen-content {
+  .workflow-page .modal-overlay.modal-fullscreen,
+  .modal-overlay.modal-fullscreen {
+    top: 70px !important;
     left: 70px !important;
     width: calc(100vw - 70px) !important;
+    height: calc(100vh - 70px) !important;
   }
   
-  .modal-overlay.modal-fullscreen::before {
-    left: 70px !important;
+  .modal-header-with-actions {
+    padding: 0.875rem 1.25rem;
+    min-height: 56px;
+  }
+  
+  .modal-header-with-actions h2 {
+    font-size: 1.25rem;
+  }
+  
+  .btn-header-cancel,
+  .btn-header-primary {
+    padding: 0.425rem 1rem;
+    font-size: 0.9rem;
   }
 }
 
 @media (max-width: 768px) {
-  .workflow-page .modal-fullscreen-content,
-  .modal-fullscreen-content {
-    top: 0 !important;
+  .workflow-page .modal-overlay.modal-fullscreen,
+  .modal-overlay.modal-fullscreen {
+    top: 60px !important;
     left: 60px !important;
     width: calc(100vw - 60px) !important;
-    height: 100vh !important;
+    height: calc(100vh - 60px) !important;
+    padding: 0 !important;
   }
   
-  .modal-overlay.modal-fullscreen::before {
-    left: 60px !important;
+  .modal-header-with-actions {
+    padding: 0.75rem 1rem;
+    min-height: 52px;
+  }
+  
+  .modal-header-with-actions h2 {
+    font-size: 1.125rem;
+  }
+  
+  .modal-header-buttons {
+    gap: 0.5rem;
+  }
+  
+  .btn-header-cancel,
+  .btn-header-primary {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .modal-body-scrollable {
+    padding: 1rem;
   }
 }
 
-.modal-fullscreen-content .modal-close-btn {
-  position: absolute !important;
-  top: 1.5rem !important;
-  right: 1.5rem !important;
-  z-index: 1000 !important;
+/* Very small screens adjustment */
+@media (max-width: 480px) {
+  .workflow-page .modal-overlay.modal-fullscreen,
+  .modal-overlay.modal-fullscreen {
+    top: 56px !important;
+    left: 50px !important;
+    width: calc(100vw - 50px) !important;
+    height: calc(100vh - 56px) !important;
+    padding: 0 !important;
+  }
+  
+  .modal-header-with-actions {
+    padding: 0.625rem 0.75rem;
+    min-height: 48px;
+  }
+  
+  .modal-header-with-actions h2 {
+    font-size: 1rem;
+  }
+  
+  .btn-header-cancel,
+  .btn-header-primary {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}
+
+.modal-fullscreen-content .modal-close-btn,
+.modal-header-with-actions .modal-close-btn {
+  position: relative !important;
   width: 32px !important;
   height: 32px !important;
   border-radius: 50% !important;
@@ -1586,6 +1633,8 @@ button.btn-primary:not(.btn-cancel) {
   font-weight: normal !important;
   line-height: 1 !important;
   padding: 0 !important;
+  flex-shrink: 0 !important;
+  margin-left: 0.5rem !important;
 }
 
 .modal-fullscreen-content .modal-close-btn:hover {
@@ -1596,11 +1645,83 @@ button.btn-primary:not(.btn-cancel) {
 }
 
 .modal-fullscreen-content .modal-header {
-  padding: 2.5rem 2rem 1.5rem 2rem; /* More top padding for breathing room */
+  padding: 1.5rem 2rem;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-secondary);
   flex-shrink: 0;
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* New header with action buttons */
+.modal-header-with-actions {
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid var(--border-color);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+}
+
+.modal-header-with-actions h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-header-cancel,
+.btn-header-primary {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 36px;
+}
+
+.btn-header-cancel {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-header-cancel:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+}
+
+.btn-header-primary {
+  background: var(--primary-color);
+  color: white !important;
+}
+
+.btn-header-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-header-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .modal-fullscreen-content .modal-header h2 {
@@ -1614,12 +1735,46 @@ button.btn-primary:not(.btn-cancel) {
 .modal-fullscreen-content .modal-body {
   flex: 1;
   padding: 1.5rem 2rem;
-  overflow: hidden; /* Prevent body scroll, let textarea handle it */
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   width: 100%;
-  min-height: 0; /* Important for flex children */
+  min-height: 0;
+}
+
+/* New scrollable body for modals */
+.modal-body-scrollable {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure scrollbar is visible */
+.modal-body-scrollable::-webkit-scrollbar {
+  width: 10px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 5px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 5px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
 }
 
 .modal-fullscreen-content .modal-field {
@@ -1682,8 +1837,8 @@ button.btn-primary:not(.btn-cancel) {
 
 .modal-fullscreen-content .modal-textarea-large {
   flex: 1 !important;
-  min-height: 0 !important; /* Allow flex to determine height */
-  height: 100% !important; /* Fill available space */
+  min-height: 300px !important; /* Minimum height */
+  max-height: 500px !important; /* Maximum height to prevent overflow */
   padding: 1.5rem !important;
   font-size: 1.1rem !important;
   line-height: 1.8 !important;
@@ -1691,7 +1846,7 @@ button.btn-primary:not(.btn-cancel) {
   border-radius: 8px !important;
   background: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
-  resize: none !important;
+  resize: vertical !important; /* Allow vertical resizing */
   transition: all 0.2s ease !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
   width: 100% !important;
@@ -1725,15 +1880,9 @@ button.btn-primary:not(.btn-cancel) {
   background: var(--bg-primary);
 }
 
+/* Remove footer since buttons are in header now */
 .modal-fullscreen-content .modal-footer {
-  padding: 1rem 2rem;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  flex-shrink: 0;
-  width: 100%;
+  display: none !important;
 }
 
 .modal-fullscreen-content .btn-cancel,
@@ -1853,30 +2002,29 @@ button.btn-primary:not(.btn-cancel) {
 
 /* Override any conflicting subsection-modal styles */
 .modal-fullscreen-content.subsection-modal {
-  max-width: 100vw !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  left: 0 !important;
-  top: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
 }
 
 /* Responsive adjustments for mobile */
 @media (max-width: 768px) {
   .modal-fullscreen-content .modal-header {
-    padding: 1rem 3rem 1rem 1.5rem; /* Right padding for close button */
+    padding: 1rem 3rem 1rem 1.5rem;
+    position: sticky;
+    top: 0;
   }
   
   .modal-fullscreen-content .modal-body {
     padding: 1rem;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
-  .modal-fullscreen-content .modal-footer {
-    padding: 0.75rem 1rem;
-  }
-  
-  .modal-fullscreen-content .modal-close-btn {
-    top: 0.75rem !important;
-    right: 0.75rem !important;
+  .modal-fullscreen-content .modal-close-btn,
+  .modal-header-with-actions .modal-close-btn {
     width: 28px !important;
     height: 28px !important;
     font-size: 16px !important;

@@ -24,6 +24,7 @@ import BookmarkManager from './pages/BookmarkManager'
 import Board from './pages/Board'
 import Terminal from './pages/Terminal'
 import './App.css'
+import './styles/TabletResponsive.css'
 
 function AppContent() {
   const { isUnlocked, unlock } = useAuth()
