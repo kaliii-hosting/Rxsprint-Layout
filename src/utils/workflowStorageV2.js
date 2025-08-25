@@ -1,6 +1,7 @@
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
 import { firestore, storage } from '../config/firebase';
+import simpleAuth from '../services/authServiceSimple';
 
 const MAX_FIRESTORE_SIZE = 500000; // 500KB - conservative limit for Firestore
 const WORKFLOW_COLLECTION = 'workflow';
@@ -425,6 +426,9 @@ export const decompressData = (compressed) => {
 
 export const saveWorkflowWithStorage = async (data) => {
   try {
+    // Ensure user is authenticated before storage operations
+    await simpleAuth.ensureAuth();
+    
     const timestamp = new Date().toISOString();
     const dataString = JSON.stringify(data);
     const dataSize = calculateSize(data);
@@ -516,6 +520,9 @@ export const saveWorkflowWithStorage = async (data) => {
 
 export const loadWorkflowWithStorage = async () => {
   try {
+    // Ensure user is authenticated before storage operations
+    await simpleAuth.ensureAuth();
+    
     const docRef = doc(firestore, WORKFLOW_COLLECTION, 'data');
     const docSnap = await getDoc(docRef);
     

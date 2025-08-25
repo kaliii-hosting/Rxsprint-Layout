@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow read/write access to workflow-data for authenticated users
+    match /workflow-data/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Specific rule for the admin user (optional, for extra security)
+    match /workflow-data/{document=**} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == 'tdGILcyLbSOAUIjsoA93QGaj7Zm2' || 
+         request.auth.token.email == 'admin@rxsprint.com');
+    }
+    
+    // Alternative: Allow all authenticated users (less restrictive)
+    // Uncomment this and comment out the above if you want any authenticated user to access
+    // match /{allPaths=**} {
+    //   allow read, write: if request.auth != null;
+    // }
+  }
+}

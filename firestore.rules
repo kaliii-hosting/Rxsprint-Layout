@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read/write access to workflow collection for authenticated users
+    match /workflow/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow read/write access to workflow_chunks collection for authenticated users
+    match /workflow_chunks/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow read/write access to medications collection for authenticated users
+    match /medications/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow read/write access to patients collection for authenticated users  
+    match /patients/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow read/write access to notes collection for authenticated users
+    match /notes/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Specific rule for admin user (optional, for extra security)
+    // You can add this to any of the above rules for more restrictive access
+    // allow read, write: if request.auth != null && 
+    //   (request.auth.uid == 'tdGILcyLbSOAUIjsoA93QGaj7Zm2' || 
+    //    request.auth.token.email == 'admin@rxsprint.com');
+  }
+}

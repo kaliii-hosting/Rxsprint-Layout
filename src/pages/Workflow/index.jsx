@@ -42,7 +42,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { firestore } from '../../config/firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
-import { saveWorkflowWithStorage, loadWorkflowWithStorage, getWorkflowStorageInfo } from '../../utils/workflowStorageV2';
+import { saveWorkflowWithStorage, loadWorkflowWithStorage } from '../../utils/workflowStorageV2';
 import './Workflow.css';
 import EnterpriseHeader, { TabGroup, TabButton, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import { exportWorkflowToPDF } from './ExportPDF';
@@ -123,10 +123,10 @@ const Workflow = () => {
         scd: workflowDataRef.current.scd || { sections: [] }
       };
       
-      // Use new storage solution with compression and Firebase Storage
+      // Save to Firebase Storage with authentication
       const result = await saveWorkflowWithStorage(dataToSave);
       
-      console.log(`Auto-save successful: ${result.method}, Original: ${(result.originalSize / 1024).toFixed(1)}KB, Final: ${(result.finalSize / 1024).toFixed(1)}KB`);
+      console.log(`Auto-save successful: ${result.method}, Size: ${(result.originalSize / 1024).toFixed(1)}KB → ${(result.finalSize / 1024).toFixed(1)}KB`);
       
       setSaveStatus('saved');
       setLastSaveTime(new Date());
@@ -222,7 +222,7 @@ const Workflow = () => {
         scd: { sections: [] }
       };
       
-      // Try to load from Firebase using new storage solution
+      // Try to load from Firebase with authentication
       try {
         const data = await loadWorkflowWithStorage();
         
@@ -262,7 +262,7 @@ const Workflow = () => {
           
           setWorkflowData(mergedData);
         } else {
-          // First time - save defaults to Firebase using new storage solution
+          // First time - save defaults to Firebase Storage
           await saveWorkflowWithStorage(defaultData);
           setWorkflowData(defaultData);
         }
@@ -605,10 +605,10 @@ See attached pump sheet for details.`
           scd: fullData.scd || { sections: [] }
         };
         
-        // Use new storage solution with compression and Firebase Storage
+        // Save to Firebase Storage with authentication
         const result = await saveWorkflowWithStorage(dataToSave);
         
-        console.log(`Save successful: ${result.method}, Original: ${(result.originalSize / 1024).toFixed(1)}KB, Final: ${(result.finalSize / 1024).toFixed(1)}KB`);
+        console.log(`Save successful: ${result.method}, Size: ${(result.originalSize / 1024).toFixed(1)}KB → ${(result.finalSize / 1024).toFixed(1)}KB`);
         
         setSaveStatus('saved');
         setLastSaveTime(new Date());
