@@ -1067,12 +1067,12 @@
 /* Modal Styles */
 .modal-overlay {
   position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
+  top: 80px !important; /* Below header (header is 80px) */
+  left: 88px !important; /* After sidebar */
   right: 0 !important;
   bottom: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
+  width: calc(100vw - 88px) !important;
+  height: calc(100vh - 80px) !important;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
@@ -1097,10 +1097,11 @@
   padding: 2rem;
   width: 90%;
   max-width: 500px;
-  max-height: 90vh;
+  max-height: calc(100vh - 120px); /* Ensure it fits within viewport minus header and some padding */
   overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
+  position: relative;
 }
 
 /* Mobile Fullscreen Modals */
@@ -1109,12 +1110,12 @@
     align-items: flex-start;
     padding: 0;
     position: fixed !important;
-    top: 0 !important;
+    top: 70px !important; /* Below header on mobile (header is 70px) */
     left: 70px !important; /* Respect sidebar width on mobile */
     right: 0 !important;
     bottom: 0 !important;
     width: calc(100vw - 70px) !important; /* Full width minus sidebar */
-    height: 100vh !important;
+    height: calc(100vh - 70px) !important;
     z-index: 9999 !important; /* High z-index for mobile */
   }
   
@@ -1234,8 +1235,10 @@
 /* Adjust modal positioning for smaller screens (480px and below) */
 @media (max-width: 480px) {
   .modal-overlay {
+    top: 60px !important; /* Header is 60px at this size */
     left: 60px !important; /* Sidebar is 60px at this size */
     width: calc(100vw - 60px) !important;
+    height: calc(100vh - 60px) !important;
   }
   
   .modal-content {
@@ -1248,8 +1251,10 @@
 /* Adjust modal positioning for very small screens (360px and below) */
 @media (max-width: 360px) {
   .modal-overlay {
+    top: 56px !important; /* Header is 56px at this size */
     left: 50px !important; /* Sidebar is 50px at this size */
     width: calc(100vw - 50px) !important;
+    height: calc(100vh - 56px) !important;
   }
   
   .modal-content {

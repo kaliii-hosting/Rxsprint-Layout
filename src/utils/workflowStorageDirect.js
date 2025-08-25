@@ -1,5 +1,5 @@
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { ref, uploadString, getDownloadURL, getBytes } from 'firebase/storage';
 import { firestore, storage } from '../config/firebase';
 
 const STORAGE_PATH = 'workflow-data/workflow-data.json';
@@ -38,30 +38,58 @@ export const saveWorkflowToStorage = async (data) => {
     const compressed = compressData(data);
     const dataSize = new Blob([compressed]).size;
     
-    console.log(`Saving to Firebase Storage: ${(dataSize / 1024).toFixed(1)}KB`);
+    console.log(`Saving data: ${(dataSize / 1024).toFixed(1)}KB`);
     
-    // Upload to Firebase Storage
-    const storageRef = ref(storage, STORAGE_PATH);
-    await uploadString(storageRef, compressed, 'raw');
-    const downloadUrl = await getDownloadURL(storageRef);
+    // Save to BOTH Storage and Firestore for redundancy
+    let storageSuccess = false;
+    let firestoreSuccess = false;
     
-    // Save metadata to Firestore (optional, for tracking)
+    // 1. Try Firebase Storage
     try {
-      await setDoc(doc(firestore, FIRESTORE_DOC), {
-        storageUrl: downloadUrl,
-        size: dataSize,
-        timestamp: new Date().toISOString(),
-        type: 'storage'
-      });
-    } catch (firestoreError) {
-      console.log('Metadata save skipped:', firestoreError);
+      const storageRef = ref(storage, STORAGE_PATH);
+      await uploadString(storageRef, compressed, 'raw');
+      storageSuccess = true;
+      console.log('Saved to Firebase Storage');
+    } catch (storageError) {
+      console.log('Storage save failed:', storageError.code);
     }
     
-    console.log('Successfully saved to Firebase Storage');
+    // 2. Always save to Firestore as backup (especially if Storage fails)
+    try {
+      if (dataSize < 900000) { // Under 900KB - safe for Firestore
+        await setDoc(doc(firestore, 'workflow/data'), {
+          type: 'compressed',
+          data: compressed,
+          size: dataSize,
+          timestamp: new Date().toISOString(),
+          storageSuccess: storageSuccess
+        });
+        firestoreSuccess = true;
+        console.log('Saved to Firestore as backup');
+      } else {
+        // Too large for single doc, just save metadata
+        await setDoc(doc(firestore, FIRESTORE_DOC), {
+          size: dataSize,
+          timestamp: new Date().toISOString(),
+          type: 'storage',
+          storageSuccess: storageSuccess
+        });
+        console.log('Saved metadata to Firestore');
+      }
+    } catch (firestoreError) {
+      console.log('Firestore save failed:', firestoreError);
+    }
+    
+    if (!storageSuccess && !firestoreSuccess) {
+      throw new Error('Failed to save to both Storage and Firestore');
+    }
+    
+    console.log('Save completed successfully');
     return { 
       success: true, 
       size: dataSize,
-      url: downloadUrl
+      storage: storageSuccess,
+      firestore: firestoreSuccess
     };
     
   } catch (error) {
@@ -73,46 +101,98 @@ export const saveWorkflowToStorage = async (data) => {
 // Load directly from Firebase Storage
 export const loadWorkflowFromStorage = async () => {
   try {
-    // Try to get the download URL from Firestore metadata first
-    let downloadUrl = null;
+    // Get data directly from Firebase Storage using SDK (avoids CORS)
+    const storageRef = ref(storage, STORAGE_PATH);
     
     try {
+      // Use getBytes instead of getDownloadURL + fetch to avoid CORS
+      const bytes = await getBytes(storageRef);
+      
+      // Convert bytes to string
+      const decoder = new TextDecoder();
+      const compressed = decoder.decode(bytes);
+      
+      const data = decompressData(compressed);
+      console.log('Successfully loaded from Firebase Storage');
+      return data;
+      
+    } catch (storageError) {
+      // If direct load fails, try with metadata URL (fallback)
+      console.log('Direct storage load failed, trying metadata:', storageError.code);
+      
       const metadataDoc = await getDoc(doc(firestore, FIRESTORE_DOC));
-      if (metadataDoc.exists() && metadataDoc.data().storageUrl) {
-        downloadUrl = metadataDoc.data().storageUrl;
-        console.log('Found storage URL in metadata');
+      if (metadataDoc.exists() && metadataDoc.data().type === 'storage') {
+        // Data exists but can't be loaded directly, return a marker
+        console.log('Data exists in storage but cannot be loaded due to CORS/permissions');
+        
+        // Try to get from Firestore backup if available
+        const fallbackDoc = await getDoc(doc(firestore, 'workflow/data'));
+        if (fallbackDoc.exists()) {
+          const data = fallbackDoc.data();
+          if (data.type === 'compressed' && data.data) {
+            return decompressData(data.data);
+          }
+          return data;
+        }
       }
-    } catch (firestoreError) {
-      console.log('Metadata not available:', firestoreError);
+      throw storageError;
     }
-    
-    // If no metadata, get URL directly from Storage
-    if (!downloadUrl) {
-      const storageRef = ref(storage, STORAGE_PATH);
-      downloadUrl = await getDownloadURL(storageRef);
-      console.log('Got storage URL directly');
-    }
-    
-    // Fetch the data
-    const response = await fetch(downloadUrl);
-    const compressed = await response.text();
-    const data = decompressData(compressed);
-    
-    console.log('Successfully loaded from Firebase Storage');
-    return data;
     
   } catch (error) {
     console.error('Firebase Storage load failed:', error);
     
-    // If storage fails, check if there's any data in the old Firestore location
+    // Try multiple fallback locations
+    // 1. Check the old Firestore location
     try {
       const fallbackDoc = await getDoc(doc(firestore, 'workflow/data'));
       if (fallbackDoc.exists()) {
-        console.log('Found fallback data in Firestore');
-        return fallbackDoc.data();
+        const data = fallbackDoc.data();
+        console.log('Found fallback data in Firestore workflow/data');
+        
+        // Check if it's compressed data
+        if (data.type === 'compressed' && data.data) {
+          return decompressData(data.data);
+        }
+        
+        // Return raw data if not compressed
+        return data;
       }
     } catch (fallbackError) {
-      console.log('No fallback data available');
+      console.log('No data in workflow/data');
+    }
+    
+    // 2. Check workflow_chunks collection for chunked data
+    try {
+      const mainDoc = await getDoc(doc(firestore, 'workflow_chunks/main'));
+      if (mainDoc.exists()) {
+        const mainData = mainDoc.data();
+        console.log('Found data in workflow_chunks');
+        
+        if (!mainData.isChunked && mainData.data) {
+          // Single document
+          return decompressData(mainData.data);
+        }
+        
+        // It's chunked, need to load all chunks
+        if (mainData.isChunked && mainData.chunkCount) {
+          console.log(`Loading ${mainData.chunkCount} chunks...`);
+          const chunks = [];
+          
+          for (let i = 0; i < mainData.chunkCount; i++) {
+            const chunkDoc = await getDoc(doc(firestore, `workflow_chunks/chunk_${i}`));
+            if (chunkDoc.exists()) {
+              chunks.push(chunkDoc.data().data);
+            }
+          }
+          
+          if (chunks.length > 0) {
+            const reassembled = chunks.join('');
+            return decompressData(reassembled);
+          }
+        }
+      }
+    } catch (chunkError) {
+      console.log('No data in workflow_chunks');
     }
     
     return null;

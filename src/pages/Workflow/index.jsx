@@ -42,7 +42,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { firestore } from '../../config/firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
-import { saveWithRetry, loadWorkflowFromStorage, saveToLocalBackup, loadFromLocalBackup } from '../../utils/workflowStorageDirect';
+import { saveWithRetry, loadWorkflowFromFirestore, saveToLocalBackup, loadFromLocalBackup } from '../../utils/workflowStorageFirestore';
 import './Workflow.css';
 import EnterpriseHeader, { TabGroup, TabButton, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import { exportWorkflowToPDF } from './ExportPDF';
@@ -114,11 +114,7 @@ const Workflow = () => {
     setSaveStatus('saving');
     try {
       const dataToSave = {
-        lyso: {
-          sections: (workflowDataRef.current.lyso?.sections || []).filter(s => 
-            !['scenarioOverview', 'newRxNoChanges', 'sigDoseChanges', 'infusionChanges', 'maintenance'].includes(s.id)
-          )
-        },
+        lyso: workflowDataRef.current.lyso || { sections: [] },
         hae: workflowDataRef.current.hae || { sections: [] },
         scd: workflowDataRef.current.scd || { sections: [] }
       };
@@ -129,7 +125,7 @@ const Workflow = () => {
       // Then save to Firestore with retry
       const result = await saveWithRetry(dataToSave, 2);
       
-      console.log(`Auto-save successful to Firebase Storage: ${(result.size / 1024).toFixed(1)}KB`);
+      console.log(`Auto-save successful to Firestore: ${(result.size / 1024).toFixed(1)}KB`);
       
       setSaveStatus('saved');
       setLastSaveTime(new Date());
@@ -225,13 +221,13 @@ const Workflow = () => {
         scd: { sections: [] }
       };
       
-      // Try to load from Firebase Storage, then local backup as fallback
+      // Try to load from Firebase Storage/Firestore hybrid, then local backup as fallback
       try {
-        let data = await loadWorkflowFromStorage();
+        let data = await loadWorkflowFromFirestore();
         
-        // If no data in Firebase Storage, try local backup
+        // If no data in Storage/Firestore, try local backup
         if (!data) {
-          console.log('No data in Firebase Storage, trying local backup...');
+          console.log('No data in Firestore, trying local backup...');
           data = loadFromLocalBackup();
         }
         
@@ -254,17 +250,9 @@ const Workflow = () => {
           });
           setSubsectionWidths(widths);
           
-          // Always use default Lyso sections to preserve original content
-          // Only use Firebase data for HAE and SCD or for user-added sections
+          // Use saved data directly for all tabs
           const mergedData = {
-            lyso: { 
-              sections: [
-                ...getDefaultLysoSections(),
-                ...(data.lyso?.sections?.filter(s => 
-                  !['scenarioOverview', 'newRxNoChanges', 'sigDoseChanges', 'infusionChanges', 'maintenance'].includes(s.id)
-                ) || [])
-              ]
-            },
+            lyso: data.lyso || { sections: getDefaultLysoSections() },
             hae: data.hae || { sections: [] },
             scd: data.scd || { sections: [] }
           };
@@ -599,33 +587,29 @@ See attached pump sheet for details.`
       // Update local state immediately for responsive UI
       setWorkflowData(fullData);
       
-      // Trigger auto-save unless explicitly skipped
+      // Always save immediately to Firebase Storage
+      setSaveStatus('saving');
+      const dataToSave = {
+        lyso: fullData.lyso || { sections: [] },
+        hae: fullData.hae || { sections: [] },
+        scd: fullData.scd || { sections: [] }
+      };
+      
+      // Save to local backup first
+      saveToLocalBackup(dataToSave);
+      
+      // Then save to Firebase Storage with retry
+      const result = await saveWithRetry(dataToSave, 3);
+      
+      console.log(`Save successful to Firestore: ${(result.size / 1024).toFixed(1)}KB`);
+      
+      setSaveStatus('saved');
+      setLastSaveTime(new Date());
+      hasUnsavedChanges.current = false;
+      
+      // Also trigger auto-save for future changes if not skipped
       if (!skipAutoSave) {
         triggerAutoSave();
-      } else {
-        // If skipping auto-save, save immediately
-        setSaveStatus('saving');
-        const dataToSave = {
-          lyso: {
-            sections: (fullData.lyso?.sections || []).filter(s => 
-              !['scenarioOverview', 'newRxNoChanges', 'sigDoseChanges', 'infusionChanges', 'maintenance'].includes(s.id)
-            )
-          },
-          hae: fullData.hae || { sections: [] },
-          scd: fullData.scd || { sections: [] }
-        };
-        
-        // Save to local backup first
-        saveToLocalBackup(dataToSave);
-        
-        // Then save to Firestore with retry
-        const result = await saveWithRetry(dataToSave, 3);
-        
-        console.log(`Save successful to Firebase Storage: ${(result.size / 1024).toFixed(1)}KB`);
-        
-        setSaveStatus('saved');
-        setLastSaveTime(new Date());
-        hasUnsavedChanges.current = false;
       }
     } catch (error) {
       console.error('Error saving workflow data:', error);
