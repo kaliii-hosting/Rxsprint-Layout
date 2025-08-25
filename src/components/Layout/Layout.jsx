@@ -44,6 +44,23 @@ const Layout = ({ children }) => {
   const [showPumpSimulator, setShowPumpSimulator] = useState(false);
   const [showDigitalClock, setShowDigitalClock] = useState(false);
   const [showMedicationForm, setShowMedicationForm] = useState(false);
+  
+  // Handle mobile viewport height
+  useEffect(() => {
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+    
+    return () => {
+      window.removeEventListener('resize', setVH);
+      window.removeEventListener('orientationchange', setVH);
+    };
+  }, []);
   const { 
     searchQuery, 
     searchResults, 
@@ -282,35 +299,21 @@ const Layout = ({ children }) => {
                         onMouseEnter={() => setSelectedIndex(index)}
                       >
                         <div className="result-icon">
-                          {item.resultType === 'bookmark' ? '🔖' : 
-                           item.resultType === 'shopProduct' ? '📦' : 
-                           item.resultType === 'note' ? '📝' :
-                           item.resultType === 'workflow' ? '🔄' : '💊'}
+                          💊
                         </div>
                         <div className="result-content">
                           <h4 className="result-title">
-                            {item.resultType === 'bookmark' ? item.title : 
-                             item.resultType === 'shopProduct' ? item.name : 
-                             item.resultType === 'note' ? item.title :
-                             item.resultType === 'workflow' ? item.title : item.brandName}
+                            {item.displayName || item.drug || item.brandName || item.genericName || 'Medication'}
                           </h4>
-                          {item.resultType === 'bookmark' && item.url ? (
-                            <p className="result-subtitle">{item.url}</p>
-                          ) : item.resultType === 'shopProduct' && item.irc_code ? (
-                            <p className="result-subtitle">IRC: {item.irc_code} - {item.category}</p>
-                          ) : item.resultType === 'note' && item.content ? (
-                            <p className="result-subtitle">{item.content.substring(0, 50)}...</p>
-                          ) : item.resultType === 'workflow' && item.description ? (
-                            <p className="result-subtitle">{item.description}</p>
-                          ) : item.genericName ? (
-                            <p className="result-subtitle">{item.genericName}</p>
-                          ) : null}
+                          <p className="result-subtitle">
+                            {item.resultType === 'scdMedication' ? (item.generic || 'SCD Medication') :
+                             item.resultType === 'haeMedication' ? (item.brand || 'HAE Medication') :
+                             (item.genericName || 'Lyso Medication')}
+                          </p>
                         </div>
                         <div className="result-category">
-                          {item.resultType === 'bookmark' ? 'Bookmark' : 
-                           item.resultType === 'shopProduct' ? 'Supply' : 
-                           item.resultType === 'note' ? 'Note' :
-                           item.resultType === 'workflow' ? 'Workflow' : 'Medication'}
+                          {item.resultType === 'scdMedication' ? 'SCD' : 
+                           item.resultType === 'haeMedication' ? 'HAE' : 'LYSO'}
                         </div>
                       </div>
                     ))}

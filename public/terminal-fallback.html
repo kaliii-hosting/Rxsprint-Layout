@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RX Sprint Terminal - Fallback</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #2d2d2d;
+            padding: 15px;
+            border-bottom: 2px solid #444;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .info {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        
+        .methods {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .method-btn {
+            padding: 8px 15px;
+            background: #444;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .method-btn:hover {
+            background: #555;
+        }
+        
+        .method-btn.active {
+            background: #0066cc;
+        }
+        
+        .iframe-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .error {
+            color: #ff4444;
+            padding: 10px;
+            background: #331111;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RX Sprint Terminal - Direct Access</h1>
+        <div class="info">
+            This is a fallback page for accessing the terminal when the main app is blocked.
+        </div>
+        <div class="info" id="status">
+            Status: <span id="status-text">Ready</span>
+        </div>
+        <div class="methods">
+            <button class="method-btn active" onclick="loadMethod('proxy')">
+                Netlify Proxy (Recommended)
+            </button>
+            <button class="method-btn" onclick="loadMethod('direct')">
+                Direct ngrok
+            </button>
+            <button class="method-btn" onclick="loadMethod('window')">
+                New Window
+            </button>
+        </div>
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
+    
+    <div class="iframe-container">
+        <div class="loading" id="loading">Loading terminal...</div>
+        <iframe id="terminal-frame" style="display: none;"></iframe>
+    </div>
+    
+    <script>
+        const ngrokUrl = 'https://rxsprint-ai.ngrok.app';
+        const proxyUrl = '/.netlify/functions/terminal-proxy';
+        
+        let currentMethod = 'proxy';
+        const iframe = document.getElementById('terminal-frame');
+        const loading = document.getElementById('loading');
+        const statusText = document.getElementById('status-text');
+        const errorDiv = document.getElementById('error');
+        
+        function loadMethod(method) {
+            currentMethod = method;
+            
+            // Update button states
+            document.querySelectorAll('.method-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Reset state
+            loading.style.display = 'block';
+            iframe.style.display = 'none';
+            errorDiv.style.display = 'none';
+            statusText.textContent = 'Loading...';
+            
+            if (method === 'window') {
+                // Open in new window
+                window.open(ngrokUrl, '_blank', 'width=1200,height=800');
+                statusText.textContent = 'Opened in new window';
+                loading.style.display = 'none';
+            } else {
+                // Load in iframe
+                const url = method === 'proxy' ? proxyUrl : ngrokUrl;
+                iframe.src = url;
+                
+                // Set timeout for loading
+                setTimeout(() => {
+                    if (loading.style.display !== 'none') {
+                        errorDiv.textContent = 'Loading timeout. The connection might be blocked. Try another method.';
+                        errorDiv.style.display = 'block';
+                        statusText.textContent = 'Timeout';
+                    }
+                }, 10000);
+            }
+        }
+        
+        // iframe event handlers
+        iframe.onload = function() {
+            loading.style.display = 'none';
+            iframe.style.display = 'block';
+            statusText.textContent = 'Connected';
+            console.log('Terminal loaded successfully');
+        };
+        
+        iframe.onerror = function(e) {
+            loading.style.display = 'none';
+            errorDiv.textContent = 'Failed to load terminal. Try another connection method.';
+            errorDiv.style.display = 'block';
+            statusText.textContent = 'Error';
+            console.error('Terminal loading error:', e);
+        };
+        
+        // Load default method on page load
+        window.onload = function() {
+            loadMethod('proxy');
+        };
+        
+        // Log environment info
+        console.log('Terminal Fallback Page');
+        console.log('Hostname:', window.location.hostname);
+        console.log('Protocol:', window.location.protocol);
+        console.log('User Agent:', navigator.userAgent);
+    </script>
+</body>
+</html>

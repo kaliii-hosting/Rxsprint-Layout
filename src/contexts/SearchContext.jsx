@@ -20,6 +20,7 @@ export const SearchProvider = ({ children }) => {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [medications, setMedications] = useState([]);
   const [haeMedications, setHaeMedications] = useState([]);
+  const [scdMedications, setScdMedications] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
   const [shopProducts, setShopProducts] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -33,10 +34,12 @@ export const SearchProvider = ({ children }) => {
   useEffect(() => {
     loadMedications();
     loadHaeMedications();
-    loadBookmarks();
-    loadShopProducts();
-    loadNotes();
-    loadWorkflowSections();
+    loadScdMedications();
+    // Only load medications - remove other data sources
+    // loadBookmarks();
+    // loadShopProducts();
+    // loadNotes();
+    // loadWorkflowSections();
   }, []);
 
   const loadMedications = async () => {
@@ -102,6 +105,38 @@ export const SearchProvider = ({ children }) => {
       console.error('Error loading HAE medications for search:', error);
       // Don't crash the app if HAE medications can't be loaded
       setHaeMedications([]);
+    }
+  };
+
+  const loadScdMedications = async () => {
+    try {
+      // Check if firestore is initialized
+      if (!firestore) {
+        console.warn('Firestore not initialized yet');
+        return;
+      }
+      
+      const scdMedicationsRef = collection(firestore, 'scdMedications');
+      const snapshot = await getDocs(scdMedicationsRef);
+      
+      const scdMedicationsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        type: 'scdMedication'
+      }));
+      
+      // Sort SCD medications alphabetically by drug name
+      const sortedScdMedications = scdMedicationsData.sort((a, b) => {
+        const drugA = (a.drug || '').toLowerCase();
+        const drugB = (b.drug || '').toLowerCase();
+        return drugA.localeCompare(drugB);
+      });
+      
+      setScdMedications(sortedScdMedications);
+    } catch (error) {
+      console.error('Error loading SCD medications for search:', error);
+      // Don't crash the app if SCD medications can't be loaded
+      setScdMedications([]);
     }
   };
 
@@ -269,31 +304,13 @@ export const SearchProvider = ({ children }) => {
       }
     });
 
-    // Collect from bookmarks
-    bookmarks.forEach(bookmark => {
-      if (bookmark.title && bookmark.title.toLowerCase().startsWith(lowerQuery)) {
-        allTerms.add(bookmark.title);
+    // Collect from SCD medications
+    scdMedications.forEach(med => {
+      if (med.drug && med.drug.toLowerCase().startsWith(lowerQuery)) {
+        allTerms.add(med.drug);
       }
-    });
-
-    // Collect from shop products
-    shopProducts.forEach(product => {
-      if (product.name && product.name.toLowerCase().startsWith(lowerQuery)) {
-        allTerms.add(product.name);
-      }
-    });
-
-    // Collect from notes
-    notes.forEach(note => {
-      if (note.title && note.title.toLowerCase().startsWith(lowerQuery)) {
-        allTerms.add(note.title);
-      }
-    });
-
-    // Collect from workflow sections
-    workflowSections.forEach(section => {
-      if (section.title && section.title.toLowerCase().startsWith(lowerQuery)) {
-        allTerms.add(section.title);
+      if (med.generic && med.generic.toLowerCase().startsWith(lowerQuery)) {
+        allTerms.add(med.generic);
       }
     });
 
@@ -326,81 +343,48 @@ export const SearchProvider = ({ children }) => {
 
     const lowerQuery = query.toLowerCase();
     
-    // Search medications
+    // Search medications - Only search by medication names
     const medicationResults = medications.filter(med => {
       const brandName = (med.brandName || '').toLowerCase();
       const genericName = (med.genericName || '').toLowerCase();
-      const indication = (med.indication || '').toLowerCase();
       
+      // Only search by brand name and generic name
       return brandName.includes(lowerQuery) || 
-             genericName.includes(lowerQuery) || 
-             indication.includes(lowerQuery);
-    }).map(med => ({ ...med, resultType: 'medication' }));
+             genericName.includes(lowerQuery);
+    }).map(med => ({ ...med, resultType: 'medication', displayName: med.brandName || med.genericName }));
 
-    // Search HAE medications
+    // Search HAE medications - Only search by medication names
     const haeMedicationResults = haeMedications.filter(med => {
       const drug = (med.drug || '').toLowerCase();
       const brand = (med.brand || '').toLowerCase();
-      const company = (med.company || '').toLowerCase();
-      const moa = (med.moa || '').toLowerCase();
-      const dosing = (med.dosing || '').toLowerCase();
       
+      // Only search by drug name and brand name
       return drug.includes(lowerQuery) || 
-             brand.includes(lowerQuery) || 
-             company.includes(lowerQuery) ||
-             moa.includes(lowerQuery) ||
-             dosing.includes(lowerQuery);
-    }).map(med => ({ ...med, resultType: 'haeMedication' }));
+             brand.includes(lowerQuery);
+    }).map(med => ({ ...med, resultType: 'haeMedication', displayName: med.drug || med.brand }));
 
-    // Search bookmarks
-    const bookmarkResults = bookmarks.filter(bookmark => {
-      const title = (bookmark.title || '').toLowerCase();
-      const url = (bookmark.url || '').toLowerCase();
+    // Search SCD medications - Only search by medication names
+    const scdMedicationResults = scdMedications.filter(med => {
+      const drug = (med.drug || '').toLowerCase();
+      const generic = (med.generic || '').toLowerCase();
       
-      return title.includes(lowerQuery) || url.includes(lowerQuery);
-    }).map(bookmark => ({ ...bookmark, resultType: 'bookmark' }));
+      // Only search by drug name and generic name
+      return drug.includes(lowerQuery) || 
+             generic.includes(lowerQuery);
+    }).map(med => ({ ...med, resultType: 'scdMedication', displayName: med.drug || med.generic }));
 
-    // Search shop products
-    const shopResults = shopProducts.filter(product => {
-      const name = (product.name || '').toLowerCase();
-      const description = (product.description || '').toLowerCase();
-      const purpose = (product.purpose || '').toLowerCase();
-      const ircCode = (product.irc_code || '').toLowerCase();
-      
-      return name.includes(lowerQuery) || 
-             description.includes(lowerQuery) || 
-             purpose.includes(lowerQuery) ||
-             ircCode.includes(lowerQuery);
-    }).map(product => ({ ...product, resultType: 'shopProduct' }));
+    // Remove non-medication searches
+    const bookmarkResults = [];
+    const shopResults = [];
+    const noteResults = [];
+    const workflowResults = [];
 
-    // Search notes
-    const noteResults = notes.filter(note => {
-      const title = (note.title || '').toLowerCase();
-      const content = (note.content || '').toLowerCase();
-      const tags = (note.tags || []).join(' ').toLowerCase();
-      
-      return title.includes(lowerQuery) || 
-             content.includes(lowerQuery) || 
-             tags.includes(lowerQuery);
-    }).map(note => ({ ...note, resultType: 'note' }));
-
-    // Search workflow sections
-    const workflowResults = workflowSections.filter(section => {
-      const title = (section.title || '').toLowerCase();
-      const description = (section.description || '').toLowerCase();
-      
-      return title.includes(lowerQuery) || description.includes(lowerQuery);
-    }).map(section => ({ ...section, resultType: 'workflow' }));
-
-    // Combine results and limit to 15
+    // Combine results and limit to 20 (only medications)
     const combinedResults = [
       ...medicationResults,
-      ...haeMedicationResults, 
-      ...bookmarkResults, 
-      ...shopResults,
-      ...noteResults,
-      ...workflowResults
-    ].slice(0, 15);
+      ...haeMedicationResults,
+      ...scdMedicationResults
+    ].slice(0, 20);
 
     setSearchResults(combinedResults);
     setShowDropdown(combinedResults.length > 0);
@@ -456,6 +440,15 @@ export const SearchProvider = ({ children }) => {
               medicationType: 'hae'
             } 
           });
+        } else if (item.resultType === 'scdMedication') {
+          // Navigate to medications page with SCD medication selected
+          navigate('/medications', { 
+            state: { 
+              selectedScdMedicationId: item.id,
+              openScdModal: true,
+              medicationType: 'scd'
+            } 
+          });
         } else {
           // Navigate to medications page and open the modal
           navigate('/medications', { 
@@ -493,6 +486,7 @@ export const SearchProvider = ({ children }) => {
       clearSearch,
       loadMedications,
       loadHaeMedications,
+      loadScdMedications,
       loadBookmarks,
       loadShopProducts,
       loadNotes,

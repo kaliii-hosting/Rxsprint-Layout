@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   FileText, 
   Activity,
@@ -95,6 +95,102 @@ const Workflow = () => {
   const [imageResizeStart, setImageResizeStart] = useState({ width: 0, x: 0 });
   const [subsectionWidths, setSubsectionWidths] = useState({});
   const [isResizing, setIsResizing] = useState(false); // Flag to prevent tab switching during resize
+  const [saveStatus, setSaveStatus] = useState('saved'); // 'saved', 'saving', 'error'
+  const [lastSaveTime, setLastSaveTime] = useState(null);
+  const saveTimeoutRef = useRef(null);
+  const workflowDataRef = useRef(workflowData);
+  const hasUnsavedChanges = useRef(false);
+
+  // Update ref when workflowData changes
+  useEffect(() => {
+    workflowDataRef.current = workflowData;
+  }, [workflowData]);
+
+  // Auto-save functionality with debouncing
+  const autoSave = useCallback(async () => {
+    if (!hasUnsavedChanges.current) return;
+    
+    setSaveStatus('saving');
+    try {
+      const dataToSave = {
+        lyso: {
+          sections: (workflowDataRef.current.lyso?.sections || []).filter(s => 
+            !['scenarioOverview', 'newRxNoChanges', 'sigDoseChanges', 'infusionChanges', 'maintenance'].includes(s.id)
+          )
+        },
+        hae: workflowDataRef.current.hae || { sections: [] },
+        scd: workflowDataRef.current.scd || { sections: [] }
+      };
+      
+      await setDoc(doc(firestore, 'workflow', 'data'), dataToSave);
+      setSaveStatus('saved');
+      setLastSaveTime(new Date());
+      hasUnsavedChanges.current = false;
+      console.log('Auto-save successful at', new Date().toLocaleTimeString());
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+      setSaveStatus('error');
+      // Show user-friendly error notification
+      alert('Warning: Your changes could not be saved to the cloud. Please check your internet connection. Your work is still saved locally.');
+    }
+  }, []);
+
+  // Debounced auto-save trigger
+  const triggerAutoSave = useCallback(() => {
+    hasUnsavedChanges.current = true;
+    setSaveStatus('pending');
+    
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    // Set new timeout for 2 seconds
+    saveTimeoutRef.current = setTimeout(() => {
+      autoSave();
+    }, 2000);
+  }, [autoSave]);
+
+  // Watch for changes in workflowData and trigger auto-save
+  useEffect(() => {
+    // Skip initial mount
+    if (loading) return;
+    
+    // Trigger auto-save when data changes
+    triggerAutoSave();
+  }, [workflowData, triggerAutoSave, loading]);
+
+  // Save before page unload
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges.current) {
+        // Force save attempt
+        autoSave();
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Clean up timeout on unmount
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [autoSave]);
+
+  // Periodic auto-save every 30 seconds if there are changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (hasUnsavedChanges.current) {
+        autoSave();
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [autoSave]);
 
   // Load workflow data from Firebase on mount
   useEffect(() => {
@@ -454,8 +550,8 @@ See attached pump sheet for details.`
     ];
   };
 
-  // Save workflow data to Firebase
-  const saveWorkflowData = async (data) => {
+  // Save workflow data to Firebase with improved error handling and auto-save trigger
+  const saveWorkflowData = async (data, skipAutoSave = false) => {
     try {
       let fullData;
       
@@ -474,24 +570,41 @@ See attached pump sheet for details.`
       } else {
         // Handle unexpected format
         console.error('Invalid data format for saveWorkflowData:', data);
+        setSaveStatus('error');
         return;
       }
       
-      // Only save user-added sections to Firebase for lyso, not the defaults
-      const dataToSave = {
-        lyso: {
-          sections: (fullData.lyso?.sections || []).filter(s => 
-            !['scenarioOverview', 'newRxNoChanges', 'sigDoseChanges', 'infusionChanges', 'maintenance'].includes(s.id)
-          )
-        },
-        hae: fullData.hae || { sections: [] },
-        scd: fullData.scd || { sections: [] }
-      };
-      
-      await setDoc(doc(firestore, 'workflow', 'data'), dataToSave);
+      // Update local state immediately for responsive UI
       setWorkflowData(fullData);
+      
+      // Trigger auto-save unless explicitly skipped
+      if (!skipAutoSave) {
+        triggerAutoSave();
+      } else {
+        // If skipping auto-save, save immediately
+        setSaveStatus('saving');
+        const dataToSave = {
+          lyso: {
+            sections: (fullData.lyso?.sections || []).filter(s => 
+              !['scenarioOverview', 'newRxNoChanges', 'sigDoseChanges', 'infusionChanges', 'maintenance'].includes(s.id)
+            )
+          },
+          hae: fullData.hae || { sections: [] },
+          scd: fullData.scd || { sections: [] }
+        };
+        
+        await setDoc(doc(firestore, 'workflow', 'data'), dataToSave);
+        setSaveStatus('saved');
+        setLastSaveTime(new Date());
+        hasUnsavedChanges.current = false;
+      }
     } catch (error) {
       console.error('Error saving workflow data:', error);
+      setSaveStatus('error');
+      
+      // Show user-friendly error message
+      alert('Failed to save changes to cloud. Your work is saved locally but may be lost if you refresh. Please check your connection.');
+      
       // Still update local state even if Firebase fails
       if (Array.isArray(data)) {
         setWorkflowData({
@@ -500,7 +613,7 @@ See attached pump sheet for details.`
             sections: data
           }
         });
-      } else {
+      } else if (data) {
         setWorkflowData(data);
       }
     }
@@ -1119,60 +1232,245 @@ See attached pump sheet for details.`
     setDeleteConfirmResolve(null);
   };
 
+  // Parse OneNote HTML content to extract mixed content (text, images, tables)
+  const parseOneNoteContent = (htmlContent) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    const mixedContent = [];
+    let textBuffer = '';
+    
+    // Process all elements in order
+    const processNode = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent.trim();
+        if (text) {
+          textBuffer += text + ' ';
+        }
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const tagName = node.tagName.toLowerCase();
+        
+        // Handle line breaks and paragraphs
+        if (tagName === 'br' || tagName === 'p' || tagName === 'div') {
+          if (textBuffer.trim()) {
+            textBuffer += '\n';
+          }
+        }
+        
+        // Handle images
+        if (tagName === 'img') {
+          // Save any accumulated text first
+          if (textBuffer.trim()) {
+            mixedContent.push({ type: 'text', content: textBuffer.trim() });
+            textBuffer = '';
+          }
+          
+          const src = node.src;
+          if (src) {
+            mixedContent.push({
+              type: 'image',
+              src: src,
+              width: node.width || 400,
+              alt: node.alt || ''
+            });
+          }
+        }
+        
+        // Handle tables
+        else if (tagName === 'table') {
+          // Save any accumulated text first
+          if (textBuffer.trim()) {
+            mixedContent.push({ type: 'text', content: textBuffer.trim() });
+            textBuffer = '';
+          }
+          
+          // Keep the entire table HTML
+          mixedContent.push({
+            type: 'table',
+            html: node.outerHTML
+          });
+        }
+        
+        // Process children for other elements
+        else if (tagName !== 'script' && tagName !== 'style') {
+          for (const child of node.childNodes) {
+            processNode(child);
+          }
+        }
+      }
+    };
+    
+    // Process the body content
+    const body = doc.body;
+    if (body) {
+      for (const child of body.childNodes) {
+        processNode(child);
+      }
+    }
+    
+    // Add any remaining text
+    if (textBuffer.trim()) {
+      mixedContent.push({ type: 'text', content: textBuffer.trim() });
+    }
+    
+    return mixedContent;
+  };
+
   // Handle paste event for modal textareas (Add/Edit Subsection)
   const handleModalPaste = async (e, isEdit = false) => {
-    const clipboardData = e.clipboardData || window.clipboardData;
-    
-    // Check for images
-    const items = clipboardData.items;
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf('image') !== -1) {
+    try {
+      const clipboardData = e.clipboardData || window.clipboardData;
+      if (!clipboardData) return;
+      
+      // First, try to get HTML data (OneNote content)
+      const htmlData = clipboardData.getData('text/html');
+      if (htmlData) {
         e.preventDefault();
-        const blob = items[i].getAsFile();
-        const reader = new FileReader();
+        console.log('Processing OneNote/HTML content...');
         
-        reader.onload = async (event) => {
-          const imageData = event.target.result;
-          const timestamp = Date.now();
-          const screenshot = {
-            id: `screenshot-${timestamp}`,
-            data: imageData,
-            width: 400,
-            timestamp: timestamp
-          };
-          
-          if (isEdit) {
-            setEditSubsectionScreenshots(prev => [...prev, screenshot]);
-          } else {
-            setNewSubsectionScreenshots(prev => [...prev, screenshot]);
+        // Parse the HTML content
+        const mixedContent = parseOneNoteContent(htmlData);
+        
+        // Process each content piece
+        let combinedText = '';
+        const screenshots = [];
+        const tables = [];
+        
+        for (const item of mixedContent) {
+          if (item.type === 'text') {
+            combinedText += item.content + '\n\n';
+          } else if (item.type === 'image') {
+            // Handle embedded images from OneNote
+            const timestamp = Date.now() + Math.random();
+            
+            // Check if it's a base64 image or external URL
+            if (item.src.startsWith('data:image')) {
+              screenshots.push({
+                id: `screenshot-${timestamp}`,
+                data: item.src,
+                width: item.width || 400,
+                timestamp: timestamp
+              });
+            } else {
+              // For external images, try to fetch and convert to base64
+              try {
+                const response = await fetch(item.src);
+                const blob = await response.blob();
+                const reader = new FileReader();
+                
+                reader.onload = () => {
+                  screenshots.push({
+                    id: `screenshot-${timestamp}`,
+                    data: reader.result,
+                    width: item.width || 400,
+                    timestamp: timestamp
+                  });
+                  
+                  // Update screenshots state
+                  setTimeout(() => {
+                    if (isEdit) {
+                      setEditSubsectionScreenshots(prev => [...prev, ...screenshots]);
+                    } else {
+                      setNewSubsectionScreenshots(prev => [...prev, ...screenshots]);
+                    }
+                  }, 0);
+                };
+                
+                reader.readAsDataURL(blob);
+              } catch (fetchError) {
+                console.warn('Could not fetch external image:', item.src);
+                // Add as reference text if image can't be fetched
+                combinedText += `[Image: ${item.alt || item.src}]\n\n`;
+              }
+            }
+          } else if (item.type === 'table') {
+            const timestamp = Date.now() + Math.random();
+            tables.push({
+              id: `table-${timestamp}`,
+              html: item.html,
+              timestamp: timestamp
+            });
           }
-        };
+        }
         
-        reader.readAsDataURL(blob);
+        // Update all states
+        setTimeout(() => {
+          // Add text content
+          if (combinedText.trim()) {
+            if (isEdit) {
+              setEditSubsectionContent(prev => prev + (prev ? '\n\n' : '') + combinedText.trim());
+            } else {
+              setNewSubsectionContent(prev => prev + (prev ? '\n\n' : '') + combinedText.trim());
+            }
+          }
+          
+          // Add screenshots that are already base64
+          const base64Screenshots = screenshots.filter(s => s.data.startsWith('data:'));
+          if (base64Screenshots.length > 0) {
+            if (isEdit) {
+              setEditSubsectionScreenshots(prev => [...prev, ...base64Screenshots]);
+            } else {
+              setNewSubsectionScreenshots(prev => [...prev, ...base64Screenshots]);
+            }
+          }
+          
+          // Add tables
+          if (tables.length > 0) {
+            if (isEdit) {
+              setEditSubsectionTables(prev => [...prev, ...tables]);
+            } else {
+              setNewSubsectionTables(prev => [...prev, ...tables]);
+            }
+          }
+        }, 100);
+        
         return;
       }
-    }
-    
-    // Check for HTML content (tables)
-    const htmlData = clipboardData.getData('text/html');
-    if (htmlData && htmlData.includes('<table')) {
-      e.preventDefault();
-      const timestamp = Date.now();
-      const table = {
-        id: `table-${timestamp}`,
-        html: htmlData,
-        timestamp: timestamp
-      };
       
-      if (isEdit) {
-        setEditSubsectionTables(prev => [...prev, table]);
-      } else {
-        setNewSubsectionTables(prev => [...prev, table]);
+      // Fallback: Check for images in clipboard items
+      const items = clipboardData.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf('image') !== -1) {
+            e.preventDefault();
+            const blob = items[i].getAsFile();
+            if (!blob) continue;
+            
+            const reader = new FileReader();
+            
+            reader.onload = (event) => {
+              const imageData = event.target.result;
+              const timestamp = Date.now();
+              const screenshot = {
+                id: `screenshot-${timestamp}`,
+                data: imageData,
+                width: 400,
+                timestamp: timestamp
+              };
+              
+              setTimeout(() => {
+                if (isEdit) {
+                  setEditSubsectionScreenshots(prev => [...prev, screenshot]);
+                } else {
+                  setNewSubsectionScreenshots(prev => [...prev, screenshot]);
+                }
+              }, 0);
+            };
+            
+            reader.onerror = (error) => {
+              console.error('Error reading image:', error);
+            };
+            
+            reader.readAsDataURL(blob);
+            return;
+          }
+        }
       }
-      return;
+      
+      // If no HTML or images, let regular text paste happen
+    } catch (error) {
+      console.error('Error handling paste:', error);
+      // Let default paste behavior happen if there's an error
     }
-    
-    // Regular text paste - let it happen normally
   };
 
   // Handle paste event for subsections
@@ -2684,6 +2982,41 @@ See attached pump sheet for details.`
           </TabButton>
         </TabGroup>
         
+        {/* Save Status Indicator */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginLeft: '20px',
+          marginRight: '20px',
+          padding: '6px 12px',
+          borderRadius: '6px',
+          backgroundColor: saveStatus === 'saved' ? '#10b98133' : 
+                          saveStatus === 'saving' ? '#3b82f633' : 
+                          saveStatus === 'error' ? '#ef444433' : '#6b728033',
+          color: saveStatus === 'saved' ? '#10b981' : 
+                 saveStatus === 'saving' ? '#3b82f6' : 
+                 saveStatus === 'error' ? '#ef4444' : '#6b7280',
+          fontSize: '13px',
+          fontWeight: '500'
+        }}>
+          {saveStatus === 'saved' && <CheckCircle2 size={16} />}
+          {saveStatus === 'saving' && <RefreshCcw size={16} className="spin-animation" />}
+          {saveStatus === 'error' && <AlertCircle size={16} />}
+          {saveStatus === 'pending' && <Clock size={16} />}
+          <span>
+            {saveStatus === 'saved' && 'All changes saved'}
+            {saveStatus === 'saving' && 'Saving...'}
+            {saveStatus === 'error' && 'Save failed'}
+            {saveStatus === 'pending' && 'Pending save'}
+          </span>
+          {lastSaveTime && saveStatus === 'saved' && (
+            <span style={{ opacity: 0.7, fontSize: '11px' }}>
+              ({new Date(lastSaveTime).toLocaleTimeString()})
+            </span>
+          )}
+        </div>
+        
         <ActionGroup>
           <ActionButton
             onClick={() => setShowAddSectionModal(true)}
@@ -2772,10 +3105,10 @@ See attached pump sheet for details.`
         </div>
       )}
 
-      {/* Add Subsection Modal */}
+      {/* Add Subsection Modal - Fullscreen */}
       {showAddSubsectionModal && (
-        <div className="modal-overlay" onClick={() => setShowAddSubsectionModal(false)}>
-          <div className="modal-content subsection-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay modal-fullscreen" onClick={() => setShowAddSubsectionModal(false)}>
+          <div className="modal-content modal-fullscreen-content" onClick={(e) => e.stopPropagation()}>
             <button 
               className="modal-close-btn"
               onClick={(e) => {
@@ -2801,23 +3134,37 @@ See attached pump sheet for details.`
             >
               ×
             </button>
-            <h2>Add New Subsection</h2>
-            <input
-              type="text"
-              placeholder="Subsection Title"
-              value={newSubsectionTitle}
-              onChange={(e) => setNewSubsectionTitle(e.target.value)}
-              className="modal-input"
-            />
+            <div className="modal-header">
+              <h2>Add New Subsection</h2>
+            </div>
             
-            <div className="modal-content-area">
-              <textarea
-                placeholder="Subsection Content (paste screenshots or tables here)"
-                value={newSubsectionContent}
-                onChange={(e) => setNewSubsectionContent(e.target.value)}
-                onPaste={(e) => handleModalPaste(e, false)}
-                className="modal-textarea"
-              />
+            <div className="modal-body">
+              <div className="modal-field">
+                <label className="modal-label">Subsection Title</label>
+                <input
+                  type="text"
+                  placeholder="Enter a descriptive title"
+                  value={newSubsectionTitle}
+                  onChange={(e) => setNewSubsectionTitle(e.target.value)}
+                  className="modal-input modal-input-large"
+                  autoFocus
+                />
+              </div>
+              
+              <div className="modal-field modal-field-expanded">
+                <label className="modal-label">Content</label>
+                <div className="modal-paste-info">
+                  <Info size={16} />
+                  <span>Tip: You can paste content directly from OneNote including text, images, and tables all at once!</span>
+                </div>
+                <textarea
+                  placeholder="Enter detailed content here or paste from OneNote (Ctrl+V). Supports mixed content: text, images, and tables."
+                  value={newSubsectionContent}
+                  onChange={(e) => setNewSubsectionContent(e.target.value)}
+                  onPaste={(e) => handleModalPaste(e, false)}
+                  className="modal-textarea modal-textarea-large"
+                  spellCheck="true"
+                />
               
               {/* Display pasted screenshots */}
               {newSubsectionScreenshots.length > 0 && (
@@ -2890,9 +3237,10 @@ See attached pump sheet for details.`
                   ))}
                 </div>
               )}
+              </div>
             </div>
             
-            <div className="modal-actions">
+            <div className="modal-footer">
               <button onClick={() => {
                 setShowAddSubsectionModal(false);
                 setNewSubsectionTitle('');
@@ -2906,6 +3254,7 @@ See attached pump sheet for details.`
                 onClick={addSubsection} 
                 className="btn-primary"
                 type="button"
+                disabled={!newSubsectionTitle.trim()}
                 style={{ color: 'white !important', color: '#ffffff !important' }}
               >
                 Add Subsection
@@ -2962,10 +3311,10 @@ See attached pump sheet for details.`
         </div>
       )}
 
-      {/* Edit Subsection Modal */}
+      {/* Edit Subsection Modal - Fullscreen */}
       {showEditSubsectionModal && (
-        <div className="modal-overlay" onClick={() => setShowEditSubsectionModal(false)}>
-          <div className="modal-content subsection-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay modal-fullscreen" onClick={() => setShowEditSubsectionModal(false)}>
+          <div className="modal-content modal-fullscreen-content" onClick={(e) => e.stopPropagation()}>
             <button 
               className="modal-close-btn"
               onClick={(e) => {

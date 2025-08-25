@@ -8,61 +8,20 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = []
 
-# Proxy redirects for tunnel - using enhanced proxy function
+# API redirect endpoint
 [[redirects]]
-  from = "/api/tunnel/*"
-  to = "/.netlify/functions/tunnel-proxy/:splat"
+  from = "/api/embed"
+  to = "/.netlify/functions/embed"
   status = 200
-  force = true
 
-[[redirects]]
-  from = "/api/tunnel"
-  to = "/.netlify/functions/tunnel-proxy"
-  status = 200
-  force = true
-
-# SPA fallback - must be after API routes
+# SPA fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Headers for Netlify Functions
-[[headers]]
-  for = "/.netlify/functions/tunnel"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
-    Access-Control-Allow-Credentials = "true"
-
-[[headers]]
-  for = "/.netlify/functions/tunnel/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
-    Access-Control-Allow-Credentials = "true"
-
-[[headers]]
-  for = "/.netlify/functions/tunnel-proxy"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
-    Access-Control-Allow-Credentials = "true"
-
-[[headers]]
-  for = "/.netlify/functions/tunnel-proxy/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
-    Access-Control-Allow-Credentials = "true"
-
-# General security headers (excluding pages that use iframes)
+# General security headers
 [[headers]]
   for = "/*"
   [headers.values]

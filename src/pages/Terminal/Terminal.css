@@ -1,51 +1,286 @@
-/* Terminal Page - Full Screen Integration */
-.terminal-page-container {
-    /* Inherit page-container positioning from Layout.css */
+/* Terminal Page - Full Screen Integration with Fixed Layout */
+
+/* Main container - uses flexbox for proper layout */
+.terminal-container {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100%;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: hidden;
+    position: relative;
     background: #000;
+    overflow: hidden;
 }
 
-.rxsprint-iframe {
+/* Control bar at the top */
+.terminal-controls {
+    background: #2d2d2d;
+    border-bottom: 1px solid #444;
+    padding: 8px 12px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.terminal-controls.collapsed {
+    padding: 4px 12px;
+}
+
+.controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 24px;
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.status-label {
+    color: #888;
+}
+
+.status-value {
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.control-btn {
+    padding: 4px 12px;
+    background: #444;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-btn:hover {
+    background: #555;
+}
+
+.refresh-btn {
+    font-size: 18px;
+    padding: 4px 10px;
+}
+
+.toggle-btn {
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+.connection-methods {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.connection-btn {
+    padding: 6px 12px;
+    background: #444;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.connection-btn:hover {
+    background: #555;
+}
+
+.connection-btn.active {
+    background: #0066cc;
+    font-weight: 500;
+}
+
+/* Iframe wrapper - takes remaining space */
+.terminal-iframe-wrapper {
+    flex: 1 1 auto;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+    min-height: 0; /* Important for flex children */
+    width: 100%;
+}
+
+/* The actual iframe */
+.terminal-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     border: none;
     display: block;
+    background: #000;
+}
+
+/* Override page-container styles for terminal page */
+.page-container.terminal-page-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: #000;
-    z-index: 1;
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Remove any default content styling when terminal is active */
-.content:has(.terminal-page-container) {
+/* Remove any padding/margin from parent content div */
+.content:has(.terminal-page-container),
+.content:has(.terminal-container) {
     padding: 0 !important;
     margin: 0 !important;
     overflow: hidden !important;
-    background: #000 !important;
+    position: relative;
 }
 
-/* Ensure iframe loads properly */
-.rxsprint-iframe:not([src]) {
-    background: #000;
-}
-
-.rxsprint-iframe[src=""] {
-    background: #000;
-}
-
-/* Hide scrollbars on terminal page content */
-.content:has(.terminal-page-container)::-webkit-scrollbar {
+/* Hide scrollbars */
+.terminal-container::-webkit-scrollbar,
+.terminal-iframe-wrapper::-webkit-scrollbar,
+.terminal-iframe::-webkit-scrollbar {
     display: none;
 }
 
-.content:has(.terminal-page-container) {
+.terminal-container,
+.terminal-iframe-wrapper,
+.terminal-iframe {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .terminal-container {
+        height: 100%;
+    }
+    
+    .terminal-controls {
+        padding: 6px 10px;
+    }
+    
+    .controls-header {
+        min-height: 20px;
+    }
+    
+    .status-info {
+        font-size: 12px;
+    }
+    
+    .control-btn {
+        height: 24px;
+        padding: 4px 8px;
+    }
+    
+    .refresh-btn {
+        font-size: 16px;
+    }
+    
+    .connection-methods {
+        margin-top: 6px;
+        gap: 6px;
+    }
+    
+    .connection-btn {
+        padding: 4px 10px;
+        font-size: 12px;
+    }
+    
+    /* Ensure iframe doesn't overflow on mobile */
+    .terminal-iframe-wrapper {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .status-label {
+        display: none; /* Hide label to save space */
+    }
+    
+    .connection-btn {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+}
+
+/* Handle landscape orientation on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .terminal-container {
+        height: 100%;
+    }
+    
+    .terminal-controls {
+        padding: 4px 10px;
+    }
+    
+    .terminal-controls.collapsed {
+        padding: 2px 10px;
+    }
+    
+    .connection-methods {
+        margin-top: 4px;
+    }
+}
+
+/* Fix for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    .terminal-container {
+        height: 100%;
+    }
+    
+    .terminal-iframe-wrapper {
+        height: 100%;
+    }
+}
+
+/* Ensure proper fullscreen behavior */
+.terminal-container:-webkit-full-screen {
+    width: 100vw;
+    height: 100vh;
+}
+
+.terminal-container:fullscreen {
+    width: 100vw;
+    height: 100vh;
+}
+
+/* Loading state for iframe */
+.terminal-iframe[src=""] {
+    background: #000 url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" stroke="%23444" stroke-width="2" fill="none"/><path d="M25,5 a20,20 0 0,1 20,20" stroke="%230066cc" stroke-width="2" fill="none"><animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/></path></svg>') center no-repeat;
+}
+
+/* Ensure proper containment */
+.terminal-page-container * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Prevent iframe from breaking out */
+.terminal-iframe {
+    max-width: 100vw;
+    contain: layout size style;
 }

@@ -24,10 +24,20 @@ const ExcelImportPreview = ({
 
   // Check for duplicates with existing medications
   const analyzedData = data.map((row, index) => {
-    const existing = existingMedications.find(med => 
-      med.brandName?.toLowerCase() === row.brandName?.toLowerCase() &&
-      med.genericName?.toLowerCase() === row.genericName?.toLowerCase()
-    );
+    // Check if this is SCD medication (has 'drug' field) or regular medication
+    const isScdMedication = row.drug !== undefined;
+    
+    const existing = existingMedications.find(med => {
+      if (isScdMedication) {
+        // For SCD medications, compare drug and generic fields
+        return med.drug?.toLowerCase() === row.drug?.toLowerCase() &&
+               med.generic?.toLowerCase() === row.generic?.toLowerCase();
+      } else {
+        // For regular medications, compare brandName and genericName
+        return med.brandName?.toLowerCase() === row.brandName?.toLowerCase() &&
+               med.genericName?.toLowerCase() === row.genericName?.toLowerCase();
+      }
+    });
     
     return {
       ...row,
@@ -177,13 +187,30 @@ const ExcelImportPreview = ({
                 </th>
                 <th>Row</th>
                 <th>Status</th>
-                <th>Brand Name</th>
-                <th>Generic Name</th>
-                {showDetails && (
+                {/* Check if this is SCD data based on presence of 'drug' field */}
+                {analyzedData[0]?.drug !== undefined ? (
                   <>
-                    <th>Indication</th>
-                    <th>Dosage Form</th>
-                    <th>Vial Size</th>
+                    <th>Drug</th>
+                    <th>Generic</th>
+                    {showDetails && (
+                      <>
+                        <th>Indication</th>
+                        <th>Dosage</th>
+                        <th>Frequency</th>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <th>Brand Name</th>
+                    <th>Generic Name</th>
+                    {showDetails && (
+                      <>
+                        <th>Indication</th>
+                        <th>Dosage Form</th>
+                        <th>Vial Size</th>
+                      </>
+                    )}
                   </>
                 )}
               </tr>
@@ -215,13 +242,30 @@ const ExcelImportPreview = ({
                       </span>
                     )}
                   </td>
-                  <td className="brand-name">{row.brandName || '-'}</td>
-                  <td className="generic-name">{row.genericName || '-'}</td>
-                  {showDetails && (
+                  {/* Display appropriate fields based on medication type */}
+                  {row.drug !== undefined ? (
                     <>
-                      <td>{row.indication || '-'}</td>
-                      <td>{row.dosageForm || '-'}</td>
-                      <td>{row.vialSize || '-'}</td>
+                      <td className="drug-name">{row.drug || '-'}</td>
+                      <td className="generic-name">{row.generic || '-'}</td>
+                      {showDetails && (
+                        <>
+                          <td>{row.indication || '-'}</td>
+                          <td>{row.dosage || '-'}</td>
+                          <td>{row.frequency || '-'}</td>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <td className="brand-name">{row.brandName || '-'}</td>
+                      <td className="generic-name">{row.genericName || '-'}</td>
+                      {showDetails && (
+                        <>
+                          <td>{row.indication || '-'}</td>
+                          <td>{row.dosageForm || '-'}</td>
+                          <td>{row.vialSize || '-'}</td>
+                        </>
+                      )}
                     </>
                   )}
                 </tr>

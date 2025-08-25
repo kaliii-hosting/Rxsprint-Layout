@@ -1,14 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit2, Trash2, Plus, Upload, Grid, FileSpreadsheet, CheckCircle, AlertCircle, Download, Droplet, Package, Pill, Beaker } from 'lucide-react';
+import { Edit2, Trash2, Plus, Upload, Grid, FileSpreadsheet, CheckCircle, AlertCircle, Download, Droplet, Package, Pill, Beaker, Save, RefreshCw } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, getDoc, writeBatch } from 'firebase/firestore';
 import { storage, firestore } from '../../config/firebase';
 import { defaultMedications } from '../../data/defaultMedications';
 import { parseExcelFile } from '../../utils/excelParser';
 import { downloadExcelTemplate } from '../../utils/excelTemplate';
 import { parseHaeExcelFile, downloadHaeExcelTemplate } from '../../utils/haeExcelParser';
+import { parseScdExcelFile, downloadScdExcelTemplate } from '../../utils/scdExcelParser';
 import MedicationModal from '../../components/MedicationModal/MedicationModal';
 import HaeMedicationModal from '../../components/HaeMedicationModal/HaeMedicationModal';
+import ScdMedicationModal from '../../components/ScdMedicationModal/ScdMedicationModal';
 import ConfirmationPopup from '../../components/ConfirmationPopup/ConfirmationPopup';
 import DeletionConfirmPopup from '../../components/DeletionConfirmPopup/DeletionConfirmPopup';
 import EditConfirmPopup from '../../components/EditConfirmPopup/EditConfirmPopup';
@@ -23,8 +25,9 @@ import './Medications.css';
 const Medications = () => {
   const [medications, setMedications] = useState([]);
   const [haeMedications, setHaeMedications] = useState([]);
+  const [scdMedications, setScdMedications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [medicationType, setMedicationType] = useState('lyso'); // 'lyso' or 'hae'
+  const [medicationType, setMedicationType] = useState('lyso'); // 'lyso', 'hae', or 'scd'
 
   const [selectAll, setSelectAll] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null); // 'uploading', 'success', 'error'
@@ -45,6 +48,9 @@ const Medications = () => {
   const [parsedExcelData, setParsedExcelData] = useState(null);
   const [showExcelOptions, setShowExcelOptions] = useState(false);
   const fileInputRef = useRef(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const saveTimeoutRef = useRef(null);
   
   // Sorting state
   const [sortField, setSortField] = useState(null);
@@ -66,7 +72,125 @@ const Medications = () => {
   useEffect(() => {
     loadMedications();
     loadHaeMedications();
+    loadScdMedications(false); // Don't auto-clear on initial load
   }, []);
+
+  // Update selectAll state based on current medications
+  useEffect(() => {
+    const currentMedications = medicationType === 'hae' 
+      ? haeMedications 
+      : medicationType === 'scd' 
+      ? scdMedications 
+      : medications;
+    
+    if (currentMedications.length > 0) {
+      const allSelected = currentMedications.every(med => med.selected);
+      setSelectAll(allSelected);
+    } else {
+      setSelectAll(false);
+    }
+  }, [medications, haeMedications, scdMedications, medicationType]);
+
+  // Auto-save functionality
+  const saveToFirebase = async () => {
+    if (!firestore || isSaving) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // Save based on medication type
+      if (medicationType === 'scd') {
+        // Save SCD medications
+        const batch = [];
+        for (const med of scdMedications) {
+          if (med.id && !med.id.startsWith('new_') && !med.id.startsWith('temp_')) {
+            const docRef = doc(firestore, 'scdMedications', med.id);
+            batch.push(updateDoc(docRef, {
+              ...med,
+              selected: false, // Don't save selection state
+              updatedAt: serverTimestamp()
+            }));
+          }
+        }
+        await Promise.all(batch);
+      } else if (medicationType === 'hae') {
+        // Save HAE medications
+        const batch = [];
+        for (const med of haeMedications) {
+          if (med.id && !med.id.startsWith('new_') && !med.id.startsWith('temp_')) {
+            const docRef = doc(firestore, 'haeMedications', med.id);
+            batch.push(updateDoc(docRef, {
+              ...med,
+              selected: false,
+              updatedAt: serverTimestamp()
+            }));
+          }
+        }
+        await Promise.all(batch);
+      } else {
+        // Save LYSO medications
+        const batch = [];
+        for (const med of medications) {
+          if (med.id && !med.id.startsWith('new_') && !med.id.startsWith('temp_')) {
+            const docRef = doc(firestore, 'medications', med.id);
+            batch.push(updateDoc(docRef, {
+              ...med,
+              selected: false,
+              updatedAt: serverTimestamp()
+            }));
+          }
+        }
+        await Promise.all(batch);
+      }
+      
+      setHasUnsavedChanges(false);
+      setUploadStatus('success');
+      setUploadMessage('All changes saved');
+      setTimeout(() => {
+        setUploadStatus(null);
+        setUploadMessage('');
+      }, 3000);
+    } catch (error) {
+      console.error('Error saving to Firebase:', error);
+      setUploadStatus('error');
+      setUploadMessage('Failed to save changes');
+      setTimeout(() => {
+        setUploadStatus(null);
+        setUploadMessage('');
+      }, 5000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Debounced auto-save
+  useEffect(() => {
+    if (hasUnsavedChanges && !isSaving) {
+      // Clear existing timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      
+      // Set new timeout for auto-save (3 seconds after last change)
+      saveTimeoutRef.current = setTimeout(() => {
+        saveToFirebase();
+      }, 3000);
+    }
+    
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [hasUnsavedChanges, medications, haeMedications, scdMedications]);
+
+  // Manual save function
+  const handleManualSave = async () => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    await saveToFirebase();
+  };
 
   // Handle navigation from search
   useEffect(() => {
@@ -97,7 +221,92 @@ const Medications = () => {
       // Clear the navigation state
       window.history.replaceState({}, document.title);
     }
-  }, [location.state, medications, haeMedications]);
+    
+    // Handle SCD medication selection
+    if (location.state?.selectedScdMedicationId && location.state?.openScdModal) {
+      // Switch to SCD tab if specified
+      if (location.state?.medicationType === 'scd') {
+        setMedicationType('scd');
+      }
+      
+      // Find and open the SCD medication
+      const scdMedication = scdMedications.find(med => med.id === location.state.selectedScdMedicationId);
+      if (scdMedication) {
+        setSelectedMedication(scdMedication);
+        setIsModalOpen(true);
+      }
+      // Clear the navigation state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, medications, haeMedications, scdMedications]);
+
+  const clearDemoScdMedications = async () => {
+    try {
+      if (!firestore) return;
+      
+      const scdMedicationsRef = collection(firestore, 'scdMedications');
+      const snapshot = await getDocs(scdMedicationsRef);
+      
+      // Delete all existing SCD medications (demo data)
+      const batch = writeBatch(firestore);
+      snapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+      
+      console.log('Cleared all demo SCD medications from Firebase');
+    } catch (error) {
+      console.error('Error clearing demo SCD medications:', error);
+    }
+  };
+
+  const loadScdMedications = async (clearDemoData = false) => {
+    try {
+      setLoading(true);
+      console.log('Loading SCD medications, clearDemoData:', clearDemoData);
+      
+      // Check if firestore is available and load existing SCD medications
+      if (!firestore) {
+        console.log('Firestore not available for SCD medications');
+        setScdMedications([]);
+        setLoading(false);
+        return;
+      }
+
+      // Clear demo medications if requested (default: false now)
+      if (clearDemoData) {
+        console.log('Clearing demo SCD medications');
+        await clearDemoScdMedications();
+      }
+      
+      // Load SCD medications
+      const scdMedicationsRef = collection(firestore, 'scdMedications');
+      const snapshot = await getDocs(scdMedicationsRef);
+      console.log('SCD medications snapshot size:', snapshot.size);
+      
+      const scdMedicationsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        selected: false
+      }));
+      
+      // Sort SCD medications alphabetically by drug name
+      const sortedScdMedications = scdMedicationsData.sort((a, b) => {
+        const drugA = (a.drug || '').toLowerCase();
+        const drugB = (b.drug || '').toLowerCase();
+        return drugA.localeCompare(drugB);
+      });
+      
+      setScdMedications(sortedScdMedications);
+      console.log('Loaded SCD medications count:', sortedScdMedications.length);
+      console.log('First SCD medication:', sortedScdMedications[0]);
+    } catch (error) {
+      console.error('Error loading SCD medications:', error);
+      setScdMedications([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadHaeMedications = async () => {
     try {
@@ -235,18 +444,30 @@ const Medications = () => {
     
     if (medicationType === 'hae') {
       setHaeMedications(haeMedications.map(med => ({ ...med, selected: newSelectAll })));
+    } else if (medicationType === 'scd') {
+      setScdMedications(scdMedications.map(med => ({ ...med, selected: newSelectAll })));
     } else {
       setMedications(medications.map(med => ({ ...med, selected: newSelectAll })));
     }
   };
 
   const handleSelectMedication = (id) => {
+    console.log('Selecting medication with ID:', id, 'Type:', medicationType);
+    
     if (medicationType === 'hae') {
-      setHaeMedications(haeMedications.map(med => 
+      setHaeMedications(prevMeds => prevMeds.map(med => 
         med.id === id ? { ...med, selected: !med.selected } : med
       ));
+    } else if (medicationType === 'scd') {
+      setScdMedications(prevMeds => {
+        const updated = prevMeds.map(med => 
+          med.id === id ? { ...med, selected: !med.selected } : med
+        );
+        console.log('Updated SCD medications:', updated);
+        return updated;
+      });
     } else {
-      setMedications(medications.map(med => 
+      setMedications(prevMeds => prevMeds.map(med => 
         med.id === id ? { ...med, selected: !med.selected } : med
       ));
     }
@@ -255,6 +476,8 @@ const Medications = () => {
   const handleEdit = (id) => {
     const medication = medicationType === 'hae' 
       ? haeMedications.find(med => med.id === id)
+      : medicationType === 'scd'
+      ? scdMedications.find(med => med.id === id)
       : medications.find(med => med.id === id);
     if (medication) {
       setMedicationToEdit(medication);
@@ -292,6 +515,8 @@ const Medications = () => {
   const handleDelete = (id) => {
     const medication = medicationType === 'hae' 
       ? haeMedications.find(med => med.id === id)
+      : medicationType === 'scd'
+      ? scdMedications.find(med => med.id === id)
       : medications.find(med => med.id === id);
     if (medication) {
       setMedicationToDelete(medication);
@@ -309,15 +534,18 @@ const Medications = () => {
       // Ensure ID is a string
       const medicationId = String(id).trim();
       
-      // Determine if this is an HAE medication
+      // Determine medication type
       const isHaeMedication = medicationType === 'hae';
+      const isScdMedication = medicationType === 'scd';
       
       // Check if this is a numeric ID (not in Firebase)
       const isNumericId = /^\d+$/.test(medicationId);
       
       if (isNumericId) {
         // This medication is not in Firebase yet, just remove from local state
-        if (isHaeMedication) {
+        if (isScdMedication) {
+          setScdMedications(scdMedications.filter(med => String(med.id) !== medicationId));
+        } else if (isHaeMedication) {
           setHaeMedications(haeMedications.filter(med => String(med.id) !== medicationId));
         } else {
           setMedications(medications.filter(med => String(med.id) !== medicationId));
@@ -327,11 +555,13 @@ const Medications = () => {
         setUploadMessage('Medication removed successfully');
       } else {
         // Delete from Firestore
-        const collectionName = isHaeMedication ? 'haeMedications' : 'medications';
+        const collectionName = isScdMedication ? 'scdMedications' : isHaeMedication ? 'haeMedications' : 'medications';
         await deleteDoc(doc(firestore, collectionName, medicationId));
         
         // Update local state
-        if (isHaeMedication) {
+        if (isScdMedication) {
+          setScdMedications(scdMedications.filter(med => med.id !== id));
+        } else if (isHaeMedication) {
           setHaeMedications(haeMedications.filter(med => med.id !== id));
         } else {
           setMedications(medications.filter(med => med.id !== id));
@@ -379,7 +609,35 @@ const Medications = () => {
 
   const handleAddDrug = () => {
     // Create a new blank medication object based on medication type
-    if (medicationType === 'hae') {
+    if (medicationType === 'scd') {
+      const newScdMedication = {
+        id: `new_${Date.now()}`,
+        drug: '',
+        generic: '',
+        indication: '',
+        dosage: '',
+        frequency: '',
+        rateAdministered: '',
+        howSupplied: '',
+        vialSizes: '',
+        dilutionSolution: '',
+        reconstitutionSolution: '',
+        sideEffects: '',
+        nsBagsD5w: '',
+        overfill: '',
+        preMedRecommendation: '',
+        filters: '',
+        storageAndHandling: '',
+        extendedStability: '',
+        bbw: '',
+        specialNotes: '',
+        additionalNotes: '',
+        pregnancyCategory: ''
+      };
+      setSelectedMedication(newScdMedication);
+      setIsModalOpen(true);
+      setAllowModalEdit(true);
+    } else if (medicationType === 'hae') {
       const newHaeMedication = {
         id: `new_${Date.now()}`, // Temporary ID for new medications
         drug: '',
@@ -443,6 +701,8 @@ const Medications = () => {
     const file = event.target.files[0];
     if (!file) return;
 
+    console.log('Importing Excel file:', file.name, 'for medication type:', medicationType);
+
     // Reset status
     setUploadStatus('uploading');
     setUploadMessage('Processing Excel file...');
@@ -452,7 +712,11 @@ const Medications = () => {
       setUploadMessage('Parsing Excel file...');
       const parseResult = medicationType === 'hae' 
         ? await parseHaeExcelFile(file)
+        : medicationType === 'scd'
+        ? await parseScdExcelFile(file)
         : await parseExcelFile(file);
+      
+      console.log('Parse result:', parseResult);
       
       // Store parsed data and file for later use
       setParsedExcelData({ ...parseResult, file });
@@ -468,6 +732,7 @@ const Medications = () => {
       }
       
     } catch (error) {
+      console.error('Error importing Excel:', error);
       setUploadStatus('error');
       setUploadMessage(error.message || 'Failed to parse Excel file');
       
@@ -495,7 +760,7 @@ const Medications = () => {
       try {
         setUploadMessage('Uploading Excel file to cloud storage...');
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const folderName = medicationType === 'hae' ? 'haeMedications' : 'medications';
+        const folderName = medicationType === 'hae' ? 'haeMedications' : medicationType === 'scd' ? 'scdMedications' : 'medications';
         const fileName = `${folderName}/excel_${timestamp}_${file.name}`;
         const storageRef = ref(storage, fileName);
         
@@ -508,7 +773,7 @@ const Medications = () => {
       
       // Save medications to Firestore
       setUploadMessage('Saving medications to database...');
-      const collectionName = medicationType === 'hae' ? 'haeMedications' : 'medications';
+      const collectionName = medicationType === 'hae' ? 'haeMedications' : medicationType === 'scd' ? 'scdMedications' : 'medications';
       const medicationsRef = collection(firestore, collectionName);
       const processedMedications = [];
       let successCount = 0;
@@ -516,8 +781,11 @@ const Medications = () => {
       
       for (const medication of selectedMedications) {
         try {
-          // Generate medication code
-          const medicationCode = await generateMedicationCode(firestore);
+          // Generate medication code only for non-SCD medications
+          let medicationCode = null;
+          if (medicationType !== 'scd' && medicationType !== 'hae') {
+            medicationCode = await generateMedicationCode(firestore);
+          }
           
           // Clean medication data - remove import-specific fields and undefined values
           const { isDuplicate, existingId, existingMedCode, rowIndex, selected, ...cleanMedication } = medication;
@@ -532,26 +800,44 @@ const Medications = () => {
           if (mode === 'update' && medication.isDuplicate && medication.existingId) {
             // Update existing medication
             const medicationDoc = doc(firestore, collectionName, medication.existingId);
-            await updateDoc(medicationDoc, {
+            const updateData = {
               ...cleanMedication,
-              medicationCode: medication.existingMedCode || medicationCode,
               updatedAt: serverTimestamp()
-            });
+            };
+            
+            // Only add medication code for Lyso medications
+            if (medicationType !== 'scd' && medicationType !== 'hae') {
+              updateData.medicationCode = medication.existingMedCode || medicationCode;
+            }
+            
+            await updateDoc(medicationDoc, updateData);
             updateCount++;
           } else {
             // Create new medication
-            const docRef = await addDoc(medicationsRef, {
+            const newMedData = {
               ...cleanMedication,
-              medicationCode,
               createdAt: serverTimestamp()
-            });
+            };
             
-            processedMedications.push({
+            // Only add medication code for Lyso medications
+            if (medicationType !== 'scd' && medicationType !== 'hae') {
+              newMedData.medicationCode = medicationCode;
+            }
+            
+            const docRef = await addDoc(medicationsRef, newMedData);
+            
+            const processedMed = {
               id: docRef.id,
               ...medication,
-              medicationCode,
               selected: false
-            });
+            };
+            
+            // Only add medication code for Lyso medications
+            if (medicationType !== 'scd' && medicationType !== 'hae') {
+              processedMed.medicationCode = medicationCode;
+            }
+            
+            processedMedications.push(processedMed);
             successCount++;
           }
         } catch (error) {
@@ -562,6 +848,9 @@ const Medications = () => {
       // Reload medications to show all updates
       if (medicationType === 'hae') {
         await loadHaeMedications();
+      } else if (medicationType === 'scd') {
+        // Don't clear demo data after import - we just added new medications!
+        await loadScdMedications(false);
       } else {
         await loadMedications();
       }
@@ -614,6 +903,8 @@ const Medications = () => {
     // Download appropriate template based on medication type
     if (medicationType === 'hae') {
       downloadHaeExcelTemplate();
+    } else if (medicationType === 'scd') {
+      downloadScdExcelTemplate();
     } else {
       downloadExcelTemplate();
     }
@@ -710,13 +1001,37 @@ const Medications = () => {
       const medicationId = String(updatedMedication.id).trim();
       console.log('Processing medication ID:', medicationId, 'Type:', typeof medicationId);
       
-      // Check if this is a HAE medication
-      const isHaeMedication = updatedMedication.drug !== undefined || updatedMedication.brand !== undefined || medicationType === 'hae';
+      // Check medication type
+      const isScdMedication = medicationType === 'scd';
+      const isHaeMedication = !isScdMedication && (updatedMedication.drug !== undefined || updatedMedication.brand !== undefined || medicationType === 'hae');
       
       // Prepare data for Firebase - only include defined fields
       const dataToUpdate = {};
       
-      if (isHaeMedication) {
+      if (isScdMedication) {
+        // SCD medication fields
+        if (updatedMedication.drug) dataToUpdate.drug = updatedMedication.drug;
+        if (updatedMedication.generic) dataToUpdate.generic = updatedMedication.generic;
+        if (updatedMedication.indication) dataToUpdate.indication = updatedMedication.indication;
+        if (updatedMedication.dosage) dataToUpdate.dosage = updatedMedication.dosage;
+        if (updatedMedication.frequency) dataToUpdate.frequency = updatedMedication.frequency;
+        if (updatedMedication.rateAdministered) dataToUpdate.rateAdministered = updatedMedication.rateAdministered;
+        if (updatedMedication.howSupplied) dataToUpdate.howSupplied = updatedMedication.howSupplied;
+        if (updatedMedication.vialSizes) dataToUpdate.vialSizes = updatedMedication.vialSizes;
+        if (updatedMedication.dilutionSolution) dataToUpdate.dilutionSolution = updatedMedication.dilutionSolution;
+        if (updatedMedication.reconstitutionSolution) dataToUpdate.reconstitutionSolution = updatedMedication.reconstitutionSolution;
+        if (updatedMedication.sideEffects) dataToUpdate.sideEffects = updatedMedication.sideEffects;
+        if (updatedMedication.nsBagsD5w) dataToUpdate.nsBagsD5w = updatedMedication.nsBagsD5w;
+        if (updatedMedication.overfill) dataToUpdate.overfill = updatedMedication.overfill;
+        if (updatedMedication.preMedRecommendation) dataToUpdate.preMedRecommendation = updatedMedication.preMedRecommendation;
+        if (updatedMedication.filters) dataToUpdate.filters = updatedMedication.filters;
+        if (updatedMedication.storageAndHandling) dataToUpdate.storageAndHandling = updatedMedication.storageAndHandling;
+        if (updatedMedication.extendedStability) dataToUpdate.extendedStability = updatedMedication.extendedStability;
+        if (updatedMedication.bbw) dataToUpdate.bbw = updatedMedication.bbw;
+        if (updatedMedication.specialNotes) dataToUpdate.specialNotes = updatedMedication.specialNotes;
+        if (updatedMedication.additionalNotes) dataToUpdate.additionalNotes = updatedMedication.additionalNotes;
+        if (updatedMedication.pregnancyCategory) dataToUpdate.pregnancyCategory = updatedMedication.pregnancyCategory;
+      } else if (isHaeMedication) {
         // HAE medication fields
         if (updatedMedication.drug) dataToUpdate.drug = updatedMedication.drug;
         if (updatedMedication.brand) dataToUpdate.brand = updatedMedication.brand;
@@ -773,7 +1088,7 @@ const Medications = () => {
         // This is an existing Firebase document, just update it
         console.log('Firebase ID detected, updating existing document');
         
-        const collectionName = isHaeMedication ? 'haeMedications' : 'medications';
+        const collectionName = isScdMedication ? 'scdMedications' : isHaeMedication ? 'haeMedications' : 'medications';
         const medicationRef = doc(firestore, collectionName, medicationId);
         
         // First check if document exists
@@ -790,7 +1105,28 @@ const Medications = () => {
         console.log('Document updated successfully in Firebase');
         
         // Update local state
-        if (isHaeMedication) {
+        if (isScdMedication) {
+          setScdMedications(prevMeds => {
+            const updatedMeds = prevMeds.map(med => {
+              if (med.id === medicationId) {
+                return {
+                  ...med,
+                  ...dataToUpdate,
+                  id: medicationId,
+                  selected: false,
+                  updatedAt: new Date()
+                };
+              }
+              return med;
+            });
+            
+            return updatedMeds.sort((a, b) => {
+              const drugA = (a.drug || '').toLowerCase();
+              const drugB = (b.drug || '').toLowerCase();
+              return drugA.localeCompare(drugB);
+            });
+          });
+        } else if (isHaeMedication) {
           setHaeMedications(prevMeds => {
             const updatedMeds = prevMeds.map(med => {
               if (med.id === medicationId) {
@@ -840,11 +1176,11 @@ const Medications = () => {
       } else if (isNewMedication) {
         console.log('New medication detected, creating in Firebase');
         
-        const collectionName = isHaeMedication ? 'haeMedications' : 'medications';
+        const collectionName = isScdMedication ? 'scdMedications' : isHaeMedication ? 'haeMedications' : 'medications';
         
         // Only generate medication code for lysosomal medications
         let medicationCode = null;
-        if (!isHaeMedication) {
+        if (!isHaeMedication && !isScdMedication) {
           medicationCode = await generateMedicationCode(firestore);
           dataToUpdate.medicationCode = medicationCode;
         }
@@ -859,7 +1195,23 @@ const Medications = () => {
         console.log('New medication created with Firebase ID:', docRef.id);
         
         // Remove the temporary medication and add the new one with Firebase ID
-        if (isHaeMedication) {
+        if (isScdMedication) {
+          setScdMedications(prevMeds => {
+            const filteredMeds = prevMeds.filter(med => med.id !== medicationId);
+            const newMed = {
+              ...dataToUpdate,
+              id: docRef.id,
+              selected: false
+            };
+            const allMeds = [...filteredMeds, newMed];
+            
+            return allMeds.sort((a, b) => {
+              const drugA = (a.drug || '').toLowerCase();
+              const drugB = (b.drug || '').toLowerCase();
+              return drugA.localeCompare(drugB);
+            });
+          });
+        } else if (isHaeMedication) {
           setHaeMedications(prevMeds => {
             const filteredMeds = prevMeds.filter(med => med.id !== medicationId);
             const newMed = {
@@ -958,7 +1310,33 @@ const Medications = () => {
       // Create a new medication object based on type
       let newMedication;
       
-      if (medicationType === 'hae') {
+      if (medicationType === 'scd') {
+        // SCD medication fields
+        newMedication = {
+          id: `temp_${Date.now()}`,
+          drug: '',
+          generic: '',
+          indication: '',
+          dosage: '',
+          frequency: '',
+          rateAdministered: '',
+          howSupplied: '',
+          vialSizes: '',
+          dilutionSolution: '',
+          reconstitutionSolution: '',
+          sideEffects: '',
+          nsBagsD5w: '',
+          overfill: '',
+          preMedRecommendation: '',
+          filters: '',
+          storageAndHandling: '',
+          extendedStability: '',
+          bbw: '',
+          specialNotes: '',
+          additionalNotes: '',
+          pregnancyCategory: ''
+        };
+      } else if (medicationType === 'hae') {
         // HAE medication fields
         newMedication = {
           id: `temp_${Date.now()}`, // Temporary ID until saved to Firebase
@@ -1022,7 +1400,7 @@ const Medications = () => {
 
   // Handler for Edit button
   const handleEditSelected = () => {
-    const currentMedications = medicationType === 'hae' ? haeMedications : medications;
+    const currentMedications = medicationType === 'hae' ? haeMedications : medicationType === 'scd' ? scdMedications : medications;
     const selectedMeds = currentMedications.filter(med => med.selected);
     if (selectedMeds.length === 0) {
       alert('Please select a medication to edit');
@@ -1037,7 +1415,7 @@ const Medications = () => {
 
   // Handler for Delete button
   const handleDeleteSelected = () => {
-    const currentMedications = medicationType === 'hae' ? haeMedications : medications;
+    const currentMedications = medicationType === 'hae' ? haeMedications : medicationType === 'scd' ? scdMedications : medications;
     const selectedMeds = currentMedications.filter(med => med.selected);
     if (selectedMeds.length === 0) {
       alert('Please select at least one medication to delete');
@@ -1088,7 +1466,7 @@ const Medications = () => {
   // Filter and sort medications
   const getFilteredAndSortedMedications = () => {
     // Select the appropriate medication list based on type
-    const currentMedications = medicationType === 'hae' ? haeMedications : medications;
+    const currentMedications = medicationType === 'scd' ? scdMedications : medicationType === 'hae' ? haeMedications : medications;
     
     // Ensure medications is always an array
     if (!Array.isArray(currentMedications)) {
@@ -1148,12 +1526,26 @@ const Medications = () => {
   };
 
   const displayMedications = getFilteredAndSortedMedications();
+  console.log('Display medications for type', medicationType, ':', displayMedications.length, displayMedications);
 
   return (
     <div className="medications-page page-container page-with-enterprise-header">
       {/* Show modal directly if open, otherwise show normal page */}
       {isModalOpen ? (
-        medicationType === 'hae' ? (
+        medicationType === 'scd' ? (
+          <ScdMedicationModal
+            medication={selectedMedication}
+            isOpen={isModalOpen}
+            onClose={handleModalClose}
+            onSave={handleModalSave}
+            onRequestEdit={handleRequestEditFromModal}
+            allowEdit={allowModalEdit}
+            onDelete={(med) => {
+              handleModalClose();
+              handleDelete(med.id);
+            }}
+          />
+        ) : medicationType === 'hae' ? (
           <HaeMedicationModal
             medication={selectedMedication}
             isOpen={isModalOpen}
@@ -1191,14 +1583,21 @@ const Medications = () => {
                 onClick={() => setMedicationType('lyso')}
                 style={{ background: medicationType === 'lyso' ? '#FF6900' : 'transparent', color: medicationType === 'lyso' ? 'white' : '#666' }}
               >
-                Lyso Medications
+                LYSO
               </TabButton>
               <TabButton
                 active={medicationType === 'hae'}
                 onClick={() => setMedicationType('hae')}
                 style={{ background: medicationType === 'hae' ? '#FF6900' : 'transparent', color: medicationType === 'hae' ? 'white' : '#666' }}
               >
-                HAE Medications
+                HAE
+              </TabButton>
+              <TabButton
+                active={medicationType === 'scd'}
+                onClick={() => setMedicationType('scd')}
+                style={{ background: medicationType === 'scd' ? '#FF6900' : 'transparent', color: medicationType === 'scd' ? 'white' : '#666' }}
+              >
+                SCD
               </TabButton>
             </TabGroup>
             
@@ -1254,8 +1653,36 @@ const Medications = () => {
             
             <HeaderDivider />
             
+            {/* Save Status Indicator */}
+            <div className={`save-status ${isSaving ? 'saving' : hasUnsavedChanges ? 'unsaved' : 'saved'}`}>
+              {isSaving ? (
+                <>
+                  <span>⏳</span>
+                  <span>Saving...</span>
+                </>
+              ) : hasUnsavedChanges ? (
+                <>
+                  <span>⚠️</span>
+                  <span>Unsaved changes</span>
+                </>
+              ) : (
+                <>
+                  <span>✓</span>
+                  <span>All changes saved</span>
+                </>
+              )}
+            </div>
+            
             {/* Action Buttons */}
             <ActionGroup>
+              <ActionButton
+                onClick={handleManualSave}
+                icon={Save}
+                disabled={isSaving || !hasUnsavedChanges}
+                primary={hasUnsavedChanges}
+              >
+                {isSaving ? 'Saving...' : hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+              </ActionButton>
               <ActionButton
                 onClick={() => handleCreateMedication()}
                 icon={Plus}
@@ -1277,6 +1704,34 @@ const Medications = () => {
               >
                 Delete
               </ActionButton>
+              {medicationType === 'scd' && (
+                <>
+                  <ActionButton
+                    onClick={async () => {
+                      console.log('Refreshing SCD medications...');
+                      await loadScdMedications(false);
+                    }}
+                    icon={RefreshCw}
+                    secondary
+                  >
+                    Refresh
+                  </ActionButton>
+                  {scdMedications.length > 0 && (
+                    <ActionButton
+                      onClick={async () => {
+                        if (confirm('This will clear ALL SCD medications. Are you sure?')) {
+                          await clearDemoScdMedications();
+                          await loadScdMedications(false);
+                        }
+                      }}
+                      icon={Trash2}
+                      secondary
+                    >
+                      Clear All
+                    </ActionButton>
+                  )}
+                </>
+              )}
             </ActionGroup>
           </EnterpriseHeader>
           
@@ -1290,10 +1745,52 @@ const Medications = () => {
             <table className="prescriptions-table fullscreen-table">
               <thead>
                 <tr>
-                  <th className="checkbox-cell">
+                  <th className="checkbox-header">
+                    <div className="checkbox-wrapper">
+                      <input
+                        type="checkbox"
+                        className="select-all-checkbox"
+                        checked={selectAll || false}
+                        onChange={handleSelectAll}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
                     <div className="add-icon" onClick={() => setShowExcelOptions(true)}>+</div>
                   </th>
-                  {medicationType === 'lyso' ? (
+                  {medicationType === 'scd' ? (
+                    <>
+                      <th className="sortable" onClick={() => handleSort('drug')}>
+                        <span>Drug</span>
+                        {sortField === 'drug' && (
+                          <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                        )}
+                      </th>
+                      <th className="sortable" onClick={() => handleSort('generic')}>
+                        <span>Generic</span>
+                        {sortField === 'generic' && (
+                          <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                        )}
+                      </th>
+                      <th className="sortable" onClick={() => handleSort('indication')}>
+                        <span>Indication</span>
+                        {sortField === 'indication' && (
+                          <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                        )}
+                      </th>
+                      <th className="sortable" onClick={() => handleSort('dosage')}>
+                        <span>Dosage</span>
+                        {sortField === 'dosage' && (
+                          <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                        )}
+                      </th>
+                      <th className="sortable" onClick={() => handleSort('frequency')}>
+                        <span>Frequency</span>
+                        {sortField === 'frequency' && (
+                          <span className="sort-arrow">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
+                        )}
+                      </th>
+                    </>
+                  ) : medicationType === 'lyso' ? (
                     <>
                       <th className="sortable" onClick={() => handleSort('brandName')}>
                         <span>Brand Name</span>
@@ -1361,15 +1858,29 @@ const Medications = () => {
                       }
                     }}
                   >
-                    <td className="checkbox-cell">
+                    <td className="checkbox-cell" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         className="prescription-checkbox"
-                        checked={medication.selected}
-                        onChange={() => handleSelectMedication(medication.id)}
+                        checked={medication.selected || false}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleSelectMedication(medication.id);
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
                       />
                     </td>
-                    {medicationType === 'lyso' ? (
+                    {medicationType === 'scd' ? (
+                      <>
+                        <td className="drug-name">{medication.drug || 'N/A'}</td>
+                        <td className="generic-name">{medication.generic || 'N/A'}</td>
+                        <td className="indication">{medication.indication || 'N/A'}</td>
+                        <td className="dosage">{medication.dosage || 'N/A'}</td>
+                        <td className="frequency">{medication.frequency || 'N/A'}</td>
+                      </>
+                    ) : medicationType === 'lyso' ? (
                       <>
                         <td className="brand-name">{medication.brandName?.toUpperCase() || 'DUPIXENT PEN'}</td>
                         <td className="generic-name">{medication.genericName?.toUpperCase() || 'DUPILUMAB'}</td>
@@ -1389,7 +1900,7 @@ const Medications = () => {
                   <tr>
                     <td colSpan={5} className="empty-row">
                       <div className="empty-state-inline">
-                        <h3>No {medicationType === 'hae' ? 'HAE' : ''} medications added yet</h3>
+                        <h3>No {medicationType === 'hae' ? 'HAE' : medicationType === 'scd' ? 'SCD' : ''} medications added yet</h3>
                         <p>Click the "+" button above to import medications from Excel or click "Add Medication" below</p>
                       </div>
                     </td>
@@ -1435,7 +1946,7 @@ const Medications = () => {
         parsedData={parsedExcelData}
         onConfirm={handleConfirmImport}
         onCancel={handleCancelImport}
-        existingMedications={medicationType === 'hae' ? haeMedications : medications}
+        existingMedications={medicationType === 'hae' ? haeMedications : medicationType === 'scd' ? scdMedications : medications}
       />
       
       {/* Excel Options Popup */}

@@ -58,68 +58,132 @@ const Board = () => {
     }
   }, [paths, screenshots, history, historyIndex]);
 
-  // Calculate canvas size based on content
+  // Track canvas dimensions separately for infinite expansion
+  const [canvasSize, setCanvasSize] = useState({
+    width: Math.max(window.innerWidth * 2, 2400),
+    height: Math.max(window.innerHeight * 2, 1600)
+  });
+
+  // Calculate canvas size based on content with infinite expansion
   const calculateCanvasSize = useCallback(() => {
-    if (screenshots.length === 0) {
-      return {
-        width: Math.max(window.innerWidth, 1200),
-        height: Math.max(window.innerHeight - 120, 800)
-      };
-    }
+    let maxX = canvasSize.width;
+    let maxY = canvasSize.height;
+    let needsExpansion = false;
 
-    let maxX = 0;
-    let maxY = 0;
-    let minX = 0;
-    let minY = 0;
-
+    // Check screenshots boundaries
     screenshots.forEach(screenshot => {
-      minX = Math.min(minX, screenshot.x);
-      minY = Math.min(minY, screenshot.y);
-      maxX = Math.max(maxX, screenshot.x + screenshot.width);
-      maxY = Math.max(maxY, screenshot.y + screenshot.height);
+      const rightEdge = screenshot.x + screenshot.width + 500;
+      const bottomEdge = screenshot.y + screenshot.height + 500;
+      
+      if (rightEdge > maxX) {
+        maxX = rightEdge;
+        needsExpansion = true;
+      }
+      if (bottomEdge > maxY) {
+        maxY = bottomEdge;
+        needsExpansion = true;
+      }
     });
 
-    // Add padding around content
-    const padding = 200;
-    const contentWidth = maxX - minX + (padding * 2);
-    const contentHeight = maxY - minY + (padding * 2);
+    // Check drawing paths boundaries
+    paths.forEach(path => {
+      path.points.forEach(point => {
+        if (point.x + 500 > maxX) {
+          maxX = point.x + 500;
+          needsExpansion = true;
+        }
+        if (point.y + 500 > maxY) {
+          maxY = point.y + 500;
+          needsExpansion = true;
+        }
+      });
+    });
 
+    // Check current drawing path
+    currentPath.forEach(point => {
+      if (point.x + 500 > maxX) {
+        maxX = point.x + 500;
+        needsExpansion = true;
+      }
+      if (point.y + 500 > maxY) {
+        maxY = point.y + 500;
+        needsExpansion = true;
+      }
+    });
+
+    // Only expand, never shrink (infinite canvas behavior)
     return {
-      width: Math.max(contentWidth, window.innerWidth, 1200),
-      height: Math.max(contentHeight, window.innerHeight - 120, 800)
+      width: Math.max(maxX, canvasSize.width),
+      height: Math.max(maxY, canvasSize.height),
+      needsExpansion
     };
-  }, [screenshots]);
+  }, [screenshots, paths, currentPath, canvasSize]);
 
-  // Initialize and resize canvas
+  // Initialize canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const resizeCanvas = () => {
-      const { width, height } = calculateCanvasSize();
-      canvas.width = width;
-      canvas.height = height;
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-    };
-    
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    
-    return () => window.removeEventListener('resize', resizeCanvas);
-  }, [calculateCanvasSize]);
+    canvas.width = canvasSize.width;
+    canvas.height = canvasSize.height;
+    canvas.style.width = `${canvasSize.width}px`;
+    canvas.style.height = `${canvasSize.height}px`;
+  }, [canvasSize]);
 
-  // Resize canvas when screenshots change
+  // Check for canvas expansion needs
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const { width, height, needsExpansion } = calculateCanvasSize();
+    
+    if (needsExpansion) {
+      setCanvasSize({
+        width: Math.max(width, canvasSize.width),
+        height: Math.max(height, canvasSize.height)
+      });
+    }
+  }, [screenshots, paths, currentPath, calculateCanvasSize, canvasSize]);
 
-    const { width, height } = calculateCanvasSize();
-    canvas.width = width;
-    canvas.height = height;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-  }, [screenshots, calculateCanvasSize]);
+  // Handle scroll near edges to expand canvas
+  useEffect(() => {
+    const container = document.querySelector('.board-content');
+    if (!container) return;
+
+    const handleScroll = () => {
+      const scrollLeft = container.scrollLeft;
+      const scrollTop = container.scrollTop;
+      const scrollWidth = container.scrollWidth;
+      const scrollHeight = container.scrollHeight;
+      const clientWidth = container.clientWidth;
+      const clientHeight = container.clientHeight;
+
+      // Expand if scrolled near edges (within 200px)
+      const expandThreshold = 200;
+      let needsExpansion = false;
+      let newWidth = canvasSize.width;
+      let newHeight = canvasSize.height;
+
+      // Check right edge
+      if (scrollLeft + clientWidth > scrollWidth - expandThreshold) {
+        newWidth = canvasSize.width + 1000;
+        needsExpansion = true;
+      }
+
+      // Check bottom edge
+      if (scrollTop + clientHeight > scrollHeight - expandThreshold) {
+        newHeight = canvasSize.height + 1000;
+        needsExpansion = true;
+      }
+
+      if (needsExpansion) {
+        setCanvasSize({
+          width: newWidth,
+          height: newHeight
+        });
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [canvasSize]);
 
   // Redraw canvas with fixed image handling
   const redrawCanvas = useCallback(() => {
@@ -359,6 +423,25 @@ const Board = () => {
 
     const { x, y } = getEventPosition(e);
     setCurrentPath(prev => [...prev, { x, y }]);
+    
+    // Auto-expand canvas if drawing near edges
+    const expandThreshold = 100;
+    let needsExpansion = false;
+    let newWidth = canvasSize.width;
+    let newHeight = canvasSize.height;
+    
+    if (x > canvasSize.width - expandThreshold) {
+      newWidth = canvasSize.width + 500;
+      needsExpansion = true;
+    }
+    if (y > canvasSize.height - expandThreshold) {
+      newHeight = canvasSize.height + 500;
+      needsExpansion = true;
+    }
+    
+    if (needsExpansion) {
+      setCanvasSize({ width: newWidth, height: newHeight });
+    }
   };
 
   const handleEnd = (e) => {
@@ -846,6 +929,13 @@ const Board = () => {
       </div>
 
       <div className="board-content">
+        {/* Infinite Canvas Indicator */}
+        <div className="infinite-canvas-indicator" title="Infinite Canvas - Scroll or draw to expand">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 12h18m-6-6l6 6-6 6" />
+            <path d="M12 3v18m-6-6l6 6 6-6" opacity="0.5" />
+          </svg>
+        </div>
         <canvas
           ref={canvasRef}
           className={`board-canvas ${

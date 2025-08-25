@@ -1,0 +1,8 @@
+/* SCD Medication Modal - Matching Medications Page Design */
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,800,500,400&display=swap');
+
+/* Import the same CSS from MedicationModal to ensure identical styling */
+@import '../MedicationModal/MedicationModal.css';
+
+/* Any SCD-specific overrides can go here if needed */
+/* Currently using all the same styles as the Lyso and HAE modals */

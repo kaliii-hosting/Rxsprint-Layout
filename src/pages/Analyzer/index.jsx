@@ -2549,28 +2549,29 @@ const Analyzer = () => {
   };
 
   return (
-    <div className="analyzer-page page-container">
+    <div className="analyzer-page page-container page-with-enterprise-header">
+      {/* Enterprise Header */}
+      <EnterpriseHeader>
+        <TabGroup>
+          <TabButton
+            active={activeSection === 'prescription'}
+            onClick={() => setActiveSection('prescription')}
+            icon={FileText}
+          >
+            Analyze Prescription
+          </TabButton>
+          <TabButton
+            active={activeSection === 'supplies'}
+            onClick={() => setActiveSection('supplies')}
+            icon={Package}
+          >
+            Analyze Supplies
+          </TabButton>
+        </TabGroup>
+      </EnterpriseHeader>
+
       <div className="analyzer-content">
         <div className="analyzer-dashboard">
-          {/* Enterprise Header */}
-          <EnterpriseHeader>
-            <TabGroup>
-              <TabButton
-                active={activeSection === 'prescription'}
-                onClick={() => setActiveSection('prescription')}
-                icon={FileText}
-              >
-                Analyze Prescription
-              </TabButton>
-              <TabButton
-                active={activeSection === 'supplies'}
-                onClick={() => setActiveSection('supplies')}
-                icon={Package}
-              >
-                Analyze Supplies
-              </TabButton>
-            </TabGroup>
-          </EnterpriseHeader>
 
           {/* Prescription Section */}
           {activeSection === 'prescription' && (

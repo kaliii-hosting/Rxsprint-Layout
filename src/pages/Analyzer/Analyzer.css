@@ -4,7 +4,7 @@
 .analyzer-page {
   background: var(--background);
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  height: 100%;
+  height: 100vh;
   width: 100%;
   margin: 0;
   padding: 0;
@@ -17,6 +17,17 @@
   touch-action: manipulation;
 }
 
+/* Page with enterprise header adjustments */
+.analyzer-page.page-with-enterprise-header {
+  padding-top: 0;
+}
+
+/* Center the header tabs */
+.analyzer-page .enterprise-header .tab-group {
+  margin: 0 auto;
+  justify-content: center;
+}
+
 .analyzer-content {
   flex: 1;
   overflow-y: auto;
@@ -24,6 +35,7 @@
   width: 100%;
   margin: 0;
   background: var(--background);
+  position: relative;
 }
 
 .analyzer-dashboard {
@@ -33,6 +45,7 @@
   width: 100%;
   margin: 0;
   padding: clamp(1rem, 2vw, 2rem);
+  padding-top: 1rem;
   min-height: 100%;
 }
 
@@ -2431,4 +2444,58 @@ body .analyzer-page button.toggle-btn.full-width *,
   color: white !important;
   -webkit-text-fill-color: white !important;
   fill: white !important;
+}
+
+/* Fix Enterprise Header Layout - Match Bookmarks Page */
+.analyzer-page.page-with-enterprise-header .enterprise-header {
+  margin: 0;
+  padding: 0;
+  position: relative;
+  top: 0;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--card-background);
+}
+
+/* Remove any unwanted spacing above header */
+.analyzer-page.page-with-enterprise-header {
+  padding-top: 0;
+}
+
+/* Center the tab buttons like Bookmarks page */
+.analyzer-page .enterprise-header .header-content {
+  justify-content: center;
+  padding: 0.75rem 1rem;
+}
+
+.analyzer-page .enterprise-header .tab-group {
+  margin: 0;
+  justify-content: center;
+}
+
+/* Hide any dividers */
+.analyzer-page .enterprise-header .header-divider {
+  display: none;
+}
+
+/* Mobile fixes for header */
+@media (max-width: 768px) {
+  .analyzer-page .enterprise-header {
+    position: relative;
+    margin-bottom: 0;
+  }
+  
+  .analyzer-page .enterprise-header .header-content {
+    padding: 0.5rem;
+    justify-content: center;
+  }
+  
+  .analyzer-page .enterprise-header .tab-group {
+    width: 100%;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .analyzer-dashboard {
+    padding-top: 0.5rem;
+  }
 }
