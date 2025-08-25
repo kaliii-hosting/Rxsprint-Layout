@@ -352,6 +352,7 @@ textarea.header-field-input {
 .modal-prescriptions-table tbody tr {
   background: transparent;
   transition: background-color 0.2s;
+  height: auto !important;
 }
 
 .modal-prescriptions-table tbody tr:hover {
@@ -379,7 +380,7 @@ textarea.header-field-input {
 }
 
 .modal-prescriptions-table td {
-  padding: 14px 16px;
+  padding: 16px 18px;
   border-bottom: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
   color: var(--text-primary);
@@ -388,24 +389,26 @@ textarea.header-field-input {
   word-wrap: break-word;
   overflow-wrap: break-word;
   background: var(--bg-primary);
-  min-height: 60px;
+  min-height: 80px;
   white-space: pre-wrap;
   height: auto !important;
   overflow: visible !important;
   max-height: none !important;
+  line-height: 1.6;
 }
 
 /* Field display for read-only mode */
 .modal-field-display {
   white-space: pre-wrap;
   word-break: break-word;
-  line-height: 1.5;
-  min-height: 32px;
+  line-height: 1.6;
+  min-height: 40px;
   display: block;
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;
-  padding: 2px 0;
+  padding: 4px 0;
+  font-size: 13px;
 }
 
 .modal-prescriptions-table td:last-child {
@@ -571,13 +574,13 @@ textarea.header-field-input {
 
 .modal-table-input {
   width: 100%;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--input-border);
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-family: inherit;
   resize: vertical;
-  min-height: 32px;
+  min-height: 40px;
   height: auto !important;
   transition: all 0.2s;
   background: var(--input-bg);
@@ -586,16 +589,18 @@ textarea.header-field-input {
   box-sizing: border-box;
   overflow: visible !important;
   max-height: none !important;
+  line-height: 1.5;
 }
 
 .modal-textarea {
   text-transform: none;
   resize: vertical;
-  min-height: 80px;
+  min-height: 100px;
   height: auto !important;
   white-space: pre-wrap;
   overflow: visible !important;
   max-height: none !important;
+  line-height: 1.6;
 }
 
 .modal-table-input:focus {
@@ -793,6 +798,34 @@ textarea.modal-table-input {
   min-height: auto !important;
 }
 
+/* Ensure table cells expand to fit content */
+.modal-prescriptions-table tbody tr {
+  height: auto !important;
+  min-height: 60px;
+}
+
+.modal-prescriptions-table tbody tr td {
+  height: auto !important;
+  min-height: 80px;
+  padding: 20px !important;
+}
+
+/* Special handling for textareas and long text fields */
+.modal-prescriptions-table .modal-textarea,
+.modal-prescriptions-table .modal-field-display {
+  min-height: 120px !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Ensure SCD medication specific fields have enough space */
+.modal-prescriptions-table td:has(.modal-textarea),
+.modal-prescriptions-table td:has(.modal-field-display) {
+  min-height: 120px !important;
+  vertical-align: top;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -899,9 +932,11 @@ textarea.modal-table-input {
   }
   
   .modal-prescriptions-table td {
-    min-height: 50px;
+    min-height: 70px !important;
     white-space: normal !important;
     word-break: break-word !important;
+    padding: 12px 10px !important;
+    height: auto !important;
   }
   
   .modal-table-input {

@@ -4,5 +4,50 @@
 /* Import the same CSS from MedicationModal to ensure identical styling */
 @import '../MedicationModal/MedicationModal.css';
 
-/* Any SCD-specific overrides can go here if needed */
-/* Currently using all the same styles as the Lyso and HAE modals */
+/* SCD-specific overrides for better text visibility */
+/* Ensure all SCD medication fields have sufficient space */
+.modal-prescription-profile .modal-prescriptions-table td {
+  min-height: 100px !important;
+  padding: 20px !important;
+  vertical-align: top;
+}
+
+/* Extra space for fields with potentially long content */
+.modal-prescription-profile .modal-field-display {
+  min-height: 60px !important;
+  line-height: 1.7;
+  padding: 8px 0;
+}
+
+/* Ensure textareas in edit mode have enough space */
+.modal-prescription-profile .modal-textarea {
+  min-height: 150px !important;
+  line-height: 1.7;
+}
+
+/* Special fields that typically have more content */
+.modal-prescription-profile td:has([name*="sideEffects"]),
+.modal-prescription-profile td:has([name*="specialNotes"]),
+.modal-prescription-profile td:has([name*="additionalNotes"]),
+.modal-prescription-profile td:has([name*="storageAndHandling"]),
+.modal-prescription-profile td:has([name*="extendedStability"]),
+.modal-prescription-profile td:has([name*="indication"]),
+.modal-prescription-profile td:has([name*="bbw"]) {
+  min-height: 150px !important;
+}
+
+/* Ensure table sections have enough vertical space */
+.modal-prescription-profile .modal-table-section {
+  margin-bottom: 30px;
+}
+
+/* Override table layout to allow better expansion */
+.modal-prescription-profile .modal-prescriptions-table {
+  table-layout: auto !important;
+}
+
+/* Ensure all table rows expand properly */
+.modal-prescription-profile .modal-prescriptions-table tbody tr {
+  height: auto !important;
+  min-height: 100px !important;
+}
