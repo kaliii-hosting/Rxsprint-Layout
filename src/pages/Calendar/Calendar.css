@@ -728,6 +728,75 @@
 }
 
 /* Responsive Design */
+/* Tablet Specific Styles */
+@media (min-width: 768px) and (max-width: 1366px) {
+  .calendar-page {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .calendar-content {
+    width: 100%;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+  
+  .calendar-dashboard {
+    width: 100%;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  /* Fix calendar grid for tablets */
+  .calendar-grid {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  
+  .calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    width: 100%;
+  }
+  
+  .calendar-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    width: 100%;
+    grid-auto-rows: minmax(80px, 1fr);
+  }
+  
+  .calendar-day {
+    min-height: 80px;
+    height: auto;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+    width: 100%;
+  }
+  
+  .calendar-day-name {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .day-number {
+    font-size: 0.875rem;
+  }
+  
+  .day-events {
+    margin-top: 0.25rem;
+  }
+  
+  .day-event-item {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.25rem;
+  }
+}
+
 @media (max-width: 1024px) {
   .week-header {
     grid-template-columns: 60px repeat(7, 1fr);

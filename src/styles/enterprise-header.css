@@ -229,6 +229,68 @@
   }
 }
 
+/* Tablet Vertical View - Center Medications Page Buttons */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .medications-page .header-content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .medications-page .tab-group {
+    width: auto;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .medications-page .action-group {
+    width: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+  }
+  
+  .medications-page .header-divider {
+    display: none;
+  }
+}
+
+/* Tablet Horizontal View - Center Medications Page Buttons */
+@media (min-width: 768px) and (max-width: 1366px) and (orientation: landscape) {
+  .medications-page .header-content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .medications-page .tab-group {
+    width: auto;
+    display: flex;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+  
+  .medications-page .action-group {
+    width: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+  }
+}
+
 /* Responsive Design - Mobile */
 @media (max-width: 768px) {
   .enterprise-header {

@@ -18,30 +18,17 @@
     overflow: hidden;
   }
 
-  /* Sidebar - Optimized for tablet */
+  /* Sidebar - Fixed width like desktop */
   .sidebar {
-    width: 80px !important;
+    width: 100px !important;
     flex-shrink: 0;
-    transition: all 0.3s ease;
-  }
-
-  .sidebar:hover {
-    width: 240px !important;
-  }
-
-  .sidebar-nav-item span {
-    display: none;
-  }
-
-  .sidebar:hover .sidebar-nav-item span {
-    display: inline;
   }
 
   /* Main Content Area */
   .main-content {
     flex: 1;
     margin-left: 0;
-    width: calc(100vw - 80px);
+    width: calc(100vw - 100px);
     overflow-x: hidden;
     overflow-y: auto;
   }
@@ -120,18 +107,14 @@
    TABLET LANDSCAPE (1024px - 1366px)
    =============================================== */
 @media only screen and (min-width: 1024px) and (max-width: 1366px) {
-  /* Sidebar - Full width in landscape */
+  /* Sidebar - Fixed width like desktop */
   .sidebar {
-    width: 88px !important;
-  }
-
-  .sidebar:hover {
-    width: 260px !important;
+    width: 100px !important;
   }
 
   /* Main Content */
   .main-content {
-    width: calc(100vw - 88px);
+    width: calc(100vw - 100px);
     padding: 0;
   }
 
@@ -328,25 +311,35 @@
    CALENDAR PAGE - TABLET SPECIFIC
    =============================================== */
 @media only screen and (min-width: 768px) and (max-width: 1366px) {
-  /* Calendar Grid */
+  /* Calendar Grid - Fixed layout for tablets */
   .calendar-grid {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  
+  .calendar-header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    width: 100%;
+  }
+  
+  .calendar-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    width: 100%;
+    grid-auto-rows: minmax(80px, 1fr);
   }
 
   .calendar-day {
-    min-height: 100px;
+    min-height: 80px;
+    height: auto;
     padding: 0.5rem;
     font-size: 0.9rem;
-  }
-
-  /* Calendar Header */
-  .calendar-header {
-    padding: 1rem 1.5rem;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+    width: 100%;
   }
 
   /* Event Cards */
@@ -453,13 +446,13 @@
 
 /* Landscape Orientation */
 @media only screen and (min-width: 768px) and (max-width: 1366px) and (orientation: landscape) {
-  /* Optimize horizontal space */
+  /* Keep desktop-like sidebar */
   .sidebar {
-    width: 70px !important;
+    width: 100px !important;
   }
 
   .main-content {
-    width: calc(100vw - 70px);
+    width: calc(100vw - 100px);
   }
 
   /* More columns in landscape */
@@ -481,13 +474,9 @@
    IPAD PRO SPECIFIC (1024px - 1366px)
    =============================================== */
 @media only screen and (min-width: 1024px) and (max-width: 1366px) and (min-resolution: 2dppx) {
-  /* High DPI adjustments */
+  /* High DPI adjustments - Fixed width */
   .sidebar {
-    width: 90px !important;
-  }
-
-  .sidebar:hover {
-    width: 280px !important;
+    width: 100px !important;
   }
 
   /* Larger touch targets for iPad Pro */

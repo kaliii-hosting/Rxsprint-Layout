@@ -180,16 +180,7 @@
   animation: blink 1s ease-in-out infinite;
 }
 
-.time-period {
-  font-size: clamp(1.2rem, 3.5vw, 3.5rem);
-  font-weight: 600;
-  margin-left: 0.2em;
-  color: white;
-  opacity: 0.9;
-  font-family: 'Roboto', sans-serif;
-  align-self: center;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-}
+/* Time period removed - now using 24-hour format */
 
 @keyframes blink {
   0%, 100% {
@@ -232,11 +223,13 @@
   font-weight: 400;
   line-height: 1;
   height: auto;
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   white-space: nowrap;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Date and Day Display - now part of info-container */
@@ -404,10 +397,7 @@
     margin: 0 0.02em;
   }
   
-  .time-period {
-    font-size: clamp(1.5rem, 6vw, 3rem);
-    margin-left: 0.15em;
-  }
+  /* Time period removed - using 24-hour format */
   
   .terminal-loading {
     font-size: 1.1rem;
@@ -508,13 +498,16 @@
     margin: 0 0.02em;
   }
   
-  .time-period {
-    font-size: clamp(3rem, 12vh, 14vh);
-    margin-left: 0.15em;
-  }
+  /* Time period removed - using 24-hour format */
   
   .terminal-loading {
-    display: none;
+    font-size: clamp(0.8rem, 2vw, 1.1rem);
+    margin: 0.5rem 0;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 0.9;
+    position: relative;
+    z-index: 10;
   }
   
   .info-container {
@@ -622,13 +615,16 @@
     margin: 0 0.01em !important;
   }
   
-  .time-period {
-    font-size: clamp(3.5rem, 15vh, 17vh) !important;
-    margin-left: 0.1em !important;
-  }
+  /* Time period removed - using 24-hour format */
   
   .terminal-loading {
-    display: none !important;
+    font-size: clamp(0.75rem, 1.8vw, 1rem) !important;
+    margin: 0.4rem 0 !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 0.85 !important;
+    position: relative !important;
+    z-index: 10 !important;
   }
   
   .info-container {
@@ -719,10 +715,7 @@
     margin: 0 0.02em;
   }
   
-  .time-period {
-    font-size: clamp(1rem, 7vw, 9vw);
-    margin-left: 0.15em;
-  }
+  /* Time period removed - using 24-hour format */
   
   .terminal-loading {
     font-size: 1rem;
@@ -807,9 +800,7 @@
     font-size: clamp(6.5rem, 35vh, 38vh) !important;
   }
   
-  .time-period {
-    font-size: clamp(3rem, 14vh, 15vh) !important;
-  }
+  /* Time period removed - using 24-hour format */
   
   .info-container {
     padding: 0.5rem 0.8rem !important;
@@ -880,10 +871,7 @@
     margin: 0 0.01em;
   }
   
-  .time-period {
-    font-size: clamp(0.9rem, 8vw, 10vw);
-    margin-left: 0.1em;
-  }
+  /* Time period removed - using 24-hour format */
   
   .terminal-loading {
     font-size: 0.85rem;

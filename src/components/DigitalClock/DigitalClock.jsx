@@ -94,16 +94,11 @@ const DigitalClock = ({ isOpen, onClose }) => {
   };
 
   const formatTime = () => {
-    let hours = time.getHours();
+    const hours = time.getHours().toString().padStart(2, '0');
     const minutes = time.getMinutes().toString().padStart(2, '0');
     const seconds = time.getSeconds().toString().padStart(2, '0');
-    const period = hours >= 12 ? 'PM' : 'AM';
     
-    // Convert to 12-hour format
-    hours = hours % 12 || 12; // Convert 0 to 12 for midnight
-    const formattedHours = hours.toString().padStart(2, '0');
-    
-    return { hours: formattedHours, minutes, seconds, period };
+    return { hours, minutes, seconds };
   };
 
   const formatDayOfWeek = () => {
@@ -122,7 +117,7 @@ const DigitalClock = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const { hours, minutes, seconds, period } = formatTime();
+  const { hours, minutes, seconds } = formatTime();
 
   return (
     <div className="digital-clock-overlay">
@@ -140,7 +135,6 @@ const DigitalClock = ({ isOpen, onClose }) => {
                 <span className="time-minutes">{minutes}</span>
                 <span className="time-separator">:</span>
                 <span className="time-seconds">{seconds}</span>
-                <span className="time-period">{period}</span>
               </div>
             </div>
 
