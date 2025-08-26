@@ -1,0 +1,652 @@
+/* ========================================================================== */
+/* PRESCRIPTION ANALYZER TABLE - EXACT MEDICAL FORM DESIGN                   */
+/* Professional Medical Data Entry Form with Blue Grid Background            */
+/* ========================================================================== */
+
+/* Container with blue dotted grid pattern background */
+.prescription-table-screenshot-container {
+  /* Blue dotted grid background pattern */
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 19px,
+      #d4e3f4 19px,
+      #d4e3f4 20px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 19px,
+      #d4e3f4 19px,
+      #d4e3f4 20px
+    );
+  background-color: #f0f5fb;
+  padding: 24px;
+  border-radius: 4px;
+  margin: 20px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* File result title above table */
+.file-result-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a365d;
+  margin: 0 0 16px 0;
+  padding: 8px 12px;
+  background: white;
+  border-left: 4px solid #2563eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Main table structure */
+.analysis-table.screenshot-design {
+  width: 100%;
+  background: white;
+  border: 1px solid #64748b;
+  border-collapse: collapse;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Arial', sans-serif;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  margin: 0;
+}
+
+/* ========================================================================== */
+/* TABLE HEADERS                                                             */
+/* ========================================================================== */
+
+.analysis-table.screenshot-design thead tr {
+  background: #1e40af;
+  height: 42px;
+}
+
+.analysis-table.screenshot-design thead th {
+  padding: 10px 12px;
+  font-weight: 600;
+  text-align: left;
+  color: white;
+  border: 1px solid #1e3a8a;
+  position: relative;
+  white-space: nowrap;
+}
+
+/* Empty header cells above section and field columns */
+.analysis-table.screenshot-design thead th:first-child,
+.analysis-table.screenshot-design thead th:nth-child(2) {
+  background: #1e40af;
+  border-right: 2px solid #1e3a8a;
+}
+
+/* PRESCRIBED header - Blue background */
+.analysis-table.screenshot-design th.prescribed-header {
+  background: #2563eb;
+  color: white;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-left: 2px solid #1e3a8a;
+  padding: 10px 16px;
+}
+
+/* DATA ENTERED header - Dark blue with green checkmark */
+.analysis-table.screenshot-design th.data-entered-header {
+  background: #1e40af;
+  color: white;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-left: 2px solid #1e3a8a;
+  padding: 10px 16px;
+}
+
+.analysis-table.screenshot-design th.data-entered-header .header-checkmark {
+  color: #22c55e;
+  font-size: 16px;
+  font-weight: bold;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Match column header - narrow */
+.analysis-table.screenshot-design th.match-status-header {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  background: #1e40af;
+  color: white;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-left: 2px solid #1e3a8a;
+  padding: 10px 4px;
+}
+
+/* ========================================================================== */
+/* TABLE BODY CELLS                                                          */
+/* ========================================================================== */
+
+.analysis-table.screenshot-design tbody tr {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.analysis-table.screenshot-design tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.analysis-table.screenshot-design tbody td {
+  border: 1px solid #cbd5e1;
+  padding: 8px 10px;
+  vertical-align: middle;
+  color: #1f2937;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* ========================================================================== */
+/* SECTION LABELS - VERTICAL/ROTATED TEXT                                    */
+/* ========================================================================== */
+
+.analysis-table.screenshot-design td.section-label-cell {
+  background: linear-gradient(180deg, #e0e7ff 0%, #c7d2fe 100%);
+  border-right: 2px solid #6366f1;
+  width: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  padding: 4px;
+  text-align: center;
+  position: relative;
+}
+
+/* Vertical text rotation for section labels */
+.analysis-table.screenshot-design .section-label-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  display: inline-block;
+  height: 100%;
+  min-height: 80px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4338ca;
+  white-space: nowrap;
+}
+
+/* Alternative CSS for better cross-browser vertical text */
+@supports not (writing-mode: vertical-rl) {
+  .analysis-table.screenshot-design .section-label-vertical {
+    transform: rotate(-90deg);
+    transform-origin: center center;
+    width: 100%;
+    height: auto;
+    display: block;
+    padding: 20px 0;
+  }
+}
+
+/* ========================================================================== */
+/* FIELD NAME CELLS                                                          */
+/* ========================================================================== */
+
+.analysis-table.screenshot-design td.field-name-cell {
+  background: #f8fafc;
+  font-weight: 500;
+  color: #334155;
+  width: 120px;
+  min-width: 120px;
+  border-right: 1px solid #94a3b8;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.analysis-table.screenshot-design td.field-name-cell .required-asterisk {
+  color: #ef4444;
+  margin-left: 2px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* ========================================================================== */
+/* PRESCRIBED VALUE CELLS                                                    */
+/* ========================================================================== */
+
+.analysis-table.screenshot-design td.prescribed-value-cell {
+  background: white;
+  border-left: 2px solid #cbd5e1;
+  padding: 8px 12px;
+  min-width: 220px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Red text for mismatched values in prescribed column */
+.analysis-table.screenshot-design tr.mismatch-row td.prescribed-value-cell {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+/* Handle multi-line content (addresses) */
+.analysis-table.screenshot-design td.prescribed-value-cell,
+.analysis-table.screenshot-design td.data-entered-value-cell {
+  white-space: pre-line;
+}
+
+/* ========================================================================== */
+/* DATA ENTERED VALUE CELLS                                                  */
+/* ========================================================================== */
+
+.analysis-table.screenshot-design td.data-entered-value-cell {
+  background: white;
+  border-left: 2px solid #cbd5e1;
+  padding: 8px 12px;
+  min-width: 220px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ========================================================================== */
+/* MATCH STATUS COLUMN - CHECKMARKS                                          */
+/* ========================================================================== */
+
+.analysis-table.screenshot-design td.match-status-cell {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  text-align: center;
+  border-left: 2px solid #cbd5e1;
+  background: #f9fafb;
+  padding: 6px;
+  vertical-align: middle;
+}
+
+.analysis-table.screenshot-design td.match-status-cell .status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Green checkmark for matches */
+.analysis-table.screenshot-design td.match-status-cell .status-icon.match {
+  color: #16a34a;
+  background: #dcfce7;
+  border: 2px solid #16a34a;
+}
+
+/* Red X for mismatches */
+.analysis-table.screenshot-design td.match-status-cell .status-icon.mismatch {
+  color: #dc2626;
+  background: #fee2e2;
+  border: 2px solid #dc2626;
+}
+
+/* Yellow question mark for partial matches */
+.analysis-table.screenshot-design td.match-status-cell .status-icon.partial {
+  color: #ca8a04;
+  background: #fef3c7;
+  border: 2px solid #fbbf24;
+}
+
+/* Gray dash for empty/no data */
+.analysis-table.screenshot-design td.match-status-cell .status-icon.empty {
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+}
+
+/* ========================================================================== */
+/* ROW STATES AND HIGHLIGHTING                                               */
+/* ========================================================================== */
+
+/* Mismatch row - subtle pink background */
+.analysis-table.screenshot-design tbody tr.mismatch-row {
+  background-color: #fef2f2;
+}
+
+.analysis-table.screenshot-design tbody tr.mismatch-row:hover {
+  background-color: #fee2e2;
+}
+
+.analysis-table.screenshot-design tbody tr.mismatch-row td {
+  border-color: #fecaca;
+}
+
+.analysis-table.screenshot-design tbody tr.mismatch-row td.section-label-cell {
+  background: linear-gradient(180deg, #fecaca 0%, #fca5a5 100%);
+  border-right-color: #ef4444;
+}
+
+.analysis-table.screenshot-design tbody tr.mismatch-row td.field-name-cell {
+  background-color: #fef2f2;
+}
+
+/* Match row - subtle green tint on hover */
+.analysis-table.screenshot-design tbody tr.match-row:hover {
+  background-color: #f0fdf4;
+}
+
+/* Partial match row - subtle yellow background */
+.analysis-table.screenshot-design tbody tr.partial-row {
+  background-color: #fffbeb;
+}
+
+.analysis-table.screenshot-design tbody tr.partial-row:hover {
+  background-color: #fef3c7;
+}
+
+.analysis-table.screenshot-design tbody tr.partial-row td {
+  border-color: #fde68a;
+}
+
+.analysis-table.screenshot-design tbody tr.partial-row td.section-label-cell {
+  background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+  border-right-color: #f59e0b;
+}
+
+.analysis-table.screenshot-design tbody tr.partial-row td.field-name-cell {
+  background-color: #fffbeb;
+}
+
+/* Empty row styling */
+.analysis-table.screenshot-design tbody tr.no-match-row td {
+  color: #6b7280;
+}
+
+/* ========================================================================== */
+/* ANIMATIONS                                                                */
+/* ========================================================================== */
+
+@keyframes checkmarkAppear {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.analysis-table.screenshot-design td.match-status-cell .status-icon.match {
+  animation: checkmarkAppear 0.3s ease-out;
+}
+
+/* ========================================================================== */
+/* RESPONSIVE DESIGN - MAINTAINS LAYOUT INTEGRITY                            */
+/* ========================================================================== */
+
+/* Large Desktop (1440px+) */
+@media (min-width: 1441px) {
+  .analysis-table.screenshot-design {
+    font-size: 14px;
+  }
+  
+  .analysis-table.screenshot-design thead th {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  
+  .analysis-table.screenshot-design tbody td {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+}
+
+/* Desktop (1024px - 1440px) */
+@media (max-width: 1440px) {
+  .analysis-table.screenshot-design td.prescribed-value-cell,
+  .analysis-table.screenshot-design td.data-entered-value-cell {
+    min-width: 200px;
+  }
+}
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+  .prescription-table-screenshot-container {
+    padding: 16px;
+    background-size: 18px 18px;
+  }
+  
+  .analysis-table.screenshot-design {
+    font-size: 12px;
+  }
+  
+  .analysis-table.screenshot-design thead th {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  
+  .analysis-table.screenshot-design tbody td {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  
+  .analysis-table.screenshot-design td.section-label-cell {
+    width: 28px;
+    min-width: 28px;
+  }
+  
+  .analysis-table.screenshot-design .section-label-vertical {
+    font-size: 10px;
+    min-height: 70px;
+  }
+  
+  .analysis-table.screenshot-design td.field-name-cell {
+    width: 100px;
+    min-width: 100px;
+  }
+  
+  .analysis-table.screenshot-design td.prescribed-value-cell,
+  .analysis-table.screenshot-design td.data-entered-value-cell {
+    min-width: 180px;
+  }
+  
+  .analysis-table.screenshot-design td.match-status-cell {
+    width: 50px;
+    min-width: 50px;
+  }
+  
+  .analysis-table.screenshot-design td.match-status-cell .status-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+  }
+}
+
+/* Mobile (320px - 768px) */
+@media (max-width: 768px) {
+  .prescription-table-screenshot-container {
+    padding: 12px;
+    background-size: 15px 15px;
+  }
+  
+  .file-result-title {
+    font-size: 14px;
+    padding: 6px 10px;
+    margin: 0 0 12px 0;
+  }
+  
+  .analysis-table.screenshot-design {
+    font-size: 11px;
+  }
+  
+  .analysis-table.screenshot-design thead th {
+    padding: 6px 8px;
+    font-size: 11px;
+    height: 36px;
+  }
+  
+  .analysis-table.screenshot-design tbody td {
+    padding: 5px 6px;
+    font-size: 11px;
+  }
+  
+  .analysis-table.screenshot-design td.section-label-cell {
+    width: 24px;
+    min-width: 24px;
+    padding: 2px;
+  }
+  
+  .analysis-table.screenshot-design .section-label-vertical {
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    min-height: 60px;
+  }
+  
+  .analysis-table.screenshot-design td.field-name-cell {
+    width: 90px;
+    min-width: 90px;
+    font-size: 11px;
+  }
+  
+  .analysis-table.screenshot-design td.prescribed-value-cell,
+  .analysis-table.screenshot-design td.data-entered-value-cell {
+    min-width: 150px;
+    padding: 5px 8px;
+  }
+  
+  .analysis-table.screenshot-design td.match-status-cell {
+    width: 40px;
+    min-width: 40px;
+  }
+  
+  .analysis-table.screenshot-design td.match-status-cell .status-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+  }
+  
+  .analysis-table.screenshot-design th.data-entered-header .header-checkmark {
+    font-size: 14px;
+    margin-left: 4px;
+  }
+}
+
+/* ========================================================================== */
+/* PRINT STYLES                                                              */
+/* ========================================================================== */
+
+@media print {
+  .prescription-table-screenshot-container {
+    background: white;
+    box-shadow: none;
+    padding: 0;
+    page-break-inside: avoid;
+  }
+  
+  .analysis-table.screenshot-design {
+    box-shadow: none;
+    border: 2px solid #000;
+    font-size: 11px;
+  }
+  
+  .analysis-table.screenshot-design thead tr {
+    background: #1e40af !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .analysis-table.screenshot-design thead th {
+    color: white !important;
+    border-color: #000;
+  }
+  
+  .analysis-table.screenshot-design tbody tr.mismatch-row td.prescribed-value-cell {
+    color: #dc2626 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .analysis-table.screenshot-design td.match-status-cell .status-icon.match {
+    color: #16a34a !important;
+  }
+  
+  .analysis-table.screenshot-design td.match-status-cell .status-icon.mismatch {
+    color: #dc2626 !important;
+  }
+  
+  .analysis-table.screenshot-design .section-label-vertical {
+    color: #4338ca !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ========================================================================== */
+/* BROWSER-SPECIFIC FIXES                                                    */
+/* ========================================================================== */
+
+/* Firefox vertical text fix */
+@-moz-document url-prefix() {
+  .analysis-table.screenshot-design .section-label-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+  }
+}
+
+/* Safari/Webkit vertical text optimization */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  .analysis-table.screenshot-design .section-label-vertical span {
+    display: inline-block;
+    transform: rotate(-90deg);
+    transform-origin: center;
+    white-space: nowrap;
+  }
+}
+
+/* Edge browser specific adjustments */
+@supports (-ms-ime-align: auto) {
+  .analysis-table.screenshot-design .section-label-vertical {
+    writing-mode: tb-rl;
+    transform: rotate(180deg);
+  }
+}
+
+/* ========================================================================== */
+/* ACCESSIBILITY IMPROVEMENTS                                                 */
+/* ========================================================================== */
+
+/* Focus states for keyboard navigation */
+.analysis-table.screenshot-design tbody tr:focus-within {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .analysis-table.screenshot-design {
+    border-width: 2px;
+  }
+  
+  .analysis-table.screenshot-design thead th {
+    border-width: 2px;
+  }
+  
+  .analysis-table.screenshot-design tbody td {
+    border-width: 1px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .analysis-table.screenshot-design td.match-status-cell .status-icon {
+    animation: none;
+  }
+}

@@ -1,0 +1,227 @@
+/* ========================================
+   PRESCRIPTION TABLE - NUCLEAR FIX
+   OVERRIDES ALL DISPLAY:NONE FROM SUPPLIES CSS
+   ======================================== */
+
+/* CRITICAL: Force all prescription table columns to be visible */
+.prescription-tables-container table.analysis-table th:nth-child(1),
+.prescription-tables-container table.analysis-table td:nth-child(1),
+.prescription-tables-container table.analysis-table th:nth-child(2),
+.prescription-tables-container table.analysis-table td:nth-child(2),
+.prescription-tables-container table.analysis-table th:nth-child(3),
+.prescription-tables-container table.analysis-table td:nth-child(3),
+.prescription-tables-container table.analysis-table th:nth-child(4),
+.prescription-tables-container table.analysis-table td:nth-child(4),
+.prescription-tables-container table.analysis-table th:nth-child(5),
+.prescription-tables-container table.analysis-table td:nth-child(5) {
+  display: table-cell !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  width: auto !important;
+  min-width: 10px !important;
+}
+
+/* Force prescription table to show all 5 columns */
+.analyzer-results .prescription-table-section table.analysis-table th,
+.analyzer-results .prescription-table-section table.analysis-table td,
+.prescription-table-section table.analysis-table th,
+.prescription-table-section table.analysis-table td {
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+/* Override supplies table CSS that's hiding columns 3 and 5 */
+.prescription-table-section .analysis-table th:nth-child(3),
+.prescription-table-section .analysis-table td:nth-child(3) {
+  display: table-cell !important;
+  visibility: visible !important;
+  width: calc(40% - 20px) !important;
+  min-width: 300px !important;
+}
+
+.prescription-table-section .analysis-table th:nth-child(5),
+.prescription-table-section .analysis-table td:nth-child(5) {
+  display: table-cell !important;
+  visibility: visible !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+}
+
+/* Make sure the table uses correct layout */
+.prescription-table-section table.analysis-table {
+  display: table !important;
+  width: 100% !important;
+  min-width: 1100px !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  background: white !important;
+  border: 2px solid #1e3a8a !important;
+}
+
+/* Force proper structure */
+.prescription-table-section table.analysis-table thead {
+  display: table-header-group !important;
+}
+
+.prescription-table-section table.analysis-table tbody {
+  display: table-row-group !important;
+}
+
+.prescription-table-section table.analysis-table tr {
+  display: table-row !important;
+}
+
+/* COLUMN WIDTHS - FORCE 5 COLUMNS */
+/* Column 1: Section label */
+.prescription-table-section .analysis-table td:nth-child(1),
+.prescription-table-section .analysis-table th:nth-child(1) {
+  display: table-cell !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+  background: #e5e7eb !important;
+  border: 1px solid #9ca3af !important;
+}
+
+/* Column 2: Field names */
+.prescription-table-section .analysis-table td:nth-child(2),
+.prescription-table-section .analysis-table th:nth-child(2) {
+  display: table-cell !important;
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
+  background: #f3f4f6 !important;
+}
+
+/* Column 3: PRESCRIBED - FORCE VISIBLE */
+.prescription-table-section .analysis-table td:nth-child(3),
+.prescription-table-section .analysis-table th:nth-child(3) {
+  display: table-cell !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: calc(45% - 60px) !important;
+  min-width: 350px !important;
+  background: white !important;
+}
+
+/* Column 4: DATA ENTERED */
+.prescription-table-section .analysis-table td:nth-child(4),
+.prescription-table-section .analysis-table th:nth-child(4) {
+  display: table-cell !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: calc(45% - 60px) !important;
+  min-width: 350px !important;
+  background: white !important;
+}
+
+/* Column 5: STATUS - FORCE VISIBLE */
+.prescription-table-section .analysis-table td:nth-child(5),
+.prescription-table-section .analysis-table th:nth-child(5) {
+  display: table-cell !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  background: white !important;
+}
+
+/* Headers */
+.prescription-table-section table.analysis-table thead tr {
+  background: #2563eb !important;
+  display: table-row !important;
+}
+
+.prescription-table-section table.analysis-table thead th {
+  display: table-cell !important;
+  background: #2563eb !important;
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 12px !important;
+  padding: 8px 6px !important;
+  border: 1px solid #1e40af !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Section label styling */
+.prescription-table-section td.section-label-cell {
+  display: table-cell !important;
+  background: #e5e7eb !important;
+  padding: 4px 2px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.prescription-table-section .section-label-vertical {
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  transform: rotate(180deg) !important;
+  display: inline-block !important;
+  font-size: 10px !important;
+  font-weight: bold !important;
+  color: #374151 !important;
+}
+
+/* Field name styling */
+.prescription-table-section td.field-name-cell {
+  display: table-cell !important;
+  background: #f3f4f6 !important;
+  font-weight: 500 !important;
+  color: #4b5563 !important;
+  padding: 4px 8px !important;
+  font-size: 10px !important;
+}
+
+/* Value cells */
+.prescription-table-section td.prescribed-value-cell,
+.prescription-table-section td.data-entered-value-cell {
+  display: table-cell !important;
+  background: white !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  color: #111827 !important;
+}
+
+.prescription-table-section td.prescribed-value-cell {
+  border-right: 2px solid #d1d5db !important;
+}
+
+/* Match status cell */
+.prescription-table-section td.match-status-cell {
+  display: table-cell !important;
+  text-align: center !important;
+  padding: 2px !important;
+  background: white !important;
+}
+
+/* ULTRA HIGH SPECIFICITY TO OVERRIDE SUPPLIES CSS */
+body .analyzer-page .analyzer-results .prescription-table-section table.analysis-table td:nth-child(3),
+body .analyzer-page .analyzer-results .prescription-table-section table.analysis-table th:nth-child(3),
+body .analyzer-page .analyzer-results .prescription-table-section table.analysis-table td:nth-child(5),
+body .analyzer-page .analyzer-results .prescription-table-section table.analysis-table th:nth-child(5) {
+  display: table-cell !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Nuclear option - force all cells visible with inline styles level specificity */
+[class*="prescription"] table td,
+[class*="prescription"] table th {
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+/* Ensure prescription tables don't get supplies table rules */
+.prescription-tables-container .analysis-table td,
+.prescription-tables-container .analysis-table th,
+.prescription-table-section .analysis-table td,
+.prescription-table-section .analysis-table th {
+  display: table-cell !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+}

@@ -1,0 +1,384 @@
+/* ========================================
+   PRESCRIPTION TABLE - X1.JPG EXACT DESIGN
+   Matches x1.jpg screenshot exactly with centering
+   ======================================== */
+
+/* Center the entire prescription section on the page */
+.analyzer-results {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  padding: 20px 0;
+  background: #f5f5f5;
+}
+
+.prescription-tables-container {
+  width: 95%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: transparent;
+}
+
+.prescription-table-section {
+  width: 100%;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #d1d5db;
+  padding: 0;
+  overflow: visible;
+}
+
+/* Blue dotted grid background pattern - EXACT from screenshot */
+.prescription-table-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(0deg, #e3f2fd 0, #e3f2fd 1px, transparent 1px, transparent 20px),
+    repeating-linear-gradient(90deg, #e3f2fd 0, #e3f2fd 1px, transparent 1px, transparent 20px);
+  background-size: 20px 20px;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.prescription-table-section {
+  position: relative;
+}
+
+/* Main table - EXACT dimensions from screenshot */
+.prescription-table-section table.analysis-table {
+  position: relative;
+  z-index: 1;
+  display: table !important;
+  width: 100% !important;
+  max-width: 1100px !important;
+  margin: 0 auto !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  background: white !important;
+  border: 2px solid #1e3a8a !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 11px !important;
+}
+
+/* Force proper display */
+.prescription-table-section table.analysis-table thead {
+  display: table-header-group !important;
+}
+
+.prescription-table-section table.analysis-table tbody {
+  display: table-row-group !important;
+}
+
+.prescription-table-section table.analysis-table tr {
+  display: table-row !important;
+}
+
+.prescription-table-section table.analysis-table th,
+.prescription-table-section table.analysis-table td {
+  display: table-cell !important;
+}
+
+/* EXACT COLUMN WIDTHS from x1.jpg */
+/* Column 1: Section labels - very narrow */
+.prescription-table-section table.analysis-table th:nth-child(1),
+.prescription-table-section table.analysis-table td:nth-child(1) {
+  display: table-cell !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+}
+
+/* Column 2: Field names - narrow */
+.prescription-table-section table.analysis-table th:nth-child(2),
+.prescription-table-section table.analysis-table td:nth-child(2) {
+  display: table-cell !important;
+  width: 110px !important;
+  min-width: 110px !important;
+  max-width: 110px !important;
+}
+
+/* Column 3: PRESCRIBED - very wide */
+.prescription-table-section table.analysis-table th:nth-child(3),
+.prescription-table-section table.analysis-table td:nth-child(3) {
+  display: table-cell !important;
+  width: 42% !important;
+  min-width: 380px !important;
+}
+
+/* Column 4: DATA ENTERED - very wide (same as prescribed) */
+.prescription-table-section table.analysis-table th:nth-child(4),
+.prescription-table-section table.analysis-table td:nth-child(4) {
+  display: table-cell !important;
+  width: 42% !important;
+  min-width: 380px !important;
+}
+
+/* Column 5: Checkmark - very narrow */
+.prescription-table-section table.analysis-table th:nth-child(5),
+.prescription-table-section table.analysis-table td:nth-child(5) {
+  display: table-cell !important;
+  width: 35px !important;
+  min-width: 35px !important;
+  max-width: 35px !important;
+}
+
+/* HEADERS - Dark blue with white text like screenshot */
+.prescription-table-section table.analysis-table thead tr {
+  background: #1e3a8a !important;
+  height: 30px !important;
+}
+
+.prescription-table-section table.analysis-table thead th {
+  background: #1e3a8a !important;
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 11px !important;
+  padding: 6px 4px !important;
+  border: 1px solid #2c5282 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* First two header cells (empty) */
+.prescription-table-section table.analysis-table thead th:nth-child(1),
+.prescription-table-section table.analysis-table thead th:nth-child(2) {
+  background: #1e3a8a !important;
+}
+
+/* Prescribed header */
+.prescription-table-section table.analysis-table th.prescribed-header {
+  background: #1e3a8a !important;
+  color: white !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+}
+
+/* Data entered header with checkmark */
+.prescription-table-section table.analysis-table th.data-entered-header {
+  background: #1e3a8a !important;
+  color: white !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+}
+
+.prescription-table-section table.analysis-table th.data-entered-header .header-checkmark {
+  color: #4ade80 !important; /* Green checkmark */
+  font-size: 14px !important;
+  margin-left: 4px !important;
+}
+
+/* Status header with checkmark */
+.prescription-table-section table.analysis-table th.match-header {
+  background: #1e3a8a !important;
+  color: white !important;
+  font-size: 16px !important;
+  padding: 4px !important;
+}
+
+/* TABLE BODY - Compact row height like screenshot */
+.prescription-table-section table.analysis-table tbody td {
+  padding: 3px 4px !important;
+  border: 1px solid #9ca3af !important;
+  vertical-align: middle !important;
+  line-height: 1.2 !important;
+  height: 22px !important;
+  font-size: 10px !important;
+}
+
+/* SECTION LABELS - Vertical text with gray background */
+.prescription-table-section table.analysis-table td.section-label-cell {
+  background: #e5e7eb !important;
+  border: 1px solid #9ca3af !important;
+  border-right: 2px solid #6b7280 !important;
+  width: 40px !important;
+  padding: 2px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Vertical text rotation - EXACT like screenshot */
+.prescription-table-section .section-label-vertical {
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  transform: rotate(180deg) !important;
+  display: inline-block !important;
+  font-size: 9px !important;
+  font-weight: bold !important;
+  color: #1f2937 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  white-space: nowrap !important;
+}
+
+/* FIELD NAMES - Gray background, small font */
+.prescription-table-section table.analysis-table td.field-name-cell {
+  background: #f3f4f6 !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+  text-align: center !important;
+  padding: 3px 4px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  border-right: 1px solid #d1d5db !important;
+  font-size: 9px !important;
+}
+
+/* Required asterisk */
+.prescription-table-section .required-asterisk {
+  color: #ef4444 !important;
+  font-weight: bold !important;
+  margin-left: 1px !important;
+  font-size: 10px !important;
+}
+
+/* VALUE CELLS - Main data columns */
+.prescription-table-section table.analysis-table td.prescribed-value-cell,
+.prescription-table-section table.analysis-table td.data-entered-value-cell {
+  background: white !important;
+  padding: 3px 8px !important;
+  font-size: 10px !important;
+  color: #111827 !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Prescribed column border */
+.prescription-table-section table.analysis-table td.prescribed-value-cell {
+  border-right: 2px solid #d1d5db !important;
+}
+
+/* Red text for mismatched prescribed values */
+.prescription-table-section table.analysis-table tr.mismatch-row td.prescribed-value-cell {
+  color: #dc2626 !important;
+  font-weight: 500 !important;
+}
+
+/* MATCH STATUS CELL - Very narrow */
+.prescription-table-section table.analysis-table td.match-status-cell {
+  width: 35px !important;
+  text-align: center !important;
+  padding: 2px !important;
+  background: white !important;
+  vertical-align: middle !important;
+}
+
+/* Match indicators - Small for narrow column */
+.prescription-table-section .match-indicator {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 50% !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+}
+
+.prescription-table-section .match-indicator.match {
+  color: #10b981 !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 14px !important;
+}
+
+.prescription-table-section .match-indicator.mismatch {
+  color: #dc2626 !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 12px !important;
+}
+
+.prescription-table-section .match-indicator.partial {
+  color: #f59e0b !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 10px !important;
+}
+
+.prescription-table-section .match-indicator.empty {
+  color: #9ca3af !important;
+  font-size: 8px !important;
+}
+
+/* Row highlighting - Subtle like screenshot */
+.prescription-table-section table.analysis-table tbody tr {
+  background: transparent !important;
+}
+
+.prescription-table-section table.analysis-table tbody tr.mismatch-row {
+  background-color: rgba(254, 242, 242, 0.3) !important;
+}
+
+.prescription-table-section table.analysis-table tbody tr.partial-row {
+  background-color: rgba(255, 251, 235, 0.3) !important;
+}
+
+/* Keep section and field cell backgrounds */
+.prescription-table-section table.analysis-table tbody tr td.section-label-cell {
+  background-color: #e5e7eb !important;
+}
+
+.prescription-table-section table.analysis-table tbody tr td.field-name-cell {
+  background-color: #f3f4f6 !important;
+}
+
+/* Blue links for "More" text */
+.prescription-table-section table.analysis-table a,
+.prescription-table-section table.analysis-table .link-text {
+  color: #2563eb !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
+  font-size: 10px !important;
+}
+
+/* Override any conflicting styles with maximum specificity */
+body .analyzer-results .prescription-table-section table.analysis-table th,
+body .analyzer-results .prescription-table-section table.analysis-table td {
+  display: table-cell !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure the table is centered */
+.prescription-table-section table.analysis-table {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 1200px) {
+  .prescription-tables-container {
+    width: 98%;
+    padding: 10px;
+  }
+  
+  .prescription-table-section {
+    overflow-x: auto;
+  }
+}
+
+/* Print styles */
+@media print {
+  .prescription-table-section {
+    background: white !important;
+    box-shadow: none !important;
+  }
+  
+  .prescription-table-section::before {
+    display: none !important;
+  }
+}

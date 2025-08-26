@@ -1,0 +1,181 @@
+/* CRITICAL FIX: Override all conflicting display properties for prescription tables */
+
+/* Reset all table display properties to proper table display */
+.prescription-tables-container table,
+.prescription-table-section table,
+.analysis-table,
+.analysis-table.four-column-layout,
+.analysis-table.screenshot-design {
+  display: table !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.prescription-tables-container thead,
+.prescription-table-section thead,
+.analysis-table thead,
+.analysis-table.four-column-layout thead,
+.analysis-table.screenshot-design thead {
+  display: table-header-group !important;
+}
+
+.prescription-tables-container tbody,
+.prescription-table-section tbody,
+.analysis-table tbody,
+.analysis-table.four-column-layout tbody,
+.analysis-table.screenshot-design tbody {
+  display: table-row-group !important;
+}
+
+.prescription-tables-container tr,
+.prescription-table-section tr,
+.analysis-table tr,
+.analysis-table.four-column-layout tr,
+.analysis-table.screenshot-design tr {
+  display: table-row !important;
+  width: 100% !important;
+}
+
+.prescription-tables-container td,
+.prescription-table-section td,
+.analysis-table td,
+.analysis-table.four-column-layout td,
+.analysis-table.screenshot-design td,
+.prescription-tables-container th,
+.prescription-table-section th,
+.analysis-table th,
+.analysis-table.four-column-layout th,
+.analysis-table.screenshot-design th {
+  display: table-cell !important;
+  vertical-align: middle !important;
+}
+
+/* Override any inline or flex displays on table cells */
+.analysis-table td *:not(.value-with-check),
+.analysis-table th * {
+  display: inline !important;
+}
+
+/* Special handling for value-with-check to maintain checkmark alignment */
+.value-with-check {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+}
+
+/* Ensure section labels don't break the table layout */
+.section-label-cell {
+  display: table-cell !important;
+  vertical-align: middle !important;
+}
+
+.section-label-vertical {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  transform: rotate(180deg) !important;
+}
+
+.section-label-vertical span {
+  display: block !important;
+}
+
+/* Override any display issues in the match status column */
+.match-status-cell {
+  display: table-cell !important;
+  vertical-align: middle !important;
+  text-align: center !important;
+  width: 60px !important;
+}
+
+.match-indicator {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Ensure proper table structure with highest specificity */
+body .analyzer-page .prescription-tables-container table.analysis-table tr {
+  display: table-row !important;
+}
+
+body .analyzer-page .prescription-tables-container table.analysis-table td,
+body .analyzer-page .prescription-tables-container table.analysis-table th {
+  display: table-cell !important;
+}
+
+/* Nuclear option - force table display on all prescription analysis tables */
+div[class*="prescription"] table {
+  display: table !important;
+}
+
+div[class*="prescription"] tr {
+  display: table-row !important;
+}
+
+div[class*="prescription"] td,
+div[class*="prescription"] th {
+  display: table-cell !important;
+}
+
+/* Ensure rows are not displayed inline */
+.match-row,
+.mismatch-row,
+.partial-row {
+  display: table-row !important;
+  width: 100% !important;
+}
+
+/* Fix column widths to prevent collapse */
+.analysis-table.four-column-layout {
+  table-layout: fixed !important;
+}
+
+.analysis-table.four-column-layout td:nth-child(1) { /* Section */
+  width: 8% !important;
+}
+
+.analysis-table.four-column-layout td:nth-child(2) { /* Field name */
+  width: 15% !important;
+}
+
+.analysis-table.four-column-layout td:nth-child(3) { /* Prescribed value */
+  width: 35% !important;
+}
+
+.analysis-table.four-column-layout td:nth-child(4) { /* Data entered value */
+  width: 35% !important;
+}
+
+.analysis-table.four-column-layout td:nth-child(5) { /* Match status */
+  width: 7% !important;
+}
+
+/* Ensure screenshot design table also displays properly */
+.analysis-table.screenshot-design {
+  table-layout: fixed !important;
+}
+
+.analysis-table.screenshot-design td:nth-child(1) { /* Section */
+  width: 8% !important;
+}
+
+.analysis-table.screenshot-design td:nth-child(2) { /* Field name */
+  width: 15% !important;
+}
+
+.analysis-table.screenshot-design td:nth-child(3) { /* Prescribed value */
+  width: 35% !important;
+}
+
+.analysis-table.screenshot-design td:nth-child(4) { /* Data entered value */
+  width: 35% !important;
+}
+
+.analysis-table.screenshot-design td:nth-child(5) { /* Match status */
+  width: 7% !important;
+}

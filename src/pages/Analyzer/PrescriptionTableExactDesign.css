@@ -1,0 +1,389 @@
+/* ========================================
+   PRESCRIPTION TABLE - EXACT SCREENSHOT DESIGN
+   Matches x3.jpg screenshot exactly
+   ======================================== */
+
+/* Override all previous styles with maximum specificity */
+* {
+  box-sizing: border-box !important;
+}
+
+/* Container setup */
+.prescription-tables-container {
+  width: 100% !important;
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  padding: 15px !important;
+}
+
+.prescription-table-section {
+  width: 100% !important;
+  overflow-x: auto !important;
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+  padding: 0 !important;
+}
+
+/* Main table - exact layout from screenshot */
+.analysis-table,
+.analysis-table.four-column-layout,
+.analysis-table.screenshot-design {
+  width: 100% !important;
+  min-width: 1100px !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  background: white !important;
+  border: 2px solid #1e3a8a !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 11px !important;
+  margin: 0 !important;
+}
+
+/* EXACT Column widths from screenshot */
+.analysis-table td:nth-child(1),
+.analysis-table th:nth-child(1) {
+  width: 45px !important; /* Section label - very narrow */
+  min-width: 45px !important;
+  max-width: 45px !important;
+}
+
+.analysis-table td:nth-child(2),
+.analysis-table th:nth-child(2) {
+  width: 100px !important; /* Field names - narrow */
+  min-width: 100px !important;
+  max-width: 100px !important;
+}
+
+.analysis-table td:nth-child(3),
+.analysis-table th:nth-child(3) {
+  width: 40% !important; /* PRESCRIBED - wide main column */
+  min-width: 400px !important;
+}
+
+.analysis-table td:nth-child(4),
+.analysis-table th:nth-child(4) {
+  width: 40% !important; /* DATA ENTERED - wide main column */
+  min-width: 400px !important;
+}
+
+.analysis-table td:nth-child(5),
+.analysis-table th:nth-child(5) {
+  width: 35px !important; /* Checkmark - very narrow */
+  min-width: 35px !important;
+  max-width: 35px !important;
+}
+
+/* Table headers - EXACT from screenshot */
+.analysis-table thead tr {
+  background: #1e3a8a !important;
+  height: 28px !important;
+}
+
+.analysis-table thead th {
+  background: #1e3a8a !important;
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 11px !important;
+  padding: 6px 8px !important;
+  border: 1px solid #2c5282 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  white-space: nowrap !important;
+}
+
+/* Empty first two header cells */
+.analysis-table thead th:nth-child(1),
+.analysis-table thead th:nth-child(2) {
+  background: #1e3a8a !important;
+  border-right: 1px solid #2c5282 !important;
+}
+
+/* Prescribed header */
+.analysis-table th.prescribed-header {
+  background: #1e3a8a !important;
+  color: white !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+}
+
+/* Data entered header */
+.analysis-table th.data-entered-header {
+  background: #1e3a8a !important;
+  color: white !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+}
+
+/* Checkmark header */
+.analysis-table th.match-header {
+  background: #1e3a8a !important;
+  color: white !important;
+  font-size: 16px !important;
+  padding: 4px !important;
+}
+
+/* Table body cells - COMPACT */
+.analysis-table tbody td {
+  padding: 3px 6px !important;
+  border: 1px solid #9ca3af !important;
+  vertical-align: middle !important;
+  line-height: 1.1 !important;
+  height: 22px !important;
+  font-size: 11px !important;
+}
+
+/* SECTION LABELS - VERTICAL TEXT WITH GRAY BACKGROUND */
+.analysis-table td.section-label-cell {
+  background: #e5e7eb !important; /* Gray background */
+  border: 1px solid #9ca3af !important;
+  border-right: 2px solid #6b7280 !important;
+  width: 45px !important;
+  padding: 2px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  position: relative !important;
+}
+
+/* Vertical text for section labels - EXACTLY 270 degrees rotation */
+.section-label-vertical {
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  transform: rotate(180deg) !important;
+  display: inline-block !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  color: #374151 !important; /* Dark gray text */
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.section-label-vertical span {
+  display: inline !important;
+  line-height: 1 !important;
+}
+
+/* FIELD NAME CELLS - CENTER-ALIGNED WITH GRAY/BROWN TEXT */
+.analysis-table td.field-name-cell {
+  background: #f9fafb !important;
+  font-weight: 500 !important;
+  color: #6b564b !important; /* Gray/brown text color */
+  text-align: center !important; /* CENTER-ALIGNED */
+  padding: 3px 6px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  border-right: 1px solid #d1d5db !important;
+  font-size: 10px !important;
+}
+
+/* Required asterisk */
+.required-asterisk {
+  color: #dc2626 !important;
+  font-weight: bold !important;
+  margin-left: 1px !important;
+  font-size: 11px !important;
+}
+
+/* VALUE CELLS - MAIN WIDE COLUMNS */
+.analysis-table td.prescribed-value-cell,
+.analysis-table td.data-entered-value-cell {
+  background: white !important;
+  padding: 3px 10px !important;
+  font-size: 11px !important;
+  color: #111827 !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Prescribed column with thicker border */
+.analysis-table td.prescribed-value-cell {
+  border-right: 2px solid #d1d5db !important;
+}
+
+/* MATCH STATUS CELL - VERY NARROW */
+.analysis-table td.match-status-cell {
+  width: 35px !important;
+  max-width: 35px !important;
+  text-align: center !important;
+  padding: 2px !important;
+  background: white !important;
+  vertical-align: middle !important;
+}
+
+/* Match indicators - smaller to fit narrow column */
+.match-indicator {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+}
+
+.match-indicator.match {
+  color: #10b981 !important;
+  background: #d1fae5 !important;
+  border: 1px solid #10b981 !important;
+}
+
+.match-indicator.mismatch {
+  color: #dc2626 !important;
+  background: #fee2e2 !important;
+  border: 1px solid #dc2626 !important;
+}
+
+.match-indicator.partial {
+  color: #f59e0b !important;
+  background: #fef3c7 !important;
+  border: 1px solid #f59e0b !important;
+  font-size: 10px !important;
+}
+
+.match-indicator.empty {
+  color: #9ca3af !important;
+  font-size: 10px !important;
+}
+
+/* Row highlighting for mismatches */
+.analysis-table tbody tr.mismatch-row {
+  background-color: #fef2f2 !important;
+}
+
+.analysis-table tbody tr.mismatch-row td {
+  border-color: #fca5a5 !important;
+}
+
+/* RED TEXT for mismatched prescribed values - like screenshot */
+.analysis-table tbody tr.mismatch-row td.prescribed-value-cell {
+  color: #dc2626 !important;
+  font-weight: 500 !important;
+}
+
+/* Partial match row highlighting */
+.analysis-table tbody tr.partial-row {
+  background-color: #fffbeb !important;
+}
+
+.analysis-table tbody tr.partial-row td {
+  border-color: #fcd34d !important;
+}
+
+/* Match row - subtle green background */
+.analysis-table tbody tr.match-row {
+  background-color: #f0fdf4 !important;
+}
+
+/* Blue links in data - like screenshot */
+.analysis-table td a,
+.analysis-table td .link-text {
+  color: #2563eb !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
+}
+
+/* Force proper table display */
+.analysis-table,
+.analysis-table tbody,
+.analysis-table thead {
+  display: table !important;
+}
+
+.analysis-table tbody {
+  display: table-row-group !important;
+}
+
+.analysis-table tr {
+  display: table-row !important;
+}
+
+.analysis-table td,
+.analysis-table th {
+  display: table-cell !important;
+}
+
+/* OVERRIDE ALL CONFLICTING STYLES WITH MAXIMUM SPECIFICITY */
+body .analyzer-page .prescription-tables-container .prescription-table-section table.analysis-table {
+  width: 100% !important;
+  min-width: 1100px !important;
+}
+
+/* Force exact column widths with highest specificity */
+body .prescription-tables-container table.analysis-table td:nth-child(1),
+body .prescription-tables-container table.analysis-table th:nth-child(1) {
+  width: 45px !important;
+  min-width: 45px !important;
+  max-width: 45px !important;
+}
+
+body .prescription-tables-container table.analysis-table td:nth-child(2),
+body .prescription-tables-container table.analysis-table th:nth-child(2) {
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+}
+
+body .prescription-tables-container table.analysis-table td:nth-child(3),
+body .prescription-tables-container table.analysis-table th:nth-child(3) {
+  width: 40% !important;
+  min-width: 400px !important;
+}
+
+body .prescription-tables-container table.analysis-table td:nth-child(4),
+body .prescription-tables-container table.analysis-table th:nth-child(4) {
+  width: 40% !important;
+  min-width: 400px !important;
+}
+
+body .prescription-tables-container table.analysis-table td:nth-child(5),
+body .prescription-tables-container table.analysis-table th:nth-child(5) {
+  width: 35px !important;
+  min-width: 35px !important;
+  max-width: 35px !important;
+}
+
+/* Force vertical text rotation */
+body .prescription-tables-container .section-label-vertical {
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  transform: rotate(180deg) !important;
+}
+
+/* Force field name center alignment */
+body .prescription-tables-container td.field-name-cell {
+  text-align: center !important;
+  color: #6b564b !important;
+}
+
+/* Print styles */
+@media print {
+  .prescription-table-section {
+    background: white !important;
+    border: 1px solid black !important;
+  }
+  
+  .analysis-table {
+    width: 100% !important;
+    min-width: auto !important;
+  }
+}
+
+/* Remove any padding/margins that might affect layout */
+.prescription-table-section * {
+  margin: 0 !important;
+}
+
+.prescription-table-section table {
+  margin: 0 !important;
+  padding: 0 !important;
+}

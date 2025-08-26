@@ -6,14 +6,16 @@ import './SuppliesTableFixes.css';
 import './SuppliesTableOverrides.css';
 import './ResponsiveSuppliesTables.css';
 import './SuppliesTableEnhancements.css';
-import './AnalyzerFourColumnLayout.css';
-import './PrescriptionTableOptimized.css';
-import './PrescriptionTableUltraWide.css';
-import './PrescriptionTableExact.css';
-import './PrescriptionTableFinal.css';
-import './PrescriptionTableForce.css';
-import './PrescriptionTableMatching.css';
-import './PrescriptionTableBorders.css';
+import './PrescriptionTableProperLayout.css'; // Proper layout without breaking other elements
+import './PrescriptionTableDefinitiveFix.css'; // Definitive fix with maximum specificity
+import './PrescriptionTableNuclearFix.css'; // Overrides supplies CSS conflicts
+import './PrescriptionTableX1Design.css'; // X1.jpg exact design with centering
+import './PrescriptionTableFinalLayout.css'; // Final layout with correct column widths and row highlighting
+import './PrescriptionTableCenterAndAlerts.css'; // Centers table and styles alerts as banners
+import './PrescriptionTablePositionFix.css'; // Fixes centering and title/button positioning
+import './PrescriptionContainerDesign.css'; // Container with header like Analyze section
+import './PrescriptionResultsContainer.css'; // Prescription Results container with proper header
+import './PrescriptionStatusColumnFix.css'; // MUST BE LAST - Fixes STATUS column width
 import EnterpriseHeader, { TabGroup, TabButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 
 const Analyzer = () => {
@@ -3037,8 +3039,8 @@ const Analyzer = () => {
 
           {/* Prescription Results - Only show in prescription section */}
           {activeSection === 'prescription' && (analysisResults || allAnalysisResults.length > 0) && !isAnalyzing && (
-            <div className="supplies-results-section">
-              <div className="supplies-results-header">
+            <div className="prescription-results-wrapper">
+              <div className="prescription-results-header">
                 <h2>Prescription Analysis Results</h2>
                 <button 
                   className="reset-analysis-btn" 
@@ -3049,6 +3051,7 @@ const Analyzer = () => {
                   <span>Reset Analysis</span>
                 </button>
               </div>
+              <div className="prescription-results-content">
 
               {/* Fixed Alert Popups */}
               {showDEAAlert && (
@@ -3132,14 +3135,15 @@ const Analyzer = () => {
                     };
 
                     return (
-                      <div key={fileIndex} className="prescription-table-section">
+                      <div key={fileIndex} className="prescription-table-screenshot-container">
                         <h3 className="file-result-title">{fileResult.fileName}</h3>
-                        <table className="analysis-table four-column-layout" style={{borderCollapse: 'collapse', border: '2px solid #374151'}}>
+                        <table className="analysis-table screenshot-design">
                           <thead>
                             <tr>
                               <th colSpan="2"></th>
-                              <th className="prescribed-header">PRESCRIBED: eRx New</th>
+                              <th className="prescribed-header">PRESCRIBED: eRx Approved with Changes</th>
                               <th className="data-entered-header">DATA ENTERED <span className="header-checkmark">✓</span></th>
+                              <th className="match-header">Status</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -3164,22 +3168,24 @@ const Analyzer = () => {
                                 return (
                                   <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`} data-section={section.title.toLowerCase().replace(' ', '-')}>
                                     {isFirstInSection && (
-                                      <td className="section-label-cell" rowSpan={section.rowSpan} style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                      <td className="section-label-cell" rowSpan={section.rowSpan}>
                                         <div className="section-label-vertical">
-                                          <span>{section.title}</span>
+                                          {section.title}
                                         </div>
                                       </td>
                                     )}
-                                    <td className="field-name-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                    <td className="field-name-cell">
                                       {field.label}{field.required && <span className="required-asterisk">*</span>}
                                     </td>
-                                    <td className="prescribed-value-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                    <td className="prescribed-value-cell">
                                       {displayRxValue || '-'}
                                     </td>
-                                    <td className="data-entered-value-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
-                                      <span className="value-with-check">
-                                        {displayDeValue || '-'}
-                                        {matchStatus === 'match' && deValue && <span className="inline-checkmark">✓</span>}
+                                    <td className="data-entered-value-cell">
+                                      {displayDeValue || '-'}
+                                    </td>
+                                    <td className="match-status-cell">
+                                      <span className={`status-icon ${matchStatus === 'match' ? 'match' : matchStatus === 'mismatch' ? 'mismatch' : matchStatus === 'partial' ? 'partial' : 'empty'}`}>
+                                        {matchStatus === 'match' && deValue ? '✓' : matchStatus === 'mismatch' ? '✗' : matchStatus === 'partial' ? '?' : '-'}
                                       </span>
                                     </td>
                                   </tr>
@@ -3232,12 +3238,14 @@ const Analyzer = () => {
                       };
 
                       return (
-                        <table className="analysis-table four-column-layout" style={{borderCollapse: 'collapse', border: '2px solid #374151'}}>
+                        <div className="prescription-table-screenshot-container">
+                        <table className="analysis-table screenshot-design">
                           <thead>
                             <tr>
                               <th colSpan="2"></th>
-                              <th className="prescribed-header">PRESCRIBED: eRx New</th>
+                              <th className="prescribed-header">PRESCRIBED: eRx Approved with Changes</th>
                               <th className="data-entered-header">DATA ENTERED <span className="header-checkmark">✓</span></th>
+                              <th className="match-header">Status</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -3262,22 +3270,24 @@ const Analyzer = () => {
                                 return (
                                   <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`} data-section={section.title.toLowerCase().replace(' ', '-')}>
                                     {isFirstInSection && (
-                                      <td className="section-label-cell" rowSpan={section.rowSpan} style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                      <td className="section-label-cell" rowSpan={section.rowSpan}>
                                         <div className="section-label-vertical">
-                                          <span>{section.title}</span>
+                                          {section.title}
                                         </div>
                                       </td>
                                     )}
-                                    <td className="field-name-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                    <td className="field-name-cell">
                                       {field.label}{field.required && <span className="required-asterisk">*</span>}
                                     </td>
-                                    <td className="prescribed-value-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                    <td className="prescribed-value-cell">
                                       {displayRxValue || '-'}
                                     </td>
-                                    <td className="data-entered-value-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
-                                      <span className="value-with-check">
-                                        {displayDeValue || '-'}
-                                        {matchStatus === 'match' && deValue && <span className="inline-checkmark">✓</span>}
+                                    <td className="data-entered-value-cell">
+                                      {displayDeValue || '-'}
+                                    </td>
+                                    <td className="match-status-cell">
+                                      <span className={`status-icon ${matchStatus === 'match' ? 'match' : matchStatus === 'mismatch' ? 'mismatch' : matchStatus === 'partial' ? 'partial' : 'empty'}`}>
+                                        {matchStatus === 'match' && deValue ? '✓' : matchStatus === 'mismatch' ? '✗' : matchStatus === 'partial' ? '?' : '-'}
                                       </span>
                                     </td>
                                   </tr>
@@ -3286,11 +3296,13 @@ const Analyzer = () => {
                             ))}
                           </tbody>
                         </table>
+                        </div>
                       );
                     })()}
                   </div>
                 </div>
               )}
+              </div>
             </div>
           )}
 

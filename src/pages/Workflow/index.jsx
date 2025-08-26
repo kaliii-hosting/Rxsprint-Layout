@@ -45,7 +45,7 @@ import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, ord
 import { saveWithRetry, loadWorkflowFromFirestore, saveToLocalBackup, loadFromLocalBackup } from '../../utils/workflowStorageFirestore';
 import './Workflow.css';
 import EnterpriseHeader, { TabGroup, TabButton, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
-import { exportWorkflowToPDF } from './ExportPDF';
+import { exportWorkflowToPDF } from './ExportPDFFixed';
 import { exportWorkflowToPDFWithScreenshots } from './ExportPDFWithScreenshot';
 
 const Workflow = () => {

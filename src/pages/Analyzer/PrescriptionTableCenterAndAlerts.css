@@ -1,0 +1,269 @@
+/* ========================================
+   PRESCRIPTION TABLE - CENTERING AND BANNER ALERTS
+   Centers the table and styles alerts as banners
+   ======================================== */
+
+/* CENTER THE TABLE PROPERLY */
+.analyzer-results {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 500px !important;
+  padding: 30px 0 !important;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%) !important;
+}
+
+.prescription-tables-container {
+  width: 90% !important;
+  max-width: 1100px !important;
+  margin: 0 auto !important;
+  padding: 20px !important;
+  background: transparent !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.prescription-table-section {
+  width: 100% !important;
+  margin: 0 auto !important;
+  background: white !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  padding: 15px !important;
+  overflow: visible !important;
+  position: relative !important;
+}
+
+/* Ensure table is centered within section */
+.prescription-table-section table.analysis-table {
+  margin: 0 auto !important;
+  display: table !important;
+}
+
+/* BANNER STYLE ALERTS */
+/* Remove old popup styles and create banner styles */
+.dea-alert-popup,
+.needles-alert-popup {
+  /* Remove old popup positioning */
+  position: fixed !important;
+  top: 80px !important; /* Below header */
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 90% !important;
+  max-width: 800px !important;
+  z-index: 10000 !important;
+  
+  /* Banner styling */
+  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%) !important;
+  border: 2px solid #f59e0b !important;
+  border-radius: 12px !important;
+  padding: 0 !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+  animation: slideDown 0.4s ease-out !important;
+  overflow: hidden !important;
+}
+
+/* Alert header - banner style */
+.dea-alert-popup .alert-header,
+.needles-alert-popup .alert-header {
+  background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%) !important;
+  color: white !important;
+  padding: 12px 20px !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  border-bottom: 2px solid #b91c1c !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+}
+
+.dea-alert-popup .alert-header svg,
+.needles-alert-popup .alert-header svg {
+  color: white !important;
+}
+
+/* Alert content - banner style */
+.dea-alert-popup .alert-content,
+.needles-alert-popup .alert-content {
+  padding: 20px !important;
+  background: white !important;
+  border-left: 5px solid #f59e0b !important;
+  margin: 0 !important;
+}
+
+.dea-alert-popup .alert-content p,
+.needles-alert-popup .alert-content p {
+  margin: 8px 0 !important;
+  font-size: 15px !important;
+  color: #1f2937 !important;
+  font-weight: 500 !important;
+  line-height: 1.6 !important;
+}
+
+.dea-alert-popup .alert-content p:first-child,
+.needles-alert-popup .alert-content p:first-child {
+  color: #dc2626 !important;
+  font-weight: bold !important;
+  font-size: 16px !important;
+}
+
+/* Alert actions - banner style */
+.dea-alert-popup .alert-actions,
+.needles-alert-popup .alert-actions {
+  background: #f3f4f6 !important;
+  padding: 15px 20px !important;
+  text-align: right !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+.alert-ok-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px 30px !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3) !important;
+}
+
+.alert-ok-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4) !important;
+}
+
+.alert-ok-btn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3) !important;
+}
+
+/* Alert overlay - darker for better focus */
+.alert-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+  z-index: 9999 !important;
+  animation: fadeIn 0.3s ease !important;
+}
+
+/* Special styling for DEA alert */
+.dea-alert-popup {
+  border-color: #dc2626 !important;
+}
+
+.dea-alert-popup .alert-header {
+  background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%) !important;
+}
+
+.dea-alert-popup .alert-content {
+  border-left-color: #dc2626 !important;
+}
+
+/* Special styling for Needles alert */
+.needles-alert-popup {
+  border-color: #f59e0b !important;
+}
+
+.needles-alert-popup .alert-header {
+  background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%) !important;
+}
+
+.needles-alert-popup .alert-content {
+  border-left-color: #f59e0b !important;
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Result section header styling */
+.result-section-header {
+  text-align: center !important;
+  margin: 20px 0 !important;
+  padding: 15px !important;
+  background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 100%) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2) !important;
+}
+
+.result-section-header h3 {
+  margin: 0 !important;
+  font-size: 20px !important;
+  font-weight: bold !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+}
+
+/* Ensure prescription results title is centered */
+.prescription-results-title {
+  text-align: center !important;
+  color: #1e3a8a !important;
+  font-size: 24px !important;
+  font-weight: bold !important;
+  margin: 20px 0 !important;
+  padding: 10px !important;
+  border-bottom: 3px solid #2563eb !important;
+  width: fit-content !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .prescription-tables-container {
+    width: 95% !important;
+    padding: 10px !important;
+  }
+  
+  .dea-alert-popup,
+  .needles-alert-popup {
+    width: 95% !important;
+    top: 60px !important;
+  }
+  
+  .alert-ok-btn {
+    width: 100% !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .alert-overlay,
+  .dea-alert-popup,
+  .needles-alert-popup {
+    display: none !important;
+  }
+}

@@ -1,0 +1,331 @@
+/* Professional Medical Data Table - Screenshot Exact Design */
+
+/* Container with blue dotted grid background */
+.prescription-table-screenshot-container {
+  background: linear-gradient(90deg, #e8f4fd 1px, transparent 1px) 0 0,
+              linear-gradient(#e8f4fd 1px, transparent 1px) 0 0;
+  background-size: 20px 20px;
+  background-color: #f7fbfe;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Main table styling */
+.analysis-table.screenshot-design {
+  width: 100%;
+  background: white;
+  border: 2px solid #2c5282;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Table headers */
+.analysis-table.screenshot-design thead tr {
+  background: linear-gradient(180deg, #f0f7ff 0%, #e6f2ff 100%);
+}
+
+.analysis-table.screenshot-design thead th {
+  border: 1px solid #2c5282;
+  padding: 12px 16px;
+  font-weight: 600;
+  text-align: left;
+  color: #1a365d;
+  position: relative;
+}
+
+/* Prescribed header styling */
+.analysis-table.screenshot-design th.prescribed-header {
+  background: linear-gradient(180deg, #e6f2ff 0%, #d6e8ff 100%);
+  color: #1e40af;
+  font-size: 15px;
+  text-align: center;
+  border-left: 2px solid #2c5282;
+}
+
+.analysis-table.screenshot-design th.prescribed-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60%;
+  background: #3b82f6;
+}
+
+/* Data Entered header with green checkmark */
+.analysis-table.screenshot-design th.data-entered-header {
+  background: linear-gradient(180deg, #e6f9e6 0%, #d4f4d4 100%);
+  color: #14532d;
+  font-size: 15px;
+  text-align: center;
+  border-left: 2px solid #2c5282;
+  position: relative;
+}
+
+.analysis-table.screenshot-design th.data-entered-header .header-checkmark {
+  color: #16a34a;
+  font-size: 18px;
+  font-weight: bold;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* Match status header */
+.analysis-table.screenshot-design th.match-status-header {
+  width: 50px;
+  background: linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%);
+  text-align: center;
+  border-left: 2px solid #2c5282;
+  font-size: 13px;
+  color: #374151;
+}
+
+/* Table body cells */
+.analysis-table.screenshot-design tbody td {
+  border: 1px solid #cbd5e1;
+  padding: 10px 14px;
+  background: white;
+  vertical-align: middle;
+  color: #1f2937;
+}
+
+/* Section label cells (Patient, Rx Info, Prescriber) */
+.analysis-table.screenshot-design td.section-label-cell {
+  background: linear-gradient(90deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-right: 2px solid #2c5282;
+  width: 90px;
+  text-align: center;
+  font-weight: 600;
+  color: #1e40af;
+  position: relative;
+}
+
+.analysis-table.screenshot-design .section-label-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+/* Field name cells */
+.analysis-table.screenshot-design td.field-name-cell {
+  background: #fafbfc;
+  font-weight: 500;
+  color: #374151;
+  width: 140px;
+  border-right: 1px solid #94a3b8;
+}
+
+.analysis-table.screenshot-design td.field-name-cell .required-asterisk {
+  color: #dc2626;
+  margin-left: 4px;
+  font-weight: bold;
+}
+
+/* Prescribed value cells */
+.analysis-table.screenshot-design td.prescribed-value-cell {
+  background: #fefffe;
+  border-left: 2px solid #cbd5e1;
+  color: #1f2937;
+  min-width: 200px;
+}
+
+/* Data entered value cells */
+.analysis-table.screenshot-design td.data-entered-value-cell {
+  background: #fefffe;
+  border-left: 2px solid #cbd5e1;
+  color: #1f2937;
+  min-width: 200px;
+}
+
+/* Match status cells */
+.analysis-table.screenshot-design td.match-status-cell {
+  width: 50px;
+  text-align: center;
+  border-left: 2px solid #cbd5e1;
+  background: #fafbfc;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 8px;
+}
+
+.analysis-table.screenshot-design td.match-status-cell .status-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  border-radius: 50%;
+  font-size: 16px;
+}
+
+.analysis-table.screenshot-design td.match-status-cell .status-icon.match {
+  color: #16a34a;
+  background: #dcfce7;
+  border: 1px solid #16a34a;
+}
+
+.analysis-table.screenshot-design td.match-status-cell .status-icon.mismatch {
+  color: #dc2626;
+  background: #fee2e2;
+  border: 1px solid #dc2626;
+}
+
+.analysis-table.screenshot-design td.match-status-cell .status-icon.empty {
+  color: #6b7280;
+  background: #f3f4f6;
+  border: 1px solid #9ca3af;
+}
+
+/* Row highlighting for mismatches */
+.analysis-table.screenshot-design tbody tr.mismatch-row {
+  background-color: #fef2f2 !important;
+}
+
+.analysis-table.screenshot-design tbody tr.mismatch-row td {
+  background-color: #fef2f2 !important;
+  border-color: #fca5a5;
+}
+
+.analysis-table.screenshot-design tbody tr.mismatch-row td.section-label-cell {
+  background: linear-gradient(90deg, #fee2e2 0%, #fecaca 100%) !important;
+  border-right-color: #ef4444;
+}
+
+.analysis-table.screenshot-design tbody tr.mismatch-row td.field-name-cell {
+  background-color: #fee2e2 !important;
+}
+
+/* Match row styling (subtle green) */
+.analysis-table.screenshot-design tbody tr.match-row td.match-status-cell .status-icon {
+  animation: checkPulse 0.3s ease-in-out;
+}
+
+/* Empty/no-match row styling */
+.analysis-table.screenshot-design tbody tr.no-match-row td {
+  background-color: #fafafa;
+}
+
+/* Hover effects */
+.analysis-table.screenshot-design tbody tr:hover td {
+  background-color: #f0f9ff !important;
+  transition: background-color 0.2s ease;
+}
+
+.analysis-table.screenshot-design tbody tr.mismatch-row:hover td {
+  background-color: #fee2e2 !important;
+}
+
+/* Animation for checkmarks */
+@keyframes checkPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1440px) {
+  .analysis-table.screenshot-design {
+    font-size: 13px;
+  }
+  
+  .analysis-table.screenshot-design td.section-label-cell {
+    width: 80px;
+  }
+  
+  .analysis-table.screenshot-design td.field-name-cell {
+    width: 130px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .analysis-table.screenshot-design {
+    font-size: 12px;
+  }
+  
+  .analysis-table.screenshot-design thead th {
+    padding: 10px 12px;
+  }
+  
+  .analysis-table.screenshot-design tbody td {
+    padding: 8px 10px;
+  }
+  
+  .analysis-table.screenshot-design td.section-label-cell {
+    width: 70px;
+  }
+  
+  .analysis-table.screenshot-design td.field-name-cell {
+    width: 120px;
+  }
+  
+  .analysis-table.screenshot-design .section-label-vertical {
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+}
+
+@media (max-width: 768px) {
+  .prescription-table-screenshot-container {
+    padding: 10px;
+    background-size: 15px 15px;
+  }
+  
+  .analysis-table.screenshot-design {
+    font-size: 11px;
+  }
+  
+  .analysis-table.screenshot-design thead th {
+    padding: 8px;
+    font-size: 12px;
+  }
+  
+  .analysis-table.screenshot-design tbody td {
+    padding: 6px 8px;
+  }
+  
+  .analysis-table.screenshot-design td.match-status-cell {
+    width: 40px;
+  }
+  
+  .analysis-table.screenshot-design td.match-status-cell .status-icon {
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    font-size: 14px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .prescription-table-screenshot-container {
+    background: white;
+    box-shadow: none;
+    padding: 0;
+  }
+  
+  .analysis-table.screenshot-design {
+    box-shadow: none;
+    border: 2px solid #000;
+  }
+  
+  .analysis-table.screenshot-design tbody tr.mismatch-row {
+    background-color: #fff !important;
+    border: 2px solid #dc2626;
+  }
+}
