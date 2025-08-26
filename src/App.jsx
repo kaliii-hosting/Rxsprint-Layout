@@ -16,7 +16,7 @@ import Calendar from './pages/Calendar'
 import Workflow from './pages/Workflow'
 import NoteGenerator from './pages/NoteGenerator'
 import Pump from './pages/Pump'
-import Shop from './pages/Shop'
+// Shop page removed
 import Supplies from './pages/Supplies'
 import Notes from './pages/Notes'
 import Analyzer from './pages/Analyzer'
@@ -50,7 +50,7 @@ function AppContent() {
                 <Route path="/note-generator" element={<NoteGenerator />} />
                 <Route path="/pump" element={<Pump />} />
                 <Route path="/supplies" element={<Supplies />} />
-                <Route path="/shop" element={<Shop />} />
+                {/* Shop route removed */}
                 <Route path="/notes" element={<Notes />} />
                 <Route path="/analyzer" element={<Analyzer />} />
                 <Route path="/bookmark-manager" element={<BookmarkManager />} />

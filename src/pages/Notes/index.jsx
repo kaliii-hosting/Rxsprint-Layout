@@ -2641,62 +2641,54 @@ const Notes = () => {
         ) : (
           /* Enterprise Header - When no note is selected */
           <EnterpriseHeader>
-            <div className="notes-header-content">
-              <div className="notes-header-left">
-                <div className="notes-header-title">
-                  <h2>All Notes</h2>
-                  <span className="notes-count-badge">{filteredNotes.length}</span>
-                </div>
-                <div className="notes-header-search">
-                  <Search size={16} className="search-icon" />
-                  <input
-                    type="text"
-                    placeholder="Search notes..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="notes-header-search-input"
-                  />
-                </div>
-              </div>
-              <ActionGroup>
-                <ActionButton
-                  onClick={handleCreateNote}
-                  icon={Plus}
-                >
-                  New Note
-                </ActionButton>
-                <ActionButton
-                  onClick={() => {
-                    setIsCreating(true);
-                    setIsEditing(true);
-                    setSelectedNote(null);
-                    setFormData({
-                      title: 'New Note',
-                      content: '',
-                      starred: false,
-                      images: [],
-                      banners: []
-                    });
-                    // Reset line tracking for new note
-                    setCurrentLineNumber(0);
-                    setBannerLineBreak(false);
-                    setBannerColor('blue');
-                    setIsTitleMode(false);
-                    setIsCalloutMode(false);
-                    // Activate banner field after creating note
-                    setTimeout(() => {
-                      if (bannerInputRef.current) {
-                        bannerInputRef.current.focus();
-                      }
-                    }, 100);
-                  }}
-                  icon={Tag}
-                  secondary
-                >
-                  Add Banner
-                </ActionButton>
-              </ActionGroup>
+            {/* Title Section - Similar to Bookmarks */}
+            <div className="notes-title-section">
+              <FileText size={20} />
+              <h2>All Notes</h2>
+              <span className="notes-count-badge">{filteredNotes.length}</span>
             </div>
+            
+            <HeaderDivider />
+            
+            {/* Action Buttons Group */}
+            <ActionGroup>
+              <ActionButton
+                onClick={handleCreateNote}
+                icon={Plus}
+                primary
+              >
+                New Note
+              </ActionButton>
+              <ActionButton
+                onClick={() => {
+                  setIsCreating(true);
+                  setIsEditing(true);
+                  setSelectedNote(null);
+                  setFormData({
+                    title: 'New Note',
+                    content: '',
+                    starred: false,
+                    images: [],
+                    banners: []
+                  });
+                  // Reset line tracking for new note
+                  setCurrentLineNumber(0);
+                  setBannerLineBreak(false);
+                  setBannerColor('blue');
+                  setIsTitleMode(false);
+                  setIsCalloutMode(false);
+                  // Activate banner field after creating note
+                  setTimeout(() => {
+                    if (bannerInputRef.current) {
+                      bannerInputRef.current.focus();
+                    }
+                  }, 100);
+                }}
+                icon={Tag}
+              >
+                Add Banner
+              </ActionButton>
+            </ActionGroup>
           </EnterpriseHeader>
         )}
       </div>

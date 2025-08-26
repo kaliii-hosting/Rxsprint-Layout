@@ -1,0 +1,457 @@
+/* ========================================
+   RESPONSIVE CALENDAR DESIGN
+   Mobile, Tablet, and Desktop Optimization
+   ======================================== */
+
+/* Root Variables */
+:root {
+  --calendar-range-bg: #e5e7eb;
+  --calendar-range-hover: #d1d5db;
+  --calendar-endpoint-bg: #9ca3af;
+}
+
+/* Base Calendar Responsive Layout */
+.calendar-page {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  padding: 0.5rem;
+  height: calc(100vh - 80px);
+}
+
+/* Modern Calendar Container - Responsive */
+.modern-calendar-container {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--calendar-border);
+  padding: 0.5rem;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 100%;
+}
+
+/* Calendar Table - Optimized for Desktop */
+.modern-calendar-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 2px;
+  table-layout: fixed;
+  flex: 1;
+}
+
+/* Desktop: Smaller cells to fit without scroll */
+@media (min-width: 1024px) {
+  .calendar-cell {
+    height: calc((100vh - 240px) / 6) !important;
+    min-height: 60px !important;
+    max-height: 100px !important;
+    padding: 2px !important;
+  }
+  
+  .cell-content {
+    padding: 4px !important;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .day-number {
+    font-size: 0.875rem !important;
+    padding: 2px 6px !important;
+  }
+  
+  .event-indicators {
+    margin-top: 2px !important;
+    gap: 2px !important;
+  }
+  
+  .event-dot {
+    width: 6px !important;
+    height: 6px !important;
+  }
+  
+  .event-mini {
+    font-size: 10px !important;
+    padding: 1px 4px !important;
+    margin: 1px 0 !important;
+  }
+}
+
+/* Large Desktop: Even more compact */
+@media (min-width: 1440px) {
+  .modern-calendar-table {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .calendar-cell {
+    height: calc((100vh - 260px) / 6) !important;
+    max-height: 90px !important;
+  }
+}
+
+/* Date Range Selection Styles */
+.calendar-cell.range-start,
+.calendar-cell.range-end {
+  background-color: var(--calendar-endpoint-bg) !important;
+  position: relative;
+}
+
+.calendar-cell.range-start::after,
+.calendar-cell.range-end::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 2px solid var(--calendar-primary);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.calendar-cell.in-range {
+  background-color: var(--calendar-range-bg) !important;
+  position: relative;
+}
+
+.calendar-cell.in-range:hover {
+  background-color: var(--calendar-range-hover) !important;
+}
+
+/* Visual feedback for selected range */
+.calendar-cell.first-clicked {
+  background-color: var(--calendar-endpoint-bg) !important;
+  border: 2px solid var(--calendar-primary) !important;
+}
+
+/* Tablet Responsive Styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .calendar-content {
+    padding: 0.75rem;
+  }
+  
+  .modern-calendar-container {
+    padding: 0.75rem;
+  }
+  
+  .calendar-cell {
+    height: calc((100vh - 200px) / 6);
+    min-height: 50px;
+    max-height: 80px;
+  }
+  
+  .cell-content {
+    padding: 6px;
+  }
+  
+  .day-number {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  .event-indicators {
+    margin-top: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  
+  .event-dot {
+    width: 7px;
+    height: 7px;
+  }
+  
+  .event-mini {
+    font-size: 11px;
+    padding: 2px 5px;
+  }
+  
+  /* Sidebar adjustments for tablet */
+  .calendar-sidebar {
+    width: 280px;
+  }
+  
+  /* Hide sidebar on smaller tablets */
+  @media (max-width: 900px) {
+    .calendar-sidebar {
+      display: none;
+    }
+    
+    .modern-calendar-container {
+      max-width: 100%;
+    }
+  }
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 767px) {
+  /* Full screen calendar on mobile */
+  .calendar-page {
+    padding: 0;
+    height: 100vh;
+  }
+  
+  .calendar-content {
+    padding: 0.25rem;
+    flex-direction: column;
+    height: calc(100vh - 60px);
+  }
+  
+  .modern-calendar-container {
+    padding: 0.5rem;
+    border-radius: 8px;
+    height: auto;
+    min-height: 500px;
+  }
+  
+  /* Hide sidebar completely on mobile */
+  .calendar-sidebar {
+    display: none;
+  }
+  
+  /* Compact header for mobile */
+  .calendar-date-nav {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+  
+  .current-date-display {
+    min-width: auto;
+    justify-content: center;
+    padding: 0.75rem;
+  }
+  
+  .nav-arrow {
+    width: 36px;
+    height: 36px;
+  }
+  
+  /* Mobile calendar table */
+  .modern-calendar-table {
+    font-size: 0.875rem;
+  }
+  
+  .modern-calendar-table thead th {
+    padding: 6px 2px;
+    font-size: 0.7rem;
+    letter-spacing: 0;
+  }
+  
+  .calendar-cell {
+    height: 60px;
+    min-height: 50px;
+    max-height: 70px;
+    border-width: 0.5px;
+  }
+  
+  .cell-content {
+    padding: 3px;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .day-number {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 4px;
+    position: sticky;
+    top: 0;
+    background: inherit;
+    z-index: 1;
+  }
+  
+  /* Event indicators for mobile */
+  .event-indicators {
+    margin-top: 2px;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 2px;
+    overflow: hidden;
+  }
+  
+  .event-dot {
+    width: 5px;
+    height: 5px;
+    flex-shrink: 0;
+  }
+  
+  /* Hide event text on mobile, show only dots */
+  .event-mini {
+    display: none;
+  }
+  
+  /* Show event count instead */
+  .event-count {
+    font-size: 0.65rem;
+    color: var(--calendar-text-secondary);
+    margin-top: 2px;
+  }
+  
+  /* Mobile day counter badge */
+  .day-counter-badge {
+    padding: 0.4rem 0.8rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    width: calc(100% - 1rem);
+    justify-content: center;
+  }
+  
+  /* Mobile quick filters */
+  .calendar-quick-filters {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .today-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    flex: 1;
+    min-width: 80px;
+  }
+  
+  /* Mobile modal adjustments */
+  .event-modal {
+    width: calc(100% - 2rem);
+    max-width: 100%;
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .event-form input,
+  .event-form textarea,
+  .event-form select {
+    font-size: 14px;
+    padding: 10px;
+  }
+  
+  /* Compact right-click menu for mobile */
+  .calendar-context-menu {
+    min-width: 150px;
+    font-size: 0.875rem;
+  }
+  
+  .context-menu-item {
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* Small Mobile (< 375px) */
+@media (max-width: 374px) {
+  .calendar-cell {
+    height: 50px;
+    min-height: 40px;
+    max-height: 60px;
+  }
+  
+  .day-number {
+    font-size: 0.7rem;
+    padding: 1px 3px;
+  }
+  
+  .modern-calendar-table thead th {
+    font-size: 0.6rem;
+    padding: 4px 1px;
+  }
+  
+  .event-dot {
+    width: 4px;
+    height: 4px;
+  }
+  
+  .current-date-display {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 767px) and (orientation: landscape) {
+  .calendar-cell {
+    height: 45px;
+    min-height: 40px;
+    max-height: 50px;
+  }
+  
+  .modern-calendar-container {
+    padding: 0.25rem;
+  }
+  
+  .calendar-content {
+    height: calc(100vh - 50px);
+  }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+  .calendar-cell {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .calendar-cell:active {
+    background-color: var(--calendar-hover);
+    transition: background-color 0.1s;
+  }
+  
+  .nav-arrow,
+  .today-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .calendar-sidebar,
+  .calendar-context-menu,
+  .event-modal,
+  .day-counter-badge {
+    display: none !important;
+  }
+  
+  .calendar-page {
+    height: auto;
+  }
+  
+  .modern-calendar-container {
+    border: 1px solid #000;
+    page-break-inside: avoid;
+  }
+  
+  .calendar-cell {
+    height: 80px !important;
+    border: 1px solid #000 !important;
+  }
+}
+
+/* Dark Theme Support */
+[data-theme="dark"] {
+  --calendar-range-bg: rgba(156, 163, 175, 0.2);
+  --calendar-range-hover: rgba(156, 163, 175, 0.3);
+  --calendar-endpoint-bg: rgba(156, 163, 175, 0.4);
+}
+
+[data-theme="dark"] .calendar-cell.in-range {
+  background-color: var(--calendar-range-bg) !important;
+}
+
+[data-theme="dark"] .calendar-cell.range-start,
+[data-theme="dark"] .calendar-cell.range-end {
+  background-color: var(--calendar-endpoint-bg) !important;
+}

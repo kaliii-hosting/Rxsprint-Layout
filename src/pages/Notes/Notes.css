@@ -4488,6 +4488,26 @@ div.editor-banner-controls-container div.banner-controls-row button.add-banner-b
   gap: 1.5rem;
 }
 
+/* Notes Title Section - Similar to Bookmarks */
+.notes-title-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.notes-title-section h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: inherit;
+}
+
+.notes-title-section svg {
+  color: #FF6900;
+}
+
 .notes-header-left {
   display: flex;
   align-items: center;
@@ -4572,6 +4592,10 @@ div.editor-banner-controls-container div.banner-controls-row button.add-banner-b
     align-items: stretch;
     padding: 1rem;
     gap: 1rem;
+  }
+  
+  .notes-title-section {
+    justify-content: center;
   }
   
   .notes-header-left {

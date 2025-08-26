@@ -6,6 +6,14 @@ import './SuppliesTableFixes.css';
 import './SuppliesTableOverrides.css';
 import './ResponsiveSuppliesTables.css';
 import './SuppliesTableEnhancements.css';
+import './AnalyzerFourColumnLayout.css';
+import './PrescriptionTableOptimized.css';
+import './PrescriptionTableUltraWide.css';
+import './PrescriptionTableExact.css';
+import './PrescriptionTableFinal.css';
+import './PrescriptionTableForce.css';
+import './PrescriptionTableMatching.css';
+import './PrescriptionTableBorders.css';
 import EnterpriseHeader, { TabGroup, TabButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 
 const Analyzer = () => {
@@ -41,6 +49,11 @@ const Analyzer = () => {
   const [analysisProgress, setAnalysisProgress] = useState(''); // Progress message for supplies analyzer
   const [selectedRows, setSelectedRows] = useState({ previous: new Set(), current: new Set() }); // Track multiple selected rows
   
+  // Prescription paste functionality states
+  const [prescriptionFiles, setPrescriptionFiles] = useState([]);
+  const [prescriptionPreviews, setPrescriptionPreviews] = useState([]);
+  const [isPrescriptionPasteFocused, setIsPrescriptionPasteFocused] = useState(false);
+  
   // Legacy single file states for backward compatibility
   const previousSupplyFile = previousSupplyFiles[0] || null;
   const currentSupplyFile = currentSupplyFiles[0] || null;
@@ -52,33 +65,47 @@ const Analyzer = () => {
   const supplyFileInputRef = useRef(null);
   const previousSupplyInputRef = useRef(null);
   const currentSupplyInputRef = useRef(null);
+  const prescriptionPasteDivRef = useRef(null);
 
   // Field configuration matching the exact screenshot layout
   const fieldSections = [
     {
       title: 'Patient',
+      rowSpan: 5,
       fields: [
-        { label: 'PT Name', rxKey: 'Rx PT Name', deKey: 'DE PT Name' },
-        { label: 'PT DOB', rxKey: 'Rx PT DOB', deKey: 'DE PT DOB' },
-        { label: 'PT Gender', rxKey: 'Rx PT Gender', deKey: 'DE PT Gender' },
-        { label: 'PT Address', rxKey: 'Rx PT Address', deKey: 'DE PT Address' },
-        { label: 'PT Phone', rxKey: 'Rx PT Phone', deKey: 'DE PT Phone' },
-        { label: 'Written Date', rxKey: 'Rx Written date', deKey: 'DE Written Date' },
-        { label: 'EXP Date', rxKey: 'Rx EXP Date', deKey: 'DE EXP Date' },
-        { label: 'Drug', rxKey: 'Rx Drug', deKey: 'DE Drug' },
+        { label: 'Name', rxKey: 'Rx PT Name', deKey: 'DE PT Name' },
+        { label: 'DOB', rxKey: 'Rx PT DOB', deKey: 'DE PT DOB' },
+        { label: 'Gender', rxKey: 'Rx PT Gender', deKey: 'DE PT Gender' },
+        { label: 'Address', rxKey: 'Rx PT Address', deKey: 'DE PT Address' },
+        { label: 'Phone', rxKey: 'Rx PT Phone', deKey: 'DE PT Phone' }
+      ]
+    },
+    {
+      title: 'Rx Info',
+      rowSpan: 10,
+      fields: [
+        { label: 'Written Date', rxKey: 'Rx Written date', deKey: 'DE Written Date', required: true },
+        { label: 'Exp Date', rxKey: 'Rx EXP Date', deKey: 'DE EXP Date', required: true },
+        { label: 'Drug', rxKey: 'Rx Drug', deKey: 'DE Drug', required: true },
         { label: 'Strength | Form', rxKey: 'Rx Strength | Form', deKey: 'DE Strength | Form' },
         { label: 'NDC', rxKey: 'Rx NDC', deKey: 'DE NDC' },
-        { label: 'DAW', rxKey: 'RX DAW', deKey: 'DE DAW' },
-        { label: 'Sig', rxKey: 'RX Sig', deKey: 'DE Sig' },
-        { label: 'Quantity | UOM', rxKey: 'RX Quantity | UOM', deKey: 'DE Quantity | UOM' },
-        { label: 'Days Supply', rxKey: 'RX Days Supply', deKey: 'DE Days Supply' },
-        { label: 'Refills', rxKey: 'RX Refills', deKey: 'DE Refills' },
-        { label: 'Doctor Name', rxKey: 'RX Doctor Name', deKey: 'DE Doctor Name' },
-        { label: 'Doctor Address', rxKey: 'RX Doctor Address', deKey: 'DE Doctor Address' },
-        { label: 'Doctor Phone', rxKey: 'RX Doctor Phone', deKey: 'DE Doctor Phone' },
-        { label: 'Doctor Fax', rxKey: 'RX Doctor Fax', deKey: 'DE Doctor Fax' },
-        { label: 'Doctor NPI', rxKey: 'RX Doctor NPI', deKey: 'DE Doctor NPI' },
-        { label: 'Doctor DEA', rxKey: 'RX Doctor DEA', deKey: 'DE Doctor DEA' }
+        { label: 'DAW', rxKey: 'RX DAW', deKey: 'DE DAW', required: true },
+        { label: 'Sig', rxKey: 'RX Sig', deKey: 'DE Sig', required: true },
+        { label: 'Quantity | UOM', rxKey: 'RX Quantity | UOM', deKey: 'DE Quantity | UOM', required: true },
+        { label: 'Days Supply', rxKey: 'RX Days Supply', deKey: 'DE Days Supply', required: true },
+        { label: 'Refills', rxKey: 'RX Refills', deKey: 'DE Refills', required: true }
+      ]
+    },
+    {
+      title: 'Prescriber',
+      rowSpan: 6,
+      fields: [
+        { label: 'Name', rxKey: 'RX Doctor Name', deKey: 'DE Doctor Name', required: true },
+        { label: 'Address', rxKey: 'RX Doctor Address', deKey: 'DE Doctor Address' },
+        { label: 'Phone', rxKey: 'RX Doctor Phone', deKey: 'DE Doctor Phone' },
+        { label: 'Fax', rxKey: 'RX Doctor Fax', deKey: 'DE Doctor Fax' },
+        { label: 'NPI', rxKey: 'RX Doctor NPI', deKey: 'DE Doctor NPI' },
+        { label: 'DEA', rxKey: 'RX Doctor DEA', deKey: 'DE Doctor DEA' }
       ]
     }
   ];
@@ -511,6 +538,9 @@ const Analyzer = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         setPreviewUrl(e.target.result);
+        // Also populate prescription paste states for consistency
+        setPrescriptionFiles([file]);
+        setPrescriptionPreviews([e.target.result]);
       };
       reader.readAsDataURL(file);
       
@@ -588,6 +618,69 @@ const Analyzer = () => {
     }
   };
 
+  // Handle paste event for prescription upload
+  const handlePrescriptionPaste = async (e) => {
+    const items = Array.from(e.clipboardData?.items || []);
+    const imageItem = items.find(item => 
+      item.type.startsWith('image/') || 
+      item.kind === 'file' && item.type.match(/^image\//)
+    );
+    
+    if (imageItem) {
+      e.preventDefault();
+      const blob = imageItem.getAsFile();
+      if (blob) {
+        // Convert blob to File object with a name
+        const file = new File([blob], `pasted-prescription-${Date.now()}.png`, { 
+          type: blob.type || 'image/png' 
+        });
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPrescriptionFiles([...prescriptionFiles, file]);
+          setPrescriptionPreviews([...prescriptionPreviews, e.target.result]);
+          
+          // Also set for backward compatibility with existing analysis logic
+          if (prescriptionFiles.length === 0) {
+            setSelectedFile(file);
+            setSelectedFiles([file]);
+            setPreviewUrl(e.target.result);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  const removePrescriptionFile = (index = null) => {
+    if (index !== null) {
+      // Remove specific file
+      const newFiles = prescriptionFiles.filter((_, i) => i !== index);
+      const newPreviews = prescriptionPreviews.filter((_, i) => i !== index);
+      setPrescriptionFiles(newFiles);
+      setPrescriptionPreviews(newPreviews);
+      
+      // Update legacy states
+      if (newFiles.length > 0) {
+        setSelectedFile(newFiles[0]);
+        setSelectedFiles(newFiles);
+        setPreviewUrl(newPreviews[0]);
+      } else {
+        setSelectedFile(null);
+        setSelectedFiles([]);
+        setPreviewUrl(null);
+      }
+    } else {
+      // Remove all files
+      setPrescriptionFiles([]);
+      setPrescriptionPreviews([]);
+      setSelectedFile(null);
+      setSelectedFiles([]);
+      setPreviewUrl(null);
+    }
+  };
+
   const removeFile = () => {
     // Batch state updates to prevent flickering
     setSelectedFile(null);
@@ -599,6 +692,10 @@ const Analyzer = () => {
     setShowDEAAlert(false);
     setShowNeedlesAlert(false);
     setIsFolderUpload(false);
+    // Clear prescription paste states
+    setPrescriptionFiles([]);
+    setPrescriptionPreviews([]);
+    setIsPrescriptionPasteFocused(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -2579,31 +2676,102 @@ const Analyzer = () => {
                   <FileText size={20} />
                 </div>
                 <div className="card-body">
-                  {!selectedFile ? (
-                    <div className="upload-area" onClick={() => fileInputRef.current?.click()}>
-                      <ScanLine size={48} className="upload-icon" />
-                      <p className="upload-text">Click to upload prescription</p>
-                      <p className="upload-hint">Supports JPG, PNG - One image per upload</p>
+                  {prescriptionFiles.length === 0 ? (
+                    <div 
+                      ref={prescriptionPasteDivRef}
+                      className={`paste-area small ${isPrescriptionPasteFocused ? 'paste-ready' : ''}`}
+                      onPaste={(e) => handlePrescriptionPaste(e)}
+                      onFocus={() => setIsPrescriptionPasteFocused(true)}
+                      onBlur={() => setIsPrescriptionPasteFocused(false)}
+                      tabIndex={0}
+                      title="Click here then paste screenshot (Ctrl+V)"
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files);
+                          files.forEach(file => {
+                            if (file.type.startsWith('image/')) {
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                setPrescriptionFiles(prev => [...prev, file]);
+                                setPrescriptionPreviews(prev => [...prev, event.target.result]);
+                                
+                                // Update legacy states for first file
+                                if (prescriptionFiles.length === 0) {
+                                  setSelectedFile(file);
+                                  setSelectedFiles([file]);
+                                  setPreviewUrl(event.target.result);
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          });
+                          e.target.value = '';
+                        }}
+                      />
+                      <button
+                        className="paste-area-upload-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fileInputRef.current.click();
+                        }}
+                        title="Upload files"
+                      >
+                        <Upload size={16} />
+                      </button>
+                      <ImageIcon size={32} className="paste-icon" />
+                      <p className="paste-text small">Click Here</p>
+                      <p className="paste-hint small">Then paste screenshot (Ctrl+V)</p>
                     </div>
                   ) : (
-                    <div>
-                      <div className="file-preview">
-                        {selectedFile.type.startsWith('image/') ? (
-                          <img src={previewUrl} alt="Preview" />
-                        ) : (
-                          <div className="pdf-icon">PDF</div>
-                        )}
-                        <div className="file-info">
-                          <p className="file-name">{selectedFile.name}</p>
-                          <p className="file-size">{(selectedFile.size / 1024).toFixed(1)} KB</p>
-                          {isFolderUpload && (
-                            <p className="file-count">File {currentFileIndex + 1} of {selectedFiles.length}</p>
-                          )}
+                    <div className="supply-files-list">
+                      {prescriptionFiles.map((file, index) => (
+                        <div key={index} className="supply-upload-confirmation">
+                          <div className="confirmation-content">
+                            <Check size={20} className="confirmation-check" />
+                            <span className="confirmation-text">Screenshot {index + 1}</span>
+                          </div>
+                          <button className="remove-file-btn" onClick={() => removePrescriptionFile(index)}>
+                            <X size={16} />
+                          </button>
                         </div>
-                        <button className="remove-file" onClick={removeFile}>
-                          <X size={20} />
-                        </button>
-                      </div>
+                      ))}
+                      <button 
+                        className="add-more-btn"
+                        onClick={(e) => {
+                          // Add visual feedback
+                          e.target.classList.add('paste-ready');
+                          
+                          // Create a temporary paste area
+                          const tempDiv = document.createElement('div');
+                          tempDiv.contentEditable = true;
+                          tempDiv.style.position = 'absolute';
+                          tempDiv.style.left = '-9999px';
+                          tempDiv.addEventListener('paste', (e) => {
+                            handlePrescriptionPaste(e);
+                            // Remove visual feedback after paste
+                            document.querySelector('.add-more-btn.paste-ready')?.classList.remove('paste-ready');
+                          });
+                          document.body.appendChild(tempDiv);
+                          tempDiv.focus();
+                          
+                          // Clean up after timeout
+                          setTimeout(() => {
+                            if (document.body.contains(tempDiv)) {
+                              document.body.removeChild(tempDiv);
+                            }
+                            e.target.classList.remove('paste-ready');
+                          }, 3000);
+                        }}
+                      >
+                        <Plus size={16} />
+                        Add More Screenshots
+                      </button>
                     </div>
                   )}
                 </div>
@@ -2614,7 +2782,7 @@ const Analyzer = () => {
                 <button 
                   className={`toggle-btn full-width ${isAnalyzing ? 'active' : ''}`}
                   onClick={() => analyzeDocument()}
-                  disabled={!selectedFile || isAnalyzing}
+                  disabled={prescriptionFiles.length === 0 || isAnalyzing}
                   style={{ color: 'white', WebkitTextFillColor: 'white' }}
                 >
                   <ScanLine size={16} style={{ color: 'white', WebkitTextFillColor: 'white' }} />
@@ -2882,154 +3050,244 @@ const Analyzer = () => {
                 </button>
               </div>
 
-              {/* Alert Popups */}
+              {/* Fixed Alert Popups */}
               {showDEAAlert && (
-                <div className="alert-popup-overlay" onClick={() => setShowDEAAlert(false)}>
-                  <div className="alert-popup-modal" onClick={(e) => e.stopPropagation()}>
-                    <div className="alert-popup-header">
-                      <AlertCircle size={24} className="alert-popup-icon warning" />
-                      <h3>DEA Alert</h3>
-                      <button className="alert-popup-close" onClick={() => setShowDEAAlert(false)}>
-                        <X size={20} />
-                      </button>
+                <>
+                  <div className="alert-overlay" onClick={() => setShowDEAAlert(false)} />
+                  <div className="dea-alert-popup">
+                    <div className="alert-header">
+                      <AlertCircle size={20} />
+                      <span>⚠️ DEA ALERT</span>
                     </div>
-                    <div className="alert-popup-body">
-                      <p>DEA number starts with "M". Please verify a supervising prescriber.</p>
+                    <div className="alert-content">
+                      <p>DEA number starts with "M".</p>
+                      <p>Please verify a supervising prescriber.</p>
                     </div>
-                    <div className="alert-popup-footer">
-                      <button className="alert-popup-btn" onClick={() => setShowDEAAlert(false)}>
+                    <div className="alert-actions">
+                      <button className="alert-ok-btn" onClick={() => setShowDEAAlert(false)}>
                         OK
                       </button>
                     </div>
                   </div>
-                </div>
+                </>
               )}
               {showNeedlesAlert && (
-                <div className="alert-popup-overlay" onClick={() => setShowNeedlesAlert(false)}>
-                  <div className="alert-popup-modal" onClick={(e) => e.stopPropagation()}>
-                    <div className="alert-popup-header">
-                      <AlertCircle size={24} className="alert-popup-icon warning" />
-                      <h3>Needles Prescription Check</h3>
-                      <button className="alert-popup-close" onClick={() => setShowNeedlesAlert(false)}>
-                        <X size={20} />
-                      </button>
+                <>
+                  <div className="alert-overlay" onClick={() => setShowNeedlesAlert(false)} />
+                  <div className="needles-alert-popup">
+                    <div className="alert-header">
+                      <AlertCircle size={20} />
+                      <span>⚠️ Needles Prescription Check</span>
                     </div>
-                    <div className="alert-popup-body">
-                      <p>Confirm days supply for needles does not exceed 10 days for state laws.</p>
+                    <div className="alert-content">
+                      <p>Confirm days supply for needles does not exceed 10</p>
+                      <p>days for state laws.</p>
                     </div>
-                    <div className="alert-popup-footer">
-                      <button className="alert-popup-btn" onClick={() => setShowNeedlesAlert(false)}>
+                    <div className="alert-actions">
+                      <button className="alert-ok-btn" onClick={() => setShowNeedlesAlert(false)}>
                         OK
                       </button>
                     </div>
                   </div>
-                </div>
+                </>
               )}
 
               {/* Analysis Table */}
               {allAnalysisResults.length > 0 ? (
                 // Multiple files results
                 <div className="prescription-tables-container">
-                  {allAnalysisResults.map((fileResult, fileIndex) => (
-                    <div key={fileIndex} className="prescription-table-section">
-                      <h3 className="file-result-title">{fileResult.fileName}</h3>
-                        <table className="analysis-table">
+                  {allAnalysisResults.map((fileResult, fileIndex) => {
+                    // Format DOB with age calculation  
+                    const formatDOBWithAge = (dobString) => {
+                      if (!dobString || dobString === '-') return dobString;
+                      // Calculate age if DOB is present
+                      const dobParts = dobString.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+                      if (dobParts) {
+                        const month = parseInt(dobParts[1]);
+                        const day = parseInt(dobParts[2]);
+                        const year = parseInt(dobParts[3]) < 100 ? 1900 + parseInt(dobParts[3]) : parseInt(dobParts[3]);
+                        const birthDate = new Date(year, month - 1, day);
+                        const today = new Date();
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const monthDiff = today.getMonth() - birthDate.getMonth();
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                          age--;
+                        }
+                        return `${dobString}  (Age: ${age})`;
+                      }
+                      return dobString;
+                    };
+
+                    // Format address for two-line display
+                    const formatAddress = (addressString) => {
+                      if (!addressString || addressString === '-') return addressString;
+                      // Check if address already has a newline or comma
+                      if (addressString.includes(',')) {
+                        const parts = addressString.split(',');
+                        if (parts.length >= 2) {
+                          return parts[0].trim() + '\n' + parts.slice(1).join(',').trim();
+                        }
+                      }
+                      return addressString;
+                    };
+
+                    return (
+                      <div key={fileIndex} className="prescription-table-section">
+                        <h3 className="file-result-title">{fileResult.fileName}</h3>
+                        <table className="analysis-table four-column-layout" style={{borderCollapse: 'collapse', border: '2px solid #374151'}}>
                           <thead>
                             <tr>
-                              <th>Field Name</th>
-                              <th>Status</th>
-                              <th>Rx Value</th>
-                              <th>DE Value</th>
+                              <th colSpan="2"></th>
+                              <th className="prescribed-header">PRESCRIBED: eRx New</th>
+                              <th className="data-entered-header">DATA ENTERED <span className="header-checkmark">✓</span></th>
                             </tr>
                           </thead>
                           <tbody>
-                            {fieldSections[0].fields.map((field, fieldIndex) => {
-                              const rxValue = fileResult.results[field.rxKey] || '';
-                              const deValue = fileResult.results[field.deKey] || '';
-                              const matchStatus = getMatchStatus(field.label, rxValue, deValue, fileResult.results, fileResult.results);
-                              
-                              let statusBadge;
-                              if (matchStatus === 'match') {
-                                statusBadge = <span className="status-badge matched"><Check size={14} /> Match</span>;
-                              } else if (matchStatus === 'mismatch') {
-                                statusBadge = <span className="status-badge missing"><X size={14} /> Mismatch</span>;
-                              } else if (matchStatus === 'partial') {
-                                statusBadge = <span className="status-badge changed"><AlertCircle size={14} /> Partial</span>;
-                              } else {
-                                statusBadge = <span className="status-badge">-</span>;
-                              }
-                              
-                              return (
-                                <tr key={fieldIndex} className={`${matchStatus}-row`}>
-                                  <td className="field-label">
-                                    {field.label}
-                                  </td>
-                                  <td className="status-cell">
-                                    {statusBadge}
-                                  </td>
-                                  <td className="field-value rx-value">
-                                    {rxValue || '-'}
-                                  </td>
-                                  <td className="field-value de-value">
-                                    {deValue || '-'}
-                                  </td>
-                                </tr>
-                              );
-                            })}
+                            {fieldSections.map((section, sectionIndex) => (
+                              section.fields.map((field, fieldIndex) => {
+                                const rxValue = fileResult.results[field.rxKey] || '';
+                                const deValue = fileResult.results[field.deKey] || '';
+                                const matchStatus = getMatchStatus(field.label, rxValue, deValue, fileResult.results, fileResult.results);
+                                const isFirstInSection = fieldIndex === 0;
+                                
+                                // Format fields specially
+                                let displayRxValue = rxValue;
+                                let displayDeValue = deValue;
+                                
+                                if (field.label === 'DOB') {
+                                  displayDeValue = formatDOBWithAge(deValue);
+                                } else if (field.label === 'Address') {
+                                  displayRxValue = formatAddress(rxValue);
+                                  displayDeValue = formatAddress(deValue);
+                                }
+                                
+                                return (
+                                  <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`} data-section={section.title.toLowerCase().replace(' ', '-')}>
+                                    {isFirstInSection && (
+                                      <td className="section-label-cell" rowSpan={section.rowSpan} style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                        <div className="section-label-vertical">
+                                          <span>{section.title}</span>
+                                        </div>
+                                      </td>
+                                    )}
+                                    <td className="field-name-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                      {field.label}{field.required && <span className="required-asterisk">*</span>}
+                                    </td>
+                                    <td className="prescribed-value-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                      {displayRxValue || '-'}
+                                    </td>
+                                    <td className="data-entered-value-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                      <span className="value-with-check">
+                                        {displayDeValue || '-'}
+                                        {matchStatus === 'match' && deValue && <span className="inline-checkmark">✓</span>}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                );
+                              })
+                            ))}
                           </tbody>
                         </table>
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
-                // Single file results - Combined Table with Status column
+                // Single file results - 4-column table with vertical section labels
                 <div className="prescription-tables-container">
                   <div className="prescription-table-section">
-                    <table className="analysis-table">
-                      <thead>
-                      <tr>
-                        <th>Field Name</th>
-                        <th>Status</th>
-                        <th>Rx Value</th>
-                        <th>DE Value</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {fieldSections[0].fields.map((field, fieldIndex) => {
-                        const rxValue = analysisResults[field.rxKey] || '';
-                        const deValue = analysisResults[field.deKey] || '';
-                        const matchStatus = getMatchStatus(field.label, rxValue, deValue, analysisResults, analysisResults);
-                        
-                        let statusBadge;
-                        if (matchStatus === 'match') {
-                          statusBadge = <span className="status-badge matched"><Check size={14} /> Match</span>;
-                        } else if (matchStatus === 'mismatch') {
-                          statusBadge = <span className="status-badge missing"><X size={14} /> Mismatch</span>;
-                        } else if (matchStatus === 'partial') {
-                          statusBadge = <span className="status-badge changed"><AlertCircle size={14} /> Partial</span>;
-                        } else {
-                          statusBadge = <span className="status-badge">-</span>;
+                    {(() => {
+                      // Format DOB with age calculation
+                      const formatDOBWithAge = (dobString) => {
+                        if (!dobString || dobString === '-') return dobString;
+                        // Calculate age if DOB is present
+                        const dobParts = dobString.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+                        if (dobParts) {
+                          const month = parseInt(dobParts[1]);
+                          const day = parseInt(dobParts[2]);
+                          const year = parseInt(dobParts[3]) < 100 ? 1900 + parseInt(dobParts[3]) : parseInt(dobParts[3]);
+                          const birthDate = new Date(year, month - 1, day);
+                          const today = new Date();
+                          let age = today.getFullYear() - birthDate.getFullYear();
+                          const monthDiff = today.getMonth() - birthDate.getMonth();
+                          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                            age--;
+                          }
+                          return `${dobString}  (Age: ${age})`;
                         }
-                        
-                        return (
-                          <tr key={fieldIndex} className={`${matchStatus}-row`}>
-                            <td className="field-label">
-                              {field.label}
-                            </td>
-                            <td className="status-cell">
-                              {statusBadge}
-                            </td>
-                            <td className="field-value rx-value">
-                              {rxValue || '-'}
-                            </td>
-                            <td className="field-value de-value">
-                              {deValue || '-'}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                    </table>
+                        return dobString;
+                      };
+
+                      // Format address for two-line display
+                      const formatAddress = (addressString) => {
+                        if (!addressString || addressString === '-') return addressString;
+                        // Check if address already has a newline or comma
+                        if (addressString.includes(',')) {
+                          const parts = addressString.split(',');
+                          if (parts.length >= 2) {
+                            return parts[0].trim() + '\n' + parts.slice(1).join(',').trim();
+                          }
+                        }
+                        return addressString;
+                      };
+
+                      return (
+                        <table className="analysis-table four-column-layout" style={{borderCollapse: 'collapse', border: '2px solid #374151'}}>
+                          <thead>
+                            <tr>
+                              <th colSpan="2"></th>
+                              <th className="prescribed-header">PRESCRIBED: eRx New</th>
+                              <th className="data-entered-header">DATA ENTERED <span className="header-checkmark">✓</span></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {fieldSections.map((section, sectionIndex) => (
+                              section.fields.map((field, fieldIndex) => {
+                                const rxValue = analysisResults[field.rxKey] || '';
+                                const deValue = analysisResults[field.deKey] || '';
+                                const matchStatus = getMatchStatus(field.label, rxValue, deValue, analysisResults, analysisResults);
+                                const isFirstInSection = fieldIndex === 0;
+                                
+                                // Format fields specially
+                                let displayRxValue = rxValue;
+                                let displayDeValue = deValue;
+                                
+                                if (field.label === 'DOB') {
+                                  displayDeValue = formatDOBWithAge(deValue);
+                                } else if (field.label === 'Address') {
+                                  displayRxValue = formatAddress(rxValue);
+                                  displayDeValue = formatAddress(deValue);
+                                }
+                                
+                                return (
+                                  <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`} data-section={section.title.toLowerCase().replace(' ', '-')}>
+                                    {isFirstInSection && (
+                                      <td className="section-label-cell" rowSpan={section.rowSpan} style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                        <div className="section-label-vertical">
+                                          <span>{section.title}</span>
+                                        </div>
+                                      </td>
+                                    )}
+                                    <td className="field-name-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                      {field.label}{field.required && <span className="required-asterisk">*</span>}
+                                    </td>
+                                    <td className="prescribed-value-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                      {displayRxValue || '-'}
+                                    </td>
+                                    <td className="data-entered-value-cell" style={{border: '1px solid #6b7280', padding: '8px'}}>
+                                      <span className="value-with-check">
+                                        {displayDeValue || '-'}
+                                        {matchStatus === 'match' && deValue && <span className="inline-checkmark">✓</span>}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                );
+                              })
+                            ))}
+                          </tbody>
+                        </table>
+                      );
+                    })()}
                   </div>
                 </div>
               )}

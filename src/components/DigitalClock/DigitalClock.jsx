@@ -140,7 +140,6 @@ const DigitalClock = ({ isOpen, onClose }) => {
                 <span className="time-minutes">{minutes}</span>
                 <span className="time-separator">:</span>
                 <span className="time-seconds">{seconds}</span>
-                <span className="time-ampm">{ampm}</span>
               </div>
             </div>
 

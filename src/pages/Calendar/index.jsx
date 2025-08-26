@@ -1,21 +1,33 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MapPin, Users, Plus, Bell, Filter, Tag, X, Save, Edit2, Trash2, Check } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MapPin, Users, Plus, Bell, Filter, Tag, X, Save, Edit2, Trash2, Check, Menu } from 'lucide-react';
 import { firestore } from '../../config/firebase';
 import { collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import EnterpriseHeader, { TabGroup, TabButton, HeaderDivider, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import './Calendar.css';
+import './CalendarSidebarFix.css';
+import './CalendarResponsive.css';
+import './CalendarCompact.css';
+import './CalendarMobileFull.css';
+import './CalendarMobileHeader.css';
+import './CalendarHeaderFixed.css';
+import './CalendarMobileHeaderFix.css';
+import './CalendarMobileFinal.css';
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [view, setView] = useState('month'); // month, week, day
+  // Removed view state - now only using month view
   const [showEventModal, setShowEventModal] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [rightClickedDate, setRightClickedDate] = useState(null);
   const [firstClickedDate, setFirstClickedDate] = useState(null);
+  const [secondClickedDate, setSecondClickedDate] = useState(null);
   const [dayCountDisplay, setDayCountDisplay] = useState(null);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const [editingEvent, setEditingEvent] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessageText, setSuccessMessageText] = useState('');
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const contextMenuRef = useRef(null);
   
   // Event form state
@@ -31,6 +43,7 @@ const Calendar = () => {
   
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 767);
 
   // Event colors array for variety
   const eventColors = ['#ff5500', '#ff6b1a', '#ff8533', '#ffa04d', '#ff4d00', '#ff7333'];
@@ -42,6 +55,16 @@ const Calendar = () => {
   // Load events from Firebase
   useEffect(() => {
     loadEvents();
+  }, []);
+
+  // Handle window resize for mobile detection
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 767);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Close context menu on outside click
@@ -188,16 +211,8 @@ const Calendar = () => {
 
   const navigate = (direction) => {
     const newDate = new Date(currentDate);
-    
-    if (view === 'month') {
-      newDate.setMonth(currentDate.getMonth() + direction);
-    } else if (view === 'week') {
-      newDate.setDate(currentDate.getDate() + (direction * 7));
-    } else if (view === 'day') {
-      newDate.setDate(currentDate.getDate() + direction);
-      setSelectedDate(newDate);
-    }
-    
+    // Always navigate by month since we're only using month view
+    newDate.setMonth(currentDate.getMonth() + direction);
     setCurrentDate(newDate);
   };
 
@@ -218,22 +233,27 @@ const Calendar = () => {
     setContextMenuPosition({ x: e.clientX, y: e.clientY });
   };
 
-  // Handle day click for counting
+  // Handle day click for counting and range selection
   const handleDayClick = (date) => {
-    if (firstClickedDate) {
-      // Calculate days between first and second click
-      const daysDiff = Math.abs(Math.ceil((date - firstClickedDate) / (1000 * 60 * 60 * 24)));
+    // Ensure date is a valid Date object
+    const clickedDate = new Date(date);
+    
+    if (firstClickedDate && !secondClickedDate) {
+      // Second click - set range
+      setSecondClickedDate(clickedDate);
+      const daysDiff = Math.abs(Math.ceil((clickedDate - firstClickedDate) / (1000 * 60 * 60 * 24))) + 1; // +1 to include both days
       setDayCountDisplay({
-        start: firstClickedDate,
-        end: date,
+        start: firstClickedDate < clickedDate ? firstClickedDate : clickedDate,
+        end: firstClickedDate > clickedDate ? firstClickedDate : clickedDate,
         count: daysDiff
       });
-      setFirstClickedDate(null);
     } else {
-      setFirstClickedDate(date);
+      // First click or resetting
+      setFirstClickedDate(clickedDate);
+      setSecondClickedDate(null);
       setDayCountDisplay(null);
     }
-    setSelectedDate(date);
+    setSelectedDate(clickedDate);
   };
 
   const formatEventTime = (date) => {
@@ -356,11 +376,14 @@ const Calendar = () => {
   const renderCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDay = getFirstDayOfMonth(currentDate);
-    const days = [];
+    const weeks = [];
+    let week = [];
 
     // Empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
+      week.push(
+        <td key={`empty-${i}`} className="calendar-cell empty"></td>
+      );
     }
 
     // Days of the month
@@ -370,214 +393,284 @@ const Calendar = () => {
       const isToday = date.toDateString() === new Date().toDateString();
       const isSelected = date.toDateString() === selectedDate.toDateString();
       const isFirstClicked = firstClickedDate && date.toDateString() === firstClickedDate.toDateString();
-      const isInRange = dayCountDisplay && 
-        date >= Math.min(dayCountDisplay.start, dayCountDisplay.end) && 
-        date <= Math.max(dayCountDisplay.start, dayCountDisplay.end);
+      const isSecondClicked = secondClickedDate && date.toDateString() === secondClickedDate.toDateString();
+      const minDate = firstClickedDate && secondClickedDate ? 
+        (firstClickedDate < secondClickedDate ? firstClickedDate : secondClickedDate) : null;
+      const maxDate = firstClickedDate && secondClickedDate ? 
+        (firstClickedDate > secondClickedDate ? firstClickedDate : secondClickedDate) : null;
+      
+      const isInRange = minDate && maxDate && 
+        date > minDate && date < maxDate;
+      const isRangeStart = minDate && 
+        date.toDateString() === minDate.toDateString();
+      const isRangeEnd = maxDate && 
+        date.toDateString() === maxDate.toDateString();
 
-      days.push(
-        <div
+      week.push(
+        <td
           key={day}
-          className={`calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${dayEvents.length > 0 ? 'has-events' : ''} ${isFirstClicked ? 'first-clicked' : ''} ${isInRange ? 'in-range' : ''}`}
+          className={`calendar-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''} ${dayEvents.length > 0 ? 'has-events' : ''} ${isFirstClicked && !secondClickedDate ? 'first-clicked' : ''} ${isInRange ? 'in-range' : ''} ${isRangeStart ? 'range-start' : ''} ${isRangeEnd ? 'range-end' : ''}`}
           onClick={() => handleDayClick(date)}
           onContextMenu={(e) => handleDayRightClick(e, date)}
         >
-          <div className="day-number">{day}</div>
-          {dayEvents.length > 0 && (
-            <div className="day-events">
-              {dayEvents.slice(0, 3).map((event, idx) => (
-                <div 
-                  key={event.id} 
-                  className="day-event-item"
-                  style={{ background: getEventColor(events.indexOf(event)) }}
-                  title={event.title}
-                >
-                  <span className="event-time">{formatEventTime(event.date).split(' ')[0]}</span>
-                  <span className="event-title-mini">{event.title}</span>
+          <div className="cell-content">
+            <span className="day-number">{day}</span>
+            {dayEvents.length > 0 && (
+              <>
+                <div className="event-indicators">
+                  {dayEvents.slice(0, 3).map((event) => (
+                    <div 
+                      key={event.id} 
+                      className="event-dot"
+                      style={{ backgroundColor: getEventColor(events.indexOf(event)) }}
+                      title={`${formatEventTime(event.date).split(' ')[0]} - ${event.title}`}
+                    />
+                  ))}
+                  {dayEvents.length > 3 && (
+                    <span className="more-count">+{dayEvents.length - 3}</span>
+                  )}
                 </div>
-              ))}
-              {dayEvents.length > 3 && (
-                <div className="more-events">+{dayEvents.length - 3} more</div>
-              )}
-            </div>
-          )}
-        </div>
+                {/* Mobile event count display */}
+                <span className="event-count d-block d-md-none">{dayEvents.length} event{dayEvents.length > 1 ? 's' : ''}</span>
+              </>
+            )}
+          </div>
+        </td>
       );
+
+      // Start new week
+      if ((firstDay + day) % 7 === 0) {
+        weeks.push(<tr key={`week-${weeks.length}`}>{week}</tr>);
+        week = [];
+      }
     }
 
-    return days;
+    // Add remaining days and empty cells
+    if (week.length > 0) {
+      while (week.length < 7) {
+        week.push(
+          <td key={`empty-end-${week.length}`} className="calendar-cell empty"></td>
+        );
+      }
+      weeks.push(<tr key={`week-${weeks.length}`}>{week}</tr>);
+    }
+
+    return weeks;
   };
 
+  // Get current month and day for header display
+  const getCurrentDateInfo = () => {
+    const today = new Date();
+    const monthName = monthNames[today.getMonth()];
+    const dayNum = today.getDate();
+    const year = today.getFullYear();
+    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+    return { monthName, dayNum, year, dayName };
+  };
+
+  const dateInfo = getCurrentDateInfo();
+
   return (
-    <div className="calendar-page page-container">
-      <div className="calendar-content">
-        <div className="calendar-dashboard">
-          {/* Calendar Controls */}
-          <div className="dashboard-card">
-            <div className="card-header">
-              <h3>Calendar View</h3>
-              <CalendarIcon size={20} />
-            </div>
-            <div className="card-body">
-              <div className="calendar-controls">
-                <div className="month-navigation">
-                  <button className="nav-btn" onClick={() => navigate(-1)}>
-                    <ChevronLeft size={20} />
-                  </button>
-                  <h2 className="current-month">
-                    {view === 'month' ? 
-                      `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}` :
-                      view === 'week' ?
-                      `Week of ${currentDate.toLocaleDateString()}` :
-                      `${currentDate.toLocaleDateString()}`
-                    }
-                  </h2>
-                  <button className="nav-btn" onClick={() => navigate(1)}>
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
-                <div className="view-controls">
-                  <button 
-                    className={`view-btn ${view === 'month' ? 'active' : ''}`}
-                    onClick={() => setView('month')}
-                  >
-                    Month
-                  </button>
-                  <button 
-                    className={`view-btn ${view === 'week' ? 'active' : ''}`}
-                    onClick={() => setView('week')}
-                  >
-                    Week
-                  </button>
-                  <button 
-                    className={`view-btn ${view === 'day' ? 'active' : ''}`}
-                    onClick={() => setView('day')}
-                  >
-                    Day
-                  </button>
-                </div>
-              </div>
-
-              {/* Day Counter Display */}
-              {dayCountDisplay && (
-                <div className="day-counter-display">
-                  <div className="day-counter-content">
-                    <span className="day-counter-label">Days between</span>
-                    <span className="day-counter-dates">
-                      {dayCountDisplay.start.toLocaleDateString()} - {dayCountDisplay.end.toLocaleDateString()}
-                    </span>
-                    <span className="day-counter-count">{dayCountDisplay.count} days</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Calendar Views */}
-              {view === 'month' && (
-                <div className="calendar-grid">
-                  <div className="calendar-header">
-                    {dayNames.map(day => (
-                      <div key={day} className="calendar-day-name">{day}</div>
-                    ))}
-                  </div>
-                  <div className="calendar-body">
-                    {renderCalendarDays()}
-                  </div>
-                </div>
-              )}
-              
-              {view === 'week' && renderWeekView()}
-              
-              {view === 'day' && renderDayView()}
-            </div>
+    <div className={`calendar-page page-container page-with-enterprise-header ${isCreating ? 'is-creating' : ''}`}>
+      {/* Enterprise Header with Toolbar - Medications Style */}
+      <EnterpriseHeader>
+        {/* Navigation Group */}
+        <div className="calendar-date-nav">
+          <button className="nav-arrow" onClick={() => navigate(-1)} aria-label="Previous month">
+            <ChevronLeft size={18} />
+          </button>
+          <div className="current-date-display">
+            <CalendarIcon size={18} />
+            <span className="date-text">
+              {isMobile 
+                ? `${monthNames[currentDate.getMonth()].slice(0, 3)} ${currentDate.getFullYear()}`
+                : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
+              }
+            </span>
           </div>
-
-          {/* Selected Date Events */}
-          <div className="dashboard-card">
-            <div className="card-header">
-              <h3>Events for {selectedDate.toLocaleDateString()}</h3>
-              <Bell size={20} />
+          <button className="nav-arrow" onClick={() => navigate(1)} aria-label="Next month">
+            <ChevronRight size={18} />
+          </button>
+        </div>
+        
+        {/* Primary Actions - Inline for mobile */}
+        <ActionGroup>
+          <ActionButton
+            onClick={() => {
+              const dateToUse = selectedDate || new Date();
+              setSelectedDate(dateToUse);
+              setEventForm(prev => ({ ...prev, date: dateToUse }));
+              setIsCreating(true);
+            }}
+            icon={Plus}
+            primary
+          >
+            Add Event
+          </ActionButton>
+        </ActionGroup>
+      </EnterpriseHeader>
+      
+      <div className="calendar-content">
+        {/* Modern Minimal Calendar */}
+        <div className="modern-calendar-container">
+          {/* Day Counter Badge */}
+          {dayCountDisplay && (
+            <div className="day-counter-badge">
+              <span className="badge-icon">📅</span>
+              <span className="badge-text">
+                {dayCountDisplay.count} days between {dayCountDisplay.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {dayCountDisplay.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+              <button className="badge-close" onClick={() => {
+                setDayCountDisplay(null);
+                setFirstClickedDate(null);
+                setSecondClickedDate(null);
+              }}>×</button>
             </div>
-            <div className="card-body">
-              <div className="events-list">
-                {loading ? (
-                  <div className="no-events">
-                    <p>Loading events...</p>
+          )}
+
+          {/* Calendar Month View Only */}
+          <table className="modern-calendar-table">
+            <thead>
+              <tr>
+                {dayNames.map(day => (
+                  <th key={day} className="calendar-weekday">{day}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {renderCalendarDays()}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Events Sidebar with Form */}
+        {selectedDate && (
+          <div className="events-sidebar">
+            {/* Show event form when Add Event is clicked */}
+            {isCreating && !editingEvent ? (
+              <div className="sidebar-form">
+                <div className="sidebar-header">
+                  <h3>Add New Event</h3>
+                  <button className="close-form-btn" onClick={() => {
+                    setIsCreating(false);
+                    resetEventForm();
+                  }}>
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="sidebar-form-content">
+                  <div className="form-group">
+                    <label>Event Title</label>
+                    <input
+                      type="text"
+                      value={eventForm.title}
+                      onChange={(e) => setEventForm(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="Enter event title"
+                      className="form-input"
+                      autoFocus
+                    />
                   </div>
-                ) : getEventsForDate(selectedDate).length === 0 ? (
-                  <div className="no-events">
-                    <p>No events scheduled for this date</p>
-                    <button className="add-event-btn" onClick={() => {
-                      setEventForm(prev => ({ ...prev, date: selectedDate }));
-                      setShowEventModal(true);
-                    }}>
-                      <Plus size={16} />
-                      Add Event
+                  
+                  <div className="form-group">
+                    <label>Date</label>
+                    <input
+                      type="date"
+                      value={eventForm.date.toISOString().split('T')[0]}
+                      onChange={(e) => setEventForm(prev => ({ ...prev, date: new Date(e.target.value) }))}
+                      className="form-input"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Time</label>
+                    <input
+                      type="time"
+                      value={eventForm.time}
+                      onChange={(e) => setEventForm(prev => ({ ...prev, time: e.target.value }))}
+                      className="form-input"
+                    />
+                  </div>
+                  
+                  <div className="form-actions">
+                    <button 
+                      className="btn-secondary" 
+                      onClick={() => {
+                        setIsCreating(false);
+                        resetEventForm();
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      className="btn-primary"
+                      onClick={saveEvent}
+                      disabled={!eventForm.title.trim()}
+                    >
+                      <Save size={16} />
+                      Save Event
                     </button>
                   </div>
-                ) : (
-                  getEventsForDate(selectedDate).map(event => {
-                    const eventIndex = events.indexOf(event);
-                    return (
-                      <div key={event.id} className="event-card" style={{ borderLeftColor: getEventColor(eventIndex) }}>
-                        <div className="event-header">
-                          <h4>{event.title}</h4>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="sidebar-header">
+                  <h3>{selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h3>
+                  <span className="event-count">{getEventsForDate(selectedDate).length} events</span>
+                </div>
+                <div className="sidebar-events">
+                  {loading ? (
+                    <div className="events-empty">
+                      <div className="spinner-mini"></div>
+                      <p>Loading events...</p>
+                    </div>
+                  ) : getEventsForDate(selectedDate).length === 0 ? (
+                    <div className="events-empty">
+                      <Bell size={32} strokeWidth={1.5} />
+                      <p>No events scheduled</p>
+                      <button className="btn-add-event" onClick={() => {
+                        setEventForm(prev => ({ ...prev, date: selectedDate }));
+                        setIsCreating(true);
+                      }}>
+                        <Plus size={16} />
+                        Add Event
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="events-list-modern">
+                      {getEventsForDate(selectedDate).map((event, eventIndex) => (
+                        <div key={event.id} className="event-item-modern" style={{ '--event-color': getEventColor(eventIndex) }}>
+                          <div className="event-time">{formatEventTime(event.date)}</div>
+                          <div className="event-content">
+                            <h4>{event.title}</h4>
+                            {event.location && (
+                              <p className="event-meta">
+                                <MapPin size={12} /> {event.location}
+                              </p>
+                            )}
+                            {event.duration && (
+                              <p className="event-meta">
+                                <Clock size={12} /> {event.duration}
+                              </p>
+                            )}
+                          </div>
                           <div className="event-actions">
-                            <button className="event-action-btn" onClick={() => editEvent(event)} title="Edit">
+                            <button onClick={() => editEvent(event)} className="btn-icon">
                               <Edit2 size={14} />
                             </button>
-                            <button className="event-action-btn delete" onClick={() => deleteEvent(event.id)} title="Delete">
+                            <button onClick={() => deleteEvent(event.id)} className="btn-icon btn-delete">
                               <Trash2 size={14} />
                             </button>
                           </div>
                         </div>
-                        <div className="event-details">
-                          <div className="event-detail">
-                            <Clock size={14} />
-                            <span>{formatEventTime(event.date)} - {event.duration}</span>
-                          </div>
-                          {event.location && (
-                            <div className="event-detail">
-                              <MapPin size={14} />
-                              <span>{event.location}</span>
-                            </div>
-                          )}
-                          {event.attendees && event.attendees.length > 0 && (
-                            <div className="event-detail">
-                              <Users size={14} />
-                              <span>{event.attendees.join(', ')}</span>
-                            </div>
-                          )}
-                          {event.notes && (
-                            <div className="event-detail">
-                              <span className="event-notes">{event.notes}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
-
-          {/* Instructions */}
-          <div className="dashboard-card">
-            <div className="card-header">
-              <h3>Calendar Tips</h3>
-              <Filter size={20} />
-            </div>
-            <div className="card-body">
-              <div className="calendar-instructions">
-                <ul>
-                  <li>Right-click on any day to add an event</li>
-                  <li>Click on two days to count days between them</li>
-                  <li>Click the edit icon on any event to modify it</li>
-                  <li>Events are color-coded for easy identification</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Context Menu for Right Click */}
@@ -592,7 +685,7 @@ const Calendar = () => {
           }}
         >
           <button onClick={() => {
-            setShowEventModal(true);
+            setIsCreating(true);
             setContextMenuPosition({ x: 0, y: 0 });
           }}>
             <Plus size={16} />
@@ -601,8 +694,8 @@ const Calendar = () => {
         </div>
       )}
 
-      {/* Event Modal */}
-      {showEventModal && (
+      {/* Event Modal - Removed, using sidebar instead */}
+      {false && (
         <div className="modal-overlay" onClick={() => setShowEventModal(false)}>
           <div className="event-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">

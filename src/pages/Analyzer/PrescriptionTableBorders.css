@@ -1,0 +1,121 @@
+/* ========================================
+   PRESCRIPTION TABLE - STRONG BORDER RULES
+   Ultra-specific selectors to override all other styles
+   ======================================== */
+
+/* Force table structure and borders with maximum specificity */
+div.analyzer-results div.analysis-table.four-column-layout {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  border: 2px solid #374151 !important;
+  width: 100% !important;
+}
+
+/* Force all table cells to have borders */
+div.analyzer-results div.analysis-table.four-column-layout tbody tr td {
+  border: 1px solid #6b7280 !important;
+  border-collapse: collapse !important;
+  padding: 8px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Section label cells - stronger borders */
+div.analyzer-results div.analysis-table.four-column-layout tbody tr td.section-label-cell {
+  border: 1px solid #374151 !important;
+  border-right: 2px solid #374151 !important;
+  background: #f9fafb !important;
+  font-weight: 600 !important;
+}
+
+/* Field name cells - distinct borders */
+div.analyzer-results div.analysis-table.four-column-layout tbody tr td.field-name-cell {
+  border: 1px solid #6b7280 !important;
+  border-right: 1px solid #374151 !important;
+  background: #f3f4f6 !important;
+}
+
+/* Value cells - clear borders */
+div.analyzer-results div.analysis-table.four-column-layout tbody tr td.prescribed-value-cell,
+div.analyzer-results div.analysis-table.four-column-layout tbody tr td.data-entered-value-cell {
+  border: 1px solid #6b7280 !important;
+  background: white !important;
+}
+
+/* Table headers if they exist */
+div.analyzer-results div.analysis-table.four-column-layout thead tr th,
+div.analyzer-results div.analysis-table.four-column-layout tbody tr th {
+  border: 1px solid #374151 !important;
+  background: #f9fafb !important;
+  font-weight: 600 !important;
+  padding: 12px 8px !important;
+}
+
+/* Alternative approach - force borders on ALL elements within the table */
+div.analyzer-results table.analysis-table.four-column-layout,
+div.analyzer-results table.analysis-table.four-column-layout * {
+  border-collapse: collapse !important;
+}
+
+div.analyzer-results table.analysis-table.four-column-layout td,
+div.analyzer-results table.analysis-table.four-column-layout th {
+  border: 1px solid #6b7280 !important;
+  padding: 8px !important;
+}
+
+/* Nuclear option - apply to ANY table element in analyzer results */
+.analyzer-results table td,
+.analyzer-results table th {
+  border: 1px solid #6b7280 !important;
+  padding: 8px !important;
+}
+
+.analyzer-results table {
+  border-collapse: collapse !important;
+  border: 2px solid #374151 !important;
+}
+
+/* Ensure borders show even with background colors from matching */
+div.analyzer-results div.analysis-table.four-column-layout tbody tr.match-row td {
+  border: 1px solid #10b981 !important;
+}
+
+div.analyzer-results div.analysis-table.four-column-layout tbody tr.mismatch-row td {
+  border: 1px solid #ef4444 !important;
+}
+
+div.analyzer-results div.analysis-table.four-column-layout tbody tr.partial-row td {
+  border: 1px solid #10b981 !important;
+}
+
+/* Force visibility for all table elements */
+.four-column-layout,
+.four-column-layout *,
+.analysis-table,
+.analysis-table * {
+  border-collapse: collapse !important;
+}
+
+.four-column-layout td,
+.four-column-layout th,
+.analysis-table td,
+.analysis-table th {
+  border: 1px solid #6b7280 !important;
+  padding: 8px !important;
+  box-sizing: border-box !important;
+}
+
+/* Last resort - target by element type */
+table[class*="analysis"] td,
+table[class*="analysis"] th,
+table[class*="four-column"] td,
+table[class*="four-column"] th {
+  border: 1px solid #6b7280 !important;
+  padding: 8px !important;
+}
+
+table[class*="analysis"],
+table[class*="four-column"] {
+  border-collapse: collapse !important;
+  border: 2px solid #374151 !important;
+}

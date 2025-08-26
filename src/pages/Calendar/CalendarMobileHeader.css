@@ -1,0 +1,272 @@
+/* ========================================
+   CALENDAR MOBILE HEADER - SINGLE ROW LAYOUT
+   All toolbar buttons in one horizontal row
+   ======================================== */
+
+/* Mobile Header - Single Row Layout */
+@media (max-width: 767px) {
+  /* Main header container */
+  .calendar-page .enterprise-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    background: var(--bg-primary, white) !important;
+    border-bottom: 1px solid var(--border-color, #e5e7eb) !important;
+    padding: 0 !important;
+    min-height: auto !important;
+    width: 100% !important;
+  }
+  
+  .calendar-page .enterprise-header-content {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    padding: 8px !important;
+    gap: 8px !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Hide all dividers in mobile */
+  .calendar-page .header-divider {
+    display: none !important;
+  }
+  
+  /* Date Navigation - Compact inline */
+  .calendar-date-nav {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    width: auto !important;
+  }
+  
+  /* Navigation arrows - smaller and inline */
+  .calendar-date-nav .nav-arrow {
+    min-width: 36px !important;
+    min-height: 36px !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 6px !important;
+    background: var(--bg-secondary, #f3f4f6) !important;
+    border: 1px solid var(--border-color, #e5e7eb) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .calendar-date-nav .nav-arrow:active {
+    background: var(--bg-tertiary, #e5e7eb) !important;
+    transform: scale(0.95);
+  }
+  
+  /* Current date display - compact */
+  .calendar-date-nav .current-date-display {
+    padding: 6px 10px !important;
+    background: var(--bg-secondary, #f8f9fa) !important;
+    border-radius: 6px !important;
+    border: 1px solid var(--border-color, #e5e7eb) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    height: 36px !important;
+    min-width: auto !important;
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+  
+  .calendar-date-nav .current-date-display svg {
+    flex-shrink: 0 !important;
+    color: var(--calendar-primary) !important;
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  .calendar-date-nav .date-text {
+    white-space: nowrap !important;
+    color: var(--text-primary) !important;
+    font-size: 0.875rem !important;
+  }
+  
+  /* Quick filters - inline */
+  .calendar-quick-filters {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    width: auto !important;
+    overflow: visible !important;
+  }
+  
+  /* Today button */
+  .calendar-quick-filters .today-btn {
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 0 12px !important;
+    border-radius: 6px !important;
+    font-size: 0.875rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    background: var(--bg-secondary, #f3f4f6) !important;
+    border: 1px solid var(--border-color, #e5e7eb) !important;
+    color: var(--text-primary) !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  .calendar-quick-filters .today-btn:active {
+    background: var(--calendar-primary-light) !important;
+    border-color: var(--calendar-primary) !important;
+  }
+  
+  /* Action group - inline */
+  .calendar-page .action-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    width: auto !important;
+  }
+  
+  /* Action buttons */
+  .calendar-page .action-button {
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 0 12px !important;
+    border-radius: 6px !important;
+    font-size: 0.875rem !important;
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+  }
+  
+  .calendar-page .action-button svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  .calendar-page .action-button.primary {
+    background: var(--calendar-primary, #ff6900) !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 500 !important;
+  }
+  
+  .calendar-page .action-button:not(.primary) {
+    background: var(--bg-secondary, #f3f4f6) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color, #e5e7eb) !important;
+  }
+  
+  /* Ensure all children are inline */
+  .calendar-page .enterprise-header-content > * {
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+  }
+}
+
+/* Extra small mobile adjustments */
+@media (max-width: 374px) {
+  .calendar-date-nav .nav-arrow {
+    min-width: 32px !important;
+    min-height: 32px !important;
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  .calendar-date-nav .current-date-display {
+    height: 32px !important;
+    padding: 4px 8px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .calendar-quick-filters .today-btn,
+  .calendar-page .action-button {
+    min-height: 32px !important;
+    height: 32px !important;
+    padding: 0 10px !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Landscape mobile - even more compact */
+@media (max-width: 767px) and (orientation: landscape) {
+  .calendar-page .enterprise-header-content {
+    padding: 6px !important;
+  }
+  
+  .calendar-date-nav .nav-arrow,
+  .calendar-date-nav .current-date-display,
+  .calendar-quick-filters .today-btn,
+  .calendar-page .action-button {
+    min-height: 32px !important;
+    height: 32px !important;
+  }
+}
+
+/* Remove any flex-wrap that might cause stacking */
+@media (max-width: 767px) {
+  .calendar-page .enterprise-header,
+  .calendar-page .enterprise-header-content,
+  .calendar-date-nav,
+  .calendar-quick-filters,
+  .calendar-page .action-group {
+    flex-wrap: nowrap !important;
+  }
+}
+
+/* Ensure horizontal scrollbar appears if needed */
+@media (max-width: 767px) {
+  .calendar-page .enterprise-header-content::-webkit-scrollbar {
+    height: 3px;
+    background: transparent;
+  }
+  
+  .calendar-page .enterprise-header-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+}
+
+/* Dark theme support */
+[data-theme="dark"] {
+  @media (max-width: 767px) {
+    .calendar-page .enterprise-header {
+      background: var(--card-background) !important;
+      border-color: var(--border-color) !important;
+    }
+    
+    .calendar-date-nav .nav-arrow,
+    .calendar-date-nav .current-date-display,
+    .calendar-quick-filters .today-btn,
+    .calendar-page .action-button:not(.primary) {
+      background: var(--bg-secondary) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-color) !important;
+    }
+  }
+}

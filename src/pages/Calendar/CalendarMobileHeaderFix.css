@@ -1,0 +1,104 @@
+/* Calendar Mobile Header Fix - Match Bookmarks Layout */
+@media (max-width: 768px) {
+  /* Force smaller button sizes to match bookmarks */
+  .calendar-page .nav-arrow,
+  .calendar-page .today-btn,
+  .calendar-page .action-button {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    border-radius: 6px !important;
+    font-size: 0 !important;
+  }
+  
+  /* Adjust current date display to be smaller */
+  .calendar-page .current-date-display {
+    height: 32px !important;
+    padding: 0 0.5rem !important;
+    font-size: 0.8rem !important;
+    border-radius: 6px !important;
+  }
+  
+  /* Smaller icons to match bookmarks */
+  .calendar-page .nav-arrow svg,
+  .calendar-page .action-button svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  .calendar-page .current-date-display svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  /* More compact spacing */
+  .calendar-page .enterprise-header-content {
+    padding: 0.5rem !important;
+    gap: 0.25rem !important;
+  }
+  
+  .calendar-page .calendar-date-nav,
+  .calendar-page .calendar-quick-filters,
+  .calendar-page .action-group {
+    gap: 0.125rem !important;
+  }
+  
+  /* Today button with compact T icon */
+  .calendar-page .today-btn::before {
+    font-size: 12px !important;
+    font-weight: bold !important;
+  }
+  
+  /* Compact header dividers */
+  .calendar-page .header-divider {
+    width: 1px !important;
+    height: 20px !important;
+    margin: 0 0.25rem !important;
+  }
+}
+
+/* Ultra-compact for smaller screens */
+@media (max-width: 480px) {
+  .calendar-page .nav-arrow,
+  .calendar-page .today-btn,
+  .calendar-page .action-button {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    border-radius: 4px !important;
+  }
+  
+  .calendar-page .current-date-display {
+    height: 28px !important;
+    padding: 0 0.375rem !important;
+    font-size: 0.75rem !important;
+    border-radius: 4px !important;
+  }
+  
+  .calendar-page .nav-arrow svg,
+  .calendar-page .action-button svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  .calendar-page .current-date-display svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  
+  .calendar-page .enterprise-header-content {
+    padding: 0.375rem !important;
+    gap: 0.125rem !important;
+  }
+  
+  .calendar-page .today-btn::before {
+    font-size: 10px !important;
+  }
+  
+  .calendar-page .header-divider {
+    height: 16px !important;
+    margin: 0 0.125rem !important;
+  }
+}

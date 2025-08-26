@@ -1,0 +1,211 @@
+/* Calendar Mobile Final Fix - Ultra Compact Single Row Layout */
+@media (max-width: 768px) {
+  /* Force ultra-compact header layout */
+  .calendar-page .enterprise-header {
+    background: var(--bg-primary, white) !important;
+    border-bottom: 1px solid var(--border-color, #e5e7eb) !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    overflow: visible !important;
+  }
+  
+  .calendar-page .enterprise-header-content {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    padding: 0.5rem 0.75rem !important;
+    gap: 0.375rem !important;
+    flex-wrap: nowrap !important;
+    min-width: 100% !important;
+    justify-content: space-between !important;
+  }
+  
+  /* Navigation arrows - ultra compact */
+  .calendar-page .calendar-date-nav {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    flex: 0 0 auto !important;
+  }
+  
+  .calendar-page .nav-arrow {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    padding: 0 !important;
+    border-radius: 6px !important;
+    border: 1px solid var(--border-color, #e5e7eb) !important;
+    background: var(--bg-primary, white) !important;
+    color: var(--text-secondary, #6b7280) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  .calendar-page .nav-arrow svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  /* Current date display - compact */
+  .calendar-page .current-date-display {
+    height: 28px !important;
+    padding: 0 0.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.375rem !important;
+    background: var(--bg-secondary, #f8f9fa) !important;
+    border: 1px solid var(--border-color, #e5e7eb) !important;
+    border-radius: 6px !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    flex: 0 0 auto !important;
+    min-width: 85px !important;
+    max-width: 85px !important;
+  }
+  
+  .calendar-page .current-date-display svg {
+    width: 12px !important;
+    height: 12px !important;
+    color: var(--calendar-primary, #ff6900) !important;
+  }
+  
+  /* Action group - compact add event button */
+  .calendar-page .action-group {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    flex: 0 0 auto !important;
+  }
+  
+  .calendar-page .action-button {
+    height: 28px !important;
+    padding: 0 0.5rem !important;
+    border-radius: 6px !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    min-width: auto !important;
+    flex: 0 0 auto !important;
+  }
+  
+  .calendar-page .action-button.primary {
+    background: var(--calendar-primary, #ff6900) !important;
+    color: white !important;
+    border: 1px solid var(--calendar-primary, #ff6900) !important;
+  }
+  
+  .calendar-page .action-button svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  
+  /* Hide dividers completely on mobile */
+  .calendar-page .header-divider {
+    display: none !important;
+  }
+  
+  /* Remove any quick filters on mobile */
+  .calendar-page .calendar-quick-filters {
+    display: none !important;
+  }
+  
+  /* Hide today button specifically */
+  .calendar-page .today-btn {
+    display: none !important;
+  }
+  
+  /* Force proper flex distribution */
+  .calendar-page .enterprise-header-content > * {
+    flex-shrink: 0 !important;
+  }
+  
+  /* Ensure no text overflow */
+  .calendar-page .action-button span {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* Ultra-small screens - even more compact */
+@media (max-width: 480px) {
+  .calendar-page .enterprise-header-content {
+    padding: 0.375rem 0.5rem !important;
+    gap: 0.25rem !important;
+  }
+  
+  .calendar-page .nav-arrow {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    max-width: 26px !important;
+  }
+  
+  .calendar-page .nav-arrow svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  
+  .calendar-page .current-date-display {
+    height: 26px !important;
+    padding: 0 0.375rem !important;
+    font-size: 0.7rem !important;
+    min-width: 75px !important;
+    max-width: 75px !important;
+  }
+  
+  .calendar-page .current-date-display svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+  
+  .calendar-page .action-button {
+    height: 26px !important;
+    padding: 0 0.375rem !important;
+    font-size: 0.7rem !important;
+    gap: 0.125rem !important;
+  }
+  
+  .calendar-page .action-button svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+}
+
+/* Force single row layout with flex distribution */
+@media (max-width: 768px) {
+  .calendar-page .enterprise-header-content {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+  
+  /* Precise width distribution for perfect fit */
+  .calendar-page .calendar-date-nav {
+    flex: 0 0 auto !important;
+    width: auto !important;
+  }
+  
+  .calendar-page .current-date-display {
+    flex: 0 0 auto !important;
+  }
+  
+  .calendar-page .action-group {
+    flex: 0 0 auto !important;
+    margin-left: auto !important;
+  }
+}

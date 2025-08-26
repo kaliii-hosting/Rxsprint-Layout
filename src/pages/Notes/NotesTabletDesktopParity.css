@@ -1,0 +1,241 @@
+/* NotesTabletDesktopParity.css - Maintains desktop layout for tablets ONLY */
+/* This file ensures Notes page header and cards maintain desktop dimensions on tablets (768px-1024px) */
+/* Desktop view (>1024px) remains unchanged */
+
+/* Override tablet breakpoints (768px - 1024px) ONLY to maintain desktop layout */
+
+/* Force desktop grid layout for tablets ONLY - NOT affecting actual desktop */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Maintain desktop grid layout for notes cards */
+  .notes-grid-layout {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 1rem !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Maintain desktop card dimensions */
+  .modern-note-card {
+    min-height: 200px !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+
+  .modern-note-card.enterprise-card {
+    min-height: 200px !important;
+  }
+
+  /* Maintain desktop header dimensions */
+  .note-header,
+  .note-header-compact {
+    padding: 1rem 2rem !important;
+    min-height: 64px !important;
+    height: auto !important;
+  }
+
+  /* Maintain desktop toolbar layout */
+  .editor-toolbar-container {
+    padding: 12px 16px !important;
+    gap: 12px !important;
+    overflow-x: visible !important;
+    flex-wrap: wrap !important;
+  }
+
+  .editor-toolbar-main {
+    flex-wrap: wrap !important;
+    min-width: initial !important;
+  }
+
+  /* Maintain desktop banner controls */
+  .editor-banner-controls-container {
+    position: sticky !important;
+    top: 0 !important;
+    padding: 1rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .banner-controls-single-row {
+    gap: 0.75rem !important;
+    padding: 0.5rem !important;
+    flex-wrap: nowrap !important;
+  }
+
+  /* Maintain desktop content spacing */
+  .note-content-edit-area,
+  .notes-page .note-content-edit-area,
+  .notes-page.editing-mode .note-content-edit-area {
+    padding: 2rem !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+
+  /* Maintain desktop banner dimensions */
+  .content-banner-item {
+    font-size: 1.75rem !important;
+    padding: 0.75rem 1.25rem !important;
+    margin: 0.5rem 0.5rem 0.5rem 0 !important;
+    max-width: none !important;
+  }
+
+  .content-banner-item.title-banner {
+    padding: 1rem 1.5rem !important;
+    margin: 1rem 0 !important;
+  }
+
+  /* Maintain desktop button sizes */
+  .add-banner-btn,
+  .add-title-btn,
+  .add-callout-btn {
+    font-size: 1rem !important;
+    padding: 0.75rem 1.25rem !important;
+    min-height: 40px !important;
+  }
+
+  .banner-submit-btn {
+    padding: 0.5rem 1rem !important;
+    min-height: 36px !important;
+    font-size: 0.875rem !important;
+  }
+
+  /* Maintain desktop table dimensions */
+  .note-content-wrapper table,
+  .tiptap-editor table,
+  .tableWrapper,
+  .table-wrapper {
+    font-size: 1rem !important;
+    max-height: 500px !important;
+  }
+
+  .note-content-wrapper table th,
+  .note-content-wrapper table td,
+  .tiptap-editor table th,
+  .tiptap-editor table td {
+    padding: 12px 16px !important;
+  }
+
+  /* Maintain desktop page layout */
+  .notes-page {
+    height: 100vh !important;
+    overflow-x: visible !important;
+  }
+
+  /* Maintain desktop editor dimensions */
+  .note-editor {
+    padding: 0 !important;
+    height: calc(100vh - 128px) !important;
+    overflow-y: auto !important;
+    overflow-x: visible !important;
+  }
+
+  /* Excel viewer maintains desktop layout */
+  .excel-viewer-wrapper {
+    margin: 2rem auto !important;
+    border-radius: 8px !important;
+  }
+
+  .excel-viewer-header {
+    border-radius: 8px 8px 0 0 !important;
+    padding: 1rem 1.5rem !important;
+  }
+}
+
+/* Ensure container queries respect desktop layout on tablets */
+@media (min-width: 768px) and (max-width: 1024px) {
+  @container (min-width: 600px) {
+    .notes-grid-layout {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    }
+  }
+}
+
+/* Override mobile-first styles that affect tablets */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Force desktop layout specifically for tablet range */
+  .notes-grid-layout {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  }
+
+  /* Ensure no mobile styles leak into tablet view */
+  .note-content-edit-area .content-banner-item:not(.title-banner):not(.callout-banner) {
+    margin-right: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+    max-width: none !important;
+  }
+
+  /* Maintain desktop toolbar positioning */
+  html body .notes-page .note-editor .editor-banner-controls-container,
+  html body .notes-page.editing-mode .note-editor .editor-banner-controls-container {
+    position: sticky !important;
+    top: 0 !important;
+  }
+}
+
+/* Specific overrides for tablet range (768px-1024px) to prevent mobile styles */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  /* Reset any mobile-specific transforms or scaling */
+  .modern-note-card {
+    transform: none !important;
+  }
+
+  .modern-note-card:hover {
+    transform: translateY(-4px) scale(1.02) !important;
+  }
+
+  .modern-note-card:active {
+    transform: translateX(2px) !important;
+  }
+
+  /* Ensure proper spacing and dimensions are maintained */
+  .notes-container,
+  .notes-grid-container {
+    padding: 1.5rem !important;
+    max-width: 100% !important;
+  }
+
+  /* Header remains consistent with desktop */
+  .notes-header,
+  .enterprise-header,
+  .enterprise-header-modern {
+    min-height: 64px !important;
+    padding: 0 2rem !important;
+  }
+
+  /* Action buttons maintain desktop size */
+  .notes-header .action-button,
+  .notes-header .icon-button {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+/* Ensure dark mode compatibility for tablets only */
+[data-theme="dark"] {
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .modern-note-card {
+      background: var(--card-background, #1a1a1a) !important;
+    }
+
+    .content-banner-item {
+      background: var(--banner-background) !important;
+      color: var(--banner-text-color) !important;
+    }
+  }
+}
+
+/* Ensure proper scrollbar behavior on tablets only */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .notes-page,
+  .note-editor,
+  .note-content-wrapper {
+    scrollbar-width: auto !important;
+    -webkit-overflow-scrolling: auto !important;
+  }
+
+  /* Table scrollbars remain visible */
+  .table-wrapper,
+  .tableWrapper {
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent !important;
+  }
+}

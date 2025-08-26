@@ -1,0 +1,269 @@
+/* ========================================
+   PRESCRIPTION TABLE - MATCHING & TEXT WRAPPING FIXES
+   Fix highlighting functions and column text wrapping
+   ======================================== */
+
+/* Fix second column text wrapping - Field names */
+.analysis-table.four-column-layout td.field-name-cell {
+  width: 10% !important;
+  min-width: 100px !important;
+  max-width: 120px !important;
+  background: #f3f4f6 !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  color: #374151 !important;
+  padding: 8px !important;
+  border: 1px solid #d1d5db !important;
+  
+  /* Enable text wrapping */
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.3 !important;
+  
+  /* Vertical alignment for wrapped text */
+  vertical-align: top !important;
+  
+  /* Ensure minimum height for readability */
+  min-height: 35px !important;
+}
+
+/* Adjust row height for wrapped text */
+.analysis-table.four-column-layout tbody tr {
+  height: auto !important;
+  min-height: 35px !important;
+}
+
+/* Enhanced match status highlighting - GREEN for matches */
+.analysis-table.four-column-layout tr.match-row td.prescribed-value-cell {
+  background: #d1fae5 !important; /* Light green */
+  border: 1px solid #d1fae5 !important;
+}
+
+.analysis-table.four-column-layout tr.match-row td.data-entered-value-cell {
+  background: #d1fae5 !important; /* Light green */
+  border: 1px solid #d1fae5 !important;
+  position: relative !important;
+}
+
+/* Green checkmark for matches */
+.analysis-table.four-column-layout tr.match-row td.data-entered-value-cell::after {
+  content: "✓" !important;
+  position: absolute !important;
+  right: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #059669 !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  z-index: 2 !important;
+}
+
+/* Enhanced mismatch highlighting - RED for mismatches */
+.analysis-table.four-column-layout tr.mismatch-row td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.mismatch-row td.data-entered-value-cell {
+  background: #fee2e2 !important; /* Light red */
+  border: 1px solid #fee2e2 !important;
+}
+
+/* Red highlighting for prescribed values in mismatch */
+.analysis-table.four-column-layout tr.mismatch-row td.prescribed-value-cell {
+  color: #dc2626 !important;
+  font-weight: 500 !important;
+}
+
+/* Enhanced partial match highlighting - GREEN for partial matches (same as matches) */
+.analysis-table.four-column-layout tr.partial-row td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.partial-row td.data-entered-value-cell {
+  background: #d1fae5 !important; /* Light green - same as matches */
+  border: 1px solid #d1fae5 !important;
+}
+
+/* Exclamation mark for partial matches */
+.analysis-table.four-column-layout tr.partial-row td.data-entered-value-cell::after {
+  content: "!" !important;
+  position: absolute !important;
+  right: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #059669 !important; /* Green color to match background */
+  font-size: 16px !important;
+  font-weight: bold !important;
+  z-index: 2 !important;
+  background: white !important;
+  border-radius: 50% !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 2px solid #059669 !important;
+}
+
+/* Ensure value cells accommodate icons */
+.analysis-table.four-column-layout td.data-entered-value-cell {
+  padding-right: 35px !important; /* Space for icons */
+  position: relative !important;
+}
+
+/* Override section-based coloring when match status is present */
+.analysis-table.four-column-layout tr.match-row[data-section="patient"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.match-row[data-section="patient"] td.data-entered-value-cell,
+.analysis-table.four-column-layout tr.match-row[data-section="rx-info"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.match-row[data-section="rx-info"] td.data-entered-value-cell,
+.analysis-table.four-column-layout tr.match-row[data-section="prescriber"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.match-row[data-section="prescriber"] td.data-entered-value-cell {
+  background: #d1fae5 !important; /* Match takes priority */
+}
+
+.analysis-table.four-column-layout tr.mismatch-row[data-section="patient"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.mismatch-row[data-section="patient"] td.data-entered-value-cell,
+.analysis-table.four-column-layout tr.mismatch-row[data-section="rx-info"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.mismatch-row[data-section="rx-info"] td.data-entered-value-cell,
+.analysis-table.four-column-layout tr.mismatch-row[data-section="prescriber"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.mismatch-row[data-section="prescriber"] td.data-entered-value-cell {
+  background: #fee2e2 !important; /* Mismatch takes priority */
+}
+
+.analysis-table.four-column-layout tr.partial-row[data-section="patient"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.partial-row[data-section="patient"] td.data-entered-value-cell,
+.analysis-table.four-column-layout tr.partial-row[data-section="rx-info"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.partial-row[data-section="rx-info"] td.data-entered-value-cell,
+.analysis-table.four-column-layout tr.partial-row[data-section="prescriber"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.partial-row[data-section="prescriber"] td.data-entered-value-cell {
+  background: #d1fae5 !important; /* Partial takes priority - now green */
+}
+
+/* Improve inline checkmark display */
+.value-with-check {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  min-height: 20px !important;
+}
+
+.inline-checkmark {
+  color: #059669 !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  margin-left: auto !important;
+  flex-shrink: 0 !important;
+  z-index: 3 !important;
+  position: relative !important;
+}
+
+/* Ensure proper text display with wrapping and add borders */
+.analysis-table.four-column-layout td.prescribed-value-cell,
+.analysis-table.four-column-layout td.data-entered-value-cell {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.4 !important;
+  vertical-align: top !important;
+  border: 1px solid #d1d5db !important;
+  padding: 8px !important;
+}
+
+/* Section label cells borders */
+.analysis-table.four-column-layout td.section-label-cell {
+  border: 1px solid #d1d5db !important;
+  padding: 8px !important;
+}
+
+/* Add borders to all table cells */
+.analysis-table.four-column-layout td {
+  border: 1px solid #d1d5db !important;
+}
+
+/* Add borders to table headers if they exist */
+.analysis-table.four-column-layout th {
+  border: 1px solid #d1d5db !important;
+  padding: 8px !important;
+}
+
+/* Table border styling */
+.analysis-table.four-column-layout {
+  border-collapse: collapse !important;
+  border: 1px solid #d1d5db !important;
+}
+
+/* Table border for wrapper */
+.analysis-table.four-column-layout table {
+  border-collapse: collapse !important;
+  border: 1px solid #d1d5db !important;
+}
+
+/* Enhanced visual feedback for different match types */
+.analysis-table.four-column-layout tr.match-row:hover td {
+  background: #a7f3d0 !important; /* Darker green on hover */
+}
+
+.analysis-table.four-column-layout tr.mismatch-row:hover td {
+  background: #fecaca !important; /* Darker red on hover */
+}
+
+.analysis-table.four-column-layout tr.partial-row:hover td {
+  background: #a7f3d0 !important; /* Darker green on hover - same as matches */
+}
+
+/* Required field asterisk enhancement */
+.required-asterisk {
+  color: #ef4444 !important;
+  font-weight: bold !important;
+  margin-left: 2px !important;
+  font-size: 14px !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .analysis-table.four-column-layout td.field-name-cell {
+    font-size: 11px !important;
+    padding: 6px !important;
+    min-width: 90px !important;
+    max-width: 110px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .analysis-table.four-column-layout td.field-name-cell {
+    font-size: 10px !important;
+    padding: 4px !important;
+    min-width: 80px !important;
+    max-width: 100px !important;
+    line-height: 1.2 !important;
+  }
+  
+  .analysis-table.four-column-layout tr.match-row td.data-entered-value-cell::after,
+  .analysis-table.four-column-layout tr.partial-row td.data-entered-value-cell::after {
+    font-size: 14px !important;
+    right: 8px !important;
+  }
+}
+
+/* Debug: Ensure match classes are applied correctly */
+.analysis-table.four-column-layout tr[class*="-row"] {
+  border-left: 3px solid transparent !important;
+}
+
+.analysis-table.four-column-layout tr.match-row {
+  border-left-color: #10b981 !important;
+}
+
+.analysis-table.four-column-layout tr.mismatch-row {
+  border-left-color: #ef4444 !important;
+}
+
+.analysis-table.four-column-layout tr.partial-row {
+  border-left-color: #10b981 !important; /* Green border - same as matches */
+}
+
+/* Force proper display inheritance */
+.analysis-table.four-column-layout tbody tr,
+.analysis-table.four-column-layout tbody td {
+  display: table-row !important;
+}
+
+.analysis-table.four-column-layout tbody td {
+  display: table-cell !important;
+}

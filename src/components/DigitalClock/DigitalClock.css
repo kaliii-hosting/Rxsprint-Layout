@@ -174,11 +174,7 @@
 }
 
 .time-ampm {
-  font-size: clamp(1.5rem, 6vw, 4rem);
-  font-weight: 700;
-  margin-left: clamp(0.5rem, 1.5vw, 1.2rem);
-  opacity: 0.9;
-  font-family: 'Orbitron', 'Inter', monospace, sans-serif;
+  display: none !important; /* Hide AM/PM permanently */
 }
 
 .time-separator {

@@ -1,0 +1,323 @@
+/* ========================================
+   PRESCRIPTION ANALYZER - FINAL DEFINITIVE DESIGN
+   Exact match to k1.jpg reference with proper 4-column layout
+   ======================================== */
+
+/* CRITICAL: Override ALL previous table styles */
+.analysis-table.four-column-layout,
+.analysis-table.four-column-layout * {
+  all: unset !important;
+  display: revert !important;
+  box-sizing: border-box !important;
+}
+
+/* Main table structure - FIXED 4-column layout */
+.analysis-table.four-column-layout {
+  display: table !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  border-collapse: collapse !important;
+  border: 2px solid #2563eb !important;
+  background: white !important;
+  margin: 20px auto !important;
+  font-family: Arial, sans-serif !important;
+  table-layout: fixed !important;
+}
+
+/* Table Header Structure */
+.analysis-table.four-column-layout thead {
+  display: table-header-group !important;
+  background: #1e40af !important;
+}
+
+.analysis-table.four-column-layout thead tr {
+  display: table-row !important;
+  height: 40px !important;
+}
+
+.analysis-table.four-column-layout thead th {
+  display: table-cell !important;
+  padding: 10px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  border: 1px solid #3b82f6 !important;
+}
+
+/* Empty header cells for first two columns */
+.analysis-table.four-column-layout thead th:first-child,
+.analysis-table.four-column-layout thead th:nth-child(2) {
+  background: #1e40af !important;
+  border: none !important;
+  width: auto !important;
+}
+
+/* PRESCRIBED header - Column 3 */
+.analysis-table.four-column-layout thead th.prescribed-header {
+  background: #1e40af !important;
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 14px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  white-space: nowrap !important;
+  width: 45% !important;
+}
+
+/* DATA ENTERED header - Column 4 */
+.analysis-table.four-column-layout thead th.data-entered-header {
+  background: #1e40af !important;
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 14px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  white-space: nowrap !important;
+  width: 45% !important;
+}
+
+/* Green checkmark in DATA ENTERED header */
+.analysis-table.four-column-layout .header-checkmark {
+  color: #10b981 !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  margin-left: 8px !important;
+}
+
+/* Table Body */
+.analysis-table.four-column-layout tbody {
+  display: table-row-group !important;
+}
+
+.analysis-table.four-column-layout tbody tr {
+  display: table-row !important;
+  height: auto !important;
+  min-height: 35px !important;
+}
+
+.analysis-table.four-column-layout tbody td {
+  display: table-cell !important;
+  border: 1px solid #d1d5db !important;
+  vertical-align: middle !important;
+  padding: 8px !important;
+}
+
+/* Column 1: Section labels (vertical text) */
+.analysis-table.four-column-layout td.section-label-cell {
+  width: 30px !important;
+  min-width: 30px !important;
+  max-width: 30px !important;
+  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%) !important;
+  text-align: center !important;
+  padding: 0 !important;
+  border-right: 2px solid #6366f1 !important;
+  position: relative !important;
+}
+
+.section-label-vertical {
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  transform: rotate(180deg) !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+  color: #1e40af !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  padding: 10px 3px !important;
+  display: inline-block !important;
+}
+
+/* Column 2: Field names */
+.analysis-table.four-column-layout td.field-name-cell {
+  width: 10% !important;
+  min-width: 100px !important;
+  background: #f3f4f6 !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  color: #374151 !important;
+  padding: 8px !important;
+  white-space: nowrap !important;
+  border-right: 1px solid #d1d5db !important;
+}
+
+/* Column 3: PRESCRIBED values */
+.analysis-table.four-column-layout td.prescribed-value-cell {
+  width: 45% !important;
+  background: white !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  color: #111827 !important;
+  border-right: 2px solid #d1d5db !important;
+  position: relative !important;
+}
+
+/* Column 4: DATA ENTERED values */
+.analysis-table.four-column-layout td.data-entered-value-cell {
+  width: 45% !important;
+  background: white !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  color: #111827 !important;
+  position: relative !important;
+}
+
+/* Row background colors based on section */
+/* Patient section - light blue */
+.analysis-table.four-column-layout tr[data-section="patient"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr[data-section="patient"] td.data-entered-value-cell {
+  background: #dbeafe !important;
+}
+
+/* RX Info section - light yellow */
+.analysis-table.four-column-layout tr[data-section="rx-info"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr[data-section="rx-info"] td.data-entered-value-cell {
+  background: #fef3c7 !important;
+}
+
+/* Prescriber section - light purple */
+.analysis-table.four-column-layout tr[data-section="prescriber"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr[data-section="prescriber"] td.data-entered-value-cell {
+  background: #e9d5ff !important;
+}
+
+/* Match status coloring */
+.analysis-table.four-column-layout tr.match-row td.data-entered-value-cell {
+  background: #d1fae5 !important;
+  position: relative !important;
+}
+
+.analysis-table.four-column-layout tr.match-row td.data-entered-value-cell::after {
+  content: "✓" !important;
+  position: absolute !important;
+  right: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #10b981 !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+}
+
+.analysis-table.four-column-layout tr.mismatch-row td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.mismatch-row td.data-entered-value-cell {
+  background: #fee2e2 !important;
+}
+
+/* Special styling for specific fields */
+.analysis-table.four-column-layout tr.mismatch-row td.prescribed-value-cell {
+  color: #dc2626 !important;
+  font-weight: 500 !important;
+}
+
+/* Value with check display */
+.value-with-check {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+}
+
+.inline-checkmark {
+  color: #10b981 !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  margin-left: 10px !important;
+}
+
+/* Required asterisk */
+.required-asterisk {
+  color: #ef4444 !important;
+  margin-left: 2px !important;
+  font-weight: bold !important;
+}
+
+/* Ensure proper display of multi-line content */
+.prescribed-value-cell,
+.data-entered-value-cell {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  line-height: 1.4 !important;
+}
+
+/* Rainbow gradient for special rows (matching k1.jpg) */
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+.analysis-table.four-column-layout tr:nth-child(2) td.prescribed-value-cell,
+.analysis-table.four-column-layout tr:nth-child(2) td.data-entered-value-cell {
+  background: linear-gradient(90deg, 
+    rgba(255,182,193,0.3) 0%, 
+    rgba(255,218,185,0.3) 14%, 
+    rgba(255,255,224,0.3) 28%, 
+    rgba(144,238,144,0.3) 42%, 
+    rgba(173,216,230,0.3) 56%, 
+    rgba(221,160,221,0.3) 70%, 
+    rgba(255,182,193,0.3) 84%, 
+    rgba(255,218,185,0.3) 100%) !important;
+  background-size: 200% 100% !important;
+  animation: rainbow 10s linear infinite !important;
+}
+
+/* Container fixes */
+.prescription-tables-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 10px !important;
+  overflow-x: auto !important;
+}
+
+.prescription-table-section {
+  width: 100% !important;
+  margin-bottom: 20px !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .analysis-table.four-column-layout {
+    min-width: 900px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .prescription-tables-container {
+    overflow-x: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .analysis-table.four-column-layout {
+    page-break-inside: avoid !important;
+    border: 1px solid #000 !important;
+  }
+  
+  .analysis-table.four-column-layout * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* Force override any conflicting styles */
+.analysis-table.four-column-layout,
+.analysis-table.four-column-layout thead,
+.analysis-table.four-column-layout tbody,
+.analysis-table.four-column-layout tr,
+.analysis-table.four-column-layout th,
+.analysis-table.four-column-layout td {
+  display: table !important;
+}
+
+.analysis-table.four-column-layout thead,
+.analysis-table.four-column-layout tbody {
+  display: table-row-group !important;
+}
+
+.analysis-table.four-column-layout tr {
+  display: table-row !important;
+}
+
+.analysis-table.four-column-layout th,
+.analysis-table.four-column-layout td {
+  display: table-cell !important;
+}

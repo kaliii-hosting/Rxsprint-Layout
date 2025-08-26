@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { firestore } from '../config/firebase';
 import { useNavigate } from 'react-router-dom';
-import suppliesData from '../pages/Shop/combined_supplies.json';
+// Shop data import removed
 
 const SearchContext = createContext();
 
@@ -22,7 +22,7 @@ export const SearchProvider = ({ children }) => {
   const [haeMedications, setHaeMedications] = useState([]);
   const [scdMedications, setScdMedications] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
-  const [shopProducts, setShopProducts] = useState([]);
+  // Shop products state removed
   const [notes, setNotes] = useState([]);
   const [workflowSections, setWorkflowSections] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +37,6 @@ export const SearchProvider = ({ children }) => {
     loadScdMedications();
     // Only load medications - remove other data sources
     // loadBookmarks();
-    // loadShopProducts();
     // loadNotes();
     // loadWorkflowSections();
   }, []);
@@ -172,58 +171,7 @@ export const SearchProvider = ({ children }) => {
     }
   };
 
-  const loadShopProducts = () => {
-    try {
-      const allProducts = [];
-      const uniqueItems = new Map();
-      const { infusion_supplies, additional_supplies } = suppliesData.medical_supplies_database;
-      
-      // First collect unique items
-      Object.entries(infusion_supplies).forEach(([category, items]) => {
-        items.forEach(item => {
-          const key = item.irc_code || item.name;
-          if (!uniqueItems.has(key)) {
-            uniqueItems.set(key, { ...item, originalCategory: category });
-          }
-        });
-      });
-      
-      // Process each unique item once for search
-      uniqueItems.forEach((item, key) => {
-        allProducts.push({
-          id: `${item.originalCategory}-${item.irc_code}`,
-          category: item.originalCategory,
-          name: item.name,
-          irc_code: item.irc_code,
-          description: item.description,
-          purpose: item.purpose,
-          image_url: item.image_url,
-          type: 'shopProduct'
-        });
-      });
-
-      // Process additional supplies
-      if (additional_supplies) {
-        additional_supplies.forEach((item, index) => {
-          allProducts.push({
-            id: `GENERAL-${item.irc_code || index}`,
-            category: 'GENERAL',
-            name: item.name,
-            irc_code: item.irc_code || `GEN${index + 1}`,
-            description: item.description,
-            purpose: item.purpose,
-            image_url: item.image_url,
-            type: 'shopProduct'
-          });
-        });
-      }
-
-      setShopProducts(allProducts);
-    } catch (error) {
-      console.error('Error loading shop products for search:', error);
-      setShopProducts([]);
-    }
-  };
+  // Shop products loading function removed - Shop page deleted
 
   const loadNotes = async () => {
     try {
@@ -488,7 +436,7 @@ export const SearchProvider = ({ children }) => {
       loadHaeMedications,
       loadScdMedications,
       loadBookmarks,
-      loadShopProducts,
+      // loadShopProducts removed,
       loadNotes,
       loadWorkflowSections
     }}>

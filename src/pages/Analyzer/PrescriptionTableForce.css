@@ -1,0 +1,226 @@
+/* ========================================
+   PRESCRIPTION TABLE - FORCE OVERRIDE
+   Nuclear option to fix all glitching
+   ======================================== */
+
+/* RESET EVERYTHING - Nuclear approach */
+.prescription-tables-container *,
+.analysis-table *,
+.analysis-table.four-column-layout *,
+table.analysis-table * {
+  all: unset !important;
+}
+
+/* Reapply essential table structure */
+.analysis-table.four-column-layout {
+  display: table !important;
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border: 2px solid #1e40af !important;
+  background: white !important;
+  margin: 20px auto !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 13px !important;
+  table-layout: fixed !important;
+}
+
+.analysis-table.four-column-layout thead {
+  display: table-header-group !important;
+  background: #1e40af !important;
+}
+
+.analysis-table.four-column-layout thead tr {
+  display: table-row !important;
+}
+
+.analysis-table.four-column-layout thead th {
+  display: table-cell !important;
+  padding: 12px !important;
+  color: white !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  border: 1px solid #3b82f6 !important;
+  background: #1e40af !important;
+}
+
+/* Header specific styling */
+.analysis-table.four-column-layout thead th.prescribed-header {
+  background: #1e40af !important;
+  color: white !important;
+  font-size: 14px !important;
+  text-transform: uppercase !important;
+  width: 45% !important;
+}
+
+.analysis-table.four-column-layout thead th.data-entered-header {
+  background: #1e40af !important;
+  color: white !important;
+  font-size: 14px !important;
+  text-transform: uppercase !important;
+  width: 45% !important;
+}
+
+.header-checkmark {
+  color: #10b981 !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  margin-left: 8px !important;
+}
+
+/* Body structure */
+.analysis-table.four-column-layout tbody {
+  display: table-row-group !important;
+}
+
+.analysis-table.four-column-layout tbody tr {
+  display: table-row !important;
+  height: auto !important;
+}
+
+.analysis-table.four-column-layout tbody td {
+  display: table-cell !important;
+  border: 1px solid #d1d5db !important;
+  padding: 8px !important;
+  vertical-align: middle !important;
+  font-size: 13px !important;
+  color: #111827 !important;
+}
+
+/* Section label column */
+.analysis-table.four-column-layout td.section-label-cell {
+  width: 30px !important;
+  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%) !important;
+  border-right: 2px solid #6366f1 !important;
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+.section-label-vertical {
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  transform: rotate(180deg) !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+  color: #1e40af !important;
+  text-transform: uppercase !important;
+  padding: 10px 3px !important;
+  letter-spacing: 1px !important;
+}
+
+.section-label-vertical span {
+  display: inline !important;
+}
+
+/* Field name column */
+.analysis-table.four-column-layout td.field-name-cell {
+  width: 10% !important;
+  background: #f3f4f6 !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+  white-space: nowrap !important;
+}
+
+.required-asterisk {
+  color: #ef4444 !important;
+  font-weight: bold !important;
+}
+
+/* Value columns */
+.analysis-table.four-column-layout td.prescribed-value-cell {
+  width: 45% !important;
+  background: white !important;
+  border-right: 2px solid #d1d5db !important;
+}
+
+.analysis-table.four-column-layout td.data-entered-value-cell {
+  width: 45% !important;
+  background: white !important;
+}
+
+/* Value wrapper */
+.value-with-check {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+}
+
+.inline-checkmark {
+  color: #10b981 !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  margin-left: auto !important;
+}
+
+/* Section-based coloring */
+.analysis-table.four-column-layout tr[data-section="patient"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr[data-section="patient"] td.data-entered-value-cell {
+  background: #dbeafe !important;
+}
+
+.analysis-table.four-column-layout tr[data-section="rx-info"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr[data-section="rx-info"] td.data-entered-value-cell {
+  background: #fef3c7 !important;
+}
+
+.analysis-table.four-column-layout tr[data-section="prescriber"] td.prescribed-value-cell,
+.analysis-table.four-column-layout tr[data-section="prescriber"] td.data-entered-value-cell {
+  background: #e9d5ff !important;
+}
+
+/* Match status highlighting */
+.analysis-table.four-column-layout tr.match-row td.data-entered-value-cell {
+  background: #d1fae5 !important;
+}
+
+.analysis-table.four-column-layout tr.mismatch-row td.prescribed-value-cell,
+.analysis-table.four-column-layout tr.mismatch-row td.data-entered-value-cell {
+  background: #fee2e2 !important;
+}
+
+/* Container */
+.prescription-tables-container {
+  width: 100% !important;
+  padding: 10px !important;
+  overflow-x: auto !important;
+}
+
+.prescription-table-section {
+  margin-bottom: 20px !important;
+}
+
+/* Force display properties for all elements */
+.analysis-table.four-column-layout,
+.analysis-table.four-column-layout * {
+  box-sizing: border-box !important;
+}
+
+/* Specific resets for nested elements */
+.analysis-table.four-column-layout span,
+.analysis-table.four-column-layout div {
+  display: inline !important;
+}
+
+.section-label-vertical {
+  display: inline-block !important;
+}
+
+.value-with-check {
+  display: flex !important;
+}
+
+/* Responsive fixes */
+@media (max-width: 1200px) {
+  .analysis-table.four-column-layout {
+    min-width: 800px !important;
+  }
+}
+
+/* Dark theme override */
+[data-theme="dark"] .analysis-table.four-column-layout,
+[data-theme="dark"] .analysis-table.four-column-layout * {
+  /* Force light theme for consistency with reference */
+  background: inherit !important;
+  color: inherit !important;
+}

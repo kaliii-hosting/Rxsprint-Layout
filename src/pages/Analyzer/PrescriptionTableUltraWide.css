@@ -1,0 +1,343 @@
+/* ========================================
+   PRESCRIPTION ANALYZER - ULTRA WIDE LAYOUT FIX
+   Maximum width for data columns with compact height
+   ======================================== */
+
+/* Override all previous table width settings */
+.analysis-table.four-column-layout {
+  width: 100% !important;
+  max-width: 100% !important;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid #e5e7eb;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  table-layout: fixed !important;
+  margin: 5px 0 !important;
+}
+
+/* Force container to use full width */
+.prescription-tables-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 5px !important;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+.prescription-table-section {
+  width: 100% !important;
+  margin-bottom: 10px !important;
+}
+
+/* CRITICAL: Ultra-wide column distribution */
+.analysis-table.four-column-layout colgroup col:nth-child(1) {
+  width: 35px !important;
+}
+
+.analysis-table.four-column-layout colgroup col:nth-child(2) {
+  width: 100px !important;
+}
+
+.analysis-table.four-column-layout colgroup col:nth-child(3),
+.analysis-table.four-column-layout colgroup col:nth-child(4) {
+  width: calc((100% - 135px) / 2) !important;
+}
+
+/* Force column widths with higher specificity */
+.analysis-table.four-column-layout thead th:nth-child(1),
+.analysis-table.four-column-layout tbody td:nth-child(1) {
+  width: 35px !important;
+  min-width: 35px !important;
+  max-width: 35px !important;
+  padding: 0 !important;
+}
+
+.analysis-table.four-column-layout thead th:nth-child(2),
+.analysis-table.four-column-layout tbody td:nth-child(2) {
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+  padding: 4px 6px !important;
+}
+
+/* MAIN FIX: Make columns 3 and 4 much wider and equal */
+.analysis-table.four-column-layout thead th:nth-child(3),
+.analysis-table.four-column-layout thead th:nth-child(4),
+.analysis-table.four-column-layout tbody td:nth-child(3),
+.analysis-table.four-column-layout tbody td:nth-child(4) {
+  width: calc((100% - 135px) / 2) !important;
+  min-width: 400px !important;
+  padding: 6px 12px !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Ensure headers don't wrap and stay on one line */
+.analysis-table.four-column-layout .prescribed-header,
+.analysis-table.four-column-layout .data-entered-header {
+  background: #4a5568;
+  color: white;
+  padding: 6px 12px !important;
+  text-align: center;
+  font-weight: 600;
+  font-size: 11px !important;
+  border: 1px solid #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap !important; /* Force single line */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 400px !important;
+}
+
+.analysis-table.four-column-layout .data-entered-header {
+  background: #2d3748;
+}
+
+.header-checkmark {
+  color: #10b981;
+  font-weight: bold;
+  margin-left: 4px;
+  font-size: 13px !important;
+}
+
+/* Ultra-compact section label */
+.section-label-cell {
+  background: #e5e7eb;
+  border: 1px solid #d1d5db;
+  width: 35px !important;
+  min-width: 35px !important;
+  max-width: 35px !important;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0 !important;
+  position: relative;
+}
+
+.section-label-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  padding: 8px 2px !important;
+  font-weight: 700;
+  font-size: 11px !important;
+  color: #1f2937;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* Compact field name cell */
+.field-name-cell {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 4px 6px !important;
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 10px !important;
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2 !important;
+}
+
+/* Ultra-compact value cells with proper text display */
+.prescribed-value-cell,
+.data-entered-value-cell {
+  border: 1px solid #e5e7eb;
+  padding: 4px 12px !important;
+  font-size: 11px !important;
+  color: #374151;
+  background: white;
+  word-break: break-word;
+  line-height: 1.2 !important;
+  vertical-align: middle;
+  min-height: 24px !important;
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Remove excessive spacing in cells */
+.prescribed-value-cell *,
+.data-entered-value-cell * {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Ensure multi-line content is compact */
+.prescribed-value-cell,
+.data-entered-value-cell {
+  max-height: 50px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+/* Ultra-compact checkmark display */
+.value-with-check {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  min-height: 20px;
+}
+
+.inline-checkmark {
+  color: #10b981;
+  font-weight: bold;
+  font-size: 12px !important;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Subtle row highlighting */
+.analysis-table.four-column-layout tr.match-row .prescribed-value-cell,
+.analysis-table.four-column-layout tr.match-row .data-entered-value-cell {
+  background-color: rgba(220, 252, 231, 0.2) !important;
+}
+
+.analysis-table.four-column-layout tr.mismatch-row .prescribed-value-cell,
+.analysis-table.four-column-layout tr.mismatch-row .data-entered-value-cell {
+  background-color: rgba(254, 226, 226, 0.2) !important;
+}
+
+.analysis-table.four-column-layout tr.partial-row .prescribed-value-cell,
+.analysis-table.four-column-layout tr.partial-row .data-entered-value-cell {
+  background-color: rgba(254, 249, 195, 0.2) !important;
+}
+
+/* Remove all unnecessary spacing */
+.analysis-table.four-column-layout tbody tr {
+  border: none;
+  height: auto !important;
+}
+
+.analysis-table.four-column-layout tbody tr td {
+  border-top: none;
+  border-bottom: 1px solid #e5e7eb;
+  border-left: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  height: auto !important;
+  min-height: 24px !important;
+}
+
+/* Remove thead empty cells spacing */
+.analysis-table.four-column-layout thead th:empty {
+  padding: 0 !important;
+  height: 0 !important;
+  border: none !important;
+}
+
+/* Extra wide screens - maximize data columns */
+@media (min-width: 1600px) {
+  .analysis-table.four-column-layout thead th:nth-child(3),
+  .analysis-table.four-column-layout thead th:nth-child(4),
+  .analysis-table.four-column-layout tbody td:nth-child(3),
+  .analysis-table.four-column-layout tbody td:nth-child(4) {
+    min-width: 500px !important;
+  }
+  
+  .analysis-table.four-column-layout .prescribed-header,
+  .analysis-table.four-column-layout .data-entered-header {
+    min-width: 500px !important;
+  }
+}
+
+@media (min-width: 1920px) {
+  .analysis-table.four-column-layout thead th:nth-child(3),
+  .analysis-table.four-column-layout thead th:nth-child(4),
+  .analysis-table.four-column-layout tbody td:nth-child(3),
+  .analysis-table.four-column-layout tbody td:nth-child(4) {
+    min-width: 600px !important;
+  }
+  
+  .analysis-table.four-column-layout .prescribed-header,
+  .analysis-table.four-column-layout .data-entered-header {
+    min-width: 600px !important;
+  }
+}
+
+/* Medium screens */
+@media (max-width: 1280px) {
+  .analysis-table.four-column-layout thead th:nth-child(3),
+  .analysis-table.four-column-layout thead th:nth-child(4),
+  .analysis-table.four-column-layout tbody td:nth-child(3),
+  .analysis-table.four-column-layout tbody td:nth-child(4) {
+    min-width: 350px !important;
+  }
+  
+  .analysis-table.four-column-layout .prescribed-header,
+  .analysis-table.four-column-layout .data-entered-header {
+    min-width: 350px !important;
+  }
+}
+
+/* Ensure table uses available width */
+.analysis-table.four-column-layout {
+  min-width: 970px !important; /* 35 + 100 + 400 + 400 + 35px borders */
+}
+
+/* Override any conflicting styles */
+.supply-table-section .analysis-table.four-column-layout th:nth-child(3),
+.supply-table-section .analysis-table.four-column-layout td:nth-child(3),
+.supply-table-section .analysis-table.four-column-layout th:nth-child(4),
+.supply-table-section .analysis-table.four-column-layout td:nth-child(4) {
+  width: calc((100% - 135px) / 2) !important;
+  min-width: 400px !important;
+}
+
+/* Force horizontal scroll if needed */
+.prescription-tables-container {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure the table wrapper allows for wide tables */
+.analysis-table-container {
+  width: 100% !important;
+  overflow-x: auto !important;
+}
+
+/* Dark theme support */
+[data-theme="dark"] .analysis-table.four-column-layout {
+  background: var(--card-background);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .analysis-table.four-column-layout .prescribed-header,
+[data-theme="dark"] .analysis-table.four-column-layout .data-entered-header {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .section-label-cell {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .field-name-cell {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .prescribed-value-cell,
+[data-theme="dark"] .data-entered-value-cell {
+  background: var(--card-background);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}

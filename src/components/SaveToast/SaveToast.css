@@ -1,0 +1,197 @@
+/* SaveToast.css - Toast notification styling */
+
+/* Toast container */
+.save-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  
+  min-width: 280px;
+  max-width: 400px;
+  padding: 14px 16px;
+  
+  background: var(--bg-primary, #ffffff);
+  border-radius: 12px;
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.1),
+    0 4px 10px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  
+  animation: slideInUp 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: all 0.3s ease;
+}
+
+/* Animation for toast appearance */
+@keyframes slideInUp {
+  from {
+    transform: translateY(100px) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Toast content container */
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+/* Toast message */
+.toast-message {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary, #1a1a1a);
+  line-height: 1.4;
+}
+
+/* Icons styling */
+.toast-icon-success {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.toast-icon-saving {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.toast-icon-error {
+  color: #ef4444;
+  flex-shrink: 0;
+}
+
+/* Spinning animation for saving state */
+.spin-animation {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Close button */
+.toast-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  
+  color: var(--text-secondary, #666666);
+  cursor: pointer;
+  
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toast-close-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary, #1a1a1a);
+}
+
+.toast-close-btn:active {
+  transform: scale(0.95);
+}
+
+/* Status-specific styling */
+.save-toast.saved {
+  border-left: 4px solid #10b981;
+}
+
+.save-toast.saving {
+  border-left: 4px solid #f59e0b;
+}
+
+.save-toast.error {
+  border-left: 4px solid #ef4444;
+  background: #fef2f2;
+}
+
+.save-toast.error .toast-message {
+  color: #991b1b;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .save-toast {
+  background: var(--bg-primary, #2d2d2d);
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.3),
+    0 4px 10px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .save-toast.error {
+  background: #7f1d1d;
+}
+
+[data-theme="dark"] .toast-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .save-toast {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    max-width: calc(100% - 32px);
+    min-width: auto;
+  }
+}
+
+/* Fade out animation when closing */
+.save-toast.closing {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+}
+
+/* Multiple toasts stacking */
+.save-toast:nth-of-type(2) {
+  bottom: 100px;
+}
+
+.save-toast:nth-of-type(3) {
+  bottom: 176px;
+}
+
+/* Accessibility - Focus styles */
+.toast-close-btn:focus-visible {
+  outline: 2px solid var(--primary-color, #ff6900);
+  outline-offset: 2px;
+}
+
+/* Prevent text selection */
+.save-toast {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
