@@ -1,0 +1,6 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": "input=$(cat); cwd=$(echo \"$input\" | jq -r '.workspace.current_dir'); cd \"$cwd\" 2>/dev/null || true; branch=$(git branch --show-current 2>/dev/null || echo 'no-git'); time=$(date +%H:%M:%S); printf '\\033[38;5;208m%s \\033[38;5;208m%s\\033[0m' \"$branch\" \"$time\""
+  }
+}

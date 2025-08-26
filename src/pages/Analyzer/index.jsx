@@ -53,23 +53,18 @@ const Analyzer = () => {
   const previousSupplyInputRef = useRef(null);
   const currentSupplyInputRef = useRef(null);
 
-  // Field configuration matching the screenshot layout
+  // Field configuration matching the exact screenshot layout
   const fieldSections = [
     {
       title: 'Patient',
       fields: [
-        { label: 'Name', rxKey: 'Rx PT Name', deKey: 'DE PT Name' },
-        { label: 'DOB', rxKey: 'Rx PT DOB', deKey: 'DE PT DOB' },
-        { label: 'Gender', rxKey: 'Rx PT Gender', deKey: 'DE PT Gender' },
-        { label: 'Address', rxKey: 'Rx PT Address', deKey: 'DE PT Address' },
-        { label: 'Phone', rxKey: 'Rx PT Phone', deKey: 'DE PT Phone' }
-      ]
-    },
-    {
-      title: 'Rx Info',
-      fields: [
+        { label: 'PT Name', rxKey: 'Rx PT Name', deKey: 'DE PT Name' },
+        { label: 'PT DOB', rxKey: 'Rx PT DOB', deKey: 'DE PT DOB' },
+        { label: 'PT Gender', rxKey: 'Rx PT Gender', deKey: 'DE PT Gender' },
+        { label: 'PT Address', rxKey: 'Rx PT Address', deKey: 'DE PT Address' },
+        { label: 'PT Phone', rxKey: 'Rx PT Phone', deKey: 'DE PT Phone' },
         { label: 'Written Date', rxKey: 'Rx Written date', deKey: 'DE Written Date' },
-        { label: 'Exp Date', rxKey: 'Rx EXP Date', deKey: 'DE EXP Date' },
+        { label: 'EXP Date', rxKey: 'Rx EXP Date', deKey: 'DE EXP Date' },
         { label: 'Drug', rxKey: 'Rx Drug', deKey: 'DE Drug' },
         { label: 'Strength | Form', rxKey: 'Rx Strength | Form', deKey: 'DE Strength | Form' },
         { label: 'NDC', rxKey: 'Rx NDC', deKey: 'DE NDC' },
@@ -77,18 +72,13 @@ const Analyzer = () => {
         { label: 'Sig', rxKey: 'RX Sig', deKey: 'DE Sig' },
         { label: 'Quantity | UOM', rxKey: 'RX Quantity | UOM', deKey: 'DE Quantity | UOM' },
         { label: 'Days Supply', rxKey: 'RX Days Supply', deKey: 'DE Days Supply' },
-        { label: 'Refills', rxKey: 'RX Refills', deKey: 'DE Refills' }
-      ]
-    },
-    {
-      title: 'Prescriber',
-      fields: [
-        { label: 'Name', rxKey: 'RX Doctor Name', deKey: 'DE Doctor Name' },
-        { label: 'Address', rxKey: 'RX Doctor Address', deKey: 'DE Doctor Address' },
-        { label: 'Phone', rxKey: 'RX Doctor Phone', deKey: 'DE Doctor Phone' },
-        { label: 'Fax', rxKey: 'RX Doctor Fax', deKey: 'DE Doctor Fax' },
-        { label: 'NPI', rxKey: 'RX Doctor NPI', deKey: 'DE Doctor NPI' },
-        { label: 'DEA', rxKey: 'RX Doctor DEA', deKey: 'DE Doctor DEA' }
+        { label: 'Refills', rxKey: 'RX Refills', deKey: 'DE Refills' },
+        { label: 'Doctor Name', rxKey: 'RX Doctor Name', deKey: 'DE Doctor Name' },
+        { label: 'Doctor Address', rxKey: 'RX Doctor Address', deKey: 'DE Doctor Address' },
+        { label: 'Doctor Phone', rxKey: 'RX Doctor Phone', deKey: 'DE Doctor Phone' },
+        { label: 'Doctor Fax', rxKey: 'RX Doctor Fax', deKey: 'DE Doctor Fax' },
+        { label: 'Doctor NPI', rxKey: 'RX Doctor NPI', deKey: 'DE Doctor NPI' },
+        { label: 'Doctor DEA', rxKey: 'RX Doctor DEA', deKey: 'DE Doctor DEA' }
       ]
     }
   ];
@@ -263,7 +253,7 @@ const Analyzer = () => {
   const getMatchStatus = (label, rxVal, deVal, allRxFields = {}, allDeFields = {}) => {
     // Special logic for prescriber fields when NPI matches
     // Check if this is a prescriber field (but not NPI itself)
-    const prescriberFieldLabels = ['Name', 'Address', 'Phone', 'Fax', 'DEA'];
+    const prescriberFieldLabels = ['Doctor Name', 'Doctor Address', 'Doctor Phone', 'Doctor Fax', 'Doctor DEA'];
     if (prescriberFieldLabels.includes(label)) {
       // Check if we have the prescriber NPI fields
       const rxNPI = (allRxFields['RX Doctor NPI'] || '').trim();
@@ -307,6 +297,7 @@ const Analyzer = () => {
     }
 
     switch (label) {
+      case "PT Name":
       case "Name": {
         const nameMatch = compareNames(rxVal, deVal);
         if (nameMatch) return 'match';
@@ -324,6 +315,7 @@ const Analyzer = () => {
         return 'mismatch';
       }
 
+      case "PT DOB":
       case "DOB": {
         const rxDate = extractDate(rxVal);
         const deDate = extractDate(deVal);
@@ -332,6 +324,7 @@ const Analyzer = () => {
         return 'mismatch';
       }
 
+      case "PT Address":
       case "Address": {
         if (compareAddresses(rxVal, deVal)) return 'match';
         // Check for partial match
@@ -347,7 +340,10 @@ const Analyzer = () => {
         return 'mismatch';
       }
 
+      case "PT Phone":
+      case "Doctor Phone":
       case "Phone":
+      case "Doctor Fax":
       case "Fax": {
         const rxPhone = normalizePhone(rxVal);
         const dePhone = normalizePhone(deVal);
@@ -364,6 +360,7 @@ const Analyzer = () => {
       }
 
       case "Written Date":
+      case "EXP Date":
       case "Exp Date": {
         // Special case for Exp Date: if prescribed column has "-", mark as match
         if (label === "Exp Date" && rxVal.trim() === "-") {
@@ -762,7 +759,7 @@ const Analyzer = () => {
       // Poll for results
       let result;
       do {
-        await new Promise(r => setTimeout(r, 2000));
+        await new Promise(r => setTimeout(r, 500)); // Reduced delay
         const resultResponse = await fetch(operationLocation, {
           headers: { 'Ocp-Apim-Subscription-Key': subscriptionKey }
         });
@@ -818,7 +815,7 @@ const Analyzer = () => {
         // Poll for results
         let result;
         do {
-          await new Promise(r => setTimeout(r, 2000));
+          await new Promise(r => setTimeout(r, 500)); // Reduced delay
           const resultResponse = await fetch(operationLocation, {
             headers: { 'Ocp-Apim-Subscription-Key': subscriptionKey }
           });
@@ -2846,23 +2843,23 @@ const Analyzer = () => {
           )}
 
 
-          {/* Scanning Overlay */}
+          {/* Scanning Overlay - Using same style as supplies analyzer */}
           {isAnalyzing && (
             <div className="scanning-overlay">
-              <div className="scanning-content">
-                <div className="scan-animation">
-                  <div className="scan-line"></div>
-                  {selectedFile?.type.startsWith('image/') ? (
-                    <img src={previewUrl} alt="Scanning" style={{width: '100%', height: '100%', objectFit: 'contain'}} />
-                  ) : (
-                    <div className="pdf-icon" style={{width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem'}}>PDF</div>
-                  )}
+              <div className="scanning-content supplies-scanning">
+                <div className="supplies-scan-animation">
+                  <ScanLine size={64} className="supplies-scanning-icon" />
                 </div>
-                <p className="scan-text">
+                <p className="scan-text supplies-scan-text">
                   {isFolderUpload 
                     ? `Analyzing file ${currentFileIndex + 1} of ${selectedFiles.length}...`
                     : 'Analyzing prescription...'}
                 </p>
+                {analysisProgress && (
+                  <p className="scan-progress-text" style={{ marginTop: '10px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                    {analysisProgress}
+                  </p>
+                )}
                 <div className="scan-progress">
                   <div className="scan-progress-bar"></div>
                 </div>
@@ -2870,8 +2867,8 @@ const Analyzer = () => {
             </div>
           )}
 
-          {/* Results */}
-          {(analysisResults || allAnalysisResults.length > 0) && !isAnalyzing && (
+          {/* Prescription Results - Only show in prescription section */}
+          {activeSection === 'prescription' && (analysisResults || allAnalysisResults.length > 0) && !isAnalyzing && (
             <div className="supplies-results-section">
               <div className="supplies-results-header">
                 <h2>Prescription Analysis Results</h2>
@@ -2885,22 +2882,46 @@ const Analyzer = () => {
                 </button>
               </div>
 
-              {/* Alerts */}
+              {/* Alert Popups */}
               {showDEAAlert && (
-                <div className="alert-banner">
-                  <AlertCircle className="alert-icon" size={20} />
-                  <div className="alert-content">
-                    <p className="alert-title">DEA Alert</p>
-                    <p className="alert-message">DEA number starts with "M". Please verify a supervising prescriber.</p>
+                <div className="alert-popup-overlay" onClick={() => setShowDEAAlert(false)}>
+                  <div className="alert-popup-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="alert-popup-header">
+                      <AlertCircle size={24} className="alert-popup-icon warning" />
+                      <h3>DEA Alert</h3>
+                      <button className="alert-popup-close" onClick={() => setShowDEAAlert(false)}>
+                        <X size={20} />
+                      </button>
+                    </div>
+                    <div className="alert-popup-body">
+                      <p>DEA number starts with "M". Please verify a supervising prescriber.</p>
+                    </div>
+                    <div className="alert-popup-footer">
+                      <button className="alert-popup-btn" onClick={() => setShowDEAAlert(false)}>
+                        OK
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
               {showNeedlesAlert && (
-                <div className="alert-banner">
-                  <AlertCircle className="alert-icon" size={20} />
-                  <div className="alert-content">
-                    <p className="alert-title">Needles Prescription Check</p>
-                    <p className="alert-message">Confirm days supply for needles does not exceed 10 days for state laws.</p>
+                <div className="alert-popup-overlay" onClick={() => setShowNeedlesAlert(false)}>
+                  <div className="alert-popup-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="alert-popup-header">
+                      <AlertCircle size={24} className="alert-popup-icon warning" />
+                      <h3>Needles Prescription Check</h3>
+                      <button className="alert-popup-close" onClick={() => setShowNeedlesAlert(false)}>
+                        <X size={20} />
+                      </button>
+                    </div>
+                    <div className="alert-popup-body">
+                      <p>Confirm days supply for needles does not exceed 10 days for state laws.</p>
+                    </div>
+                    <div className="alert-popup-footer">
+                      <button className="alert-popup-btn" onClick={() => setShowNeedlesAlert(false)}>
+                        OK
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -2908,285 +2929,107 @@ const Analyzer = () => {
               {/* Analysis Table */}
               {allAnalysisResults.length > 0 ? (
                 // Multiple files results
-                <div className="multi-file-results">
+                <div className="prescription-tables-container">
                   {allAnalysisResults.map((fileResult, fileIndex) => (
-                    <div key={fileIndex} className="file-result-section">
+                    <div key={fileIndex} className="prescription-table-section">
                       <h3 className="file-result-title">{fileResult.fileName}</h3>
-                      
-                      {/* File-specific alerts */}
-                      {fileResult.hasDeaAlert && (
-                        <div className="alert-banner file-alert">
-                          <AlertCircle className="alert-icon" size={20} />
-                          <div className="alert-content">
-                            <p className="alert-title">DEA Alert</p>
-                            <p className="alert-message">DEA number starts with "M". Please verify a supervising prescriber.</p>
-                          </div>
-                        </div>
-                      )}
-                      {fileResult.hasNeedlesAlert && (
-                        <div className="alert-banner file-alert">
-                          <AlertCircle className="alert-icon" size={20} />
-                          <div className="alert-content">
-                            <p className="alert-title">Needles Prescription Check</p>
-                            <p className="alert-message">Confirm days supply for needles does not exceed 10 days for state laws.</p>
-                          </div>
-                        </div>
-                      )}
-                      
-                      <h3 className="file-result-title">{fileResult.fileName}</h3>
-                      <div className="supplies-tables-container">
-                        {/* Prescribed Table */}
-                        <div className="supply-table-section">
-                          <h3 className="supply-table-title">
-                            <FileText size={20} />
-                            Prescribed
-                          </h3>
-                          <div className="table-wrapper" style={{ overflow: 'visible', maxHeight: 'none', height: 'auto' }}>
-                            <table className="analysis-table">
-                              <thead>
-                                <tr>
-                                  <th>Field</th>
-                                  <th>Value</th>
-                                  <th>Status</th>
+                        <table className="analysis-table">
+                          <thead>
+                            <tr>
+                              <th>Field Name</th>
+                              <th>Status</th>
+                              <th>Rx Value</th>
+                              <th>DE Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {fieldSections[0].fields.map((field, fieldIndex) => {
+                              const rxValue = fileResult.results[field.rxKey] || '';
+                              const deValue = fileResult.results[field.deKey] || '';
+                              const matchStatus = getMatchStatus(field.label, rxValue, deValue, fileResult.results, fileResult.results);
+                              
+                              let statusBadge;
+                              if (matchStatus === 'match') {
+                                statusBadge = <span className="status-badge matched"><Check size={14} /> Match</span>;
+                              } else if (matchStatus === 'mismatch') {
+                                statusBadge = <span className="status-badge missing"><X size={14} /> Mismatch</span>;
+                              } else if (matchStatus === 'partial') {
+                                statusBadge = <span className="status-badge changed"><AlertCircle size={14} /> Partial</span>;
+                              } else {
+                                statusBadge = <span className="status-badge">-</span>;
+                              }
+                              
+                              return (
+                                <tr key={fieldIndex} className={`${matchStatus}-row`}>
+                                  <td className="field-label">
+                                    {field.label}
+                                  </td>
+                                  <td className="status-cell">
+                                    {statusBadge}
+                                  </td>
+                                  <td className="field-value rx-value">
+                                    {rxValue || '-'}
+                                  </td>
+                                  <td className="field-value de-value">
+                                    {deValue || '-'}
+                                  </td>
                                 </tr>
-                              </thead>
-                              <tbody>
-                                {fieldSections.map((section, sectionIndex) => (
-                                  <React.Fragment key={sectionIndex}>
-                                    <tr className="section-header-row">
-                                      <td colSpan="3">{section.title}</td>
-                                    </tr>
-                                    {section.fields.map((field, fieldIndex) => {
-                                      const rxValue = fileResult.results[field.rxKey] || '';
-                                      const deValue = fileResult.results[field.deKey] || '';
-                                      const matchStatus = getMatchStatus(field.label, rxValue, deValue, fileResult.results, fileResult.results);
-                                      
-                                      return (
-                                        <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`}>
-                                          <td className="field-label">{field.label}</td>
-                                          <td className={`field-value ${!rxValue ? 'empty' : ''}`}>
-                                            {rxValue || '-'}
-                                          </td>
-                                          <td className="status-cell">
-                                            <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
-                                              {matchStatus === 'match' ? (
-                                                <>
-                                                  <Check size={16} className="status-icon" />
-                                                  <span className="status-fallback">✓</span>
-                                                </>
-                                              ) : matchStatus === 'mismatch' ? (
-                                                <>
-                                                  <XIcon size={16} className="status-icon" />
-                                                  <span className="status-fallback">✗</span>
-                                                </>
-                                              ) : matchStatus === 'partial' ? (
-                                                <>
-                                                  <AlertCircle size={16} className="status-icon" />
-                                                  <span className="status-fallback">!</span>
-                                                </>
-                                              ) : null}
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </React.Fragment>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                        
-                        {/* Data Entered Table */}
-                        <div className="supply-table-section">
-                          <h3 className="supply-table-title">
-                            <FileText size={20} />
-                            Data Entered
-                          </h3>
-                          <div className="table-wrapper" style={{ overflow: 'visible', maxHeight: 'none', height: 'auto' }}>
-                            <table className="analysis-table">
-                              <thead>
-                                <tr>
-                                  <th>Field</th>
-                                  <th>Value</th>
-                                  <th>Status</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {fieldSections.map((section, sectionIndex) => (
-                                  <React.Fragment key={sectionIndex}>
-                                    <tr className="section-header-row">
-                                      <td colSpan="3">{section.title}</td>
-                                    </tr>
-                                    {section.fields.map((field, fieldIndex) => {
-                                      const rxValue = fileResult.results[field.rxKey] || '';
-                                      const deValue = fileResult.results[field.deKey] || '';
-                                      const matchStatus = getMatchStatus(field.label, rxValue, deValue, fileResult.results, fileResult.results);
-                                      
-                                      return (
-                                        <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`}>
-                                          <td className="field-label">{field.label}</td>
-                                          <td className={`field-value ${!deValue ? 'empty' : ''}`}>
-                                            {deValue || '-'}
-                                          </td>
-                                          <td className="status-cell">
-                                            <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
-                                              {matchStatus === 'match' ? (
-                                                <>
-                                                  <Check size={16} className="status-icon" />
-                                                  <span className="status-fallback">✓</span>
-                                                </>
-                                              ) : matchStatus === 'mismatch' ? (
-                                                <>
-                                                  <XIcon size={16} className="status-icon" />
-                                                  <span className="status-fallback">✗</span>
-                                                </>
-                                              ) : matchStatus === 'partial' ? (
-                                                <>
-                                                  <AlertCircle size={16} className="status-icon" />
-                                                  <span className="status-fallback">!</span>
-                                                </>
-                                              ) : null}
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </React.Fragment>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                     </div>
                   ))}
                 </div>
               ) : (
-                // Single file results - Side by Side Tables
-                <div className="supplies-tables-container">
-                  {/* Prescribed Table */}
-                  <div className="supply-table-section">
-                    <h3 className="supply-table-title">
-                      <FileText size={20} />
-                      Prescribed
-                    </h3>
-                    <div className="table-wrapper" style={{ overflow: 'visible', maxHeight: 'none', height: 'auto' }}>
-                      <table className="analysis-table">
-                        <thead>
-                          <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                            <th>Status</th>
+                // Single file results - Combined Table with Status column
+                <div className="prescription-tables-container">
+                  <div className="prescription-table-section">
+                    <table className="analysis-table">
+                      <thead>
+                      <tr>
+                        <th>Field Name</th>
+                        <th>Status</th>
+                        <th>Rx Value</th>
+                        <th>DE Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fieldSections[0].fields.map((field, fieldIndex) => {
+                        const rxValue = analysisResults[field.rxKey] || '';
+                        const deValue = analysisResults[field.deKey] || '';
+                        const matchStatus = getMatchStatus(field.label, rxValue, deValue, analysisResults, analysisResults);
+                        
+                        let statusBadge;
+                        if (matchStatus === 'match') {
+                          statusBadge = <span className="status-badge matched"><Check size={14} /> Match</span>;
+                        } else if (matchStatus === 'mismatch') {
+                          statusBadge = <span className="status-badge missing"><X size={14} /> Mismatch</span>;
+                        } else if (matchStatus === 'partial') {
+                          statusBadge = <span className="status-badge changed"><AlertCircle size={14} /> Partial</span>;
+                        } else {
+                          statusBadge = <span className="status-badge">-</span>;
+                        }
+                        
+                        return (
+                          <tr key={fieldIndex} className={`${matchStatus}-row`}>
+                            <td className="field-label">
+                              {field.label}
+                            </td>
+                            <td className="status-cell">
+                              {statusBadge}
+                            </td>
+                            <td className="field-value rx-value">
+                              {rxValue || '-'}
+                            </td>
+                            <td className="field-value de-value">
+                              {deValue || '-'}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {fieldSections.map((section, sectionIndex) => (
-                            <React.Fragment key={sectionIndex}>
-                              <tr className="section-header-row">
-                                <td colSpan="3">{section.title}</td>
-                              </tr>
-                              {section.fields.map((field, fieldIndex) => {
-                                const rxValue = analysisResults[field.rxKey] || '';
-                                const deValue = analysisResults[field.deKey] || '';
-                                const matchStatus = getMatchStatus(field.label, rxValue, deValue, analysisResults, analysisResults);
-                                
-                                return (
-                                  <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`}>
-                                    <td className="field-label">{field.label}</td>
-                                    <td className={`field-value ${!rxValue ? 'empty' : ''}`}>
-                                      {rxValue || '-'}
-                                    </td>
-                                    <td className="status-cell">
-                                      <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
-                                        {matchStatus === 'match' ? (
-                                          <>
-                                            <Check size={16} className="status-icon" />
-                                            <span className="status-fallback">✓</span>
-                                          </>
-                                        ) : matchStatus === 'mismatch' ? (
-                                          <>
-                                            <XIcon size={16} className="status-icon" />
-                                            <span className="status-fallback">✗</span>
-                                          </>
-                                        ) : matchStatus === 'partial' ? (
-                                          <>
-                                            <AlertCircle size={16} className="status-icon" />
-                                            <span className="status-fallback">!</span>
-                                          </>
-                                        ) : null}
-                                      </div>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </React.Fragment>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  
-                  {/* Data Entered Table */}
-                  <div className="supply-table-section">
-                    <h3 className="supply-table-title">
-                      <FileText size={20} />
-                      Data Entered
-                    </h3>
-                    <div className="table-wrapper" style={{ overflow: 'visible', maxHeight: 'none', height: 'auto' }}>
-                      <table className="analysis-table">
-                        <thead>
-                          <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                            <th>Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {fieldSections.map((section, sectionIndex) => (
-                            <React.Fragment key={sectionIndex}>
-                              <tr className="section-header-row">
-                                <td colSpan="3">{section.title}</td>
-                              </tr>
-                              {section.fields.map((field, fieldIndex) => {
-                                const rxValue = analysisResults[field.rxKey] || '';
-                                const deValue = analysisResults[field.deKey] || '';
-                                const matchStatus = getMatchStatus(field.label, rxValue, deValue, analysisResults, analysisResults);
-                                
-                                return (
-                                  <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`}>
-                                    <td className="field-label">{field.label}</td>
-                                    <td className={`field-value ${!deValue ? 'empty' : ''}`}>
-                                      {deValue || '-'}
-                                    </td>
-                                    <td className="status-cell">
-                                      <div className={`status-indicator ${matchStatus}`} data-status={matchStatus}>
-                                        {matchStatus === 'match' ? (
-                                          <>
-                                            <Check size={16} className="status-icon" />
-                                            <span className="status-fallback">✓</span>
-                                          </>
-                                        ) : matchStatus === 'mismatch' ? (
-                                          <>
-                                            <XIcon size={16} className="status-icon" />
-                                            <span className="status-fallback">✗</span>
-                                          </>
-                                        ) : matchStatus === 'partial' ? (
-                                          <>
-                                            <AlertCircle size={16} className="status-icon" />
-                                            <span className="status-fallback">!</span>
-                                          </>
-                                        ) : null}
-                                      </div>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </React.Fragment>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                        );
+                      })}
+                    </tbody>
+                    </table>
                   </div>
                 </div>
               )}

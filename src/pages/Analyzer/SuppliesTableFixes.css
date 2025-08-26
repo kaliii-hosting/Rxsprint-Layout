@@ -54,15 +54,21 @@
   height: auto !important;
 }
 
-/* Hide MD Last Name and Org columns */
-.supply-table-section .analysis-table th:nth-child(3),
-.supply-table-section .analysis-table td:nth-child(3) {
-  display: none !important; /* Hide Org column */
+/* Hide MD Last Name and Org columns - ONLY for supplies comparison tables */
+.supplies-results-section .supply-table-section .analysis-table th:nth-child(3),
+.supplies-results-section .supply-table-section .analysis-table td:nth-child(3) {
+  display: none !important; /* Hide Org column only in supplies comparison */
 }
 
-.supply-table-section .analysis-table th:nth-child(5),
-.supply-table-section .analysis-table td:nth-child(5) {
-  display: none !important; /* Hide MD Last Name column */
+.supplies-results-section .supply-table-section .analysis-table th:nth-child(5),
+.supplies-results-section .supply-table-section .analysis-table td:nth-child(5) {
+  display: none !important; /* Hide MD Last Name column only in supplies comparison */
+}
+
+/* Ensure prescription analyzer table columns are NEVER hidden */
+.analysis-results-table .analysis-table th,
+.analysis-results-table .analysis-table td {
+  display: table-cell !important;
 }
 
 /* Full width tables with minimal gaps */

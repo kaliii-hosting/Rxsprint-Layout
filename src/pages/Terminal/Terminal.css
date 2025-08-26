@@ -40,8 +40,12 @@
     margin: 0 !important;
     max-width: 100% !important;
     width: 100% !important;
-    height: calc(100vh - 80px) !important; /* Account for header */
-    position: relative;
+    height: 100% !important;
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     overflow: hidden;
     background: #ffffff;
     display: flex;
@@ -54,16 +58,16 @@
     padding: 0 !important;
     margin: 0 !important;
     overflow: hidden !important;
-    position: relative;
+    position: relative !important;
     background: #ffffff !important;
-    height: calc(100vh - 80px) !important; /* Account for header */
+    height: 100% !important;
     width: 100% !important;
 }
 
 /* Ensure main-container doesn't interfere */
 .main-container:has(.terminal-page-container) {
     padding: 0 !important;
-    height: calc(100vh - 80px) !important; /* Account for header */
+    height: 100% !important;
     overflow: hidden !important;
     background: #ffffff !important;
 }
@@ -217,10 +221,12 @@
 }
 
 /* Fix for viewport height on mobile browsers */
-.terminal-page-container {
-    height: calc(100vh - 80px); /* Account for header */
-    height: calc(100dvh - 80px); /* Dynamic viewport height for mobile */
-    height: calc(var(--vh, 1vh) * 100 - 80px);
+@media (max-width: 1024px) {
+    .terminal-page-container {
+        height: calc(100vh - 80px); /* Account for header */
+        height: calc(100dvh - 80px); /* Dynamic viewport height for mobile */
+        height: calc(var(--vh, 1vh) * 100 - 80px);
+    }
 }
 
 /* Mobile-specific viewport fixes */
@@ -312,5 +318,60 @@
     .main-container:has(.terminal-page-container) {
         height: calc(100vh - 80px) !important;
         height: calc(100dvh - 80px) !important;
+    }
+}
+
+/* Desktop specific styles to ensure iframe fills entire content area */
+@media (min-width: 1025px) {
+    .terminal-page-container {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    .terminal-container {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .terminal-iframe-wrapper {
+        position: relative !important;
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+    
+    .terminal-iframe {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        border: none !important;
+    }
+    
+    /* Override any default content padding for desktop */
+    .content:has(.terminal-page-container) {
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        position: relative !important;
+        height: 100% !important;
+        width: 100% !important;
     }
 }

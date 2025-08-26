@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock Display Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        .test-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .viewport-info {
+            background: #e8f4ff;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .test-scenarios {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        .success {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .warning {
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .orientation-note {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+        @media screen and (orientation: landscape) and (max-height: 600px) {
+            .orientation-note {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <h1>Digital Clock - Overlap Fix Test</h1>
+        
+        <div class="viewport-info">
+            <strong>Current Viewport:</strong><br>
+            Width: <span id="width"></span>px<br>
+            Height: <span id="height"></span>px<br>
+            Orientation: <span id="orientation"></span><br>
+            Device Pixel Ratio: <span id="dpr"></span>
+        </div>
+
+        <div class="orientation-note">
+            <strong>Landscape Mode Detected!</strong><br>
+            This is where the overlap issue was occurring. The fix should now prevent the loading bar from overlapping the bottom bar.
+        </div>
+
+        <div class="test-scenarios">
+            <h2>Fixed Issues:</h2>
+            <ul>
+                <li class="success">✓ Loading animation bar no longer overlaps bottom bar in landscape mode</li>
+                <li class="success">✓ Added bottom padding to digital-clock-content (4rem for normal, 3.5rem for small)</li>
+                <li class="success">✓ Added max-height constraint to clock-time-wrapper</li>
+                <li class="success">✓ Adjusted terminal-loading margins and padding</li>
+                <li class="success">✓ Changed justify-content from space-between to center for better distribution</li>
+            </ul>
+
+            <h2>Test Scenarios:</h2>
+            <ul>
+                <li>Rotate your device to <strong>landscape mode</strong></li>
+                <li>Test on screens with height less than 600px</li>
+                <li>Verify the loading bar appears above the bottom info bar</li>
+                <li>Check that clock time scales appropriately</li>
+                <li>Ensure no content is cut off or overlapped</li>
+            </ul>
+
+            <h2>Responsive Breakpoints Fixed:</h2>
+            <ul>
+                <li><strong>Landscape (max-height: 600px):</strong> Main landscape fix applied</li>
+                <li><strong>Extra Small Landscape (max-height: 450px):</strong> Enhanced padding and spacing</li>
+                <li><strong>Ultra Small Landscape (max-height: 380px):</strong> Inherits fixes from parent queries</li>
+            </ul>
+        </div>
+
+        <button onclick="window.location.href='/pump'">Open Pump Page</button>
+        <button onclick="testClockModal()">Test Clock Modal</button>
+    </div>
+
+    <script>
+        function updateViewportInfo() {
+            document.getElementById('width').textContent = window.innerWidth;
+            document.getElementById('height').textContent = window.innerHeight;
+            document.getElementById('orientation').textContent = window.innerWidth > window.innerHeight ? 'Landscape' : 'Portrait';
+            document.getElementById('dpr').textContent = window.devicePixelRatio || 1;
+        }
+
+        function testClockModal() {
+            alert('Click the Clock icon in the header to open the Digital Clock modal and test the fixes.');
+        }
+
+        updateViewportInfo();
+        window.addEventListener('resize', updateViewportInfo);
+        window.addEventListener('orientationchange', updateViewportInfo);
+    </script>
+</body>
+</html>

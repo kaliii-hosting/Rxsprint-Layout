@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Highlighter, Pen, RotateCcw, Download, Trash2, Move, Square, Undo, Redo, Maximize2, Save } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
-import { firestore as db } from '../../config/firebase';
+import { db } from '../../config/firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import './Board.css';
 
@@ -454,8 +454,10 @@ const Board = () => {
       if (selectedScreenshot && (dragOffset.x !== 0 || dragOffset.y !== 0)) {
         saveToHistory();
       }
-      // Keep selectedScreenshot for move mode
+      // Deselect screenshot and switch to pen tool after placing
+      setSelectedScreenshot(null);
       setDragOffset({ x: 0, y: 0 });
+      setCurrentTool('pen'); // Switch back to pen tool after moving
       return;
     }
 
@@ -736,36 +738,92 @@ const Board = () => {
         return;
       }
       
-      // Get the drawing as a data URL
-      const imageDataUrl = canvas.toDataURL('image/png');
+      // Compress the image to avoid Firestore size limits
+      // First try with lower quality JPEG
+      let imageDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      
+      // If still too large (>900KB to be safe), reduce quality further
+      if (imageDataUrl.length > 900000) {
+        imageDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+      }
+      
+      // If still too large, resize the canvas
+      if (imageDataUrl.length > 900000) {
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        const scale = 0.75; // Scale down to 75%
+        tempCanvas.width = canvas.width * scale;
+        tempCanvas.height = canvas.height * scale;
+        tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
+        imageDataUrl = tempCanvas.toDataURL('image/jpeg', 0.6);
+      }
       
       // Get the next drawing number
       const drawingNumber = await getNextDrawingNumber();
       const title = `Drawing ${drawingNumber}`;
       
-      // Create note data
-      const noteData = {
-        title: title,
-        content: `<img src="${imageDataUrl}" alt="${title}" style="max-width: 100%; height: auto;" />`,
-        starred: false,
-        images: [imageDataUrl],
-        banners: [],
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
+      // Check final size and adjust storage method
+      let noteData;
+      
+      if (imageDataUrl.length < 900000) {
+        // If image is small enough, embed it directly
+        noteData = {
+          title: title,
+          content: `<h2>${title}</h2><p>Created from Drawing Board on ${new Date().toLocaleDateString()}</p><img src="${imageDataUrl}" alt="${title}" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px;" />`,
+          starred: false,
+          images: [],
+          banners: [],
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+      } else {
+        // If still too large, create a smaller thumbnail and save minimal data
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        const maxDim = 400; // Maximum dimension for thumbnail
+        const scale = Math.min(maxDim / canvas.width, maxDim / canvas.height);
+        tempCanvas.width = canvas.width * scale;
+        tempCanvas.height = canvas.height * scale;
+        tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
+        const thumbnailUrl = tempCanvas.toDataURL('image/jpeg', 0.5);
+        
+        noteData = {
+          title: title,
+          content: `<h2>${title}</h2><p>Created from Drawing Board on ${new Date().toLocaleDateString()}</p><p style="background: #f0f0f0; padding: 20px; border-radius: 8px; text-align: center;"><img src="${thumbnailUrl}" alt="${title} thumbnail" style="max-width: 100%; height: auto; border: 1px solid #ddd;" /><br/><small>Note: This is a compressed preview. Download the full image from the Drawing Board.</small></p>`,
+          starred: false,
+          images: [],
+          banners: [],
+          drawingData: {
+            width: canvas.width,
+            height: canvas.height,
+            date: new Date().toISOString()
+          },
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+      }
       
       // Save to Firebase
-      if (db) {
+      try {
         const notesRef = collection(db, 'notes');
-        await addDoc(notesRef, noteData);
+        const docRef = await addDoc(notesRef, noteData);
         
         // Show success message
-        alert(`Drawing saved as "${title}" in Notes!`);
+        if (docRef.id) {
+          alert(`Drawing saved as "${title}" in Notes!`);
+        }
         
         // Optionally navigate to notes page
         // navigate('/notes');
-      } else {
-        alert('Database connection not available. Please try again.');
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        
+        // Check if it's a size error
+        if (dbError.message && dbError.message.includes('bytes')) {
+          alert('The drawing is too large to save. Try clearing some elements or using the Download button instead.');
+        } else {
+          alert('Database connection not available. Please check your connection and try again.');
+        }
       }
     } catch (error) {
       console.error('Error saving drawing as note:', error);

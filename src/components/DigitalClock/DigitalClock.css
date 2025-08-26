@@ -173,6 +173,14 @@
   margin-left: 0.05em;
 }
 
+.time-ampm {
+  font-size: clamp(1.5rem, 6vw, 4rem);
+  font-weight: 700;
+  margin-left: clamp(0.5rem, 1.5vw, 1.2rem);
+  opacity: 0.9;
+  font-family: 'Orbitron', 'Inter', monospace, sans-serif;
+}
+
 .time-separator {
   font-size: clamp(2.5rem, 10vw, 8rem);
   font-weight: 700;
@@ -218,7 +226,7 @@
   color: white;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
   letter-spacing: 0px;
-  margin: clamp(1rem, 2vh, 2rem) 0;
+  margin: clamp(1rem, 2vh, 2rem) auto;
   text-align: center;
   font-weight: 400;
   line-height: 1;
@@ -230,6 +238,8 @@
   white-space: nowrap;
   visibility: visible !important;
   opacity: 1 !important;
+  z-index: 5;
+  position: relative;
 }
 
 /* Date and Day Display - now part of info-container */
@@ -347,6 +357,10 @@
     font-size: clamp(4rem, 8vw, 8rem);
   }
   
+  .time-ampm {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+  }
+  
   .time-separator {
     font-size: clamp(5rem, 10vw, 10rem);
   }
@@ -390,6 +404,10 @@
   
   .time-seconds {
     font-size: clamp(2rem, 12vw, 5rem);
+  }
+  
+  .time-ampm {
+    font-size: clamp(1.5rem, 9vw, 3.5rem);
   }
   
   .time-separator {
@@ -458,12 +476,12 @@
   
   .digital-clock-content {
     gap: 0;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 0;
+    padding: 0 0 4rem 0; /* Add bottom padding to account for bottom bar */
   }
   
   .clock-time-wrapper {
@@ -474,6 +492,7 @@
     margin-bottom: 0;
     width: 100%;
     overflow: hidden;
+    max-height: calc(100% - 6rem); /* Ensure space for loading bar and bottom bar */
   }
   
   .clock-time {
@@ -493,6 +512,10 @@
     font-size: clamp(5rem, 23vh, 26vh);
   }
   
+  .time-ampm {
+    font-size: clamp(3rem, 15vh, 17vh);
+  }
+  
   .time-separator {
     font-size: clamp(6rem, 28vh, 32vh);
     margin: 0 0.02em;
@@ -502,12 +525,13 @@
   
   .terminal-loading {
     font-size: clamp(0.8rem, 2vw, 1.1rem);
-    margin: 0.5rem 0;
+    margin: 0.5rem auto;
     display: flex !important;
     visibility: visible !important;
     opacity: 0.9;
     position: relative;
     z-index: 10;
+    padding-bottom: 0.5rem;
   }
   
   .info-container {
@@ -530,6 +554,8 @@
     overflow-y: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    max-height: 4rem;
+    z-index: 15;
   }
   
   .info-container::-webkit-scrollbar {
@@ -575,12 +601,12 @@
   
   .digital-clock-content {
     gap: 0 !important;
-    justify-content: space-between !important;
+    justify-content: center !important;
     align-items: center !important;
     height: 100% !important;
     display: flex !important;
     flex-direction: column !important;
-    padding: 0 !important;
+    padding: 0 0 3.5rem 0 !important; /* Add bottom padding to prevent overlap */
   }
   
   .clock-time-wrapper {
@@ -591,6 +617,7 @@
     margin-bottom: 0 !important;
     width: 100% !important;
     overflow: hidden !important;
+    max-height: calc(100% - 5rem) !important; /* Ensure space for loading bar and bottom bar */
   }
   
   .clock-time {
@@ -610,6 +637,10 @@
     font-size: clamp(6rem, 30vh, 33vh) !important;
   }
   
+  .time-ampm {
+    font-size: clamp(4rem, 20vh, 22vh) !important;
+  }
+  
   .time-separator {
     font-size: clamp(8rem, 38vh, 42vh) !important;
     margin: 0 0.01em !important;
@@ -619,12 +650,13 @@
   
   .terminal-loading {
     font-size: clamp(0.75rem, 1.8vw, 1rem) !important;
-    margin: 0.4rem 0 !important;
+    margin: 0.4rem auto !important;
     display: flex !important;
     visibility: visible !important;
     opacity: 0.85 !important;
     position: relative !important;
     z-index: 10 !important;
+    padding-bottom: 0.4rem !important;
   }
   
   .info-container {
@@ -643,6 +675,8 @@
     flex-wrap: nowrap !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    max-height: 3.5rem !important;
+    z-index: 15 !important;
   }
   
   .day-value,
@@ -708,6 +742,10 @@
   
   .time-seconds {
     font-size: clamp(1.8rem, 14vw, 18vw);
+  }
+  
+  .time-ampm {
+    font-size: clamp(1.2rem, 10vw, 12vw);
   }
   
   .time-separator {
@@ -796,6 +834,10 @@
     font-size: clamp(5rem, 28vh, 30vh) !important;
   }
   
+  .time-ampm {
+    font-size: clamp(3.5rem, 18vh, 20vh) !important;
+  }
+  
   .time-separator {
     font-size: clamp(6.5rem, 35vh, 38vh) !important;
   }
@@ -864,6 +906,10 @@
   
   .time-seconds {
     font-size: clamp(1.5rem, 15vw, 20vw);
+  }
+  
+  .time-ampm {
+    font-size: clamp(1rem, 11vw, 14vw);
   }
   
   .time-separator {

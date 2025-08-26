@@ -168,20 +168,22 @@
    PART 4: HIDE COLUMNS
    ======================================== */
 
-/* Hide Org column (3rd) */
-.analyzer-page .supplies-results-section .analysis-table th:nth-child(3),
-.analyzer-page .supplies-results-section .analysis-table td:nth-child(3),
-.analyzer-page .supply-table-section .analysis-table th:nth-child(3),
-.analyzer-page .supply-table-section .analysis-table td:nth-child(3) {
+/* Hide Org column (3rd) - ONLY for supplies comparison tables */
+.analyzer-page .supplies-results-section .supply-table-section .analysis-table th:nth-child(3),
+.analyzer-page .supplies-results-section .supply-table-section .analysis-table td:nth-child(3) {
   display: none !important;
 }
 
-/* Hide MD Last Name column (5th) */
-.analyzer-page .supplies-results-section .analysis-table th:nth-child(5),
-.analyzer-page .supplies-results-section .analysis-table td:nth-child(5),
-.analyzer-page .supply-table-section .analysis-table th:nth-child(5),
-.analyzer-page .supply-table-section .analysis-table td:nth-child(5) {
+/* Hide MD Last Name column (5th) - ONLY for supplies comparison tables */
+.analyzer-page .supplies-results-section .supply-table-section .analysis-table th:nth-child(5),
+.analyzer-page .supplies-results-section .supply-table-section .analysis-table td:nth-child(5) {
   display: none !important;
+}
+
+/* CRITICAL: Ensure prescription analyzer table columns are ALWAYS visible */
+.analyzer-page .analysis-results-table .analysis-table th,
+.analyzer-page .analysis-results-table .analysis-table td {
+  display: table-cell !important;
 }
 
 /* ========================================

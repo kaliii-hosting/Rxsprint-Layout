@@ -20,18 +20,14 @@ import {
   Palette,
   Terminal,
   Brain,
-  Clock,
-  Plus
+  Clock
 } from 'lucide-react';
 import { useCalculator } from '../../contexts/CalculatorContext';
 import { useSearch } from '../../contexts/SearchContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import VoiceTranscription from '../VoiceTranscription/VoiceTranscription';
-import CurlinPumpIcon from '../icons/CurlinPumpIcon';
-import PumpSimulator from '../PumpSimulator/PumpSimulator';
 import DigitalClock from '../DigitalClock/DigitalClock';
-import MedicationForm from '../MedicationForm/MedicationForm';
 import './Layout.css';
 import './TabletLayout.css';
 
@@ -42,9 +38,7 @@ const Layout = ({ children }) => {
   const { theme } = useTheme();
   const { lock } = useAuth();
   const [showVoiceTranscription, setShowVoiceTranscription] = useState(false);
-  const [showPumpSimulator, setShowPumpSimulator] = useState(false);
   const [showDigitalClock, setShowDigitalClock] = useState(false);
-  const [showMedicationForm, setShowMedicationForm] = useState(false);
   
   // Handle mobile viewport height
   useEffect(() => {
@@ -86,7 +80,7 @@ const Layout = ({ children }) => {
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
     { path: '/workflow', icon: GitBranch, label: 'Workflow' },
     { path: '/note-generator', icon: Zap, label: 'Note Generator' },
-    { path: '/pump', icon: CurlinPumpIcon, label: 'Pump' },
+    { path: '/pump', icon: CalcIcon, label: 'Pump' },
     { path: '/supplies', icon: Package, label: 'Supplies' },
     { path: '/shop', icon: ShoppingCart, label: 'Shop' },
     { path: '/notes', icon: StickyNote, label: 'Notes' },
@@ -325,24 +319,6 @@ const Layout = ({ children }) => {
           </div>
           
           <div className="header-actions">
-            {location.pathname === '/pump' && (
-              <>
-                <button 
-                  className="icon-button" 
-                  title="Add Medication"
-                  onClick={() => setShowMedicationForm(true)}
-                >
-                  <Plus size={20} />
-                </button>
-                <button 
-                  className="icon-button" 
-                  title="Curling Pump"
-                  onClick={() => setShowPumpSimulator(true)}
-                >
-                  <CurlinPumpIcon size={20} />
-                </button>
-              </>
-            )}
             
             {/* Digital Clock Button */}
             <button 
@@ -383,22 +359,10 @@ const Layout = ({ children }) => {
         onClose={() => setShowVoiceTranscription(false)}
       />
       
-      {/* Pump Simulator Modal */}
-      <PumpSimulator
-        isOpen={showPumpSimulator}
-        onClose={() => setShowPumpSimulator(false)}
-      />
-      
       {/* Digital Clock Modal */}
       <DigitalClock
         isOpen={showDigitalClock}
         onClose={() => setShowDigitalClock(false)}
-      />
-      
-      {/* Medication Form Modal */}
-      <MedicationForm
-        isOpen={showMedicationForm}
-        onClose={() => setShowMedicationForm(false)}
       />
     </div>
   );

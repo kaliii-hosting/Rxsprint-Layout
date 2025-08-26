@@ -2048,6 +2048,256 @@ button.toggle-btn.full-width {
   width: 50px; /* Org column */
 }
 
+/* ========================================
+   PRESCRIPTION ANALYSIS RESULTS TABLE
+   Matching Supplies Analyzer UI Design
+   ======================================== */
+.prescription-tables-container {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 10px;
+}
+
+.prescription-table-section {
+  flex: 1;
+  max-width: 50%; /* Make it smaller like supplies tables */
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0;
+  overflow: visible;
+  margin: 0 auto; /* Center the single table */
+}
+
+/* For single prescription result, center it */
+.prescription-tables-container:has(.prescription-table-section:only-child) .prescription-table-section {
+  max-width: 800px; /* Limit max width for single table */
+}
+
+.analysis-results-table {
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.prescription-table-section .analysis-table,
+.analysis-results-table .analysis-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.875rem;
+  overflow: visible;
+}
+
+/* Table Header - Matching supplies analyzer exact style */
+.prescription-table-section .analysis-table thead,
+.analysis-results-table .analysis-table thead {
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.prescription-table-section .analysis-table th,
+.analysis-results-table .analysis-table th {
+  background: #f9fafb;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  border: 1px solid #e5e7eb;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Table Body - Matching supplies analyzer exact styling */
+.prescription-table-section .analysis-table td,
+.analysis-results-table .analysis-table td {
+  padding: 0.75rem 0.5rem;
+  font-size: 0.8125rem;
+  border: 1px solid #e5e7eb;
+  vertical-align: middle;
+  text-align: center;
+  color: var(--text-primary);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* Field Name Column */
+.analysis-results-table .analysis-table td.field-label {
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  width: 180px;
+  min-width: 180px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Field Value Columns */
+.analysis-results-table .analysis-table td.field-value {
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Row Highlighting - EXACTLY matching supplies analyzer */
+/* Matching rows - Pale green background */
+.prescription-table-section .analysis-table tr.match-row,
+.analysis-results-table .analysis-table tr.match-row {
+  background-color: #dcfce7 !important; /* Same as supplies analyzer */
+}
+
+.prescription-table-section .analysis-table tr.match-row:hover,
+.analysis-results-table .analysis-table tr.match-row:hover {
+  background-color: #bbf7d0 !important;
+}
+
+/* Mismatching rows - Pale red background */
+.prescription-table-section .analysis-table tr.mismatch-row,
+.analysis-results-table .analysis-table tr.mismatch-row {
+  background-color: #fee2e2 !important; /* Same as supplies analyzer */
+}
+
+.prescription-table-section .analysis-table tr.mismatch-row:hover,
+.analysis-results-table .analysis-table tr.mismatch-row:hover {
+  background-color: #fecaca !important;
+}
+
+/* Partial match rows - Pale yellow background */
+.prescription-table-section .analysis-table tr.partial-row,
+.analysis-results-table .analysis-table tr.partial-row {
+  background-color: #fef9c3 !important; /* Same as supplies analyzer */
+}
+
+.prescription-table-section .analysis-table tr.partial-row:hover,
+.analysis-results-table .analysis-table tr.partial-row:hover {
+  background-color: #fef08a !important;
+}
+
+/* Ensure cells inherit row background colors properly */
+.prescription-table-section .analysis-table tr.match-row td,
+.prescription-table-section .analysis-table tr.mismatch-row td,
+.prescription-table-section .analysis-table tr.partial-row td,
+.analysis-results-table .analysis-table tr.match-row td,
+.analysis-results-table .analysis-table tr.mismatch-row td,
+.analysis-results-table .analysis-table tr.partial-row td {
+  background-color: transparent !important;
+}
+
+/* Remove status indicators for cleaner look */
+.prescription-table-section .analysis-table tr.match-row td:first-child::before,
+.prescription-table-section .analysis-table tr.mismatch-row td:first-child::before,
+.prescription-table-section .analysis-table tr.partial-row td:first-child::before,
+.analysis-results-table .analysis-table tr.match-row td:first-child::before,
+.analysis-results-table .analysis-table tr.mismatch-row td:first-child::before,
+.analysis-results-table .analysis-table tr.partial-row td:first-child::before {
+  content: none;
+}
+
+/* Hover effects */
+.analysis-results-table .analysis-table tr {
+  transition: background-color 0.2s ease;
+  cursor: default;
+}
+
+/* Remove last border */
+.analysis-results-table .analysis-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Make sure the table fills the container */
+.analysis-results-table .analysis-table {
+  table-layout: auto;
+  min-width: 100%;
+}
+
+/* Column widths - Field Name, Status, Rx Value, DE Value */
+.prescription-table-section .analysis-table th:first-child,
+.prescription-table-section .analysis-table td:first-child,
+.analysis-results-table .analysis-table th:first-child,
+.analysis-results-table .analysis-table td:first-child {
+  width: 120px;
+  min-width: 100px;
+}
+
+/* Status column (2nd column) */
+.prescription-table-section .analysis-table th:nth-child(2),
+.prescription-table-section .analysis-table td:nth-child(2),
+.analysis-results-table .analysis-table th:nth-child(2),
+.analysis-results-table .analysis-table td:nth-child(2) {
+  width: 80px;
+  min-width: 80px;
+  text-align: center;
+}
+
+/* Rx Value column (3rd column) - main column with larger width */
+.prescription-table-section .analysis-table th:nth-child(3),
+.prescription-table-section .analysis-table td:nth-child(3),
+.analysis-results-table .analysis-table th:nth-child(3),
+.analysis-results-table .analysis-table td:nth-child(3) {
+  width: 30%;
+  min-width: 150px;
+  max-width: 250px;
+}
+
+/* DE Value column (4th column) - main column with same width as Rx Value */
+.prescription-table-section .analysis-table th:nth-child(4),
+.prescription-table-section .analysis-table td:nth-child(4),
+.analysis-results-table .analysis-table th:nth-child(4),
+.analysis-results-table .analysis-table td:nth-child(4) {
+  width: 30%;
+  min-width: 150px;
+  max-width: 250px;
+}
+
+/* Ensure prescription analyzer value cells have consistent styling */
+.prescription-table-section .analysis-table td.rx-value,
+.prescription-table-section .analysis-table td.de-value,
+.analysis-results-table .analysis-table td.rx-value,
+.analysis-results-table .analysis-table td.de-value {
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Status cell styling */
+.analysis-results-table .analysis-table td.status-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .analysis-results-table .analysis-table {
+    font-size: 0.75rem;
+  }
+  
+  .analysis-results-table .analysis-table th,
+  .analysis-results-table .analysis-table td {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .analysis-results-table .analysis-table td.field-label {
+    min-width: 120px;
+  }
+}
+
 .supply-table-section .analysis-table th:nth-child(4),
 .supply-table-section .analysis-table td:nth-child(4) {
   min-width: 120px; /* Medication column */
@@ -2497,5 +2747,139 @@ body .analyzer-page button.toggle-btn.full-width *,
   
   .analyzer-dashboard {
     padding-top: 0.5rem;
+  }
+}
+
+/* ========================================
+   ALERT POPUP MODAL STYLES
+   ======================================== */
+.alert-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.alert-popup-modal {
+  background: var(--card-background);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 450px;
+  width: 90%;
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
+}
+
+.alert-popup-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.alert-popup-header h3 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.alert-popup-icon {
+  flex-shrink: 0;
+}
+
+.alert-popup-icon.warning {
+  color: #f59e0b;
+}
+
+.alert-popup-close {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.alert-popup-close:hover {
+  background: var(--hover-bg);
+  color: var(--foreground);
+}
+
+.alert-popup-body {
+  padding: 1.5rem;
+}
+
+.alert-popup-body p {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.alert-popup-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  gap: 0.75rem;
+}
+
+.alert-popup-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.625rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.alert-popup-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--primary-shadow);
+}
+
+.alert-popup-btn:active {
+  transform: translateY(0);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }

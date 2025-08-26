@@ -21,6 +21,23 @@
   animation: spin 1s linear infinite;
 }
 
+/* Text Organizer Container */
+.text-organizer-container {
+  padding: 20px;
+  margin-bottom: 30px;
+  max-width: 100%;
+  position: relative;
+}
+
+/* Ensure proper spacing between text organizers */
+.text-organizer-container > * {
+  margin-bottom: 20px;
+}
+
+.text-organizer-container > *:last-child {
+  margin-bottom: 0;
+}
+
 /* Toggle Banner - Mobile-First Professional Design */
 .section-toggle-banner {
   /* Mobile-first base styles - Force horizontal layout */
