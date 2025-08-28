@@ -80,8 +80,9 @@ const DigitalClock = ({ isOpen, onClose }) => {
   const getDateString = () => {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const dateString = time.toLocaleDateString('en-US', options);
-    // Convert to sentence case (first letter caps only)
-    return dateString.charAt(0).toUpperCase() + dateString.slice(1).toLowerCase();
+    // toLocaleDateString already returns properly capitalized weekday and month names
+    // e.g., "Monday, January 15, 2025"
+    return dateString;
   };
 
   if (!isOpen) return null;
