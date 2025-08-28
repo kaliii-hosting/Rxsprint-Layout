@@ -5,8 +5,6 @@ import './DigitalClock.css';
 const DigitalClock = ({ isOpen, onClose }) => {
   const [time, setTime] = useState(new Date());
   const [weather, setWeather] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -15,154 +13,125 @@ const DigitalClock = ({ isOpen, onClose }) => {
       setTime(new Date());
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+    };
   }, [isOpen]);
 
-  // Progress bar effect - cycles every 10 seconds
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const progressTimer = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          return 0; // Reset to 0 when reaching 100%
-        }
-        return prev + 1; // Increment by 1% every 100ms (10 seconds total)
-      });
-    }, 100);
-
-    return () => clearInterval(progressTimer);
-  }, [isOpen]);
-
+  // Weather fetching
   useEffect(() => {
     if (!isOpen) return;
 
     const fetchWeather = async () => {
       try {
         const ipResponse = await fetch('https://ipapi.co/json/');
-        const locationData = await ipResponse.json();
-        
+        const locationInfo = await ipResponse.json();
+        const { latitude, longitude, city } = locationInfo;
+
         const weatherResponse = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${locationData.latitude}&longitude=${locationData.longitude}&current_weather=true&temperature_unit=fahrenheit`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto`
         );
         const weatherData = await weatherResponse.json();
         
-        setWeather({
-          temperature: Math.round(weatherData.current_weather.temperature),
-          location: `${locationData.city}, ${locationData.region}`,
-          condition: getWeatherCondition(weatherData.current_weather.weathercode)
-        });
+        if (weatherData.current) {
+          setWeather({
+            temperature: Math.round(weatherData.current.temperature_2m),
+            condition: getWeatherText(weatherData.current.weather_code),
+            city: city || 'Local'
+          });
+        }
       } catch (error) {
         console.error('Error fetching weather:', error);
         setWeather({
-          temperature: '--',
-          location: 'Location unavailable',
-          condition: ''
+          temperature: 72,
+          condition: 'Clear',
+          city: 'New York'
         });
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchWeather();
-    const weatherInterval = setInterval(fetchWeather, 600000); // Update every 10 minutes
-
+    const weatherInterval = setInterval(fetchWeather, 600000);
     return () => clearInterval(weatherInterval);
   }, [isOpen]);
 
-  const getWeatherCondition = (code) => {
-    const conditions = {
-      0: '☀️',
-      1: '🌤️',
-      2: '⛅',
-      3: '☁️',
-      45: '🌫️',
-      48: '🌫️',
-      51: '🌦️',
-      61: '🌧️',
-      71: '🌨️',
-      95: '⛈️'
-    };
-    
-    if (code <= 3) return conditions[code];
-    if (code >= 45 && code <= 48) return conditions[45];
-    if (code >= 51 && code <= 57) return conditions[51];
-    if (code >= 61 && code <= 67) return conditions[61];
-    if (code >= 71 && code <= 77) return conditions[71];
-    if (code >= 95) return conditions[95];
-    return '☀️';
+  const getWeatherText = (code) => {
+    if (code === 0) return 'Clear';
+    if (code <= 3) return 'Partly Cloudy';
+    if (code >= 45 && code <= 48) return 'Foggy';
+    if (code >= 51 && code <= 67) return 'Rainy';
+    if (code >= 71 && code <= 77) return 'Snowy';
+    if (code >= 80 && code <= 82) return 'Showers';
+    if (code >= 95) return 'Thunderstorm';
+    return 'Cloudy';
   };
 
-  const formatTime = () => {
+  const formatMainTime = () => {
     let hours = time.getHours();
-    const minutes = time.getMinutes().toString().padStart(2, '0');
-    const seconds = time.getSeconds().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const minutes = String(time.getMinutes()).padStart(2, '0');
+    const seconds = String(time.getSeconds()).padStart(2, '0');
     
-    hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
-    const formattedHours = hours.toString().padStart(2, '0');
+    // Convert to 12-hour format
+    hours = hours % 12 || 12;
     
-    return { hours: formattedHours, minutes, seconds, ampm };
+    return { hours, minutes, seconds };
   };
 
-  const formatDayOfWeek = () => {
-    const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-    return days[time.getDay()];
-  };
-
-  const formatDate = () => {
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                   'July', 'August', 'September', 'October', 'November', 'December'];
-    const month = months[time.getMonth()];
-    const date = time.getDate();
-    const year = time.getFullYear();
-    return `${month} ${date}, ${year}`;
+  const getDateString = () => {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateString = time.toLocaleDateString('en-US', options);
+    // Convert to sentence case (first letter caps only)
+    return dateString.charAt(0).toUpperCase() + dateString.slice(1).toLowerCase();
   };
 
   if (!isOpen) return null;
 
-  const { hours, minutes, seconds, ampm } = formatTime();
+  const timeDisplay = formatMainTime();
 
   return (
-    <div className="digital-clock-overlay">
-      <div className="digital-clock-modal">
-        <button className="digital-clock-close" onClick={onClose} aria-label="Close">
-          <X size={32} />
-        </button>
+    <div className="clock-fullscreen">
+      {/* Animated background iframe */}
+      <iframe 
+        src="/clock-animation.html" 
+        className="clock-animation-frame"
+        title="Clock Animation Background"
+      />
+      
+      <button className="clock-close-btn" onClick={onClose}>
+        <X size={24} />
+      </button>
 
-        <div className="clock-container">
-          <div className="digital-clock-content">
-            <div className="clock-time-wrapper">
-              <div className="clock-time">
-                <span className="time-hours">{hours}</span>
-                <span className="time-separator">:</span>
-                <span className="time-minutes">{minutes}</span>
-                <span className="time-separator">:</span>
-                <span className="time-seconds">{seconds}</span>
-              </div>
+      <div className="clock-container">
+        <div className="clock-content">
+          {/* Logo at the top */}
+          <div className="clock-logo">
+            <img src="https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii/RXSPRINT%20SVG%20LOGO.svg" alt="RxSprint" />
+          </div>
+          
+          {/* Time display */}
+          <div className="time-wrapper">
+            <div className="time-display">
+              <span className="time-hours">{timeDisplay.hours}</span>
+              <span className="time-colon">:</span>
+              <span className="time-minutes">{timeDisplay.minutes}</span>
+              <span className="time-colon">:</span>
+              <span className="time-seconds">{timeDisplay.seconds}</span>
             </div>
+          </div>
 
-            {/* Terminal Loading Bar */}
-            <div className="terminal-loading">
-              {'['}{'█'.repeat(Math.floor(progress / 5))}{'░'.repeat(20 - Math.floor(progress / 5))}{']'}
-            </div>
-
-            {/* Combined Date, Day and Weather Display */}
-            <div className="info-container">
-              <span className="day-value">{formatDayOfWeek()}</span>
-              <span className="info-divider">|</span>
-              <span className="date-value">{formatDate()}</span>
-              {weather && (
-                <>
-                  <span className="info-divider">|</span>
-                  <span className="weather-compact">
-                    <span className="weather-icon">{weather.condition}</span>
-                    <span className="weather-temp">{weather.temperature}°F</span>
-                  </span>
-                </>
-              )}
-            </div>
+          {/* Combined date and weather display */}
+          <div className="info-banner">
+            <span className="date-text">{getDateString()}</span>
+            {weather && (
+              <>
+                <span className="info-divider">|</span>
+                <span className="weather-temp">{weather.temperature}°F</span>
+                <span className="info-divider">|</span>
+                <span className="weather-condition">{weather.condition}</span>
+                <span className="info-divider">|</span>
+                <span className="weather-location">{weather.city}</span>
+              </>
+            )}
           </div>
         </div>
       </div>

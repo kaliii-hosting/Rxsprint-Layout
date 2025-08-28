@@ -3,19 +3,19 @@
    Adjusts the STATUS column to proper width
    ======================================== */
 
-/* Fix STATUS column width - make it wider to fit the header text properly */
+/* Fix STATUS column width - narrow like k2.jpg screenshot */
 .prescription-table-section table.analysis-table th:nth-child(5),
 .prescription-table-section table.analysis-table td:nth-child(5) {
-  width: 80px !important;
-  min-width: 80px !important;
-  max-width: 80px !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
 }
 
 /* Ensure STATUS header text fits properly */
 .prescription-table-section table.analysis-table th.match-header {
-  width: 80px !important;
-  min-width: 80px !important;
-  max-width: 80px !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
   padding: 8px 4px !important;
   font-size: 12px !important;
   text-align: center !important;
@@ -26,15 +26,15 @@
 
 /* STATUS cell styling */
 .prescription-table-section table.analysis-table td.match-status-cell {
-  width: 80px !important;
-  min-width: 80px !important;
-  max-width: 80px !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
   text-align: center !important;
   padding: 2px 4px !important;
   vertical-align: middle !important;
 }
 
-/* Adjust other columns to compensate for wider STATUS column */
+/* Adjust other columns to compensate for narrow STATUS column */
 /* Column 1: Section labels */
 .prescription-table-section table.analysis-table th:nth-child(1),
 .prescription-table-section table.analysis-table td:nth-child(1) {
@@ -46,50 +46,50 @@
 /* Column 2: Field names - adjust to balance layout */
 .prescription-table-section table.analysis-table th:nth-child(2),
 .prescription-table-section table.analysis-table td:nth-child(2) {
-  width: calc((100% - 180px) / 3) !important;
+  width: calc((100% - 150px) / 3) !important;
   min-width: 260px !important;
 }
 
 /* Column 3: PRESCRIBED - equal width with columns 2 & 4 */
 .prescription-table-section table.analysis-table th:nth-child(3),
 .prescription-table-section table.analysis-table td:nth-child(3) {
-  width: calc((100% - 180px) / 3) !important;
+  width: calc((100% - 150px) / 3) !important;
   min-width: 260px !important;
 }
 
 /* Column 4: DATA ENTERED - equal width with columns 2 & 3 */
 .prescription-table-section table.analysis-table th:nth-child(4),
 .prescription-table-section table.analysis-table td:nth-child(4) {
-  width: calc((100% - 180px) / 3) !important;
+  width: calc((100% - 150px) / 3) !important;
   min-width: 260px !important;
 }
 
 /* Override any conflicting styles with maximum specificity */
 body .analyzer-results .prescription-table-section table.analysis-table th:nth-child(5),
 body .analyzer-results .prescription-table-section table.analysis-table td:nth-child(5) {
-  width: 80px !important;
-  min-width: 80px !important;
-  max-width: 80px !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
   display: table-cell !important;
   visibility: visible !important;
 }
 
 body .prescription-tables-container .prescription-table-section table.analysis-table th:nth-child(5),
 body .prescription-tables-container .prescription-table-section table.analysis-table td:nth-child(5) {
-  width: 80px !important;
-  min-width: 80px !important;
-  max-width: 80px !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
 }
 
-/* Ensure the match indicator fits well in the wider column */
+/* Ensure the match indicator fits well in the narrow column */
 .prescription-table-section .match-indicator {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 22px !important;
-  height: 22px !important;
-  border-radius: 50% !important;
-  font-size: 13px !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 3px !important;
+  font-size: 12px !important;
   font-weight: bold !important;
   margin: 0 auto !important;
 }
@@ -103,7 +103,7 @@ body .prescription-tables-container .prescription-table-section table.analysis-t
 /* Force override any previous STATUS column width settings */
 [class*="prescription"] table th:nth-child(5),
 [class*="prescription"] table td:nth-child(5) {
-  width: 80px !important;
-  min-width: 80px !important;
-  max-width: 80px !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
 }

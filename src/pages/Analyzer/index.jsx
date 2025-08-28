@@ -15,6 +15,7 @@ import './PrescriptionTableCenterAndAlerts.css'; // Centers table and styles ale
 import './PrescriptionTablePositionFix.css'; // Fixes centering and title/button positioning
 import './PrescriptionContainerDesign.css'; // Container with header like Analyze section
 import './PrescriptionResultsContainer.css'; // Prescription Results container with proper header
+import './PrescriptionResponsiveLayout.css'; // Responsive layout for all screen sizes
 import './PrescriptionStatusColumnFix.css'; // MUST BE LAST - Fixes STATUS column width
 import EnterpriseHeader, { TabGroup, TabButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 

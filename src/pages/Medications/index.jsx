@@ -1073,6 +1073,11 @@ const Medications = () => {
         if (updatedMedication.medicationCode) dataToUpdate.medicationCode = updatedMedication.medicationCode;
       }
       
+      // Add custom fields for all medication types
+      if (updatedMedication.customFields) {
+        dataToUpdate.customFields = updatedMedication.customFields;
+      }
+      
       // Always add timestamp
       dataToUpdate.updatedAt = serverTimestamp();
       

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Edit3, Save, ArrowLeft, Trash2, Edit2 } from 'lucide-react';
+import CustomFields from '../CustomFields/CustomFields';
 import './HaeMedicationModal.css';
 
 const HaeMedicationModal = ({ 
@@ -31,7 +32,8 @@ const HaeMedicationModal = ({
     reconAmt: '',
     howSupplied: '',
     storage: '',
-    extraNotes: ''
+    extraNotes: '',
+    customFields: []
   });
 
   useEffect(() => {
@@ -55,7 +57,8 @@ const HaeMedicationModal = ({
         reconAmt: medication.reconAmt || '',
         howSupplied: medication.howSupplied || '',
         storage: medication.storage || '',
-        extraNotes: medication.extraNotes || ''
+        extraNotes: medication.extraNotes || '',
+        customFields: medication.customFields || []
       });
       
       if (allowEdit) {
@@ -76,6 +79,29 @@ const HaeMedicationModal = ({
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  const handleAddCustomField = (field) => {
+    setFormData(prev => ({
+      ...prev,
+      customFields: [...prev.customFields, field]
+    }));
+  };
+
+  const handleUpdateCustomField = (fieldId, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      customFields: prev.customFields.map(cf =>
+        cf.id === fieldId ? { ...cf, [field]: value } : cf
+      )
+    }));
+  };
+
+  const handleDeleteCustomField = (fieldId) => {
+    setFormData(prev => ({
+      ...prev,
+      customFields: prev.customFields.filter(cf => cf.id !== fieldId)
     }));
   };
 
@@ -115,7 +141,8 @@ const HaeMedicationModal = ({
       reconAmt: medication?.reconAmt || '',
       howSupplied: medication?.howSupplied || '',
       storage: medication?.storage || '',
-      extraNotes: medication?.extraNotes || ''
+      extraNotes: medication?.extraNotes || '',
+      customFields: medication?.customFields || []
     });
     setIsEditing(false);
   };
@@ -521,6 +548,17 @@ const HaeMedicationModal = ({
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Custom Fields Section */}
+        <div className="modal-table-section">
+          <CustomFields
+            customFields={formData.customFields}
+            isEditing={isEditing}
+            onAddField={handleAddCustomField}
+            onUpdateField={handleUpdateCustomField}
+            onDeleteField={handleDeleteCustomField}
+          />
         </div>
 
         {/* Action buttons moved to header */}

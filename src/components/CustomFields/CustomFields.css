@@ -1,0 +1,194 @@
+/* Custom field header edit inline */
+.custom-field-header-edit-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Custom field title input in header */
+.custom-field-title-input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #d0d0d0;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b5b52;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.custom-field-title-input:focus {
+  outline: none;
+  border-color: #ff5500;
+  box-shadow: 0 0 0 1px rgba(255, 85, 0, 0.2);
+}
+
+/* Delete button in header */
+.custom-field-delete-inline-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.custom-field-delete-inline-btn:hover {
+  background: #c82333;
+}
+
+/* Main add custom field button */
+.add-custom-field-main-btn {
+  background: #ff5500;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.add-custom-field-main-btn:hover {
+  background: #e64d00;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 85, 0, 0.3);
+}
+
+/* Form buttons */
+.custom-field-form-save-btn,
+.custom-field-form-cancel-btn {
+  padding: 6px 16px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.custom-field-form-save-btn {
+  background: #28a745;
+  color: white;
+}
+
+.custom-field-form-save-btn:hover {
+  background: #218838;
+}
+
+.custom-field-form-cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.custom-field-form-cancel-btn:hover {
+  background: #5a6268;
+}
+
+/* Ensure custom fields use the existing modal styles */
+.custom-fields-section .modal-table-section {
+  margin-bottom: 20px;
+}
+
+.custom-fields-section .modal-table-title {
+  background: #f8f1eb;
+  padding: 10px 15px;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b5b52;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.custom-fields-section .modal-table-wrapper {
+  overflow-x: auto;
+  margin: 0;
+}
+
+.custom-fields-section .modal-prescriptions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.custom-fields-section .modal-prescriptions-table td {
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.6;
+  vertical-align: top;
+}
+
+.custom-fields-section .modal-field-display {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+}
+
+/* Ensure textarea styling in custom fields */
+.custom-fields-section .modal-textarea {
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+  padding: 8px;
+  border: 1px solid #d0d0d0;
+  border-radius: 2px;
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.4;
+}
+
+.custom-fields-section .modal-textarea:focus {
+  outline: none;
+  border-color: #ff5500;
+  box-shadow: 0 0 0 1px rgba(255, 85, 0, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .custom-field-title-input {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+  
+  .custom-field-delete-inline-btn {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  
+  .add-custom-field-main-btn {
+    font-size: 12px;
+    padding: 8px 16px;
+  }
+  
+  .custom-field-form-save-btn,
+  .custom-field-form-cancel-btn {
+    font-size: 11px;
+    padding: 5px 12px;
+  }
+}

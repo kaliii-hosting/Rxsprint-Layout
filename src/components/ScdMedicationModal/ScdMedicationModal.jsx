@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Edit2, AlertCircle, Trash2, Edit3, ArrowLeft } from 'lucide-react';
+import CustomFields from '../CustomFields/CustomFields';
 import './ScdMedicationModal.css';
 
 const ScdMedicationModal = ({ medication, isOpen, onClose, onSave, allowEdit = false, onRequestEdit, onDelete }) => {
@@ -30,7 +31,8 @@ const ScdMedicationModal = ({ medication, isOpen, onClose, onSave, allowEdit = f
         bbw: medication.bbw || '',
         specialNotes: medication.specialNotes || '',
         additionalNotes: medication.additionalNotes || '',
-        pregnancyCategory: medication.pregnancyCategory || ''
+        pregnancyCategory: medication.pregnancyCategory || '',
+        customFields: medication.customFields || []
       });
       
       if (allowEdit) {
@@ -51,6 +53,29 @@ const ScdMedicationModal = ({ medication, isOpen, onClose, onSave, allowEdit = f
     setEditedMedication(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  const handleAddCustomField = (field) => {
+    setEditedMedication(prev => ({
+      ...prev,
+      customFields: [...(prev.customFields || []), field]
+    }));
+  };
+
+  const handleUpdateCustomField = (fieldId, field, value) => {
+    setEditedMedication(prev => ({
+      ...prev,
+      customFields: prev.customFields.map(cf =>
+        cf.id === fieldId ? { ...cf, [field]: value } : cf
+      )
+    }));
+  };
+
+  const handleDeleteCustomField = (fieldId) => {
+    setEditedMedication(prev => ({
+      ...prev,
+      customFields: prev.customFields.filter(cf => cf.id !== fieldId)
     }));
   };
 
@@ -91,7 +116,8 @@ const ScdMedicationModal = ({ medication, isOpen, onClose, onSave, allowEdit = f
       bbw: medication?.bbw || '',
       specialNotes: medication?.specialNotes || '',
       additionalNotes: medication?.additionalNotes || '',
-      pregnancyCategory: medication?.pregnancyCategory || ''
+      pregnancyCategory: medication?.pregnancyCategory || '',
+      customFields: medication?.customFields || []
     });
     setIsEditing(false);
   };
@@ -579,6 +605,17 @@ const ScdMedicationModal = ({ medication, isOpen, onClose, onSave, allowEdit = f
           </div>
         </div>
       )}
+
+      {/* Custom Fields Section */}
+      <div className="modal-table-section">
+        <CustomFields
+          customFields={editedMedication.customFields}
+          isEditing={isEditing}
+          onAddField={handleAddCustomField}
+          onUpdateField={handleUpdateCustomField}
+          onDeleteField={handleDeleteCustomField}
+        />
+      </div>
     </div>
   );
 };

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  X, Edit3, Save, ArrowLeft, Trash2, Edit2
+  X, Edit3, Save, ArrowLeft, Trash2, Edit2, Plus, Trash
 } from 'lucide-react';
+import CustomFields from '../CustomFields/CustomFields';
 import './MedicationModal.css';
 
 const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, allowEdit, onDelete }) => {
@@ -22,7 +23,8 @@ const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, a
     filter: '',
     infusionSteps: '',
     notes: '',
-    specialDosing: ''
+    specialDosing: '',
+    customFields: []
   });
 
   useEffect(() => {
@@ -43,7 +45,8 @@ const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, a
         filter: medication.filter || '',
         infusionSteps: medication.infusionSteps || '',
         notes: medication.notes || '',
-        specialDosing: medication.specialDosing || ''
+        specialDosing: medication.specialDosing || '',
+        customFields: medication.customFields || []
       });
       
       if (allowEdit) {
@@ -64,6 +67,29 @@ const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, a
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  const handleAddCustomField = (newField) => {
+    setFormData(prev => ({
+      ...prev,
+      customFields: [...(prev.customFields || []), newField]
+    }));
+  };
+
+  const handleUpdateCustomField = (fieldId, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      customFields: prev.customFields.map(cf =>
+        cf.id === fieldId ? { ...cf, [field]: value } : cf
+      )
+    }));
+  };
+
+  const handleDeleteCustomField = (fieldId) => {
+    setFormData(prev => ({
+      ...prev,
+      customFields: prev.customFields.filter(cf => cf.id !== fieldId)
     }));
   };
 
@@ -100,9 +126,13 @@ const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, a
       filter: medication?.filter || '',
       infusionSteps: medication?.infusionSteps || '',
       notes: medication?.notes || '',
-      specialDosing: medication?.specialDosing || ''
+      specialDosing: medication?.specialDosing || '',
+      customFields: medication?.customFields || []
     });
     setIsEditing(false);
+    setShowAddField(false);
+    setNewFieldTitle('');
+    setNewFieldContent('');
   };
 
   const handleEdit = () => {
@@ -460,6 +490,15 @@ const MedicationModal = ({ medication, isOpen, onClose, onSave, onRequestEdit, a
                 </table>
               </div>
             </div>
+
+            {/* Custom Fields Section */}
+            <CustomFields
+              customFields={formData.customFields || []}
+              isEditing={isEditing}
+              onAddField={handleAddCustomField}
+              onUpdateField={handleUpdateCustomField}
+              onDeleteField={handleDeleteCustomField}
+            />
             
             {/* Action buttons moved to header */}
           </div>

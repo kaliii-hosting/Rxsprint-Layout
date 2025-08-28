@@ -1,0 +1,384 @@
+/* ========================================
+   PRESCRIPTION TABLE - RESPONSIVE LAYOUT
+   Responsive design for all screen sizes with fixed status column
+   ======================================== */
+
+/* Base table responsive structure */
+.prescription-table-section {
+  width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.prescription-table-section table.analysis-table {
+  width: 100% !important;
+  min-width: 800px !important;
+  table-layout: fixed !important;
+}
+
+/* Column width distribution for desktop */
+@media (min-width: 1200px) {
+  /* Column 1: Section labels - 100px */
+  .prescription-table-section table.analysis-table th:nth-child(1),
+  .prescription-table-section table.analysis-table td:nth-child(1) {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+  }
+
+  /* Column 2: Field names - 200px */
+  .prescription-table-section table.analysis-table th:nth-child(2),
+  .prescription-table-section table.analysis-table td:nth-child(2) {
+    width: 200px !important;
+    min-width: 200px !important;
+  }
+
+  /* Column 3: PRESCRIBED - flexible */
+  .prescription-table-section table.analysis-table th:nth-child(3),
+  .prescription-table-section table.analysis-table td:nth-child(3) {
+    width: calc((100% - 350px) / 2) !important;
+    min-width: 300px !important;
+  }
+
+  /* Column 4: DATA ENTERED - flexible */
+  .prescription-table-section table.analysis-table th:nth-child(4),
+  .prescription-table-section table.analysis-table td:nth-child(4) {
+    width: calc((100% - 350px) / 2) !important;
+    min-width: 300px !important;
+  }
+
+  /* Column 5: STATUS - narrow like k2.jpg screenshot */
+  .prescription-table-section table.analysis-table th:nth-child(5),
+  .prescription-table-section table.analysis-table td:nth-child(5) {
+    width: 50px !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+  }
+}
+
+/* Tablet layout (768px - 1199px) */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .prescription-results-wrapper {
+    margin: 15px !important;
+    max-width: 100% !important;
+  }
+
+  .prescription-table-section table.analysis-table {
+    min-width: 700px !important;
+  }
+
+  /* Column 1: Section labels - 80px */
+  .prescription-table-section table.analysis-table th:nth-child(1),
+  .prescription-table-section table.analysis-table td:nth-child(1) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+  }
+
+  /* Column 2: Field names - 150px */
+  .prescription-table-section table.analysis-table th:nth-child(2),
+  .prescription-table-section table.analysis-table td:nth-child(2) {
+    width: 150px !important;
+    min-width: 150px !important;
+  }
+
+  /* Columns 3 & 4: Equal width */
+  .prescription-table-section table.analysis-table th:nth-child(3),
+  .prescription-table-section table.analysis-table td:nth-child(3),
+  .prescription-table-section table.analysis-table th:nth-child(4),
+  .prescription-table-section table.analysis-table td:nth-child(4) {
+    width: calc((100% - 280px) / 2) !important;
+    min-width: 200px !important;
+  }
+
+  /* Column 5: STATUS - narrow */
+  .prescription-table-section table.analysis-table th:nth-child(5),
+  .prescription-table-section table.analysis-table td:nth-child(5) {
+    width: 50px !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+  }
+
+  /* Adjust font sizes */
+  .prescription-table-section table.analysis-table {
+    font-size: 13px !important;
+  }
+
+  .prescription-table-section table.analysis-table th {
+    font-size: 12px !important;
+    padding: 6px 4px !important;
+  }
+}
+
+/* Mobile layout (max-width: 767px) */
+@media (max-width: 767px) {
+  .prescription-results-wrapper {
+    margin: 10px !important;
+    max-width: 100% !important;
+    border-radius: 8px !important;
+  }
+
+  .prescription-results-header {
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  .prescription-results-header h2 {
+    font-size: 16px !important;
+  }
+
+  .prescription-results-header .reset-analysis-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    padding: 6px 12px !important;
+  }
+
+  .prescription-results-content {
+    padding: 10px !important;
+  }
+
+  .prescription-table-section {
+    overflow-x: scroll !important;
+    margin: 0 -10px !important;
+    padding: 0 10px !important;
+  }
+
+  .prescription-table-section table.analysis-table {
+    min-width: 600px !important;
+    font-size: 11px !important;
+  }
+
+  /* Mobile column widths */
+  .prescription-table-section table.analysis-table th:nth-child(1),
+  .prescription-table-section table.analysis-table td:nth-child(1) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+  }
+
+  .prescription-table-section table.analysis-table th:nth-child(2),
+  .prescription-table-section table.analysis-table td:nth-child(2) {
+    width: 120px !important;
+    min-width: 120px !important;
+  }
+
+  .prescription-table-section table.analysis-table th:nth-child(3),
+  .prescription-table-section table.analysis-table td:nth-child(3),
+  .prescription-table-section table.analysis-table th:nth-child(4),
+  .prescription-table-section table.analysis-table td:nth-child(4) {
+    width: calc((100% - 230px) / 2) !important;
+    min-width: 150px !important;
+  }
+
+  .prescription-table-section table.analysis-table th:nth-child(5),
+  .prescription-table-section table.analysis-table td:nth-child(5) {
+    width: 45px !important;
+    min-width: 45px !important;
+    max-width: 45px !important;
+  }
+
+  /* Adjust cell padding for mobile */
+  .prescription-table-section table.analysis-table th {
+    padding: 4px 2px !important;
+    font-size: 10px !important;
+  }
+
+  .prescription-table-section table.analysis-table td {
+    padding: 3px 4px !important;
+  }
+
+  /* Section label adjustments */
+  .section-label-vertical {
+    font-size: 10px !important;
+    letter-spacing: 1px !important;
+  }
+
+  /* Add horizontal scroll indicator */
+  .prescription-table-section::after {
+    content: "→ Scroll for more" !important;
+    display: block !important;
+    text-align: center !important;
+    font-size: 10px !important;
+    color: #999 !important;
+    margin-top: 5px !important;
+    opacity: 0.7 !important;
+  }
+}
+
+/* Small mobile (max-width: 480px) */
+@media (max-width: 480px) {
+  .prescription-table-section table.analysis-table {
+    min-width: 500px !important;
+    font-size: 10px !important;
+  }
+
+  .prescription-table-section table.analysis-table th:nth-child(1),
+  .prescription-table-section table.analysis-table td:nth-child(1) {
+    width: 50px !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+  }
+
+  .prescription-table-section table.analysis-table th:nth-child(2),
+  .prescription-table-section table.analysis-table td:nth-child(2) {
+    width: 100px !important;
+    min-width: 100px !important;
+  }
+
+  .prescription-table-section table.analysis-table th:nth-child(5),
+  .prescription-table-section table.analysis-table td:nth-child(5) {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+  }
+}
+
+/* STATUS column specific styling - matching k2.jpg */
+.prescription-table-section table.analysis-table th.match-header {
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+  text-align: center !important;
+  padding: 8px 2px !important;
+  font-size: 11px !important;
+  white-space: normal !important;
+  line-height: 1.2 !important;
+}
+
+.prescription-table-section table.analysis-table td.match-status-cell {
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+  text-align: center !important;
+  padding: 2px !important;
+  vertical-align: middle !important;
+}
+
+/* Status indicator - compact like k2.jpg */
+.prescription-table-section .status-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 3px !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  line-height: 1 !important;
+  margin: 0 auto !important;
+}
+
+.prescription-table-section .status-icon.match {
+  background: transparent !important;
+  color: #22c55e !important;
+  font-size: 16px !important;
+}
+
+.prescription-table-section .status-icon.mismatch {
+  background: transparent !important;
+  color: #ef4444 !important;
+  font-size: 14px !important;
+}
+
+.prescription-table-section .status-icon.partial {
+  background: transparent !important;
+  color: #f59e0b !important;
+  font-size: 14px !important;
+}
+
+.prescription-table-section .status-icon.empty {
+  background: transparent !important;
+  color: #9ca3af !important;
+  font-size: 12px !important;
+}
+
+/* Ensure table scrolls smoothly on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .prescription-table-section {
+    scroll-behavior: smooth !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Add padding for better touch targets */
+  .prescription-table-section table.analysis-table td {
+    padding: 5px !important;
+  }
+}
+
+/* Print media query */
+@media print {
+  .prescription-results-wrapper {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+
+  .prescription-results-header {
+    background: #f5f5f5 !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  .prescription-results-header h2 {
+    color: #333 !important;
+  }
+
+  .prescription-table-section {
+    overflow: visible !important;
+  }
+
+  .prescription-table-section table.analysis-table {
+    min-width: 100% !important;
+    font-size: 10px !important;
+  }
+
+  .prescription-table-section::after {
+    display: none !important;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .prescription-results-header {
+    padding: 8px 16px !important;
+  }
+
+  .prescription-results-header h2 {
+    font-size: 14px !important;
+  }
+
+  .prescription-results-content {
+    padding: 10px !important;
+  }
+
+  .prescription-table-section table.analysis-table {
+    font-size: 11px !important;
+  }
+}
+
+/* High DPI screen adjustments */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .prescription-table-section table.analysis-table {
+    border-width: 0.5px !important;
+  }
+
+  .prescription-table-section .status-icon {
+    font-weight: 600 !important;
+  }
+}
+
+/* Ultra-wide screens (> 1920px) */
+@media (min-width: 1920px) {
+  .prescription-results-wrapper {
+    max-width: 1600px !important;
+  }
+
+  .prescription-table-section table.analysis-table {
+    font-size: 14px !important;
+  }
+
+  .prescription-table-section table.analysis-table th {
+    font-size: 13px !important;
+  }
+}

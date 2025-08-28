@@ -40,13 +40,14 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
-import { firestore } from '../../config/firebase';
-import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
-import { saveWithRetry, loadWorkflowFromFirestore, saveToLocalBackup, loadFromLocalBackup } from '../../utils/workflowStorageFirestore';
+import { WorkflowStorageManager } from '../../utils/workflowFirebaseStorage';
+import authService from '../../services/authService';
 import './Workflow.css';
 import EnterpriseHeader, { TabGroup, TabButton, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
-import { exportWorkflowToPDF } from './ExportPDFFixed';
+import { exportWorkflowToPDF } from './ExportPDFEnhanced';
 import { exportWorkflowToPDFWithScreenshots } from './ExportPDFWithScreenshot';
+import { exportWorkflowToPDFReliable } from './ExportPDFReliable';
+import { exportWorkflowToPDFProfessional } from './ExportPDFProfessional';
 
 const Workflow = () => {
   const { theme } = useTheme();
@@ -101,15 +102,48 @@ const Workflow = () => {
   const saveTimeoutRef = useRef(null);
   const workflowDataRef = useRef(workflowData);
   const hasUnsavedChanges = useRef(false);
+  const [storageManager, setStorageManager] = useState(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
+
+  // Initialize authentication and storage manager for admin user
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        console.log('Initializing admin authentication for workflow...');
+        const user = await authService.initialize();
+        if (user && user.uid === 'tdGILcyLbSOAUIjsoA93QGaj7Zm2') {
+          console.log('Admin authenticated successfully');
+          setStorageManager(new WorkflowStorageManager(user.uid));
+          setAuthInitialized(true);
+        } else if (user) {
+          console.log('User authenticated with ID:', user.uid);
+          setStorageManager(new WorkflowStorageManager(user.uid));
+          setAuthInitialized(true);
+        } else {
+          // Use admin UID directly since there's only one user
+          console.log('Using admin storage configuration');
+          setStorageManager(new WorkflowStorageManager('tdGILcyLbSOAUIjsoA93QGaj7Zm2'));
+          setAuthInitialized(true);
+        }
+      } catch (error) {
+        console.error('Authentication error:', error);
+        // Always use admin UID on error since it's the only user
+        setStorageManager(new WorkflowStorageManager('tdGILcyLbSOAUIjsoA93QGaj7Zm2'));
+        setAuthInitialized(true);
+      }
+    };
+    
+    initAuth();
+  }, []);
 
   // Update ref when workflowData changes
   useEffect(() => {
     workflowDataRef.current = workflowData;
   }, [workflowData]);
 
-  // Auto-save functionality with debouncing
+  // Auto-save functionality with debouncing - Firebase Storage only
   const autoSave = useCallback(async () => {
-    if (!hasUnsavedChanges.current) return;
+    if (!hasUnsavedChanges.current || !storageManager) return;
     
     setSaveStatus('saving');
     try {
@@ -119,33 +153,20 @@ const Workflow = () => {
         scd: workflowDataRef.current.scd || { sections: [] }
       };
       
-      // Save to local backup first
-      saveToLocalBackup(dataToSave);
-      
-      // Then save to Firestore with retry
-      const result = await saveWithRetry(dataToSave, 2);
-      
-      console.log(`Auto-save successful to Firestore: ${(result.size / 1024).toFixed(1)}KB`);
+      // Save to Firebase Storage only
+      const result = await storageManager.syncWorkflowData(dataToSave);
+      console.log(`Auto-save successful to Firebase Storage: ${(result.size / 1024).toFixed(1)}KB`);
       
       setSaveStatus('saved');
       setLastSaveTime(new Date());
       hasUnsavedChanges.current = false;
       
     } catch (error) {
-      console.error('Auto-save failed:', error);
+      console.error('Auto-save to Firebase Storage failed:', error);
       setSaveStatus('error');
-      
-      // More specific error message
-      let errorMessage = 'Warning: ';
-      if (error.message) {
-        errorMessage += error.message;
-      } else {
-        errorMessage += 'Your changes could not be saved to the cloud.';
-      }
-      
-      alert(errorMessage);
+      alert('Failed to save to Firebase Storage. Please check your internet connection.');
     }
-  }, []);
+  }, [storageManager]);
 
   // Debounced auto-save trigger
   const triggerAutoSave = useCallback(() => {
@@ -204,78 +225,74 @@ const Workflow = () => {
     return () => clearInterval(interval);
   }, [autoSave]);
 
-  // Load workflow data from Firebase on mount
+  // Load workflow data from Firebase after authentication
   useEffect(() => {
-    loadWorkflowData();
-  }, []);
+    if (authInitialized && storageManager) {
+      loadWorkflowData();
+    }
+  }, [authInitialized, storageManager]);
 
-  // Load workflow data from Firebase
+  // Load workflow data from Firebase Storage only
   const loadWorkflowData = async () => {
+    if (!storageManager) {
+      console.log('Storage manager not initialized yet');
+      return;
+    }
+    
     try {
       setLoading(true);
       
-      // Always start with default data
+      // Load from Firebase Storage
+      const data = await storageManager.loadWorkflowData();
+      
+      if (data) {
+        // Load subsection widths
+        const widths = {};
+        Object.values(data).forEach(tabData => {
+          if (tabData.sections) {
+            tabData.sections.forEach(section => {
+              if (section.subsections) {
+                section.subsections.forEach(sub => {
+                  if (sub.customWidth) {
+                    widths[sub.id] = sub.customWidth;
+                  }
+                });
+              }
+            });
+          }
+        });
+        setSubsectionWidths(widths);
+        
+        // Use saved data directly for all tabs
+        const mergedData = {
+          lyso: data.lyso || { sections: getDefaultLysoSections() },
+          hae: data.hae || { sections: [] },
+          scd: data.scd || { sections: [] }
+        };
+        
+        setWorkflowData(mergedData);
+      } else {
+        // First time user - save defaults to Firebase Storage
+        const defaultData = {
+          lyso: { sections: getDefaultLysoSections() },
+          hae: { sections: [] },
+          scd: { sections: [] }
+        };
+        
+        await storageManager.syncWorkflowData(defaultData);
+        setWorkflowData(defaultData);
+      }
+    } catch (error) {
+      console.error('Error loading workflow data from Firebase Storage:', error);
+      alert('Failed to load data from Firebase Storage. Please check your internet connection.');
+      
+      // Load default data structure for new users
       const defaultData = {
         lyso: { sections: getDefaultLysoSections() },
         hae: { sections: [] },
         scd: { sections: [] }
       };
-      
-      // Try to load from Firebase Storage/Firestore hybrid, then local backup as fallback
-      try {
-        let data = await loadWorkflowFromFirestore();
-        
-        // If no data in Storage/Firestore, try local backup
-        if (!data) {
-          console.log('No data in Firestore, trying local backup...');
-          data = loadFromLocalBackup();
-        }
-        
-        if (data) {
-          
-          // Load subsection widths
-          const widths = {};
-          Object.values(data).forEach(tabData => {
-            if (tabData.sections) {
-              tabData.sections.forEach(section => {
-                if (section.subsections) {
-                  section.subsections.forEach(sub => {
-                    if (sub.customWidth) {
-                      widths[sub.id] = sub.customWidth;
-                    }
-                  });
-                }
-              });
-            }
-          });
-          setSubsectionWidths(widths);
-          
-          // Use saved data directly for all tabs
-          const mergedData = {
-            lyso: data.lyso || { sections: getDefaultLysoSections() },
-            hae: data.hae || { sections: [] },
-            scd: data.scd || { sections: [] }
-          };
-          
-          setWorkflowData(mergedData);
-        } else {
-          // First time - save defaults
-          await saveWithRetry(defaultData, 2);
-          saveToLocalBackup(defaultData);
-          setWorkflowData(defaultData);
-        }
-      } catch (firebaseError) {
-        console.log('Firebase not available, using local defaults');
-        setWorkflowData(defaultData);
-      }
-    } catch (error) {
-      console.error('Error loading workflow data:', error);
-      // Use default data if anything fails
-      setWorkflowData({
-        lyso: { sections: getDefaultLysoSections() },
-        hae: { sections: [] },
-        scd: { sections: [] }
-      });
+      setWorkflowData(defaultData);
     } finally {
       setLoading(false);
     }
@@ -560,8 +577,13 @@ See attached pump sheet for details.`
     ];
   };
 
-  // Save workflow data to Firebase with improved error handling and auto-save trigger
-  const saveWorkflowData = async (data, skipAutoSave = false) => {
+  // Save workflow data to Firebase Storage only
+  const saveWorkflowData = async (data) => {
+    if (!storageManager) {
+      console.error('Storage manager not initialized');
+      return;
+    }
+    
     try {
       let fullData;
       
@@ -595,40 +617,19 @@ See attached pump sheet for details.`
         scd: fullData.scd || { sections: [] }
       };
       
-      // Save to local backup first
-      saveToLocalBackup(dataToSave);
-      
-      // Then save to Firebase Storage with retry
-      const result = await saveWithRetry(dataToSave, 3);
-      
-      console.log(`Save successful to Firestore: ${(result.size / 1024).toFixed(1)}KB`);
+      // Save to Firebase Storage
+      const result = await storageManager.syncWorkflowData(dataToSave);
+      console.log(`Save successful to Firebase Storage: ${(result.size / 1024).toFixed(1)}KB`);
       
       setSaveStatus('saved');
       setLastSaveTime(new Date());
       hasUnsavedChanges.current = false;
-      
-      // Also trigger auto-save for future changes if not skipped
-      if (!skipAutoSave) {
-        triggerAutoSave();
-      }
     } catch (error) {
       console.error('Error saving workflow data:', error);
       setSaveStatus('error');
       
       // Show user-friendly error message
-      alert('Failed to save changes to cloud. Your work is saved locally but may be lost if you refresh. Please check your connection.');
-      
-      // Still update local state even if Firebase fails
-      if (Array.isArray(data)) {
-        setWorkflowData({
-          ...workflowData,
-          [activeTab]: {
-            sections: data
-          }
-        });
-      } else if (data) {
-        setWorkflowData(data);
-      }
+      alert('Failed to save to Firebase Storage. Please check your internet connection and try again.');
     }
   };
 
@@ -1777,10 +1778,14 @@ See attached pump sheet for details.`
     // Wait for UI to update
     setTimeout(async () => {
       try {
-        // Use screenshot-based export for exact visual matching
-        await exportWorkflowToPDFWithScreenshots(
+        // Use the professional PDF export with footer protection
+        await exportWorkflowToPDFProfessional(
+          workflowData,
           activeTab,
-          selectedSectionsForExport
+          selectedSectionsForExport,
+          completedItems,
+          completedCards,
+          expandedSections
         );
         
         // Restore original expansion state
@@ -2970,6 +2975,27 @@ See attached pump sheet for details.`
     );
   };
 
+  // Show loading state while authenticating
+  if (!authInitialized) {
+    return (
+      <div className="workflow-page page-container">
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          gap: '20px'
+        }}>
+          <RefreshCcw size={48} className="spin-animation" style={{ color: '#3b82f6' }} />
+          <div style={{ fontSize: '18px', color: '#6b7280' }}>
+            Authenticating with Firebase...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`workflow-page page-container ${isResizing ? 'is-resizing' : ''}`}>
       {/* Enterprise Header */}
@@ -3018,9 +3044,9 @@ See attached pump sheet for details.`
           {saveStatus === 'error' && <AlertCircle size={16} />}
           {saveStatus === 'pending' && <Clock size={16} />}
           <span>
-            {saveStatus === 'saved' && 'All changes saved'}
-            {saveStatus === 'saving' && 'Saving...'}
-            {saveStatus === 'error' && 'Save failed'}
+            {saveStatus === 'saved' && 'Saved to Firebase'}
+            {saveStatus === 'saving' && 'Saving to Firebase...'}
+            {saveStatus === 'error' && 'Firebase save failed'}
             {saveStatus === 'pending' && 'Pending save'}
           </span>
           {lastSaveTime && saveStatus === 'saved' && (

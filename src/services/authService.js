@@ -1,9 +1,9 @@
-import { signInWithEmailAndPassword, onAuthStateChanged, signInAnonymously, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
-// Admin credentials - in production, these should be in environment variables
-const ADMIN_EMAIL = 'admin@rxsprint.com';
-const ADMIN_PASSWORD = 'RxSprint2024Admin!';
+// Admin credentials - single user setup
+const ADMIN_EMAIL = 'kaliiihosting@gmail.com';
+const ADMIN_PASSWORD = 'RxSprint2024Admin!'; // You should update this with your actual password
 const EXPECTED_UID = 'tdGILcyLbSOAUIjsoA93QGaj7Zm2';
 
 class AuthService {
@@ -13,82 +13,93 @@ class AuthService {
     this.authStateListeners = [];
   }
 
-  // Initialize authentication
+  // Initialize authentication with automatic admin login
   async initialize() {
     if (this.isInitialized) {
       return this.currentUser;
     }
 
+    // Check if auth is properly initialized
+    if (!auth) {
+      console.error('Firebase auth is not initialized. Check Firebase configuration.');
+      throw new Error('Firebase auth not initialized');
+    }
+
+    try {
+      // Set persistence to keep user logged in
+      await setPersistence(auth, browserLocalPersistence);
+      console.log('Auth persistence set to LOCAL');
+    } catch (error) {
+      console.warn('Could not set auth persistence:', error);
+    }
+
     return new Promise((resolve, reject) => {
-      const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          // User is already signed in
-          console.log('User already authenticated:', user.uid);
-          this.currentUser = user;
-          this.isInitialized = true;
-          this.notifyListeners(user);
-          unsubscribe();
-          resolve(user);
-        } else {
-          // No user signed in, attempt auto-login
-          console.log('No user signed in, attempting auto-login...');
-          try {
-            const signedInUser = await this.autoSignIn();
-            this.currentUser = signedInUser;
+      try {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+          if (user && user.uid === EXPECTED_UID) {
+            // Correct admin user is already signed in
+            console.log('Admin user already authenticated:', user.uid);
+            this.currentUser = user;
             this.isInitialized = true;
-            this.notifyListeners(signedInUser);
+            this.notifyListeners(user);
             unsubscribe();
-            resolve(signedInUser);
-          } catch (error) {
-            console.error('Auto sign-in failed:', error);
-            unsubscribe();
-            reject(error);
+            resolve(user);
+          } else {
+            // Always attempt auto-login for admin
+            console.log('Attempting automatic admin login...');
+            try {
+              const signedInUser = await this.autoSignIn();
+              this.currentUser = signedInUser;
+              this.isInitialized = true;
+              this.notifyListeners(signedInUser);
+              unsubscribe();
+              resolve(signedInUser);
+            } catch (error) {
+              console.error('Auto sign-in failed:', error);
+              console.error('Error details:', error.code, error.message);
+              // Still resolve with null user to prevent app from breaking
+              this.isInitialized = true;
+              unsubscribe();
+              resolve(null);
+            }
           }
-        }
-      });
+        }, (error) => {
+          console.error('Auth state change error:', error);
+          console.error('Error details:', error.code, error.message);
+          unsubscribe();
+          reject(error);
+        });
+      } catch (error) {
+        console.error('Failed to set up auth state listener:', error);
+        reject(error);
+      }
     });
   }
 
-  // Auto sign-in function
+  // Auto sign-in function - simplified for single admin user
   async autoSignIn() {
     try {
-      // First try to sign in with email/password
-      console.log('Attempting to sign in with admin credentials...');
+      // Always sign in with admin credentials
+      console.log('Signing in admin user automatically...');
       const userCredential = await signInWithEmailAndPassword(auth, ADMIN_EMAIL, ADMIN_PASSWORD);
-      console.log('Successfully signed in as admin:', userCredential.user.uid);
       
       // Verify it's the expected admin user
-      if (userCredential.user.uid !== EXPECTED_UID) {
-        console.warn(`Warning: Signed in user UID (${userCredential.user.uid}) doesn't match expected UID (${EXPECTED_UID})`);
+      if (userCredential.user.uid === EXPECTED_UID) {
+        console.log('Admin authenticated successfully:', userCredential.user.uid);
+      } else {
+        console.warn(`User UID mismatch. Got: ${userCredential.user.uid}, Expected: ${EXPECTED_UID}`);
       }
       
       return userCredential.user;
     } catch (error) {
-      console.error('Email/password sign-in failed:', error);
+      console.error('Admin sign-in failed:', error.code, error.message);
       
-      // If email/password fails, try creating the account first
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credentials') {
-        try {
-          console.log('Attempting to create admin account...');
-          const userCredential = await createUserWithEmailAndPassword(auth, ADMIN_EMAIL, ADMIN_PASSWORD);
-          console.log('Admin account created successfully:', userCredential.user.uid);
-          return userCredential.user;
-        } catch (createError) {
-          console.error('Failed to create admin account:', createError);
-          
-          // Fall back to anonymous authentication
-          console.log('Falling back to anonymous authentication...');
-          const anonCredential = await signInAnonymously(auth);
-          console.log('Signed in anonymously:', anonCredential.user.uid);
-          return anonCredential.user;
-        }
+      // Important: Update the ADMIN_PASSWORD constant with your actual password
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        console.error('Password is incorrect. Please update ADMIN_PASSWORD in authService.js with your actual Firebase password.');
       }
       
-      // For other errors, fall back to anonymous
-      console.log('Falling back to anonymous authentication...');
-      const anonCredential = await signInAnonymously(auth);
-      console.log('Signed in anonymously:', anonCredential.user.uid);
-      return anonCredential.user;
+      throw error;
     }
   }
 
