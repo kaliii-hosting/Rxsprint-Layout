@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, Lock, X } from 'lucide-react';
 import './AddConfirmPopup.css';
 
@@ -119,7 +120,7 @@ const AddConfirmPopup = ({
     : 'Enter PIN to add a new note';
   const buttonText = itemType === 'medication' ? 'Add Medication' : 'Add Note';
 
-  return (
+  return createPortal(
     <div className="add-popup-overlay" onClick={onCancel}>
       <div 
         className={`add-popup ${isShaking ? 'shake' : ''}`}
@@ -178,12 +179,12 @@ const AddConfirmPopup = ({
             className="confirm-btn"
             disabled={pin.some(digit => !digit)}
           >
-            <Plus size={18} />
             {buttonText}
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

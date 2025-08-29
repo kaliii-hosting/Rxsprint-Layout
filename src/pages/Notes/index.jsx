@@ -43,6 +43,7 @@ import './TableScrollbarFix.css'; // Enhanced scrollbar fix
 import './EditorPaddingFix.css'; // Must be last to override all other styles
 import NoteDeleteConfirmPopup from '../../components/NoteDeleteConfirmPopup/NoteDeleteConfirmPopup';
 import AddConfirmPopup from '../../components/AddConfirmPopup/AddConfirmPopup';
+import NoteEditConfirmPopup from '../../components/NoteEditConfirmPopup/NoteEditConfirmPopup';
 import InlineTableEditor from '../../components/InlineTableEditor/InlineTableEditor';
 
 const Notes = () => {
@@ -95,6 +96,10 @@ const Notes = () => {
   
   // Add confirmation state
   const [showAddPopup, setShowAddPopup] = useState(false);
+  
+  // Edit confirmation state
+  const [showEditPopup, setShowEditPopup] = useState(false);
+  const [noteToEdit, setNoteToEdit] = useState(null);
   
   // Mobile menu state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -937,7 +942,11 @@ const Notes = () => {
     
     // If in viewer mode, switch to edit mode first
     if (!isEditing && !isCreating) {
-      setIsEditing(true);
+      // Store the table context for later
+      const tableToEdit = tableContextMenu.table;
+      setNoteToEdit(selectedNote);
+      setShowEditPopup(true);
+      // We'll handle the table editing after password confirmation
       // Wait for editor to be ready before proceeding
       setTimeout(() => {
         // Find the table in the editor after mode switch
@@ -1277,10 +1286,20 @@ const Notes = () => {
   const handleEditNoteFromMenu = (noteId) => {
     const note = notes.find(n => n.id === noteId);
     if (note) {
-      handleSelectNote(note);
-      setIsEditing(true);
+      setNoteToEdit(note);
+      setShowEditPopup(true);
     }
     setNoteContextMenu({ visible: false, x: 0, y: 0, noteId: null });
+  };
+  
+  // Handle edit confirmation
+  const handleEditConfirm = () => {
+    setShowEditPopup(false);
+    if (noteToEdit) {
+      handleSelectNote(noteToEdit);
+      setIsEditing(true);
+      setNoteToEdit(null);
+    }
   };
 
   const handleDeleteNoteFromMenu = async (noteId) => {
@@ -2657,7 +2676,10 @@ const Notes = () => {
                     <Download size={16} />
                     <span>Export PDF</span>
                   </button>
-                  <button className="action-btn-compact" onClick={() => setIsEditing(true)}>
+                  <button className="action-btn-compact" onClick={() => {
+                    setNoteToEdit(selectedNote);
+                    setShowEditPopup(true);
+                  }}>
                     <FileText size={16} />
                     <span>Edit</span>
                   </button>
@@ -3350,6 +3372,18 @@ const Notes = () => {
         itemType="note"
         onConfirm={handleAddConfirm}
         onCancel={() => setShowAddPopup(false)}
+      />
+      
+      {/* Edit Confirmation Popup */}
+      <NoteEditConfirmPopup
+        isOpen={showEditPopup}
+        noteTitle={noteToEdit?.title || 'this note'}
+        onConfirm={handleEditConfirm}
+        onCancel={() => {
+          setShowEditPopup(false);
+          setNoteToEdit(null);
+        }}
+        mode="edit"
       />
       
       {/* Inline Table Editors for Edit Mode */}

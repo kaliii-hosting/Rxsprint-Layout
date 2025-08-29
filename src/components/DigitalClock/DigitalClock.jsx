@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Clock, Globe } from 'lucide-react';
 import './DigitalClock.css';
 
 const DigitalClock = ({ isOpen, onClose }) => {
   const [time, setTime] = useState(new Date());
   const [weather, setWeather] = useState(null);
+  const [showTimeZones, setShowTimeZones] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -85,6 +86,40 @@ const DigitalClock = ({ isOpen, onClose }) => {
     return dateString;
   };
 
+  // Time zones configuration
+  const timeZones = [
+    { name: 'LOCAL TIME', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, abbr: '' },
+    { name: 'EASTERN TIME', timezone: 'America/New_York', abbr: 'ET' },
+    { name: 'CENTRAL TIME', timezone: 'America/Chicago', abbr: 'CT' },
+    { name: 'MOUNTAIN TIME', timezone: 'America/Denver', abbr: 'MT' },
+    { name: 'MOUNTAIN TIME', timezone: 'America/Phoenix', abbr: 'MST' },
+    { name: 'PACIFIC TIME', timezone: 'America/Los_Angeles', abbr: 'PT' },
+    { name: 'ALASKA TIME', timezone: 'America/Anchorage', abbr: 'AKDT' },
+    { name: 'HAWAII TIME', timezone: 'Pacific/Honolulu', abbr: 'HST' },
+    { name: 'IRISH TIME', timezone: 'Europe/Dublin', abbr: 'IST' },
+    { name: 'INDIAN TIME', timezone: 'Asia/Kolkata', abbr: 'IST' }
+  ];
+
+  const getTimeForZone = (timezone) => {
+    const date = new Date();
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+    const timeStr = formatter.format(date);
+    
+    const dateFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      month: 'long',
+      day: 'numeric'
+    });
+    const dateStr = dateFormatter.format(date);
+    
+    return { time: timeStr, date: dateStr };
+  };
+
   if (!isOpen) return null;
 
   const timeDisplay = formatMainTime();
@@ -109,19 +144,53 @@ const DigitalClock = ({ isOpen, onClose }) => {
             <img src="https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii/RXSPRINT%20SVG%20LOGO.svg" alt="RxSprint" />
           </div>
           
-          {/* Time display */}
-          <div className="time-wrapper">
-            <div className="time-display">
-              <span className="time-hours">{timeDisplay.hours}</span>
-              <span className="time-colon">:</span>
-              <span className="time-minutes">{timeDisplay.minutes}</span>
-              <span className="time-colon">:</span>
-              <span className="time-seconds">{timeDisplay.seconds}</span>
+          {/* Time display or Time zones */}
+          {!showTimeZones ? (
+            <div className="time-wrapper">
+              <div className="time-display">
+                <span className="time-hours">{timeDisplay.hours}</span>
+                <span className="time-colon">:</span>
+                <span className="time-minutes">{timeDisplay.minutes}</span>
+                <span className="time-colon">:</span>
+                <span className="time-seconds">{timeDisplay.seconds}</span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="timezones-wrapper">
+              <div className="timezones-grid">
+                {timeZones.map((zone, index) => {
+                  const zoneTime = getTimeForZone(zone.timezone);
+                  return (
+                    <div key={index} className="timezone-card">
+                      <div className="timezone-header">
+                        <span className="timezone-name">{zone.name}</span>
+                        {zone.abbr && <span className="timezone-abbr">({zone.abbr})</span>}
+                      </div>
+                      <div className="timezone-time">{zoneTime.time}</div>
+                      <div className="timezone-date">{zoneTime.date}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-          {/* Combined date and weather display */}
+          {/* Combined date and weather display with toggle */}
           <div className="info-banner">
+            <div className="view-toggle">
+              <div className="toggle-switch-small">
+                <input 
+                  type="checkbox" 
+                  id="viewToggle" 
+                  checked={showTimeZones}
+                  onChange={(e) => setShowTimeZones(e.target.checked)}
+                />
+                <label htmlFor="viewToggle" className="toggle-label-small">
+                  <Clock size={10} className="toggle-icon-left" />
+                  <Globe size={10} className="toggle-icon-right" />
+                </label>
+              </div>
+            </div>
             <span className="date-text">{getDateString()}</span>
             {weather && (
               <>

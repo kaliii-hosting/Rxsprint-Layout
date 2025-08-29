@@ -45,6 +45,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { WorkflowStorageManager } from '../../utils/workflowFirebaseStorage';
 import { WorkflowHybridStorageManager } from '../../utils/workflowHybridStorage';
+import { WorkflowStorageCORSFree } from '../../utils/workflowStorageCORSFree';
 import authService from '../../services/authService';
 import { testFirebaseStorage } from '../../utils/testFirebaseStorage';
 import { debugFirebaseConnection } from '../../utils/debugFirebase';
@@ -152,22 +153,22 @@ const Workflow = () => {
         const user = await authService.initialize();
         if (user && user.uid === 'tdGILcyLbSOAUIjsoA93QGaj7Zm2') {
           console.log('Admin authenticated successfully');
-          setStorageManager(new WorkflowHybridStorageManager(user.uid));
+          setStorageManager(new WorkflowStorageCORSFree(user.uid));
           setAuthInitialized(true);
         } else if (user) {
           console.log('User authenticated with ID:', user.uid);
-          setStorageManager(new WorkflowHybridStorageManager(user.uid));
+          setStorageManager(new WorkflowStorageCORSFree(user.uid));
           setAuthInitialized(true);
         } else {
           // Use admin UID directly since there's only one user
           console.log('Using admin storage configuration');
-          setStorageManager(new WorkflowHybridStorageManager('tdGILcyLbSOAUIjsoA93QGaj7Zm2'));
+          setStorageManager(new WorkflowStorageCORSFree('tdGILcyLbSOAUIjsoA93QGaj7Zm2'));
           setAuthInitialized(true);
         }
       } catch (error) {
         console.error('Authentication error:', error);
         // Always use admin UID on error since it's the only user
-        setStorageManager(new WorkflowHybridStorageManager('tdGILcyLbSOAUIjsoA93QGaj7Zm2'));
+        setStorageManager(new WorkflowStorageCORSFree('tdGILcyLbSOAUIjsoA93QGaj7Zm2'));
         setAuthInitialized(true);
       }
     };

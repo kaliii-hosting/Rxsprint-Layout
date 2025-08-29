@@ -1,19 +1,34 @@
-/* Import Satoshi Font */
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,800,500,400&display=swap');
-
+/* Note Edit Confirmation Popup Styles - Identical to Medications Edit Popup */
 .note-edit-popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--bg-modal-backdrop, rgba(0, 0, 0, 0.8));
-  backdrop-filter: blur(4px);
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5) !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 10000;
+  padding: 20px;
   animation: fadeIn 0.2s ease-out;
+}
+
+.note-edit-popup {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  animation: slideUp 0.3s ease-out;
+  position: relative;
+}
+
+.note-edit-popup.shake {
+  animation: shake 0.6s ease-in-out;
 }
 
 @keyframes fadeIn {
@@ -25,21 +40,9 @@
   }
 }
 
-.note-edit-popup {
-  background: var(--bg-modal, #1a1a1a);
-  border: 1px solid var(--primary-color-alpha, rgba(255, 85, 0, 0.3));
-  border-radius: 16px;
-  padding: 32px;
-  max-width: 420px;
-  width: 90%;
-  position: relative;
-  animation: slideIn 0.3s ease-out;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-@keyframes slideIn {
+@keyframes slideUp {
   from {
-    transform: translateY(-20px);
+    transform: translateY(20px);
     opacity: 0;
   }
   to {
@@ -48,174 +51,237 @@
   }
 }
 
-.close-btn {
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+.close-button {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  background: transparent;
+  top: 20px;
+  right: 20px;
+  background: none;
   border: none;
-  color: var(--text-secondary, rgba(255, 255, 255, 0.5));
   cursor: pointer;
+  color: #999999 !important;
   padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: #f8f9fa !important;
+  color: #495057 !important;
+}
+
+.note-edit-icon-wrapper {
+  margin-bottom: 24px;
+}
+
+.note-edit-icon {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 85, 0, 0.1) !important;
+  border: 1px solid rgba(255, 85, 0, 0.2) !important;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #FF5500 !important;
+}
+
+.note-edit-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a !important;
+  margin: 0 0 16px 0;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.note-edit-message {
+  font-size: 16px;
+  color: #666666 !important;
+  margin: 0 0 32px 0;
+  line-height: 1.5;
+}
+
+.note-edit-message strong {
+  color: #1a1a1a !important;
+  font-weight: 600;
+}
+
+/* PIN Section */
+.pin-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: #f8f9fa !important;
+  border-radius: 12px;
+  border: 1px solid #e9ecef !important;
+}
+
+.pin-label {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  gap: 8px;
+  margin-bottom: 20px;
+  color: #666666 !important;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.close-btn:hover {
-  background: var(--button-hover-bg, rgba(255, 255, 255, 0.1));
-  color: var(--text-primary, #ffffff);
+.pin-label svg {
+  color: #999999 !important;
 }
 
-.popup-title {
-  color: var(--text-primary, #ffffff);
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0 0 12px 0;
-  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  letter-spacing: -0.5px;
-}
-
-.popup-message {
-  color: var(--text-secondary, rgba(255, 255, 255, 0.8));
-  font-size: 16px;
-  margin: 0 0 32px 0;
-  line-height: 1.5;
-  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.pin-input-container {
-  margin-bottom: 32px;
-  position: relative;
+.pin-inputs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
 }
 
 .pin-input {
-  width: 100%;
-  padding: 16px;
-  background: var(--input-bg, rgba(255, 255, 255, 0.05));
-  border: 2px solid var(--border-color, rgba(255, 255, 255, 0.1));
-  border-radius: 8px;
-  color: var(--text-primary, #ffffff);
+  width: 56px;
+  height: 56px;
+  border: 2px solid #dee2e6 !important;
+  border-radius: 12px;
+  text-align: center;
   font-size: 24px;
   font-weight: 600;
-  text-align: center;
-  letter-spacing: 0.3em;
-  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  outline: none;
   transition: all 0.2s ease;
+  background: #ffffff !important;
+  color: #1a1a1a !important;
 }
 
 .pin-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  background: var(--input-focus-bg, rgba(255, 255, 255, 0.08));
+  border-color: #FF5500 !important;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.2) !important;
+  background: #ffffff !important;
+}
+
+.pin-input.filled {
+  background: rgba(255, 85, 0, 0.1) !important;
+  border-color: rgba(255, 85, 0, 0.3) !important;
 }
 
 .pin-input.error {
-  border-color: #ff4444;
-  animation: shake 0.5s ease-in-out;
+  border-color: #ff4444 !important;
+  animation: shake 0.3s ease-in-out;
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  75% { transform: translateX(10px); }
-}
-
-.error-message {
-  position: absolute;
-  bottom: -24px;
-  left: 0;
-  color: #ff4444;
-  font-size: 14px;
+.pin-input::-webkit-inner-spin-button,
+.pin-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
   margin: 0;
-  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.popup-actions {
+.pin-error {
+  color: #ff4444 !important;
+  font-size: 14px;
+  margin: 12px 0 0 0;
+  font-weight: 500;
+}
+
+/* Action Buttons */
+.note-edit-actions {
   display: flex;
   gap: 12px;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .cancel-btn,
 .confirm-btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
+  padding: 14px 28px;
+  border-radius: 10px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border: none;
+  outline: none;
+  min-width: 140px;
 }
 
 .cancel-btn {
-  background: transparent;
-  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.2));
+  background: #f8f9fa !important;
+  color: #495057 !important;
+  border: 1px solid #dee2e6 !important;
 }
 
 .cancel-btn:hover {
-  background: var(--button-hover-bg, rgba(255, 255, 255, 0.05));
-  border-color: var(--border-hover-color, rgba(255, 255, 255, 0.3));
-  color: var(--text-primary, #ffffff);
+  background: #e9ecef !important;
+  transform: translateY(-1px);
+  border-color: #ced4da !important;
 }
 
 .confirm-btn {
-  background: var(--primary-color);
-  color: var(--text-primary, #ffffff);
-  border: 1px solid var(--primary-color);
+  background: #FF5500 !important;
+  color: white !important;
+  border: 1px solid #FF5500 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .confirm-btn:hover:not(:disabled) {
-  background: var(--primary-hover);
-  border-color: var(--primary-hover);
+  background: #E64A00 !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 85, 0, 0.3);
-}
-
-.confirm-btn.delete {
-  background: #ff4444;
-  border-color: #ff4444;
-}
-
-.confirm-btn.delete:hover:not(:disabled) {
-  background: #ff6666;
-  border-color: #ff6666;
-  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 85, 0, 0.3) !important;
+  border-color: #E64A00 !important;
 }
 
 .confirm-btn:disabled {
-  opacity: 0.5;
+  background: #e9ecef !important;
+  border-color: #dee2e6 !important;
+  color: #adb5bd !important;
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
-/* Responsive */
+.confirm-btn:active:not(:disabled),
+.cancel-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
 @media (max-width: 480px) {
   .note-edit-popup {
-    padding: 24px;
-    margin: 16px;
+    padding: 32px 24px;
   }
   
-  .popup-title {
-    font-size: 20px;
+  .note-edit-icon {
+    width: 64px;
+    height: 64px;
   }
   
-  .popup-message {
-    font-size: 14px;
-    margin-bottom: 24px;
+  .note-edit-icon svg {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .note-edit-title {
+    font-size: 24px;
   }
   
   .pin-input {
+    width: 48px;
+    height: 48px;
     font-size: 20px;
-    padding: 14px;
+  }
+  
+  .note-edit-actions {
+    flex-direction: column;
+    width: 100%;
   }
   
   .cancel-btn,
   .confirm-btn {
-    padding: 10px 20px;
-    font-size: 14px;
+    width: 100%;
   }
 }
