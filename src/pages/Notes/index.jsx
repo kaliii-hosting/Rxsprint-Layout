@@ -19,6 +19,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './Notes.css';
 import './NotesResponsiveFix.css';
+import './NotesToolbar.css';
 import './BannerFixes.css';
 import './BannerPaleColors.css';
 import './TitleBanners.css';
@@ -40,8 +41,8 @@ import './TableViewerStyles.css';
 import './TableVisibleScrollbars.css';
 import './TableScrollbarFix.css'; // Enhanced scrollbar fix
 import './EditorPaddingFix.css'; // Must be last to override all other styles
-import EnterpriseHeader, { TabGroup, TabButton, ActionButton, ActionGroup, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import NoteDeleteConfirmPopup from '../../components/NoteDeleteConfirmPopup/NoteDeleteConfirmPopup';
+import AddConfirmPopup from '../../components/AddConfirmPopup/AddConfirmPopup';
 import InlineTableEditor from '../../components/InlineTableEditor/InlineTableEditor';
 
 const Notes = () => {
@@ -92,8 +93,30 @@ const Notes = () => {
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState(null);
   
+  // Add confirmation state
+  const [showAddPopup, setShowAddPopup] = useState(false);
+  
   // Mobile menu state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [deviceMode, setDeviceMode] = useState('desktop'); // For responsive toolbar
+
+  // Handle window resize for responsive toolbar
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setDeviceMode('mobile');
+      } else if (width < 1024) {
+        setDeviceMode('tablet');
+      } else {
+        setDeviceMode('desktop');
+      }
+    };
+    
+    handleResize(); // Set initial value
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (!db) {
@@ -156,6 +179,13 @@ const Notes = () => {
   }, [notes, location.state, selectedNote, isCreating, loading, hasUserInteracted]);
 
   const handleCreateNote = () => {
+    // Show the add confirmation popup first
+    setShowAddPopup(true);
+  };
+
+  // Handle confirmation from AddConfirmPopup
+  const handleAddConfirm = () => {
+    setShowAddPopup(false);
     setIsCreating(true);
     setIsEditing(true);
     setSelectedNote(null);
@@ -2639,27 +2669,28 @@ const Notes = () => {
             </div>
           </div>
         ) : (
-          /* Enterprise Header - When no note is selected */
-          <EnterpriseHeader>
-            {/* Title Section - Similar to Bookmarks */}
-            <div className="notes-title-section">
-              <FileText size={20} />
-              <h2>All Notes</h2>
-              <span className="notes-count-badge">{filteredNotes.length}</span>
+          /* Board-style Responsive Toolbar - When no note is selected */
+          <div className={`board-toolbar board-toolbar-${deviceMode}`}>
+            {/* Title Section */}
+            <div className="toolbar-section">
+              <div className="notes-title-section">
+                <FileText size={deviceMode === 'mobile' ? 18 : 20} />
+                <h2>{deviceMode === 'mobile' ? 'Notes' : 'All Notes'}</h2>
+                <span className="notes-count-badge">{filteredNotes.length}</span>
+              </div>
             </div>
             
-            <HeaderDivider />
-            
-            {/* Action Buttons Group */}
-            <ActionGroup>
-              <ActionButton
+            {/* Actions Section */}
+            <div className="toolbar-section actions">
+              <button 
+                className="tool-button accent"
                 onClick={handleCreateNote}
-                icon={Plus}
-                primary
+                title="New Note"
               >
-                New Note
-              </ActionButton>
-              <ActionButton
+                <Plus size={deviceMode === 'mobile' ? 18 : 20} />
+              </button>
+              <button 
+                className="tool-button"
                 onClick={() => {
                   setIsCreating(true);
                   setIsEditing(true);
@@ -2684,12 +2715,12 @@ const Notes = () => {
                     }
                   }, 100);
                 }}
-                icon={Tag}
+                title="Add Banner"
               >
-                Add Banner
-              </ActionButton>
-            </ActionGroup>
-          </EnterpriseHeader>
+                <Tag size={deviceMode === 'mobile' ? 18 : 20} />
+              </button>
+            </div>
+          </div>
         )}
       </div>
 
@@ -3311,6 +3342,14 @@ const Notes = () => {
         noteTitle={noteToDelete?.title || 'this note'}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+      
+      {/* Add Confirmation Popup */}
+      <AddConfirmPopup
+        isOpen={showAddPopup}
+        itemType="note"
+        onConfirm={handleAddConfirm}
+        onCancel={() => setShowAddPopup(false)}
       />
       
       {/* Inline Table Editors for Edit Mode */}

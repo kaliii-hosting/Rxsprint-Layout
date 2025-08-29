@@ -1,0 +1,327 @@
+/* ========================================
+   ANTI-GLITCH SYSTEM - COMPLETE LAYOUT STABILITY
+   Prevents all content shifting during responsive transitions
+   ======================================== */
+
+/* CRITICAL: Global layout stability */
+html, body, #root {
+  overflow-anchor: none !important; /* Disable scroll anchoring that can cause jumps */
+  scroll-behavior: auto !important; /* Disable smooth scrolling during transitions */
+}
+
+/* PHASE 1: Pre-render stability */
+.responsive-page-settings {
+  /* Ultra-stable positioning */
+  position: relative !important;
+  display: inline-block !important;
+  vertical-align: top !important;
+  
+  /* Prevent any layout impact */
+  contain: layout style size !important;
+  isolation: isolate !important;
+  
+  /* Stable dimensions */
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  
+  /* No margin collapse */
+  margin: 0 !important;
+  
+  /* Critical: prevent transform-based animations */
+  transform: none !important;
+  -webkit-transform: none !important;
+  will-change: auto !important;
+  
+  /* Prevent reflow triggers */
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+/* PHASE 2: Button stability */
+.responsive-page-settings .settings-trigger {
+  /* Fixed dimensions to prevent reflow */
+  min-width: fit-content !important;
+  min-height: 36px !important;
+  
+  /* Stable layout properties */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* No transform animations */
+  transform: none !important;
+  transition: background-color 0.1s ease, border-color 0.1s ease, opacity 0.1s ease !important;
+  
+  /* Prevent text reflow */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  
+  /* Stable positioning context */
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* PHASE 3: Dropdown isolation */
+.responsive-page-settings .settings-dropdown {
+  /* Complete isolation from document flow */
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  
+  /* Maximum containment */
+  contain: layout style paint size !important;
+  isolation: isolate !important;
+  
+  /* Zero layout impact */
+  transform: none !important;
+  -webkit-transform: none !important;
+  will-change: opacity !important;
+  
+  /* Immediate positioning */
+  transition: opacity 0.05s ease !important;
+  animation: none !important;
+  
+  /* Prevent scrolling interference */
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  
+  /* High z-index without stacking context issues */
+  z-index: 2147483647 !important; /* Maximum safe z-index */
+}
+
+/* PHASE 4: Responsive transition prevention */
+@media (max-width: 969px) {
+  /* Before breakpoint - ensure stability */
+  .responsive-page-settings {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: inline-block !important;
+  }
+}
+
+@media (max-width: 968px) {
+  /* At breakpoint - prevent any animation */
+  .responsive-page-settings,
+  .responsive-page-settings *,
+  .responsive-page-settings .settings-trigger,
+  .responsive-page-settings .settings-dropdown {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  
+  /* Stable display */
+  .responsive-page-settings {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
+
+/* PHASE 5: High DPI / Zoom level stability */
+@media (min-resolution: 125dpi), (min-resolution: 1.25dppx), (-webkit-min-device-pixel-ratio: 1.25) {
+  .responsive-page-settings,
+  .responsive-page-settings * {
+    /* Prevent zoom-related reflow */
+    transform: none !important;
+    animation: none !important;
+    transition: opacity 0.05s ease !important;
+  }
+  
+  .responsive-page-settings {
+    display: inline-block !important;
+    contain: layout !important;
+  }
+}
+
+@media (min-resolution: 150dpi), (min-resolution: 1.5dppx), (-webkit-min-device-pixel-ratio: 1.5) {
+  .responsive-page-settings {
+    font-size: 0.9em !important;
+  }
+}
+
+@media (min-resolution: 200dpi), (min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 2) {
+  .responsive-page-settings {
+    font-size: 0.85em !important;
+  }
+}
+
+/* PHASE 6: Enterprise Header stability */
+.enterprise-header .responsive-page-settings {
+  /* Stable positioning within header */
+  position: relative !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  
+  /* No margin interference */
+  margin: 0 !important;
+  
+  /* Fixed context */
+  contain: layout !important;
+}
+
+/* PHASE 7: Toolbar stability */
+.board-toolbar .responsive-page-settings,
+.analyzer-dashboard .responsive-page-settings {
+  /* Stable toolbar positioning */
+  position: relative !important;
+  display: inline-block !important;
+  
+  /* Prevent flex interference */
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  
+  /* Stable alignment */
+  align-self: center !important;
+  
+  /* No layout impact */
+  contain: layout !important;
+}
+
+/* PHASE 8: Page container protection */
+.page-container,
+.main-container,
+.content,
+.notes-layout,
+.analyzer-content,
+.board-content {
+  /* Prevent child layout from affecting parent */
+  contain: layout !important;
+  
+  /* Stable overflow */
+  overflow-anchor: none !important;
+  
+  /* Prevent sudden dimension changes */
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+/* PHASE 9: Layout shift detection prevention */
+.responsive-page-settings[data-layout-stable="false"],
+.responsive-page-settings:not([data-layout-stable]) {
+  /* Hide until stable */
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.responsive-page-settings[data-layout-stable="true"] {
+  /* Show when stable */
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transition: opacity 0.1s ease !important;
+}
+
+/* PHASE 10: Browser-specific fixes */
+@supports (-webkit-appearance: none) {
+  /* WebKit/Safari specific */
+  .responsive-page-settings {
+    -webkit-backface-visibility: hidden !important;
+    -webkit-perspective: 1000px !important;
+    -webkit-transform: translateZ(0) !important;
+  }
+  
+  .responsive-page-settings .settings-dropdown {
+    -webkit-transform: translateZ(0) !important;
+    -webkit-backface-visibility: hidden !important;
+  }
+}
+
+@-moz-document url-prefix() {
+  /* Firefox specific */
+  .responsive-page-settings {
+    contain: layout !important; /* Firefox doesn't support full containment */
+  }
+}
+
+/* PHASE 11: Critical timing fixes */
+@media (prefers-reduced-motion: no-preference) {
+  .responsive-page-settings {
+    /* Allow minimal animation only when user prefers it */
+    transition: opacity 0.05s ease !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .responsive-page-settings,
+  .responsive-page-settings *,
+  .responsive-page-settings .settings-dropdown,
+  .responsive-page-settings .settings-trigger {
+    /* Complete animation disable for accessibility */
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* PHASE 12: Emergency layout reset */
+.layout-glitch-prevention {
+  /* Apply to body or root container when needed */
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.layout-glitch-prevention * {
+  /* Force stable layout on all children */
+  contain: layout !important;
+  transform: none !important;
+  animation-play-state: paused !important;
+}
+
+/* PHASE 13: Dynamic content stability */
+.responsive-page-settings.initializing,
+.responsive-page-settings:not(.initialized) {
+  /* Completely hidden until ready */
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  
+  /* No layout impact */
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+.responsive-page-settings.initialized {
+  /* Stable appearance */
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* PHASE 14: Final layout locks */
+body.layout-locked {
+  /* Emergency layout freeze */
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+body.layout-locked * {
+  /* Freeze all animations and transforms */
+  animation-play-state: paused !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* PHASE 15: Viewport stability */
+@media (max-width: 968px) and (orientation: landscape) {
+  .responsive-page-settings {
+    /* Landscape mobile stability */
+    font-size: 0.9em !important;
+  }
+}
+
+@media (max-width: 968px) and (orientation: portrait) {
+  .responsive-page-settings {
+    /* Portrait mobile stability */
+    font-size: 1em !important;
+  }
+}

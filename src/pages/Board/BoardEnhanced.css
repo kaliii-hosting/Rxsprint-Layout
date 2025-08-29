@@ -1,0 +1,724 @@
+.board-enhanced {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+/* Minimal Toolbar - Integrated into board */
+.board-toolbar-minimal {
+  position: relative;
+  background: white;
+  border-bottom: 2px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  z-index: 10;
+  flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Toolbar sections */
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border-right: 1px solid #e0e0e0;
+}
+
+.toolbar-section:last-child {
+  border-right: none;
+}
+
+/* Tool buttons */
+.tool-button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #333;
+  position: relative;
+}
+
+.tool-button:hover {
+  background: #f5f5f5;
+  transform: translateY(-1px);
+}
+
+.tool-button:active {
+  transform: translateY(0);
+}
+
+.tool-button.active {
+  background: #ff5500;
+  color: white;
+}
+
+.tool-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.tool-button:disabled:hover {
+  background: transparent;
+  transform: none;
+}
+
+/* Color picker */
+.color-picker {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.color-button {
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.color-button:hover {
+  transform: scale(1.15);
+}
+
+.color-button.active {
+  border-color: #ff5500;
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #ff5500;
+}
+
+.color-button[style*="ffffff"] {
+  border: 1px solid #ddd;
+}
+
+/* Stroke picker */
+.stroke-picker {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.stroke-button {
+  width: 32px;
+  height: 32px;
+  border: 2px solid transparent;
+  background: white;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stroke-button:hover {
+  background: #f5f5f5;
+}
+
+.stroke-button.active {
+  border-color: #ff5500;
+  background: #fff5f0;
+}
+
+.stroke-indicator {
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Zoom controls */
+.zoom-level {
+  min-width: 50px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  user-select: none;
+}
+
+/* Canvas container */
+.board-container {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  background: white;
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 39px, #f0f0f0 39px, #f0f0f0 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, #f0f0f0 39px, #f0f0f0 40px);
+  scroll-behavior: smooth;
+}
+
+/* Drawing canvas */
+.drawing-canvas {
+  display: block;
+  background: white;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.drawing-canvas.move-mode {
+  cursor: grab;
+}
+
+.drawing-canvas.move-mode:active {
+  cursor: grabbing;
+}
+
+/* Screenshot selection overlay */
+.screenshot-selected {
+  outline: 2px dashed #ff5500;
+  outline-offset: 2px;
+}
+
+/* Resize handles */
+.resize-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #ff5500;
+  border: 2px solid white;
+  border-radius: 2px;
+  cursor: nwse-resize;
+  z-index: 10;
+}
+
+.resize-handle.ne,
+.resize-handle.sw {
+  cursor: nesw-resize;
+}
+
+.resize-handle.n,
+.resize-handle.s {
+  cursor: ns-resize;
+}
+
+.resize-handle.e,
+.resize-handle.w {
+  cursor: ew-resize;
+}
+
+
+/* Dark theme support */
+.board-enhanced.dark {
+  background: #1a1a1a;
+}
+
+.board-enhanced.dark .board-toolbar-minimal {
+  background: rgba(30, 30, 30, 0.98);
+  border-bottom-color: #444;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.board-enhanced.dark .tool-button {
+  color: #e0e0e0;
+}
+
+.board-enhanced.dark .tool-button:hover {
+  background: #333;
+}
+
+.board-enhanced.dark .tool-button.active {
+  background: #ff5500;
+  color: white;
+}
+
+.board-enhanced.dark .toolbar-section {
+  border-right-color: #444;
+}
+
+.board-enhanced.dark .color-picker,
+.board-enhanced.dark .stroke-picker {
+  background: #2a2a2a;
+}
+
+.board-enhanced.dark .stroke-button {
+  background: #333;
+  border-color: #444;
+}
+
+.board-enhanced.dark .stroke-button:hover {
+  background: #444;
+}
+
+.board-enhanced.dark .stroke-button.active {
+  border-color: #ff5500;
+  background: #4d1f00;
+}
+
+.board-enhanced.dark .zoom-level {
+  color: #aaa;
+}
+
+.board-enhanced.dark .board-container {
+  background: #222;
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 39px, #2a2a2a 39px, #2a2a2a 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, #2a2a2a 39px, #2a2a2a 40px);
+}
+
+.board-enhanced.dark .drawing-canvas {
+  background: #1a1a1a;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .board-toolbar-minimal {
+    padding: 6px 8px;
+    gap: 4px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .board-toolbar-minimal::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .toolbar-section {
+    padding: 0 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  
+  /* Colors section needs special handling on mobile */
+  .toolbar-section.colors {
+    flex-direction: row;
+    gap: 4px;
+  }
+  
+  .color-picker {
+    flex-shrink: 0;
+  }
+  
+  .stroke-picker {
+    flex-shrink: 0;
+  }
+  
+  .tool-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .tool-button svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .color-button {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .stroke-button {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Very small mobile screens */
+@media (max-width: 480px) {
+  .board-toolbar-minimal {
+    padding: 4px 6px;
+  }
+  
+  .tool-button {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+  }
+  
+  .tool-button svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Smooth transitions */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent text selection on double click */
+.board-enhanced * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Loading state */
+.board-enhanced.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #ff5500;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Tooltips */
+.tool-button[title] {
+  position: relative;
+}
+
+.tool-button[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1001;
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+  animation-delay: 0.5s;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Paste indicator */
+.paste-indicator {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: #4caf50;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideIn 0.3s ease;
+  z-index: 1002;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Auto-save indicator */
+.autosave-indicator {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 999;
+}
+
+.autosave-indicator.saving {
+  background: rgba(255, 152, 0, 0.9);
+}
+
+.autosave-indicator.saved {
+  background: rgba(76, 175, 80, 0.9);
+}
+
+/* Responsive Toolbar Styles */
+.board-toolbar {
+  position: relative;
+  background: white;
+  border-bottom: 2px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  z-index: 10;
+  flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Desktop Mode */
+.board-toolbar-desktop {
+  flex-wrap: nowrap;
+}
+
+.board-toolbar-desktop .toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Tablet Mode */
+.board-toolbar-tablet {
+  padding: 0.625rem 0.875rem;
+}
+
+.board-toolbar-tablet .tool-button {
+  padding: 0.5rem;
+}
+
+/* Mobile Mode */
+.board-toolbar-mobile {
+  padding: 0.5rem 0.75rem;
+  gap: 0.5rem;
+}
+
+.board-toolbar-mobile .toolbar-section {
+  gap: 0.25rem;
+}
+
+.board-toolbar-mobile .tool-button {
+  padding: 0.375rem;
+  min-width: 36px;
+  height: 36px;
+}
+
+.board-toolbar-mobile .zoom-level {
+  font-size: 0.75rem;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Horizontal Submenu for Mobile/Tablet */
+.toolbar-submenu {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  animation: slideDown 0.2s ease-out;
+  z-index: 9;
+}
+
+.toolbar-submenu-horizontal {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.submenu-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.submenu-label {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.color-picker-horizontal,
+.stroke-picker-horizontal {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.color-picker-horizontal .color-button,
+.stroke-picker-horizontal .stroke-button {
+  width: 28px;
+  height: 28px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.color-picker-horizontal .color-button:hover,
+.stroke-picker-horizontal .stroke-button:hover {
+  transform: scale(1.1);
+  border-color: #ddd;
+}
+
+.color-picker-horizontal .color-button.active,
+.stroke-picker-horizontal .stroke-button.active {
+  border-color: #ff5500;
+  box-shadow: 0 0 0 2px rgba(255, 85, 0, 0.2);
+}
+
+.stroke-indicator {
+  border-radius: 50%;
+  margin: auto;
+}
+
+/* Animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar for horizontal submenu */
+.toolbar-submenu-horizontal::-webkit-scrollbar {
+  height: 4px;
+}
+
+.toolbar-submenu-horizontal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.toolbar-submenu-horizontal::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 2px;
+}
+
+.toolbar-submenu-horizontal::-webkit-scrollbar-thumb:hover {
+  background: #ccc;
+}
+
+/* Board content container for canvas */
+.board-content {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  background: #f5f5f5;
+  /* Ensure scrollbars are visible */
+  scrollbar-width: thin;
+  scrollbar-color: #FF6900 #f0f0f0;
+  /* Center the canvas */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+/* Custom scrollbar styles */
+.board-content::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.board-content::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 6px;
+}
+
+.board-content::-webkit-scrollbar-thumb {
+  background: #FF6900;
+  border-radius: 6px;
+  border: 2px solid #f0f0f0;
+}
+
+.board-content::-webkit-scrollbar-thumb:hover {
+  background: #E55D00;
+}
+
+.board-content::-webkit-scrollbar-corner {
+  background: #f0f0f0;
+}
+
+/* Canvas styles for proper rendering */
+.board-canvas {
+  display: block;
+  background: white;
+  /* Better rendering for drawings */
+  image-rendering: auto;
+  cursor: crosshair;
+  /* Remove any default margins/padding */
+  margin: 0;
+  padding: 0;
+  /* Ensure canvas doesn't shrink */
+  flex-shrink: 0;
+  /* Add border for visibility */
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* Prevent touch actions that interfere with drawing */
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Ensure proper sizing */
+  max-width: 100%;
+  height: auto;
+}
+
+/* Cursor styles for different tools */
+.board-content[data-tool="move"] .board-canvas {
+  cursor: move;
+}
+
+.board-content[data-tool="resize"] .board-canvas {
+  cursor: nw-resize;
+}
+
+.board-content[data-tool="pen"] .board-canvas,
+.board-content[data-tool="highlighter"] .board-canvas {
+  cursor: crosshair;
+}
+
+.board-content[data-tool="eraser"] .board-canvas {
+  cursor: grab;
+}

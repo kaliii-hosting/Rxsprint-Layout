@@ -1,0 +1,189 @@
+/* Bookmark Manager Mobile Scroll Fix - Ensures full scrollability on mobile */
+
+/* Override problematic height and overflow restrictions on mobile */
+@media (max-width: 768px) {
+  /* Fix the page container to allow scrolling */
+  .bookmark-manager {
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* Fix main content container */
+  .bookmarks-content {
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: calc(100vh - 120px) !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 2rem !important; /* Extra padding for bottom content */
+  }
+  
+  /* Ensure bookmarks grid is scrollable */
+  .bookmarks-grid {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-bottom: 1rem !important;
+  }
+  
+  /* Fix sticky header to not interfere with scrolling */
+  .section-toggle-banner {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* Remove any height restrictions from parent containers */
+  .page-container.bookmark-manager {
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Fix body and html overflow when bookmark page is active */
+  body:has(.bookmark-manager) {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+  }
+  
+  html:has(.bookmark-manager) {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+  }
+  
+  /* Ensure the layout allows scrolling */
+  .layout:has(.bookmark-manager) {
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+  
+  .layout:has(.bookmark-manager) .main-container {
+    height: 100vh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .layout:has(.bookmark-manager) .content {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: 100% !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Fix bookmark items container */
+  .bookmark-items-container {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Ensure folder content is scrollable */
+  .folder-content {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  /* Fix any viewport height issues */
+  .bookmark-manager * {
+    max-height: none !important;
+  }
+  
+  /* Only apply max-height to modals */
+  .bookmark-manager .modal-content {
+    max-height: 90vh !important;
+  }
+  
+  /* Remove overflow hidden from items */
+  .bookmark-item {
+    overflow: visible !important;
+  }
+  
+  .bookmark-item.grid-view {
+    overflow: hidden !important; /* Keep text truncation */
+  }
+  
+  /* Ensure list view items don't restrict height */
+  .bookmark-item.list-view {
+    height: auto !important;
+    min-height: 60px !important;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .bookmarks-content {
+    min-height: calc(100vh - 100px) !important;
+    padding: 1rem !important;
+    padding-bottom: 3rem !important;
+  }
+  
+  .bookmarks-grid {
+    gap: 0.5rem !important;
+    padding-bottom: 2rem !important;
+  }
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    .bookmark-manager {
+      min-height: -webkit-fill-available !important;
+    }
+    
+    .bookmarks-content {
+      min-height: calc(-webkit-fill-available - 120px) !important;
+      padding-bottom: env(safe-area-inset-bottom, 20px) !important;
+    }
+  }
+}
+
+/* Android specific fixes */
+@media (max-width: 768px) and (pointer: coarse) {
+  .bookmarks-content {
+    padding-bottom: 3rem !important;
+  }
+}
+
+/* Ensure smooth scrolling */
+@media (max-width: 768px) {
+  .bookmark-manager,
+  .bookmarks-content {
+    scroll-behavior: smooth !important;
+  }
+}
+
+/* Fix for when keyboard is open on mobile */
+@media (max-width: 768px) {
+  .bookmark-manager:has(input:focus) {
+    height: 100vh !important;
+  }
+  
+  .bookmark-manager:has(input:focus) .bookmarks-content {
+    min-height: auto !important;
+    height: calc(100vh - 200px) !important;
+  }
+}
+
+/* Ensure bottom content is visible */
+@media (max-width: 768px) {
+  .bookmarks-content::after {
+    content: '';
+    display: block;
+    height: 50px;
+    width: 100%;
+  }
+}

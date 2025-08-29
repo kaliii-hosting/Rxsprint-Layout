@@ -1,0 +1,104 @@
+/* Board Mobile Fix - Scoped to Board page only */
+
+/* Mobile specific fixes - ONLY for Board page */
+@media (max-width: 768px) {
+  /* Board page specific styles */
+  .board-page {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important; /* Dynamic viewport height */
+    overflow: hidden !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+  
+  /* Board toolbar - scoped to board page */
+  .board-page .board-toolbar {
+    padding: 0.5rem !important;
+    margin: 0 !important;
+    width: 100vw !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  
+  /* Board content - scoped to board page */
+  .board-page .board-content {
+    width: 100vw !important;
+    height: calc(100vh - 120px) !important;
+    height: calc(100dvh - 120px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+    overflow: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  
+  /* Board canvas - scoped to board page */
+  .board-page .board-canvas {
+    min-width: 100vw !important;
+    min-height: calc(100vh - 120px) !important;
+    min-height: calc(100dvh - 120px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+  
+  /* Board page toolbar row */
+  .board-page .toolbar-row {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 0.25rem !important;
+  }
+  
+  .board-page .tool-group,
+  .board-page .size-color-wrapper,
+  .board-page .action-group {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Only hide overflow when Board page is active */
+  body:has(.board-page) {
+    overflow: hidden !important;
+  }
+  
+  /* Only affect layout when Board page is displayed */
+  .layout-content:has(.board-page) {
+    padding: 0 !important;
+    margin: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+}
+
+/* Extra small devices - scoped to Board page */
+@media (max-width: 480px) {
+  .board-page .board-content {
+    height: calc(100vh - 110px) !important;
+    height: calc(100dvh - 110px) !important;
+  }
+  
+  .board-page .board-canvas {
+    min-height: calc(100vh - 110px) !important;
+    min-height: calc(100dvh - 110px) !important;
+  }
+}
+
+/* Note: These styles are specifically scoped to the Board page only 
+   and should not affect other pages in the application */

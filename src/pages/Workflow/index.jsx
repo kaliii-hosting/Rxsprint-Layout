@@ -36,14 +36,19 @@ import {
   ArrowLeft,
   FileDown,
   Square,
-  CheckSquare
+  CheckSquare,
+  Beaker,
+  Droplet,
+  Save
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { WorkflowStorageManager } from '../../utils/workflowFirebaseStorage';
+import { WorkflowHybridStorageManager } from '../../utils/workflowHybridStorage';
 import authService from '../../services/authService';
+import { testFirebaseStorage } from '../../utils/testFirebaseStorage';
+import { debugFirebaseConnection } from '../../utils/debugFirebase';
 import './Workflow.css';
-import EnterpriseHeader, { TabGroup, TabButton, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import { exportWorkflowToPDF } from './ExportPDFEnhanced';
 import { exportWorkflowToPDFWithScreenshots } from './ExportPDFWithScreenshot';
 import { exportWorkflowToPDFReliable } from './ExportPDFReliable';
@@ -53,6 +58,7 @@ const Workflow = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('lyso'); // lyso, hae, scd
+  const [deviceMode, setDeviceMode] = useState('desktop'); // For responsive toolbar
   const [completedItems, setCompletedItems] = useState(new Set());
   const [completedCards, setCompletedCards] = useState(new Set());
   const [expandedSections, setExpandedSections] = useState({});
@@ -97,9 +103,42 @@ const Workflow = () => {
   const [imageResizeStart, setImageResizeStart] = useState({ width: 0, x: 0 });
   const [subsectionWidths, setSubsectionWidths] = useState({});
   const [isResizing, setIsResizing] = useState(false); // Flag to prevent tab switching during resize
-  const [saveStatus, setSaveStatus] = useState('saved'); // 'saved', 'saving', 'error'
+  const [saveStatus, setSaveStatus] = useState(''); // 'saved', 'saving', 'error', or empty
   const [lastSaveTime, setLastSaveTime] = useState(null);
   const saveTimeoutRef = useRef(null);
+
+  // Detect device mode for responsive toolbar
+  useEffect(() => {
+    const updateDeviceMode = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setDeviceMode('mobile');
+      } else if (width < 1024) {
+        setDeviceMode('tablet');
+      } else {
+        setDeviceMode('desktop');
+      }
+    };
+    
+    updateDeviceMode();
+    window.addEventListener('resize', updateDeviceMode);
+    return () => window.removeEventListener('resize', updateDeviceMode);
+  }, []);
+
+  // Auto-hide save toast notification
+  useEffect(() => {
+    if (saveStatus === 'saved') {
+      const timer = setTimeout(() => {
+        setSaveStatus('');
+      }, 3000); // Hide after 3 seconds
+      return () => clearTimeout(timer);
+    } else if (saveStatus === 'error') {
+      const timer = setTimeout(() => {
+        setSaveStatus('');
+      }, 5000); // Show error for 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [saveStatus]);
   const workflowDataRef = useRef(workflowData);
   const hasUnsavedChanges = useRef(false);
   const [storageManager, setStorageManager] = useState(null);
@@ -113,22 +152,22 @@ const Workflow = () => {
         const user = await authService.initialize();
         if (user && user.uid === 'tdGILcyLbSOAUIjsoA93QGaj7Zm2') {
           console.log('Admin authenticated successfully');
-          setStorageManager(new WorkflowStorageManager(user.uid));
+          setStorageManager(new WorkflowHybridStorageManager(user.uid));
           setAuthInitialized(true);
         } else if (user) {
           console.log('User authenticated with ID:', user.uid);
-          setStorageManager(new WorkflowStorageManager(user.uid));
+          setStorageManager(new WorkflowHybridStorageManager(user.uid));
           setAuthInitialized(true);
         } else {
           // Use admin UID directly since there's only one user
           console.log('Using admin storage configuration');
-          setStorageManager(new WorkflowStorageManager('tdGILcyLbSOAUIjsoA93QGaj7Zm2'));
+          setStorageManager(new WorkflowHybridStorageManager('tdGILcyLbSOAUIjsoA93QGaj7Zm2'));
           setAuthInitialized(true);
         }
       } catch (error) {
         console.error('Authentication error:', error);
         // Always use admin UID on error since it's the only user
-        setStorageManager(new WorkflowStorageManager('tdGILcyLbSOAUIjsoA93QGaj7Zm2'));
+        setStorageManager(new WorkflowHybridStorageManager('tdGILcyLbSOAUIjsoA93QGaj7Zm2'));
         setAuthInitialized(true);
       }
     };
@@ -140,6 +179,15 @@ const Workflow = () => {
   useEffect(() => {
     workflowDataRef.current = workflowData;
   }, [workflowData]);
+
+  // Expose test functions to window for debugging
+  useEffect(() => {
+    window.testFirebaseStorage = testFirebaseStorage;
+    window.debugFirebase = debugFirebaseConnection;
+    console.log('Debug functions available:');
+    console.log('  - window.testFirebaseStorage()');
+    console.log('  - window.debugFirebase()');
+  }, []);
 
   // Auto-save functionality with debouncing - Firebase Storage only
   const autoSave = useCallback(async () => {
@@ -2998,75 +3046,47 @@ See attached pump sheet for details.`
 
   return (
     <div className={`workflow-page page-container ${isResizing ? 'is-resizing' : ''}`}>
-      {/* Enterprise Header */}
-      <EnterpriseHeader>
-        <TabGroup>
-          <TabButton
-            active={activeTab === 'lyso'}
+      {/* Responsive Toolbar */}
+      <div className={`board-toolbar board-toolbar-${deviceMode}`}>
+        {/* Workflow Type Toggle - Segmented Button */}
+        <div className="workflow-toggle-group">
+          <button 
+            className={`toggle-segment ${activeTab === 'lyso' ? 'active' : ''}`}
             onClick={() => !isResizing && setActiveTab('lyso')}
+            title="LYSO Workflows"
           >
-            LYSO
-          </TabButton>
-          <TabButton
-            active={activeTab === 'hae'}
+            <Beaker size={deviceMode === 'mobile' ? 16 : 18} />
+            <span>LYSO</span>
+          </button>
+          <button 
+            className={`toggle-segment ${activeTab === 'hae' ? 'active' : ''}`}
             onClick={() => !isResizing && setActiveTab('hae')}
+            title="HAE Workflows"
           >
-            HAE
-          </TabButton>
-          <TabButton
-            active={activeTab === 'scd'}
+            <Droplet size={deviceMode === 'mobile' ? 16 : 18} />
+            <span>HAE</span>
+          </button>
+          <button 
+            className={`toggle-segment ${activeTab === 'scd' ? 'active' : ''}`}
             onClick={() => !isResizing && setActiveTab('scd')}
+            title="SCD Workflows"
           >
-            SCD
-          </TabButton>
-        </TabGroup>
-        
-        {/* Save Status Indicator */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          marginLeft: '20px',
-          marginRight: '20px',
-          padding: '6px 12px',
-          borderRadius: '6px',
-          backgroundColor: saveStatus === 'saved' ? '#10b98133' : 
-                          saveStatus === 'saving' ? '#3b82f633' : 
-                          saveStatus === 'error' ? '#ef444433' : '#6b728033',
-          color: saveStatus === 'saved' ? '#10b981' : 
-                 saveStatus === 'saving' ? '#3b82f6' : 
-                 saveStatus === 'error' ? '#ef4444' : '#6b7280',
-          fontSize: '13px',
-          fontWeight: '500'
-        }}>
-          {saveStatus === 'saved' && <CheckCircle2 size={16} />}
-          {saveStatus === 'saving' && <RefreshCcw size={16} className="spin-animation" />}
-          {saveStatus === 'error' && <AlertCircle size={16} />}
-          {saveStatus === 'pending' && <Clock size={16} />}
-          <span>
-            {saveStatus === 'saved' && 'Saved to Firebase'}
-            {saveStatus === 'saving' && 'Saving to Firebase...'}
-            {saveStatus === 'error' && 'Firebase save failed'}
-            {saveStatus === 'pending' && 'Pending save'}
-          </span>
-          {lastSaveTime && saveStatus === 'saved' && (
-            <span style={{ opacity: 0.7, fontSize: '11px' }}>
-              ({new Date(lastSaveTime).toLocaleTimeString()})
-            </span>
-          )}
+            <Pill size={deviceMode === 'mobile' ? 16 : 18} />
+            <span>SCD</span>
+          </button>
         </div>
-        
-        <ActionGroup>
-          <ActionButton
+        {/* Actions Section */}
+        <div className="toolbar-section actions">
+          <button 
+            className="tool-button"
             onClick={() => setShowAddSectionModal(true)}
-            icon={PlusCircle}
-            primary
+            title="Add Section"
           >
-            Add Section
-          </ActionButton>
-          <ActionButton
+            <PlusCircle size={deviceMode === 'mobile' ? 18 : 20} />
+          </button>
+          <button 
+            className="tool-button"
             onClick={() => {
-              // Check if any sections are expanded
               const hasExpanded = Object.values(expandedSections).some(isExpanded => isExpanded);
               if (hasExpanded) {
                 collapseAll();
@@ -3074,28 +3094,33 @@ See attached pump sheet for details.`
                 expandAll();
               }
             }}
-            icon={Object.values(expandedSections).some(isExpanded => isExpanded) ? ChevronUp : ChevronDown}
-            secondary
+            title={Object.values(expandedSections).some(isExpanded => isExpanded) ? 'Collapse All' : 'Expand All'}
           >
-            {Object.values(expandedSections).some(isExpanded => isExpanded) ? 'Collapse All' : 'Expand All'}
-          </ActionButton>
-          <ActionButton
-            onClick={() => {
-              setShowExportSelection(true);
-              // Initialize with all sections selected
-              const allSectionIds = workflowData[activeTab].sections.map(s => s.id);
-              setSelectedSectionsForExport(new Set(allSectionIds));
-            }}
-            icon={FileDown}
-            primary
-          >
-            Export PDF
-          </ActionButton>
-        </ActionGroup>
-      </EnterpriseHeader>
+            {Object.values(expandedSections).some(isExpanded => isExpanded) ? 
+              <ChevronUp size={deviceMode === 'mobile' ? 18 : 20} /> : 
+              <ChevronDown size={deviceMode === 'mobile' ? 18 : 20} />}
+          </button>
+        </div>
+      </div>
 
       {/* Main Content */}
       {renderSectionContent()}
+
+      {/* Save Status Toast Notification */}
+      {(saveStatus === 'saved' || saveStatus === 'saving' || saveStatus === 'error') && (
+        <div className={`save-toast save-toast-${saveStatus} save-toast-${deviceMode}`}>
+          <div className="save-toast-content">
+            {saveStatus === 'saved' && <CheckCircle2 size={20} />}
+            {saveStatus === 'saving' && <RefreshCcw size={20} className="spin-animation" />}
+            {saveStatus === 'error' && <AlertCircle size={20} />}
+            <span className="save-toast-text">
+              {saveStatus === 'saved' && 'Saved to storage'}
+              {saveStatus === 'saving' && 'Saving...'}
+              {saveStatus === 'error' && 'Save failed'}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Add Section Modal */}
       {showAddSectionModal && (
@@ -3333,7 +3358,7 @@ See attached pump sheet for details.`
               <button onClick={() => setShowEditSectionModal(false)} className="btn-cancel">
                 Cancel
               </button>
-              <button onClick={editSection} className="btn-primary" style={{ color: 'white !important', color: '#ffffff !important' }}>
+              <button onClick={editSection} className="btn-primary" style={{ color: '#ffffff !important' }}>
                 Save Changes
               </button>
             </div>

@@ -1,0 +1,248 @@
+/* SafePageSettings - Header-integrated mobile actions */
+
+/* Container - Inline in header */
+.safe-page-settings {
+  position: relative;
+  display: none; /* Hidden by default, shown on mobile */
+}
+
+/* Show only on mobile */
+@media (max-width: 968px) {
+  .safe-page-settings {
+    display: inline-block;
+  }
+}
+
+/* Button - Consistent header button style */
+.safe-settings-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #24292e;
+  cursor: pointer;
+  min-height: 36px;
+  white-space: nowrap;
+  position: relative;
+  z-index: 10;
+  margin-left: 8px;
+}
+
+.safe-settings-trigger:hover {
+  background: #f6f8fa;
+  border-color: #d1d5da;
+}
+
+.safe-settings-trigger.active {
+  background: #f6f8fa;
+  border-color: #2188ff;
+  box-shadow: 0 0 0 1px #2188ff;
+}
+
+.safe-settings-trigger.icon-only {
+  padding: 8px;
+}
+
+.safe-settings-trigger.icon-only span {
+  display: none;
+}
+
+/* Chevron rotation */
+.safe-settings-trigger .chevron {
+  transition: transform 0.2s ease;
+}
+
+.safe-settings-trigger .chevron.rotate {
+  transform: rotate(180deg);
+}
+
+/* Backdrop */
+.safe-dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 9998;
+}
+
+/* Dropdown - Positioned below button, avoiding sidebar */
+.safe-settings-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: white;
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 9999;
+  min-width: 220px;
+  max-width: calc(100vw - 80px); /* Account for sidebar width */
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+}
+
+/* Ensure dropdown doesn't go off-screen */
+@media (max-width: 968px) {
+  .safe-settings-dropdown {
+    right: 0;
+    left: auto;
+  }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 480px) {
+  .safe-settings-dropdown {
+    max-width: calc(100vw - 70px);
+    min-width: 200px;
+  }
+}
+
+/* Dropdown header */
+.safe-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e1e4e8;
+  background: #f6f8fa;
+  border-radius: 8px 8px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.safe-dropdown-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #24292e;
+}
+
+.safe-close-btn {
+  padding: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #586069;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.safe-close-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #24292e;
+}
+
+/* Dropdown content */
+.safe-dropdown-content {
+  padding: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Menu items */
+.safe-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #24292e;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.safe-menu-item:hover:not(.disabled) {
+  background: #f6f8fa;
+}
+
+.safe-menu-item.active {
+  background: #e7f3ff;
+  color: #0366d6;
+}
+
+.safe-menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.safe-menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.safe-menu-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Menu separator */
+.safe-menu-separator {
+  height: 1px;
+  background: #e1e4e8;
+  margin: 8px 0;
+}
+
+/* Hide desktop buttons on mobile when SafePageSettings is shown */
+@media (max-width: 968px) {
+  .desktop-only,
+  .action-group.desktop-only,
+  .header-actions .action-btn:not(.safe-settings-trigger) {
+    display: none !important;
+  }
+  
+  /* Ensure Actions button is visible */
+  .safe-page-settings {
+    display: inline-block !important;
+    margin-left: auto; /* Push to right side */
+  }
+}
+
+/* Desktop - completely hide SafePageSettings */
+@media (min-width: 969px) {
+  .safe-page-settings {
+    display: none !important;
+  }
+}
+
+/* Integration with page headers */
+.page-header .safe-page-settings,
+.header-actions .safe-page-settings,
+.toolbar-actions .safe-page-settings,
+.analyzer-dashboard .safe-page-settings {
+  margin-left: auto;
+}
+
+/* Ensure proper z-index stacking */
+.safe-page-settings {
+  z-index: 50;
+}
+
+.safe-settings-dropdown {
+  z-index: 9999;
+}
+
+.safe-dropdown-backdrop {
+  z-index: 9998;
+}

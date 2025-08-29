@@ -1,0 +1,210 @@
+/* Calendar Responsive Fix - Remove scrollbars and fit mobile */
+
+/* Override calendar page scrollbars */
+.calendar-page {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Icon-only button style for Add Event */
+.tool-button.icon-only {
+  min-width: auto;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.tool-button.icon-only span {
+  display: none;
+}
+
+/* Fix calendar content area */
+.calendar-content {
+  flex: 1;
+  overflow: visible !important;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary, #f8f9fa);
+  height: auto !important;
+  min-height: 0;
+}
+
+/* Modern calendar container - remove scrollbars */
+.modern-calendar-container {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* Calendar table - make it responsive */
+.modern-calendar-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Calendar cells - fixed heights for mobile */
+.calendar-cell {
+  position: relative;
+  height: 70px;
+  padding: 0;
+  border: 1px solid var(--calendar-border);
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  vertical-align: top;
+}
+
+/* Ensure all cells including empty ones have the same dimensions */
+.calendar-cell.empty {
+  height: 70px;
+  background: transparent;
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 768px) {
+  .calendar-content {
+    padding: 0.5rem;
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+  
+  .modern-calendar-container {
+    padding: 0.75rem;
+    border-radius: 12px;
+  }
+  
+  /* Uniform cells on mobile */
+  .calendar-cell {
+    height: 48px !important;
+  }
+  
+  .calendar-cell.empty {
+    height: 48px !important;
+  }
+  
+  .cell-content {
+    padding: 0.25rem !important;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  
+  .day-number {
+    font-size: 0.75rem !important;
+    margin-bottom: 0 !important;
+  }
+  
+  /* Hide event dots on very small cells */
+  .event-indicators {
+    gap: 2px !important;
+  }
+  
+  .event-dot {
+    width: 3px !important;
+    height: 3px !important;
+  }
+  
+  /* Uniform weekday headers */
+  .modern-calendar-table thead th {
+    padding: 0.25rem 0;
+    font-size: 0.65rem;
+    letter-spacing: 0;
+    text-align: center;
+  }
+  
+  .calendar-weekday {
+    text-align: center;
+  }
+  
+  /* Hide sidebar on mobile when not creating */
+  .events-sidebar {
+    display: none;
+  }
+  
+  .calendar-page.is-creating .events-sidebar {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    z-index: 1000;
+    background: white;
+  }
+}
+
+/* Extra small mobile adjustments */
+@media (max-width: 480px) {
+  .calendar-cell {
+    height: 42px !important;
+  }
+  
+  .calendar-cell.empty {
+    height: 42px !important;
+  }
+  
+  .day-number {
+    font-size: 0.7rem !important;
+  }
+  
+  /* Hide all event indicators on very small screens */
+  .event-indicators {
+    display: none !important;
+  }
+  
+  .modern-calendar-container {
+    padding: 0.5rem;
+  }
+}
+
+/* Remove all scrollbars from calendar components */
+.modern-calendar-container::-webkit-scrollbar,
+.calendar-content::-webkit-scrollbar,
+.modern-calendar-table::-webkit-scrollbar {
+  display: none !important;
+}
+
+.modern-calendar-container,
+.calendar-content,
+.modern-calendar-table {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Ensure calendar fits in viewport */
+@media (max-width: 768px) {
+  .calendar-page {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .board-toolbar {
+    flex-shrink: 0;
+  }
+  
+  .calendar-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  
+  .modern-calendar-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  
+  .modern-calendar-table {
+    flex: 1;
+    height: 100%;
+  }
+}

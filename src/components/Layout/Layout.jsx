@@ -29,6 +29,7 @@ import VoiceTranscription from '../VoiceTranscription/VoiceTranscription';
 import DigitalClock from '../DigitalClock/DigitalClock';
 import './Layout.css';
 import './TabletLayout.css';
+import './LayoutMobileHeaderFix.css';
 
 const Layout = ({ children }) => {
   const location = useLocation();

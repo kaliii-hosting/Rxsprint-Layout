@@ -10,7 +10,7 @@ const firebaseConfig = {
   authDomain: "cvse-32388.firebaseapp.com",
   databaseURL: "https://cvse-32388-default-rtdb.firebaseio.com",
   projectId: "cvse-32388",
-  storageBucket: "cvse-32388.firebasestorage.app",
+  storageBucket: "cvse-32388.appspot.com",
   messagingSenderId: "899974287244",
   appId: "1:899974287244:web:24d847c7bc039a6c5490a9"
 };

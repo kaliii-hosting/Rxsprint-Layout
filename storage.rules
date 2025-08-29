@@ -1,6 +1,11 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // Allow read/write access to workflow-content folder for all users (development)
+    match /workflow-content/{allPaths=**} {
+      allow read, write: if true;
+    }
+    
     // Allow read/write access to notes folder for all users (development)
     match /notes/{allPaths=**} {
       allow read, write: if true;

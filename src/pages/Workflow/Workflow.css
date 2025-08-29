@@ -2,6 +2,202 @@
 /* UPDATED: 2024-01-23 - Fixed duplicate checkmark and optimized layout spacing */
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,800,500,400&display=swap');
 
+/* Board-style Toolbar - Same as Medications Page */
+.board-toolbar {
+  background: var(--card-background, #ffffff);
+  border-bottom: 1px solid var(--border-color, #e1e4e8);
+  padding: 0.75rem 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  overflow: visible !important;
+  position: relative;
+  z-index: 100;
+}
+
+/* Desktop Mode */
+.board-toolbar-desktop {
+  flex-wrap: nowrap;
+}
+
+/* Tablet Mode */
+.board-toolbar-tablet {
+  padding: 0.625rem 0.875rem;
+}
+
+/* Mobile Mode */
+.board-toolbar-mobile {
+  padding: 0.5rem 0.75rem;
+  gap: 0.5rem;
+}
+
+/* Workflow Type Toggle Group - Segmented Button */
+.workflow-toggle-group {
+  display: flex;
+  background: var(--bg-tertiary, #f6f8fa);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 0;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+  margin-right: 1rem;
+}
+
+.toggle-segment {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #586069);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.toggle-segment:first-child {
+  border-radius: 9px 0 0 9px;
+}
+
+.toggle-segment:last-child {
+  border-radius: 0 9px 9px 0;
+}
+
+.toggle-segment:hover:not(.active) {
+  color: var(--text-primary, #24292e);
+}
+
+.toggle-segment.active {
+  background: white;
+  color: #ff5500 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+  border-radius: 9px;
+}
+
+.toggle-segment.active svg {
+  color: #ff5500 !important;
+}
+
+.toggle-segment.active span {
+  color: #ff5500 !important;
+}
+
+.toggle-segment svg {
+  flex-shrink: 0;
+}
+
+/* Tool Button Styles */
+.tool-button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary, #24292e);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tool-button:hover {
+  background: var(--hover-background, #f3f4f6);
+  border-color: var(--border-color, #d0d7de);
+}
+
+.tool-button.primary {
+  background: var(--primary-color, #FF6900);
+  color: white;
+  border-color: var(--primary-color, #FF6900);
+}
+
+.tool-button.primary:hover {
+  background: var(--primary-hover, #e55a00);
+  border-color: var(--primary-hover, #e55a00);
+}
+
+.tool-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toolbar-section.actions {
+  margin-left: auto;
+}
+
+/* Save Indicator */
+.save-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.save-indicator.saved {
+  background: #10b98133;
+  color: #10b981;
+}
+
+.save-indicator.saving {
+  background: #3b82f633;
+  color: #3b82f6;
+}
+
+.save-indicator.error {
+  background: #ef444433;
+  color: #ef4444;
+}
+
+.save-indicator.pending {
+  background: #6b728033;
+  color: #6b7280;
+}
+
+/* Responsive adjustments */
+.board-toolbar-mobile .workflow-toggle-group {
+  padding: 2px;
+  margin-right: 0.5rem;
+}
+
+.board-toolbar-mobile .toggle-segment {
+  padding: 0.375rem 0.625rem;
+  font-size: 0.8125rem;
+}
+
+.board-toolbar-mobile .toggle-segment span {
+  display: none; /* Hide text on mobile, show only icons */
+}
+
+.board-toolbar-mobile .tool-button {
+  padding: 0.375rem;
+  min-width: 36px;
+  height: 36px;
+}
+
+.board-toolbar-tablet .toggle-segment {
+  padding: 0.425rem 0.875rem;
+}
+
 /* Base styles - ensure Satoshi font is used throughout */
 * {
   box-sizing: border-box;
@@ -19,6 +215,116 @@
 
 .spin-animation {
   animation: spin 1s linear infinite;
+}
+
+/* Toast Notification Animation */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Save Toast Notification */
+.save-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  animation: slideInRight 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  min-width: 220px;
+  max-width: 320px;
+}
+
+.save-toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.save-toast-text {
+  flex: 1;
+}
+
+/* Toast Status Variants */
+.save-toast-saved {
+  background: #10b981;
+  color: white;
+}
+
+.save-toast-saving {
+  background: #3b82f6;
+  color: white;
+}
+
+.save-toast-error {
+  background: #ef4444;
+  color: white;
+}
+
+/* Tablet Responsive */
+.save-toast-tablet {
+  bottom: 20px;
+  right: 20px;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.save-toast-tablet .save-toast-content {
+  padding: 10px 14px;
+  font-size: 13px;
+  gap: 10px;
+}
+
+.save-toast-tablet svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Mobile Responsive */
+.save-toast-mobile {
+  bottom: 16px;
+  right: 16px;
+  left: 16px;
+  max-width: calc(100vw - 32px);
+  min-width: auto;
+}
+
+.save-toast-mobile .save-toast-content {
+  padding: 10px 12px;
+  font-size: 13px;
+  gap: 8px;
+}
+
+.save-toast-mobile svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Hide animation */
+.save-toast.hiding {
+  animation: slideOutRight 0.3s ease-in;
 }
 
 /* Text Organizer Container */

@@ -13,7 +13,7 @@ const DeletionConfirmPopup = ({
   const [isShaking, setIsShaking] = useState(false);
   const inputRefs = useRef([]);
   
-  const CORRECT_PIN = '2112';
+  const CORRECT_PIN = '1956';
 
   useEffect(() => {
     if (isOpen) {

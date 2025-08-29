@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 99999999 !important; /* Maximum z-index with important to override any conflicts */
+  z-index: 10000;
   padding: 20px;
   animation: fadeIn 0.2s ease-out;
 }
@@ -82,13 +82,13 @@
 .note-deletion-icon {
   width: 80px;
   height: 80px;
-  background: var(--danger-color-alpha-bg, rgba(255, 68, 68, 0.1));
-  border: 1px solid var(--danger-color-alpha, rgba(255, 68, 68, 0.2));
+  background: var(--primary-color-alpha-bg, rgba(255, 85, 0, 0.1));
+  border: 1px solid var(--primary-color-alpha, rgba(255, 85, 0, 0.2));
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--danger-color, #ff4444);
+  color: var(--primary-color, #FF5500);
 }
 
 .note-deletion-title {
@@ -102,7 +102,7 @@
 .note-deletion-message {
   font-size: 16px;
   color: var(--text-secondary, rgba(255, 255, 255, 0.7));
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
   line-height: 1.5;
 }
 
@@ -113,7 +113,7 @@
 
 .note-deletion-warning {
   font-size: 14px;
-  color: var(--danger-color, #ff4444);
+  color: var(--warning-color, #ff9944);
   margin: 0 0 32px 0;
   font-weight: 500;
 }
@@ -165,18 +165,18 @@
 }
 
 .pin-input:focus {
-  border-color: var(--danger-color, #ff4444);
-  box-shadow: 0 0 0 3px var(--danger-color-alpha, rgba(255, 68, 68, 0.2));
+  border-color: var(--primary-color, #FF5500);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha, rgba(255, 85, 0, 0.2));
   background: var(--input-focus-bg, rgba(255, 255, 255, 0.08));
 }
 
 .pin-input.filled {
-  background: var(--danger-color-alpha-bg, rgba(255, 68, 68, 0.1));
-  border-color: var(--danger-color-alpha, rgba(255, 68, 68, 0.3));
+  background: var(--primary-color-alpha-bg, rgba(255, 85, 0, 0.1));
+  border-color: var(--primary-color-alpha, rgba(255, 85, 0, 0.3));
 }
 
 .pin-input.error {
-  border-color: var(--danger-color, #ff4444);
+  border-color: #ff4444;
   animation: shake 0.3s ease-in-out;
 }
 
@@ -187,7 +187,7 @@
 }
 
 .pin-error {
-  color: var(--danger-color, #ff4444);
+  color: #ff4444;
   font-size: 14px;
   margin: 12px 0 0 0;
   font-weight: 500;
@@ -227,9 +227,9 @@
 }
 
 .delete-btn {
-  background: var(--danger-color, #ff4444);
+  background: var(--primary-color, #FF5500);
   color: var(--text-primary, white);
-  border: 1px solid var(--danger-color, #ff4444);
+  border: 1px solid var(--primary-color, #FF5500);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,10 +237,10 @@
 }
 
 .delete-btn:hover:not(:disabled) {
-  background: var(--danger-hover, #ff3333);
+  background: var(--primary-hover, #E64A00);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--danger-color-alpha, rgba(255, 68, 68, 0.3));
-  border-color: var(--danger-hover, #ff3333);
+  box-shadow: 0 4px 12px var(--primary-color-alpha, rgba(255, 85, 0, 0.3));
+  border-color: var(--primary-hover, #E64A00);
 }
 
 .delete-btn:disabled {
@@ -256,177 +256,13 @@
   transform: translateY(0);
 }
 
-/* Mobile Full-Screen Design */
-@media (max-width: 768px) {
-  .note-deletion-popup-overlay {
-    background: rgba(255, 255, 255, 1) !important; /* White background for mobile */
-    padding: 0 !important;
-    align-items: flex-start !important;
-    z-index: 99999999 !important; /* Maximum z-index for mobile with important to ensure it's always on top */
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-  }
+/* Responsive Design */
+@media (max-width: 480px) {
   
   .note-deletion-popup {
-    background: #ffffff !important; /* White background */
-    border: none !important;
-    border-radius: 0 !important;
-    padding: 40px 24px !important;
-    max-width: none !important;
-    width: 100% !important;
-    height: 100% !important;
-    min-height: 100vh !important;
-    box-shadow: none !important;
-    animation: slideInFromBottom 0.3s ease-out;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    position: relative !important;
-  }
-  
-  .close-button {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(0, 0, 0, 0.05);
-    color: #333333;
-    width: 44px;
-    height: 44px;
-    border-radius: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .close-button:hover {
-    background: rgba(0, 0, 0, 0.1);
-    color: #000000;
-  }
-  
-  .note-deletion-icon {
-    width: 80px;
-    height: 80px;
-    background: rgba(255, 68, 68, 0.1);
-    border: 1px solid rgba(255, 68, 68, 0.2);
-  }
-  
-  .note-deletion-title {
-    font-size: 28px;
-    color: #1a1a1a;
-    margin: 0 0 20px 0;
-  }
-  
-  .note-deletion-message {
-    font-size: 18px;
-    color: #666666;
-    margin: 0 0 12px 0;
-  }
-  
-  .note-deletion-message strong {
-    color: #1a1a1a;
-  }
-  
-  .note-deletion-warning {
-    font-size: 16px;
-    color: #ff4444;
-    margin: 0 0 40px 0;
-  }
-  
-  .pin-section {
-    background: rgba(0, 0, 0, 0.02);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    margin-bottom: 40px;
     padding: 32px 24px;
   }
   
-  .pin-label {
-    color: #666666;
-    margin-bottom: 24px;
-  }
-  
-  .pin-input {
-    width: 60px;
-    height: 60px;
-    font-size: 24px;
-    background: #ffffff;
-    color: #1a1a1a;
-    border: 2px solid rgba(0, 0, 0, 0.15);
-  }
-  
-  .pin-input:focus {
-    border-color: #ff4444;
-    box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.2);
-    background: #ffffff;
-  }
-  
-  .pin-input.filled {
-    background: rgba(255, 68, 68, 0.05);
-    border-color: rgba(255, 68, 68, 0.4);
-  }
-  
-  .note-deletion-actions {
-    flex-direction: column;
-    width: 100%;
-    gap: 16px;
-    margin-top: auto;
-    padding-top: 20px;
-  }
-  
-  .cancel-btn,
-  .delete-btn {
-    width: 100%;
-    height: 56px;
-    font-size: 18px;
-    border-radius: 12px;
-  }
-  
-  .cancel-btn {
-    background: rgba(0, 0, 0, 0.05);
-    color: #1a1a1a;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-  }
-  
-  .cancel-btn:hover {
-    background: rgba(0, 0, 0, 0.1);
-  }
-  
-  .delete-btn {
-    background: #ff4444;
-    color: white;
-    border: 1px solid #ff4444;
-  }
-  
-  .delete-btn:hover:not(:disabled) {
-    background: #ff3333;
-    border-color: #ff3333;
-  }
-  
-  .delete-btn:disabled {
-    background: rgba(0, 0, 0, 0.1);
-    border-color: rgba(0, 0, 0, 0.2);
-    color: rgba(0, 0, 0, 0.3);
-  }
-}
-
-@keyframes slideInFromBottom {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* Small mobile screens - even more compact */
-@media (max-width: 480px) {
-  .note-deletion-popup {
-    padding: 32px 20px;
-  }
   
   .note-deletion-icon {
     width: 64px;
@@ -448,9 +284,13 @@
     font-size: 20px;
   }
   
+  .note-deletion-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
   .cancel-btn,
   .delete-btn {
-    height: 52px;
-    font-size: 16px;
+    width: 100%;
   }
 }

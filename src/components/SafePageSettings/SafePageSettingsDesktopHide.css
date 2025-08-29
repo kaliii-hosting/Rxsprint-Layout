@@ -1,0 +1,80 @@
+/* ========================================
+   SAFE PAGE SETTINGS - DESKTOP HIDE ENFORCEMENT
+   Ensures component is completely hidden on desktop to prevent any glitches
+   ======================================== */
+
+/* Desktop: Completely hide the component */
+@media (min-width: 969px) {
+  .safe-page-settings,
+  .safe-page-settings * {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+}
+
+/* Mobile: Ensure proper display */
+@media (max-width: 968px) {
+  .safe-page-settings {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  /* Hide desktop-only action buttons on mobile */
+  .desktop-only,
+  .action-group.desktop-only {
+    display: none !important;
+  }
+}
+
+/* Tablet specific (if needed) */
+@media (min-width: 641px) and (max-width: 968px) {
+  .safe-page-settings {
+    /* Tablet-specific adjustments if needed */
+    font-size: 14px;
+  }
+}
+
+/* Small mobile specific */
+@media (max-width: 640px) {
+  .safe-page-settings {
+    /* Small mobile adjustments if needed */
+    font-size: 13px;
+  }
+}
+
+/* Ensure no interference with other components */
+.safe-page-settings {
+  /* Isolation to prevent any layout impact */
+  contain: layout style !important;
+  isolation: isolate !important;
+  z-index: 50 !important; /* Lower than dropdowns but higher than content */
+}
+
+/* Position the button in a mobile-friendly location */
+@media (max-width: 968px) {
+  .safe-page-settings {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    z-index: 50 !important;
+  }
+  
+  .safe-settings-trigger {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  }
+}

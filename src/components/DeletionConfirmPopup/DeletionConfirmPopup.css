@@ -82,13 +82,13 @@
 .deletion-icon {
   width: 80px;
   height: 80px;
-  background: var(--danger-color-alpha-bg, rgba(255, 68, 68, 0.1));
-  border: 1px solid var(--danger-color-alpha, rgba(255, 68, 68, 0.2));
+  background: var(--primary-color-alpha-bg, rgba(255, 85, 0, 0.1));
+  border: 1px solid var(--primary-color-alpha, rgba(255, 85, 0, 0.2));
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--danger-color, #ff4444);
+  color: var(--primary-color, #FF5500);
 }
 
 .deletion-title {
@@ -102,7 +102,7 @@
 .deletion-message {
   font-size: 16px;
   color: var(--text-secondary, rgba(255, 255, 255, 0.7));
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
   line-height: 1.5;
 }
 
@@ -113,7 +113,7 @@
 
 .deletion-warning {
   font-size: 14px;
-  color: var(--danger-color, #ff4444);
+  color: var(--warning-color, #ff9944);
   margin: 0 0 32px 0;
   font-weight: 500;
 }
@@ -165,18 +165,18 @@
 }
 
 .pin-input:focus {
-  border-color: var(--danger-color, #ff4444);
-  box-shadow: 0 0 0 3px var(--danger-color-alpha, rgba(255, 68, 68, 0.2));
+  border-color: var(--primary-color, #FF5500);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha, rgba(255, 85, 0, 0.2));
   background: var(--input-focus-bg, rgba(255, 255, 255, 0.08));
 }
 
 .pin-input.filled {
-  background: var(--danger-color-alpha-bg, rgba(255, 68, 68, 0.1));
-  border-color: var(--danger-color-alpha, rgba(255, 68, 68, 0.3));
+  background: var(--primary-color-alpha-bg, rgba(255, 85, 0, 0.1));
+  border-color: var(--primary-color-alpha, rgba(255, 85, 0, 0.3));
 }
 
 .pin-input.error {
-  border-color: var(--danger-color, #ff4444);
+  border-color: #ff4444;
   animation: shake 0.3s ease-in-out;
 }
 
@@ -187,7 +187,7 @@
 }
 
 .pin-error {
-  color: var(--danger-color, #ff4444);
+  color: #ff4444;
   font-size: 14px;
   margin: 12px 0 0 0;
   font-weight: 500;
@@ -227,9 +227,9 @@
 }
 
 .delete-btn {
-  background: var(--danger-color, #ff4444);
+  background: var(--primary-color, #FF5500);
   color: var(--text-primary, white);
-  border: 1px solid var(--danger-color, #ff4444);
+  border: 1px solid var(--primary-color, #FF5500);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,10 +237,10 @@
 }
 
 .delete-btn:hover:not(:disabled) {
-  background: var(--danger-hover, #ff3333);
+  background: var(--primary-hover, #E64A00);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--danger-color-alpha, rgba(255, 68, 68, 0.3));
-  border-color: var(--danger-hover, #ff3333);
+  box-shadow: 0 4px 12px var(--primary-color-alpha, rgba(255, 85, 0, 0.3));
+  border-color: var(--primary-hover, #E64A00);
 }
 
 .delete-btn:disabled {

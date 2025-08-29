@@ -31,6 +31,7 @@ import BookmarkDeletionPopup from './BookmarkDeletionPopup';
 import './BookmarkManager.css';
 import './BookmarkMobilefix.css';
 import './BookmarkModalMobileFix.css';
+import './BookmarkMobileScrollFix.css';
 import EnterpriseHeader, { TabGroup, TabButton, HeaderDivider, ActionGroup, ActionButton, IconButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 
 // Drag and Drop Item Types
@@ -226,9 +227,6 @@ const BookmarkManager = () => {
       return;
     }
     
-    // Use a default user ID if no auth is set up
-    const userId = auth?.currentUser?.uid || 'default-user';
-    
     try {
       // Subscribe to bookmarks - simplified query
       const bookmarksQuery = collection(db, 'bookmarks');
@@ -242,7 +240,7 @@ const BookmarkManager = () => {
               ...doc.data(),
               type: 'bookmark'
             }))
-            .filter(item => item.userId === userId)
+            // Remove userId filter to show all bookmarks
             .sort((a, b) => (a.order || 0) - (b.order || 0));
           setBookmarks(bookmarksData);
           setLoading(false);
@@ -265,7 +263,7 @@ const BookmarkManager = () => {
               ...doc.data(),
               type: 'folder'
             }))
-            .filter(item => item.userId === userId)
+            // Remove userId filter to show all folders
             .sort((a, b) => (a.order || 0) - (b.order || 0));
           setFolders(foldersData);
         },
@@ -351,14 +349,15 @@ const BookmarkManager = () => {
       }
     }
 
-    const userId = auth?.currentUser?.uid || 'default-user';
+    // Optional userId for new items
+    const userId = auth?.currentUser?.uid;
     const items = getCurrentItems();
     const newOrder = items.length;
 
     const newItem = {
       title: formData.title,
       color: formData.color,
-      userId,
+      ...(userId && { userId }), // Only include userId if available
       order: newOrder,
       createdAt: new Date(),
       ...(modalType === 'bookmark' ? {
@@ -370,7 +369,9 @@ const BookmarkManager = () => {
     };
 
     const collection = modalType === 'folder' ? 'folders' : 'bookmarks';
-    await setDoc(doc(db, collection, `${userId}_${Date.now()}`), newItem);
+    // Use timestamp for ID if no userId available
+    const docId = userId ? `${userId}_${Date.now()}` : `bookmark_${Date.now()}`;
+    await setDoc(doc(db, collection, docId), newItem);
 
     setShowAddModal(false);
     resetForm();

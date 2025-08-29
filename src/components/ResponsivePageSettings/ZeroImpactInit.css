@@ -1,0 +1,76 @@
+/* ========================================
+   NUCLEAR ZERO IMPACT SYSTEM
+   PERMANENTLY DISABLES ResponsivePageSettings TO ELIMINATE LAYOUT GLITCH
+   ======================================== */
+
+/* NUCLEAR: ResponsivePageSettings COMPLETELY DISABLED - NEVER SHOWS */
+.responsive-page-settings,
+.responsive-page-settings *,
+.responsive-page-settings::before,
+.responsive-page-settings::after,
+.responsive-page-settings .settings-trigger,
+.responsive-page-settings .settings-dropdown,
+.responsive-page-settings .dropdown-backdrop {
+  /* FORCE complete removal from layout on ALL devices and screen sizes */
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  top: -999999px !important;
+  left: -999999px !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  
+  /* Prevent ALL layout calculations */
+  contain: strict !important;
+  content-visibility: hidden !important;
+  
+  /* No spacing */
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  
+  /* No animations or effects */
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  will-change: auto !important;
+  
+  /* No background or visual impact */
+  background: transparent !important;
+  color: transparent !important;
+  
+  /* Disable all interactions */
+  cursor: default !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  
+  /* Force hide from screen readers */
+  aria-hidden: true !important;
+}
+
+/* OVERRIDE any inline styles that might try to show ResponsivePageSettings */
+.responsive-page-settings[style],
+.responsive-page-settings[style] *,
+.responsive-page-settings .settings-trigger[style],
+.responsive-page-settings .settings-dropdown[style] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  top: -999999px !important;
+  left: -999999px !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* NUCLEAR: No media queries allowed - stays hidden on ALL screen sizes */
+/* This prevents any layout shifts caused by responsive breakpoint transitions */

@@ -25,6 +25,8 @@ import Board from './pages/Board'
 import Terminal from './pages/Terminal'
 import './App.css'
 import './styles/TabletResponsive.css'
+import './styles/MobileGlobalFix.css'
+import './styles/MobileFinalFix.css'
 
 function AppContent() {
   const { isUnlocked, unlock } = useAuth()

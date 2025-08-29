@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropdown Test - Fixed Version</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .test-section h2 {
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 18px;
+        }
+        
+        /* Settings Button */
+        .settings-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #ffffff;
+            color: #1a1a1a !important;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .settings-trigger:hover {
+            background: #f3f4f6;
+            border-color: #8b949e;
+        }
+        
+        .settings-trigger.active {
+            background: #FF6900;
+            color: white !important;
+            border-color: #FF6900;
+        }
+        
+        /* Dropdown */
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 9998;
+        }
+        
+        .settings-dropdown {
+            position: fixed;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            min-width: 280px;
+            max-width: 320px;
+            z-index: 9999;
+            animation: slideIn 0.2s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .dropdown-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: #f6f8fa;
+            border-bottom: 1px solid #e1e4e8;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .dropdown-header h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #24292e;
+        }
+        
+        .dropdown-content {
+            padding: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .menu-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: transparent;
+            color: #1a1a1a !important;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin-bottom: 2px;
+        }
+        
+        .menu-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .menu-item.primary {
+            background: #FF6900;
+            color: white !important;
+        }
+        
+        .menu-item.primary:hover {
+            background: #E55D00;
+        }
+        
+        .menu-item.secondary {
+            background: #f0f0f0;
+            color: #1a1a1a !important;
+        }
+        
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .settings-dropdown {
+                max-width: 90vw;
+            }
+            
+            .menu-item {
+                min-height: 44px;
+            }
+        }
+        
+        .status-message {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .status-message.success {
+            background: #d4f4dd;
+            color: #1a7431;
+        }
+        
+        .status-message.error {
+            background: #fdd;
+            color: #c41e3a;
+        }
+        
+        .viewport-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 10000;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewport-info" id="viewportInfo"></div>
+    
+    <div class="test-container">
+        <h1>Page Settings Dropdown Test</h1>
+        
+        <div class="test-section">
+            <h2>Test 1: Basic Dropdown Functionality</h2>
+            <div class="dropdown-container">
+                <button class="settings-trigger" id="testButton1">
+                    Page Settings
+                    <span>▼</span>
+                </button>
+            </div>
+            <div class="status-message" id="status1"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 2: Mobile Positioning (Resize window to test)</h2>
+            <div class="dropdown-container">
+                <button class="settings-trigger" id="testButton2">
+                    Page Settings
+                    <span>▼</span>
+                </button>
+            </div>
+            <div class="status-message" id="status2"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 3: Button Color Test</h2>
+            <button class="menu-item secondary">Secondary Button (Should have dark text)</button>
+            <button class="menu-item primary">Primary Button (Should have white text)</button>
+            <button class="menu-item">Default Button (Should have dark text)</button>
+        </div>
+    </div>
+    
+    <script>
+        // Update viewport info
+        function updateViewportInfo() {
+            const info = document.getElementById('viewportInfo');
+            info.innerHTML = `
+                Width: ${window.innerWidth}px<br>
+                Height: ${window.innerHeight}px<br>
+                Device: ${window.innerWidth <= 768 ? 'Mobile' : 'Desktop'}
+            `;
+        }
+        
+        updateViewportInfo();
+        window.addEventListener('resize', updateViewportInfo);
+        
+        // Test 1: Basic dropdown
+        const button1 = document.getElementById('testButton1');
+        const status1 = document.getElementById('status1');
+        let dropdown1 = null;
+        
+        button1.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            if (dropdown1) {
+                closeDropdown1();
+                return;
+            }
+            
+            button1.classList.add('active');
+            
+            // Create backdrop
+            const backdrop = document.createElement('div');
+            backdrop.className = 'dropdown-backdrop';
+            backdrop.addEventListener('click', closeDropdown1);
+            
+            // Create dropdown
+            dropdown1 = document.createElement('div');
+            dropdown1.className = 'settings-dropdown';
+            
+            // Position dropdown
+            const rect = button1.getBoundingClientRect();
+            const isMobile = window.innerWidth <= 768;
+            
+            dropdown1.style.top = (rect.bottom + 8) + 'px';
+            
+            if (isMobile) {
+                const dropdownWidth = Math.min(280, window.innerWidth - 40);
+                const buttonCenter = rect.left + (rect.width / 2);
+                let left = buttonCenter - (dropdownWidth / 2);
+                
+                if (left < 20) left = 20;
+                if (left + dropdownWidth > window.innerWidth - 20) {
+                    left = window.innerWidth - dropdownWidth - 20;
+                }
+                
+                dropdown1.style.left = left + 'px';
+                dropdown1.style.width = dropdownWidth + 'px';
+            } else {
+                const buttonCenter = rect.left + (rect.width / 2);
+                const dropdownWidth = 280;
+                let left = buttonCenter - (dropdownWidth / 2);
+                
+                if (left < 20) left = 20;
+                if (left + dropdownWidth > window.innerWidth - 20) {
+                    left = window.innerWidth - dropdownWidth - 20;
+                }
+                
+                dropdown1.style.left = left + 'px';
+                dropdown1.style.width = dropdownWidth + 'px';
+            }
+            
+            dropdown1.innerHTML = `
+                <div class="dropdown-header">
+                    <h3>Page Settings</h3>
+                </div>
+                <div class="dropdown-content">
+                    <button class="menu-item">LYSO</button>
+                    <button class="menu-item">HAE</button>
+                    <button class="menu-item">SCD</button>
+                    <button class="menu-item secondary">Add Drug</button>
+                    <button class="menu-item secondary">Import Excel</button>
+                    <button class="menu-item primary">Save</button>
+                </div>
+            `;
+            
+            document.body.appendChild(backdrop);
+            document.body.appendChild(dropdown1);
+            
+            status1.className = 'status-message success';
+            status1.textContent = 'Dropdown opened successfully at position: top=' + dropdown1.style.top + ', left=' + dropdown1.style.left;
+        });
+        
+        function closeDropdown1() {
+            button1.classList.remove('active');
+            const backdrop = document.querySelector('.dropdown-backdrop');
+            if (backdrop) backdrop.remove();
+            if (dropdown1) {
+                dropdown1.remove();
+                dropdown1 = null;
+            }
+            status1.className = 'status-message';
+            status1.textContent = 'Dropdown closed';
+        }
+        
+        // Test 2: Mobile responsive test
+        const button2 = document.getElementById('testButton2');
+        const status2 = document.getElementById('status2');
+        
+        button2.addEventListener('click', function(e) {
+            const isMobile = window.innerWidth <= 768;
+            status2.className = 'status-message success';
+            status2.textContent = `Current mode: ${isMobile ? 'Mobile' : 'Desktop'} (${window.innerWidth}px)`;
+        });
+    </script>
+</body>
+</html>

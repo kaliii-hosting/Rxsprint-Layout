@@ -1,0 +1,216 @@
+/* Final Mobile Responsiveness Fix - Overrides problematic styles */
+
+/* Priority fix for mobile devices */
+@media (max-width: 768px) {
+  /* Reset body and html for all pages except Board */
+  html:not(:has(.board-page)) {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+  }
+  
+  body:not(:has(.board-page)) {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+  }
+  
+  /* Fix Layout component */
+  .layout:not(:has(.board-page)) {
+    width: 100% !important;
+    height: 100vh !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: row !important;
+    position: relative !important;
+  }
+  
+  /* Fix main content area */
+  .main-content:not(:has(.board-page)) {
+    flex: 1 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    width: 100% !important;
+    position: relative !important;
+  }
+  
+  /* Fix header to be responsive - but don't override Layout header styles */
+  .header:not(.layout .header) {
+    width: 100% !important;
+    padding: 0 1rem !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    overflow: visible !important;
+    position: relative !important;
+    z-index: 1000 !important;
+  }
+  
+  /* Fix search container in header */
+  .header .search-container {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    max-width: calc(100% - 120px) !important;
+    margin: 0 0.5rem !important;
+  }
+  
+  /* Fix page containers for all pages except Board */
+  .page-container:not(.board-page) {
+    width: 100% !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Fix all page-specific classes */
+  .calculator-page,
+  .medications-page,
+  .calendar-page,
+  .workflow-page,
+  .analyzer-page,
+  .notes-page,
+  .supplies-page,
+  .pump-page,
+  .bookmark-page {
+    width: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* Fix toolbar for all pages */
+  .board-toolbar:not(.board-page .board-toolbar) {
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    position: relative !important;
+    z-index: 100 !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Ensure content areas are scrollable */
+  .calculator-content,
+  .medications-container,
+  .calendar-content,
+  .workflow-content,
+  .analyzer-content,
+  .notes-content {
+    flex: 1 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    width: 100% !important;
+    position: relative !important;
+  }
+  
+  /* Fix Calculator page specific issues */
+  .calculator-dashboard {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0.75rem !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Fix Calendar page specific issues */
+  .modern-calendar-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+  }
+  
+  .modern-calendar-table {
+    width: 100% !important;
+    table-layout: fixed !important;
+  }
+  
+  /* Ensure sidebar is visible and properly sized */
+  .sidebar {
+    width: 70px !important;
+    flex-shrink: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* Fix content padding */
+  .content:not(:has(.board-page)) {
+    padding: 0 !important;
+    overflow: visible !important;
+    width: 100% !important;
+    flex: 1 !important;
+  }
+  
+  /* Prevent any element from causing horizontal scroll */
+  *:not(.board-page *) {
+    max-width: 100vw !important;
+  }
+  
+  /* Fix modals and overlays */
+  .modal-overlay,
+  .drawer,
+  .popup {
+    max-width: 100vw !important;
+    width: 100% !important;
+  }
+}
+
+/* Extra small devices specific fixes */
+@media (max-width: 480px) {
+  .header {
+    padding: 0 0.5rem !important;
+  }
+  
+  .board-toolbar:not(.board-page .board-toolbar) {
+    padding: 0.5rem !important;
+    gap: 0.5rem !important;
+  }
+  
+  .calculator-dashboard {
+    padding: 0.5rem !important;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  body:not(:has(.board-page)) {
+    height: -webkit-fill-available !important;
+  }
+  
+  .page-container:not(.board-page) {
+    min-height: -webkit-fill-available !important;
+  }
+  
+  .layout:not(:has(.board-page)) {
+    height: -webkit-fill-available !important;
+  }
+}
+
+/* Ensure smooth scrolling on all pages except Board */
+*:not(.board-page *) {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Remove tap highlight on mobile */
+@media (max-width: 768px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* IMPORTANT: This file should be loaded LAST to ensure it overrides any problematic styles */

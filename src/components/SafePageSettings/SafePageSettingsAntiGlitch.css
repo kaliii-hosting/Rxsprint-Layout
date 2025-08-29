@@ -1,0 +1,99 @@
+/* ========================================
+   SAFE PAGE SETTINGS - ANTI-GLITCH OVERRIDES
+   Extra safety layer to prevent any possible layout shifts
+   ======================================== */
+
+/* CRITICAL: Ensure no layout impact during initialization */
+.safe-page-settings {
+  /* Force stable layout from the start */
+  contain: layout !important;
+  will-change: auto !important;
+  transform: none !important;
+  
+  /* No animations during initialization */
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Prevent any possible layout shift on page load */
+.safe-page-settings:not([data-initialized="true"]) {
+  /* Hide until fully ready */
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.safe-page-settings[data-initialized="true"] {
+  /* Show when ready */
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Override any inherited animations */
+.safe-page-settings,
+.safe-page-settings * {
+  animation-play-state: paused !important;
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+}
+
+/* Ensure dropdown doesn't cause reflow */
+.safe-page-settings-dropdown {
+  /* Complete isolation from document flow */
+  position: fixed !important;
+  contain: strict !important;
+  will-change: auto !important;
+}
+
+/* Mobile-specific safety */
+@media (max-width: 968px) {
+  .safe-page-settings {
+    /* Ensure immediate stable display on mobile */
+    display: inline-block !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Desktop-specific safety - component should be hidden */
+@media (min-width: 969px) {
+  .safe-page-settings {
+    /* Completely hidden on desktop */
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
+/* High DPI / Zoom stability */
+@media (min-resolution: 125dpi), (min-resolution: 1.25dppx) {
+  .safe-page-settings {
+    /* Prevent zoom-related layout issues */
+    transform: none !important;
+    font-size: 0.9em !important;
+  }
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .safe-page-settings,
+  .safe-page-settings * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Emergency override - can be applied to body if glitch detected */
+body.safe-page-settings-active {
+  /* Prevent any layout shifts while dropdown is open */
+  overflow-anchor: none !important;
+  scroll-behavior: auto !important;
+}
+
+body.safe-page-settings-active .safe-page-settings {
+  /* Extra stability when active */
+  contain: strict !important;
+  isolation: isolate !important;
+}

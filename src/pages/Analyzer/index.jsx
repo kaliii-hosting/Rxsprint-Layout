@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Upload, X, ScanLine, Check, X as XIcon, AlertCircle, RotateCcw, FileText, ChevronDown, Package, GitCompare, TrendingUp, TrendingDown, ImageIcon, Plus } from 'lucide-react';
 import './Analyzer.css';
+import './AnalyzerResponsiveToolbar.css';
+import './SuppliesOrangeColorFix.css'; // Must be early to override green colors
 import './SuppliesTableFixes.css';
 import './SuppliesTableOverrides.css';
 import './ResponsiveSuppliesTables.css';
@@ -17,7 +19,9 @@ import './PrescriptionContainerDesign.css'; // Container with header like Analyz
 import './PrescriptionResultsContainer.css'; // Prescription Results container with proper header
 import './PrescriptionResponsiveLayout.css'; // Responsive layout for all screen sizes
 import './PrescriptionStatusColumnFix.css'; // MUST BE LAST - Fixes STATUS column width
-import EnterpriseHeader, { TabGroup, TabButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
+import './TableAlignmentFix.css'; // Fixes table alignment across zoom levels
+import './AnalyzerButtonFix.css'; // Fixes Analyze Prescription button style
+import './PrescriptionHeaderFullWidth.css'; // Fixes prescription header to be full width
 
 const Analyzer = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -33,6 +37,7 @@ const Analyzer = () => {
   const [isResetting, setIsResetting] = useState(false);
   const [isFolderUpload, setIsFolderUpload] = useState(false);
   const [activeSection, setActiveSection] = useState('prescription'); // 'prescription' or 'supplies'
+  const [deviceMode, setDeviceMode] = useState('desktop'); // For responsive toolbar
   const [selectedSupplyFile, setSelectedSupplyFile] = useState(null);
   const [supplyPreviewUrl, setSupplyPreviewUrl] = useState(null);
   
@@ -69,6 +74,24 @@ const Analyzer = () => {
   const previousSupplyInputRef = useRef(null);
   const currentSupplyInputRef = useRef(null);
   const prescriptionPasteDivRef = useRef(null);
+
+  // Detect device mode for responsive toolbar
+  useEffect(() => {
+    const updateDeviceMode = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setDeviceMode('mobile');
+      } else if (width < 1024) {
+        setDeviceMode('tablet');
+      } else {
+        setDeviceMode('desktop');
+      }
+    };
+    
+    updateDeviceMode();
+    window.addEventListener('resize', updateDeviceMode);
+    return () => window.removeEventListener('resize', updateDeviceMode);
+  }, []);
 
   // Field configuration matching the exact screenshot layout
   const fieldSections = [
@@ -2646,26 +2669,29 @@ const Analyzer = () => {
   };
 
   return (
-    <div className="analyzer-page page-container page-with-enterprise-header">
-      {/* Enterprise Header */}
-      <EnterpriseHeader>
-        <TabGroup>
-          <TabButton
-            active={activeSection === 'prescription'}
+    <div className="analyzer-page page-container">
+      {/* Responsive Toolbar with Mode Toggle */}
+      <div className={`board-toolbar board-toolbar-${deviceMode}`}>
+        {/* Analyzer Mode Toggle - Segmented Button */}
+        <div className="analyzer-toggle-group">
+          <button 
+            className={`toggle-segment ${activeSection === 'prescription' ? 'active' : ''}`}
             onClick={() => setActiveSection('prescription')}
-            icon={FileText}
+            title="Analyze Prescription"
           >
-            Analyze Prescription
-          </TabButton>
-          <TabButton
-            active={activeSection === 'supplies'}
+            <FileText size={deviceMode === 'mobile' ? 16 : 18} />
+            <span>Prescription</span>
+          </button>
+          <button 
+            className={`toggle-segment ${activeSection === 'supplies' ? 'active' : ''}`}
             onClick={() => setActiveSection('supplies')}
-            icon={Package}
+            title="Analyze Supplies"
           >
-            Analyze Supplies
-          </TabButton>
-        </TabGroup>
-      </EnterpriseHeader>
+            <Package size={deviceMode === 'mobile' ? 16 : 18} />
+            <span>Supplies</span>
+          </button>
+        </div>
+      </div>
 
       <div className="analyzer-content">
         <div className="analyzer-dashboard">

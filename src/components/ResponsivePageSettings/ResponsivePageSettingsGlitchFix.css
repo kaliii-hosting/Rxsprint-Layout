@@ -1,0 +1,297 @@
+/* ========================================
+   RESPONSIVE PAGE SETTINGS - LAYOUT GLITCH FIX
+   Prevents content shifting during responsive transitions
+   ======================================== */
+
+/* CRITICAL: Prevent layout shift during responsive breakpoint transitions */
+.responsive-page-settings {
+  /* Stable positioning to prevent layout recalculations */
+  position: relative !important;
+  display: block !important;
+  z-index: 1000 !important;
+  contain: layout style !important; /* Strong containment to prevent layout effects */
+  will-change: auto !important; /* Don't optimize for animations that cause shifts */
+  transform: none !important; /* Never apply transforms that could cause shifts */
+  
+  /* Ensure stable dimensions */
+  min-width: 0 !important;
+  min-height: 0 !important;
+  
+  /* Prevent any margin collapse or spacing issues */
+  isolation: isolate !important;
+}
+
+/* Prevent the button itself from causing layout shifts */
+.responsive-page-settings .settings-trigger {
+  /* Stable button dimensions */
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Prevent animation-based shifts */
+  transform: none !important;
+  will-change: auto !important;
+  
+  /* Stable transitions without layout impact */
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease !important;
+  
+  /* Fixed dimensions to prevent reflow */
+  min-height: 36px !important;
+  padding: 0.5rem 1rem !important;
+  
+  /* Prevent text reflow */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* CRITICAL: Dropdown positioning that doesn't affect page layout */
+.responsive-page-settings .settings-dropdown {
+  /* Use fixed positioning to completely remove from document flow */
+  position: fixed !important;
+  
+  /* Prevent any layout recalculation impact */
+  contain: layout style paint !important;
+  will-change: auto !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  
+  /* Immediate positioning - no delays */
+  transition: opacity 0.1s ease !important;
+  animation: none !important;
+  
+  /* Ensure it doesn't affect layout */
+  top: 0 !important;
+  left: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  
+  /* High z-index without affecting stacking context of page */
+  z-index: 999999 !important;
+  
+  /* Prevent scrolling issues */
+  overflow: visible !important;
+}
+
+/* Backdrop that doesn't interfere with layout */
+.responsive-page-settings .dropdown-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 999998 !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  pointer-events: auto !important;
+  
+  /* No animation to prevent timing issues */
+  opacity: 1 !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Responsive breakpoint handling - prevent sudden changes */
+@media (max-width: 968px) {
+  .responsive-page-settings {
+    /* Ensure smooth transition at breakpoint */
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
+
+@media (min-width: 969px) {
+  .responsive-page-settings {
+    /* Stable display on desktop */
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
+
+/* ZOOM LEVEL HANDLING - Critical for preventing glitches */
+@media (min-resolution: 120dpi), 
+       (min-resolution: 1.25dppx), 
+       (-webkit-min-device-pixel-ratio: 1.25) {
+  .responsive-page-settings {
+    display: block !important;
+    contain: layout style paint !important;
+    transform: none !important;
+  }
+}
+
+/* HIGH ZOOM LEVELS */
+@media (min-resolution: 150dpi), 
+       (min-resolution: 1.5dppx), 
+       (-webkit-min-device-pixel-ratio: 1.5) {
+  .responsive-page-settings .settings-trigger {
+    font-size: 0.8rem !important;
+    padding: 0.4rem 0.8rem !important;
+    min-height: 32px !important;
+  }
+}
+
+/* VERY HIGH ZOOM LEVELS */
+@media (min-resolution: 200dpi), 
+       (min-resolution: 2dppx), 
+       (-webkit-min-device-pixel-ratio: 2) {
+  .responsive-page-settings .settings-trigger {
+    font-size: 0.75rem !important;
+    padding: 0.35rem 0.7rem !important;
+    min-height: 28px !important;
+  }
+}
+
+/* PREVENT LAYOUT SHIFT DURING INITIALIZATION */
+.responsive-page-settings:not(.initialized) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.responsive-page-settings.initialized {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transition: opacity 0.1s ease !important;
+}
+
+/* CRITICAL: Prevent parent containers from affecting layout */
+.page-container .responsive-page-settings,
+.enterprise-header .responsive-page-settings,
+.analyzer-dashboard .responsive-page-settings,
+.board-toolbar .responsive-page-settings {
+  /* Ensure stable positioning regardless of parent */
+  position: relative !important;
+  display: block !important;
+  float: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  
+  /* Prevent inheritance of problematic styles */
+  transform: none !important;
+  will-change: auto !important;
+  contain: layout !important;
+}
+
+/* MOBILE-SPECIFIC LAYOUT STABILITY */
+@media (max-width: 768px) {
+  .responsive-page-settings {
+    /* Ensure stable mobile layout */
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+  }
+  
+  .responsive-page-settings .settings-trigger {
+    /* Stable mobile button */
+    width: auto !important;
+    min-width: 120px !important;
+    max-width: 200px !important;
+  }
+  
+  .responsive-page-settings .settings-dropdown {
+    /* Mobile dropdown without layout impact */
+    position: fixed !important;
+    max-width: calc(100vw - 40px) !important;
+    min-width: 240px !important;
+    
+    /* Immediate positioning */
+    transition: opacity 0.05s ease !important;
+    animation: none !important;
+  }
+}
+
+/* PREVENT FLASH OF UNSTYLED CONTENT */
+.responsive-page-settings .settings-dropdown:not(.positioned) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.responsive-page-settings .settings-dropdown.positioned {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* SAFARI AND WEBKIT SPECIFIC FIXES */
+@supports (-webkit-appearance: none) {
+  .responsive-page-settings {
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+    -webkit-perspective: 1000px !important;
+    perspective: 1000px !important;
+  }
+  
+  .responsive-page-settings .settings-dropdown {
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
+  }
+}
+
+/* FIREFOX SPECIFIC FIXES */
+@-moz-document url-prefix() {
+  .responsive-page-settings {
+    contain: layout !important; /* Firefox doesn't support style containment well */
+  }
+}
+
+/* HIGH CONTRAST MODE SUPPORT */
+@media (prefers-contrast: high) {
+  .responsive-page-settings .settings-trigger {
+    border-width: 2px !important;
+  }
+}
+
+/* REDUCE MOTION PREFERENCE */
+@media (prefers-reduced-motion: reduce) {
+  .responsive-page-settings,
+  .responsive-page-settings * {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* CRITICAL: Override any conflicting animations */
+.responsive-page-settings,
+.responsive-page-settings *,
+.responsive-page-settings .settings-dropdown,
+.responsive-page-settings .dropdown-content {
+  /* Remove all potential layout-affecting animations */
+  animation-name: none !important;
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 0 !important;
+  animation-fill-mode: none !important;
+  animation-play-state: paused !important;
+  
+  /* Remove problematic transforms */
+  transform: none !important;
+  -webkit-transform: none !important;
+  transform-origin: initial !important;
+  -webkit-transform-origin: initial !important;
+}
+
+/* ALLOW ONLY SAFE TRANSITIONS */
+.responsive-page-settings .settings-trigger {
+  transition: background-color 0.1s ease, 
+              border-color 0.1s ease, 
+              color 0.1s ease, 
+              opacity 0.1s ease !important;
+}
+
+.responsive-page-settings .menu-item {
+  transition: background-color 0.1s ease, 
+              color 0.1s ease !important;
+}
+
+/* LAYOUT DEBUGGING - Remove in production */
+/* 
+.responsive-page-settings {
+  outline: 1px solid red !important;
+}
+.responsive-page-settings .settings-dropdown {
+  outline: 2px solid blue !important;
+}
+*/

@@ -12,6 +12,7 @@ import './CalendarMobileHeader.css';
 import './CalendarHeaderFixed.css';
 import './CalendarMobileHeaderFix.css';
 import './CalendarMobileFinal.css';
+import './CalendarResponsiveFix.css';
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -28,6 +29,7 @@ const Calendar = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessageText, setSuccessMessageText] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [deviceMode, setDeviceMode] = useState('desktop'); // For responsive toolbar
   const contextMenuRef = useRef(null);
   
   // Event form state
@@ -57,12 +59,23 @@ const Calendar = () => {
     loadEvents();
   }, []);
 
-  // Handle window resize for mobile detection
+  // Handle window resize for mobile detection and device mode
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 767);
+      
+      // Update device mode for responsive toolbar
+      const width = window.innerWidth;
+      if (width < 640) {
+        setDeviceMode('mobile');
+      } else if (width < 1024) {
+        setDeviceMode('tablet');
+      } else {
+        setDeviceMode('desktop');
+      }
     };
     
+    handleResize(); // Set initial values
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -471,44 +484,44 @@ const Calendar = () => {
   const dateInfo = getCurrentDateInfo();
 
   return (
-    <div className={`calendar-page page-container page-with-enterprise-header ${isCreating ? 'is-creating' : ''}`}>
-      {/* Enterprise Header with Toolbar - Medications Style */}
-      <EnterpriseHeader>
-        {/* Navigation Group */}
-        <div className="calendar-date-nav">
-          <button className="nav-arrow" onClick={() => navigate(-1)} aria-label="Previous month">
-            <ChevronLeft size={18} />
+    <div className={`calendar-page page-container ${isCreating ? 'is-creating' : ''}`}>
+      {/* Responsive Toolbar - Same style as Medications page */}
+      <div className={`board-toolbar board-toolbar-${deviceMode}`}>
+        {/* Navigation Section */}
+        <div className="toolbar-section">
+          <button className="tool-button" onClick={() => navigate(-1)} title="Previous month">
+            <ChevronLeft size={deviceMode === 'mobile' ? 18 : 20} />
           </button>
-          <div className="current-date-display">
-            <CalendarIcon size={18} />
-            <span className="date-text">
-              {isMobile 
+          <div className="calendar-month-display">
+            <CalendarIcon size={deviceMode === 'mobile' ? 16 : 18} />
+            <span>
+              {deviceMode === 'mobile' 
                 ? `${monthNames[currentDate.getMonth()].slice(0, 3)} ${currentDate.getFullYear()}`
                 : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
               }
             </span>
           </div>
-          <button className="nav-arrow" onClick={() => navigate(1)} aria-label="Next month">
-            <ChevronRight size={18} />
+          <button className="tool-button" onClick={() => navigate(1)} title="Next month">
+            <ChevronRight size={deviceMode === 'mobile' ? 18 : 20} />
           </button>
         </div>
         
-        {/* Primary Actions - Inline for mobile */}
-        <ActionGroup>
-          <ActionButton
+        {/* Actions Section */}
+        <div className="toolbar-section actions">
+          <button 
+            className="tool-button accent icon-only"
             onClick={() => {
               const dateToUse = selectedDate || new Date();
               setSelectedDate(dateToUse);
               setEventForm(prev => ({ ...prev, date: dateToUse }));
               setIsCreating(true);
             }}
-            icon={Plus}
-            primary
+            title="Add Event"
           >
-            Add Event
-          </ActionButton>
-        </ActionGroup>
-      </EnterpriseHeader>
+            <Plus size={deviceMode === 'mobile' ? 18 : 20} />
+          </button>
+        </div>
+      </div>
       
       <div className="calendar-content">
         {/* Modern Minimal Calendar */}

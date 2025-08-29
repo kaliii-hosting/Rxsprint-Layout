@@ -26,12 +26,8 @@ body {
 /* Prevent horizontal overflow on mobile */
 @media (max-width: 768px) {
   html, body {
-    max-width: 100vw !important;
-    overflow-x: hidden !important;
-  }
-  
-  * {
-    max-width: 100vw !important;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 }
 
@@ -357,21 +353,19 @@ a {
 @media (max-width: 768px) {
   /* Override content padding when page-container is present */
   .content:has(.page-container) {
-    padding: 0 !important;
-    overflow: hidden;
+    padding: 0;
+    overflow: visible;
   }
   
   /* Ensure page-container fills entire viewport on mobile */
   .page-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     width: 100%;
-    height: 100%;
-    margin: 0 !important;
-    padding: 0 !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
   }
 }
 

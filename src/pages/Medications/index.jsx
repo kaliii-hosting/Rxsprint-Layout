@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit2, Trash2, Plus, Upload, Grid, FileSpreadsheet, CheckCircle, AlertCircle, Download, Droplet, Package, Pill, Beaker, Save, RefreshCw } from 'lucide-react';
+import { Edit2, Trash2, Plus, Upload, Grid, FileSpreadsheet, CheckCircle, AlertCircle, Download, Droplet, Package, Pill, Beaker, Save, RefreshCw, Filter, ChevronDown, FileText, Table, List } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, getDoc, writeBatch } from 'firebase/firestore';
 import { storage, firestore } from '../../config/firebase';
@@ -14,12 +14,12 @@ import ScdMedicationModal from '../../components/ScdMedicationModal/ScdMedicatio
 import ConfirmationPopup from '../../components/ConfirmationPopup/ConfirmationPopup';
 import DeletionConfirmPopup from '../../components/DeletionConfirmPopup/DeletionConfirmPopup';
 import EditConfirmPopup from '../../components/EditConfirmPopup/EditConfirmPopup';
+import AddConfirmPopup from '../../components/AddConfirmPopup/AddConfirmPopup';
 import ExcelImportPreview from '../../components/ExcelImportPreview/ExcelImportPreview';
 import ExcelOptionsPopup from '../../components/ExcelOptionsPopup/ExcelOptionsPopup';
 import { generateMedicationCode } from '../../utils/medicationCode';
 import { useLocation } from 'react-router-dom';
 import { useSearch } from '../../contexts/SearchContext';
-import EnterpriseHeader, { TabGroup, TabButton, HeaderDivider, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
 import './Medications.css';
 
 const Medications = () => {
@@ -28,6 +28,7 @@ const Medications = () => {
   const [scdMedications, setScdMedications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [medicationType, setMedicationType] = useState('lyso'); // 'lyso', 'hae', or 'scd'
+  const [deviceMode, setDeviceMode] = useState('desktop'); // For responsive toolbar
 
   const [selectAll, setSelectAll] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null); // 'uploading', 'success', 'error'
@@ -44,6 +45,7 @@ const Medications = () => {
   const [medicationToEdit, setMedicationToEdit] = useState(null);
   const [editPopupMode, setEditPopupMode] = useState('edit'); // 'edit' or 'save'
   const [pendingSaveData, setPendingSaveData] = useState(null);
+  const [showAddPopup, setShowAddPopup] = useState(false);
   const [showImportPreview, setShowImportPreview] = useState(false);
   const [parsedExcelData, setParsedExcelData] = useState(null);
   const [showExcelOptions, setShowExcelOptions] = useState(false);
@@ -65,7 +67,29 @@ const Medications = () => {
   // Filter state for HAE medications (by howSupplied field)
   const [haeFilters, setHaeFilters] = useState({});
   
+  // Filter dropdown state
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [viewMode, setViewMode] = useState('table'); // 'table' or 'grid'
+  
   const location = useLocation();
+  
+  // Detect device mode for responsive toolbar
+  useEffect(() => {
+    const updateDeviceMode = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setDeviceMode('mobile');
+      } else if (width < 1024) {
+        setDeviceMode('tablet');
+      } else {
+        setDeviceMode('desktop');
+      }
+    };
+    
+    updateDeviceMode();
+    window.addEventListener('resize', updateDeviceMode);
+    return () => window.removeEventListener('resize', updateDeviceMode);
+  }, []);
   const { loadMedications: reloadSearchData } = useSearch();
 
   // Load medications from Firebase on component mount
@@ -1311,6 +1335,13 @@ const Medications = () => {
 
   // Handler for Add Medication button
   const handleCreateMedication = async () => {
+    // Show the add confirmation popup first
+    setShowAddPopup(true);
+  };
+
+  // Handle confirmation from AddConfirmPopup
+  const handleAddConfirm = async () => {
+    setShowAddPopup(false);
     try {
       // Create a new medication object based on type
       let newMedication;
@@ -1416,6 +1447,11 @@ const Medications = () => {
       return;
     }
     handleEdit(selectedMeds[0].id);
+  };
+
+  // Get current medications based on type
+  const getCurrentMedications = () => {
+    return medicationType === 'hae' ? haeMedications : medicationType === 'scd' ? scdMedications : medications;
   };
 
   // Handler for Delete button
@@ -1534,7 +1570,7 @@ const Medications = () => {
   console.log('Display medications for type', medicationType, ':', displayMedications.length, displayMedications);
 
   return (
-    <div className="medications-page page-container page-with-enterprise-header">
+    <div className="medications-page page-container">
       {/* Show modal directly if open, otherwise show normal page */}
       {isModalOpen ? (
         medicationType === 'scd' ? (
@@ -1579,166 +1615,92 @@ const Medications = () => {
         )
       ) : (
         <>
-          {/* Enterprise Header with Filter Tabs */}
-          <EnterpriseHeader>
-            {/* Medication Type Toggle */}
-            <TabGroup>
-              <TabButton
-                active={medicationType === 'lyso'}
+          {/* Minimal Professional Toolbar */}
+          {/* Board-style Responsive Toolbar */}
+          <div className={`board-toolbar board-toolbar-${deviceMode}`}>
+            {/* Medication Type Toggle - Segmented Button */}
+            <div className="medication-toggle-group">
+              <button 
+                className={`toggle-segment ${medicationType === 'lyso' ? 'active' : ''}`}
                 onClick={() => setMedicationType('lyso')}
-                style={{ background: medicationType === 'lyso' ? '#FF6900' : 'transparent', color: medicationType === 'lyso' ? 'white' : '#666' }}
+                title="LYSO Medications"
               >
-                LYSO
-              </TabButton>
-              <TabButton
-                active={medicationType === 'hae'}
+                <Beaker size={deviceMode === 'mobile' ? 16 : 18} />
+                <span>LYSO</span>
+              </button>
+              <button 
+                className={`toggle-segment ${medicationType === 'hae' ? 'active' : ''}`}
                 onClick={() => setMedicationType('hae')}
-                style={{ background: medicationType === 'hae' ? '#FF6900' : 'transparent', color: medicationType === 'hae' ? 'white' : '#666' }}
+                title="HAE Medications"
               >
-                HAE
-              </TabButton>
-              <TabButton
-                active={medicationType === 'scd'}
+                <Droplet size={deviceMode === 'mobile' ? 16 : 18} />
+                <span>HAE</span>
+              </button>
+              <button 
+                className={`toggle-segment ${medicationType === 'scd' ? 'active' : ''}`}
                 onClick={() => setMedicationType('scd')}
-                style={{ background: medicationType === 'scd' ? '#FF6900' : 'transparent', color: medicationType === 'scd' ? 'white' : '#666' }}
+                title="SCD Medications"
               >
-                SCD
-              </TabButton>
-            </TabGroup>
-            
-            <HeaderDivider />
-            
-            {/* Filter Tabs */}
-            {medicationType === 'lyso' && (
-              <TabGroup>
-                <TabButton
-                  active={showSterileSolutions}
-                  onClick={() => setShowSterileSolutions(!showSterileSolutions)}
+                <Pill size={deviceMode === 'mobile' ? 16 : 18} />
+                <span>SCD</span>
+              </button>
+            </div>
+
+            {/* Actions Section */}
+            <div className="toolbar-section actions">
+              <button 
+                className="tool-button"
+                onClick={() => handleCreateMedication()}
+                title="Add Medication"
+              >
+                <Plus size={deviceMode === 'mobile' ? 18 : 20} />
+              </button>
+              <button 
+                className="tool-button"
+                onClick={() => handleEditSelected()}
+                title="Edit Selected"
+                disabled={!getCurrentMedications().some(med => med.selected)}
+              >
+                <Edit2 size={deviceMode === 'mobile' ? 18 : 20} />
+              </button>
+              <button 
+                className="tool-button"
+                onClick={() => handleDeleteSelected()}
+                title="Delete Selected"
+                disabled={!getCurrentMedications().some(med => med.selected)}
+              >
+                <Trash2 size={deviceMode === 'mobile' ? 18 : 20} />
+              </button>
+              <button 
+                className="tool-button"
+                onClick={() => setShowExcelOptions(true)}
+                title="Import/Export Excel"
+              >
+                <FileSpreadsheet size={deviceMode === 'mobile' ? 18 : 20} />
+              </button>
+              {hasUnsavedChanges && (
+                <button 
+                  className="tool-button accent"
+                  onClick={handleManualSave}
+                  disabled={isSaving}
+                  title="Save Changes"
                 >
-                  Sterile Solutions
-                </TabButton>
-                <TabButton
-                  active={showLyophilizedPowders}
-                  onClick={() => setShowLyophilizedPowders(!showLyophilizedPowders)}
+                  <Save size={deviceMode === 'mobile' ? 18 : 20} />
+                </button>
+              )}
+              {medicationType === 'scd' && (
+                <button 
+                  className="tool-button"
+                  onClick={async () => {
+                    await loadScdMedications(false);
+                  }}
+                  title="Refresh"
                 >
-                  Lyophilized Powders
-                </TabButton>
-                <TabButton
-                  active={showCapsules}
-                  onClick={() => setShowCapsules(!showCapsules)}
-                >
-                  Capsules
-                </TabButton>
-                <TabButton
-                  active={showSolutions}
-                  onClick={() => setShowSolutions(!showSolutions)}
-                >
-                  Solutions
-                </TabButton>
-              </TabGroup>
-            )}
-            
-            {/* Filter Tabs for HAE medications by howSupplied */}
-            {medicationType === 'hae' && (
-              <TabGroup>
-                {getUniqueHowSuppliedValues().map(value => (
-                  <TabButton
-                    key={value}
-                    active={haeFilters[value] || false}
-                    onClick={() => setHaeFilters(prev => ({
-                      ...prev,
-                      [value]: !prev[value]
-                    }))}
-                  >
-                    {value}
-                  </TabButton>
-                ))}
-              </TabGroup>
-            )}
-            
-            <HeaderDivider />
-            
-            {/* Save Status Indicator */}
-            <div className={`save-status ${isSaving ? 'saving' : hasUnsavedChanges ? 'unsaved' : 'saved'}`}>
-              {isSaving ? (
-                <>
-                  <span>⏳</span>
-                  <span>Saving...</span>
-                </>
-              ) : hasUnsavedChanges ? (
-                <>
-                  <span>⚠️</span>
-                  <span>Unsaved changes</span>
-                </>
-              ) : (
-                <>
-                  <span>✓</span>
-                  <span>All changes saved</span>
-                </>
+                  <RefreshCw size={deviceMode === 'mobile' ? 18 : 20} />
+                </button>
               )}
             </div>
-            
-            {/* Action Buttons */}
-            <ActionGroup>
-              <ActionButton
-                onClick={handleManualSave}
-                icon={Save}
-                disabled={isSaving || !hasUnsavedChanges}
-                primary={hasUnsavedChanges}
-              >
-                {isSaving ? 'Saving...' : hasUnsavedChanges ? 'Save Changes' : 'Saved'}
-              </ActionButton>
-              <ActionButton
-                onClick={() => handleCreateMedication()}
-                icon={Plus}
-                primary
-              >
-                Add
-              </ActionButton>
-              <ActionButton
-                onClick={() => handleEditSelected()}
-                icon={Edit2}
-                secondary
-              >
-                Edit
-              </ActionButton>
-              <ActionButton
-                onClick={() => handleDeleteSelected()}
-                icon={Trash2}
-                secondary
-              >
-                Delete
-              </ActionButton>
-              {medicationType === 'scd' && (
-                <>
-                  <ActionButton
-                    onClick={async () => {
-                      console.log('Refreshing SCD medications...');
-                      await loadScdMedications(false);
-                    }}
-                    icon={RefreshCw}
-                    secondary
-                  >
-                    Refresh
-                  </ActionButton>
-                  {scdMedications.length > 0 && (
-                    <ActionButton
-                      onClick={async () => {
-                        if (confirm('This will clear ALL SCD medications. Are you sure?')) {
-                          await clearDemoScdMedications();
-                          await loadScdMedications(false);
-                        }
-                      }}
-                      icon={Trash2}
-                      secondary
-                    >
-                      Clear All
-                    </ActionButton>
-                  )}
-                </>
-              )}
-            </ActionGroup>
-          </EnterpriseHeader>
+          </div>
           
           <div className="medications-content fullscreen">
         {loading ? (
@@ -1751,16 +1713,13 @@ const Medications = () => {
               <thead>
                 <tr>
                   <th className="checkbox-header">
-                    <div className="checkbox-wrapper">
-                      <input
-                        type="checkbox"
-                        className="select-all-checkbox"
-                        checked={selectAll || false}
-                        onChange={handleSelectAll}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-                    <div className="add-icon" onClick={() => setShowExcelOptions(true)}>+</div>
+                    <input
+                      type="checkbox"
+                      className="select-all-checkbox"
+                      checked={selectAll || false}
+                      onChange={handleSelectAll}
+                      onClick={(e) => e.stopPropagation()}
+                    />
                   </th>
                   {medicationType === 'scd' ? (
                     <>
@@ -1943,6 +1902,14 @@ const Medications = () => {
         onConfirm={handleConfirmEdit}
         onCancel={handleCancelEdit}
         mode={editPopupMode}
+      />
+      
+      {/* Add Confirmation Popup */}
+      <AddConfirmPopup
+        isOpen={showAddPopup}
+        itemType="medication"
+        onConfirm={handleAddConfirm}
+        onCancel={() => setShowAddPopup(false)}
       />
       
       {/* Excel Import Preview */}

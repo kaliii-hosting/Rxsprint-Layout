@@ -2337,9 +2337,10 @@ const RedesignedPumpCalculator = () => {
       }
     }
     
-    // Round up to nearest 5 mL for easier measurement (per pump-logic.json)
+    // Keep exact volume without rounding - do not round to nearest 5 mL
+    // Exact volumes are important for clinical accuracy
     if (volumeToRemove > 0) {
-      volumeToRemove = Math.ceil(volumeToRemove / 5) * 5;
+      volumeToRemove = Math.round(volumeToRemove * 10) / 10; // Round to 0.1 mL precision only
     }
     
     return volumeToRemove;

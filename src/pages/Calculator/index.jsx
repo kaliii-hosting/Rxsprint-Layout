@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator as CalculatorIcon, Grid3X3, Heart, Weight } from 'lucide-react';
 import './Calculator.css';
-import EnterpriseHeader, { TabGroup, TabButton, HeaderDivider } from '../../components/EnterpriseHeader/EnterpriseHeader';
 
 const Calculator = () => {
   // Calculator mode state
   const [calculatorMode, setCalculatorMode] = useState('standard'); // 'standard', 'cross', 'bmi', or 'abw'
+  const [deviceMode, setDeviceMode] = useState('desktop'); // For responsive toolbar
 
   // Standard calculator state
   const [display, setDisplay] = useState('0');
@@ -33,6 +33,24 @@ const Calculator = () => {
     actualWeight: '' // in kg
   });
   const [abwResults, setAbwResults] = useState({ ibw: null, abw: null });
+
+  // Detect device mode for responsive toolbar
+  useEffect(() => {
+    const updateDeviceMode = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setDeviceMode('mobile');
+      } else if (width < 1024) {
+        setDeviceMode('tablet');
+      } else {
+        setDeviceMode('desktop');
+      }
+    };
+    
+    updateDeviceMode();
+    window.addEventListener('resize', updateDeviceMode);
+    return () => window.removeEventListener('resize', updateDeviceMode);
+  }, []);
 
   // Format display value
   const formatDisplay = (value) => {
@@ -386,35 +404,44 @@ const Calculator = () => {
 
   return (
     <div className="calculator-page page-container">
-      {/* Enterprise Header for Calculator Mode Selection */}
-      <EnterpriseHeader>
-        <TabGroup>
-          <TabButton
-            active={calculatorMode === 'standard'}
+      {/* Responsive Toolbar with Mode Toggle */}
+      <div className={`board-toolbar board-toolbar-${deviceMode}`}>
+        {/* Calculator Mode Toggle - Segmented Button */}
+        <div className="calculator-toggle-group">
+          <button 
+            className={`toggle-segment ${calculatorMode === 'standard' ? 'active' : ''}`}
             onClick={() => setCalculatorMode('standard')}
+            title="Standard Calculator"
           >
-            Standard
-          </TabButton>
-          <TabButton
-            active={calculatorMode === 'cross'}
+            <CalculatorIcon size={deviceMode === 'mobile' ? 16 : 18} />
+            <span>Standard</span>
+          </button>
+          <button 
+            className={`toggle-segment ${calculatorMode === 'cross' ? 'active' : ''}`}
             onClick={() => setCalculatorMode('cross')}
+            title="Cross Multiplication"
           >
-            Cross Multiply
-          </TabButton>
-          <TabButton
-            active={calculatorMode === 'bmi'}
+            <Grid3X3 size={deviceMode === 'mobile' ? 16 : 18} />
+            <span>Cross Multiply</span>
+          </button>
+          <button 
+            className={`toggle-segment ${calculatorMode === 'bmi' ? 'active' : ''}`}
             onClick={() => setCalculatorMode('bmi')}
+            title="BMI Calculator"
           >
-            BMI
-          </TabButton>
-          <TabButton
-            active={calculatorMode === 'abw'}
+            <Heart size={deviceMode === 'mobile' ? 16 : 18} />
+            <span>BMI</span>
+          </button>
+          <button 
+            className={`toggle-segment ${calculatorMode === 'abw' ? 'active' : ''}`}
             onClick={() => setCalculatorMode('abw')}
+            title="ABW Calculator"
           >
-            ABW
-          </TabButton>
-        </TabGroup>
-      </EnterpriseHeader>
+            <Weight size={deviceMode === 'mobile' ? 16 : 18} />
+            <span>ABW</span>
+          </button>
+        </div>
+      </div>
       
       <div className="calculator-content">
         <div className="calculator-dashboard">

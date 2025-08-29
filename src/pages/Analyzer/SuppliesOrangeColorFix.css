@@ -1,0 +1,121 @@
+/* Supplies Section - Fix Medication Colors to Orange (#ff5500) */
+
+/* Fix matched/matching status indicators to use orange instead of green */
+.analyzer-page .summary-card.matching .summary-icon {
+  background: rgba(255, 85, 0, 0.1) !important;
+  color: #ff5500 !important;
+}
+
+.analyzer-page .summary-card.matching:hover {
+  border-color: #ff5500 !important;
+}
+
+.analyzer-page .summary-card.matching.active {
+  background: rgba(255, 85, 0, 0.15) !important;
+  border-color: #ff5500 !important;
+}
+
+/* Fix status badges to use orange for matched items */
+.analyzer-page .status-badge.matched {
+  background: rgba(255, 85, 0, 0.1) !important;
+  color: #ff5500 !important;
+}
+
+/* Fix matching row highlights */
+.analyzer-page .matching-row {
+  background-color: rgba(255, 85, 0, 0.05) !important;
+}
+
+.analyzer-page .matching-row:hover {
+  background-color: rgba(255, 85, 0, 0.08) !important;
+}
+
+/* Fix any status indicators using green */
+.analyzer-page .status-indicator.match {
+  background: #ff5500 !important;
+  border-color: #e64a00 !important;
+}
+
+/* Override any green checkmark colors */
+.analyzer-page .summary-card.matching svg,
+.analyzer-page .status-badge.matched svg {
+  color: #ff5500 !important;
+}
+
+/* Fix table cell highlights for matched items */
+.analyzer-page .supply-table-section .matching-row td {
+  background-color: rgba(255, 85, 0, 0.03) !important;
+}
+
+/* Fix any remaining green colors (#10b981, #4ade80, #16a34a) with orange */
+.analyzer-page [style*="#10b981"],
+.analyzer-page [style*="#4ade80"],
+.analyzer-page [style*="#16a34a"],
+.analyzer-page [style*="rgb(16, 185, 129)"],
+.analyzer-page [style*="rgb(74, 222, 128)"],
+.analyzer-page [style*="rgb(22, 163, 74)"] {
+  color: #ff5500 !important;
+  background-color: rgba(255, 85, 0, 0.1) !important;
+}
+
+/* Ensure check icons in supplies section use orange */
+.analyzer-page .supplies-results-section .check,
+.analyzer-page .supplies-results-section svg.check {
+  color: #ff5500 !important;
+  stroke: #ff5500 !important;
+}
+
+/* Fix any inline styles that might be using green */
+.analyzer-page .supplies-summary-cards .summary-card.matching *,
+.analyzer-page .supplies-tables-container .matching-row * {
+  color: inherit !important;
+}
+
+/* Specific override for the matched status text color */
+.analyzer-page .supplies-tables-container .status-badge.matched {
+  background: rgba(255, 85, 0, 0.15) !important;
+  color: #ff5500 !important;
+  border: 1px solid rgba(255, 85, 0, 0.3) !important;
+}
+
+/* Override prescription table green colors as well for consistency */
+.analyzer-page .prescription-table .match-row,
+.analyzer-page .prescription-table .matching-row {
+  background-color: rgba(255, 85, 0, 0.03) !important;
+}
+
+.analyzer-page .prescription-table .status-icon.match {
+  color: #ff5500 !important;
+}
+
+/* Fix any hardcoded green hex values in analyzer section */
+.analyzer-page [class*="match"]:not([class*="mismatch"]) {
+  --match-color: #ff5500;
+  --match-bg: rgba(255, 85, 0, 0.1);
+  --match-border: #e64a00;
+}
+
+/* Override CSS variables if they exist */
+.analyzer-page {
+  --success-color: #ff5500 !important;
+  --match-color: #ff5500 !important;
+  --matched-color: #ff5500 !important;
+  --matching-color: #ff5500 !important;
+}
+
+/* Final override for any stubborn green elements */
+.analyzer-page .supplies-results-section [style*="color: rgb(16, 185, 129)"] {
+  color: #ff5500 !important;
+}
+
+.analyzer-page .supplies-results-section [style*="background-color: rgba(16, 185, 129"] {
+  background-color: rgba(255, 85, 0, 0.1) !important;
+}
+
+.analyzer-page .supplies-results-section [style*="background: rgba(16, 185, 129"] {
+  background: rgba(255, 85, 0, 0.1) !important;
+}
+
+.analyzer-page .supplies-results-section [style*="border-color: rgb(16, 185, 129)"] {
+  border-color: #ff5500 !important;
+}

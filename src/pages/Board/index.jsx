@@ -1,41 +1,179 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Highlighter, Pen, RotateCcw, Download, Trash2, Move, Square, Undo, Redo, Maximize2, Save } from 'lucide-react';
+import { 
+  Move, 
+  Edit3, 
+  Highlighter, 
+  Circle, 
+  Square, 
+  Eraser,
+  Undo,
+  Redo,
+  Download,
+  Save,
+  Trash2,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Type,
+  Image as ImageIcon
+} from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../config/firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
-import './Board.css';
+import './BoardEnhanced.css';
+import './BoardMobileFix.css';
 
 const Board = () => {
+  console.log('Board component loaded - Version 2.0 with all fixes');
   const { theme } = useTheme();
   const navigate = useNavigate();
   const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  
+  // Core states
   const [isDrawing, setIsDrawing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [currentTool, setCurrentTool] = useState('highlighter'); // highlighter, marker, move, resize
-  const [currentColor, setCurrentColor] = useState('#ffff00'); // yellow highlighter
-  const [strokeWidth, setStrokeWidth] = useState(20);
+  const [currentTool, setCurrentTool] = useState('move');
+  const [currentColor, setCurrentColor] = useState('#000000');
+  const [strokeWidth, setStrokeWidth] = useState(2);
+  const [showPenMenu, setShowPenMenu] = useState(false);
+  const [showHighlighterMenu, setShowHighlighterMenu] = useState(false);
+  const [showEraserMenu, setShowEraserMenu] = useState(false);
+  const [deviceMode, setDeviceMode] = useState('desktop'); // desktop, tablet, mobile
+  
+  // Screenshot management
   const [screenshots, setScreenshots] = useState([]);
   const [selectedScreenshot, setSelectedScreenshot] = useState(null);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [resizeHandle, setResizeHandle] = useState(null);
-
-  // Canvas drawing state
+  
+  // Drawing paths
   const [paths, setPaths] = useState([]);
   const [currentPath, setCurrentPath] = useState([]);
   
-  // Undo/Redo state - Initialize with empty state
-  const [history, setHistory] = useState([{
-    paths: [],
-    screenshots: [],
-    timestamp: Date.now()
-  }]);
+  // History for undo/redo
+  const [history, setHistory] = useState([{ paths: [], screenshots: [] }]);
   const [historyIndex, setHistoryIndex] = useState(0);
   
-  // Image cache for better performance
-  const imageCache = useRef(new Map());
+  // Canvas properties - Match viewport size for 1:1 drawing
+  const [canvasSize, setCanvasSize] = useState({
+    width: window.innerWidth,  // Match viewport width
+    height: window.innerHeight * 2  // 2x height for scrolling
+  });
   
-  // Save state to history
+  // Auto-expand canvas when drawing near edges
+  const expandCanvasIfNeeded = useCallback((x, y) => {
+    const padding = 200;
+    let needsUpdate = false;
+    let newWidth = canvasSize.width;
+    let newHeight = canvasSize.height;
+    
+    if (x > canvasSize.width - padding) {
+      newWidth = Math.max(canvasSize.width + 1000, x + padding);
+      needsUpdate = true;
+    }
+    if (y > canvasSize.height - padding) {
+      newHeight = Math.max(canvasSize.height + 1000, y + padding);
+      needsUpdate = true;
+    }
+    
+    if (needsUpdate) {
+      setCanvasSize({ width: newWidth, height: newHeight });
+    }
+  }, [canvasSize]);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  // const fileInputRef = useRef(null); // Removed - using paste only
+  
+  // Auto-save to localStorage
+  const STORAGE_KEY = 'drawingBoardData';
+  const AUTOSAVE_DELAY = 1000; // 1 second
+  const autosaveTimer = useRef(null);
+  
+  // Image cache for performance
+  const imageCache = useRef(new Map());
+
+  // Detect device mode based on screen size
+  useEffect(() => {
+    const updateDeviceMode = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setDeviceMode('mobile');
+      } else if (width < 1024) {
+        setDeviceMode('tablet');
+      } else {
+        setDeviceMode('desktop');
+      }
+    };
+    
+    updateDeviceMode();
+    window.addEventListener('resize', updateDeviceMode);
+    return () => window.removeEventListener('resize', updateDeviceMode);
+  }, []);
+  
+  // Load saved data on mount
+  useEffect(() => {
+    const loadSavedData = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const data = JSON.parse(saved);
+          if (data.paths) setPaths(data.paths);
+          if (data.screenshots) setScreenshots(data.screenshots);
+          if (data.history) setHistory(data.history);
+          if (data.historyIndex !== undefined) setHistoryIndex(data.historyIndex);
+          console.log('Loaded saved drawing board data');
+        }
+      } catch (error) {
+        console.error('Error loading saved data:', error);
+      }
+    };
+    
+    loadSavedData();
+  }, []);
+
+  // Auto-save functionality
+  const autoSave = useCallback(() => {
+    try {
+      const dataToSave = {
+        paths,
+        screenshots: screenshots.map(s => ({
+          ...s,
+          src: s.src.length > 100000 ? '' : s.src // Don't save large images
+        })),
+        history: history.slice(-10), // Keep last 10 history states
+        historyIndex,
+        timestamp: Date.now()
+      };
+      
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      console.log('Auto-saved drawing board data');
+    } catch (error) {
+      console.error('Error auto-saving:', error);
+    }
+  }, [paths, screenshots, history, historyIndex]);
+
+  // Trigger auto-save when data changes
+  useEffect(() => {
+    if (autosaveTimer.current) {
+      clearTimeout(autosaveTimer.current);
+    }
+    
+    autosaveTimer.current = setTimeout(() => {
+      autoSave();
+    }, AUTOSAVE_DELAY);
+    
+    return () => {
+      if (autosaveTimer.current) {
+        clearTimeout(autosaveTimer.current);
+      }
+    };
+  }, [paths, screenshots, autoSave]);
+
+  // Save to history
   const saveToHistory = useCallback(() => {
     const state = {
       paths: [...paths],
@@ -43,160 +181,57 @@ const Board = () => {
       timestamp: Date.now()
     };
     
-    // Remove any future history if we're not at the end
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(state);
     
-    // Limit history to 50 states
+    // Limit history
     if (newHistory.length > 50) {
       newHistory.shift();
-      setHistory(newHistory);
-      setHistoryIndex(newHistory.length - 1);
-    } else {
-      setHistory(newHistory);
-      setHistoryIndex(newHistory.length - 1);
     }
+    
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
   }, [paths, screenshots, history, historyIndex]);
 
-  // Track canvas dimensions separately for infinite expansion
-  const [canvasSize, setCanvasSize] = useState({
-    width: Math.max(window.innerWidth * 2, 2400),
-    height: Math.max(window.innerHeight * 2, 1600)
-  });
-
-  // Calculate canvas size based on content with infinite expansion
-  const calculateCanvasSize = useCallback(() => {
-    let maxX = canvasSize.width;
-    let maxY = canvasSize.height;
-    let needsExpansion = false;
-
-    // Check screenshots boundaries
-    screenshots.forEach(screenshot => {
-      const rightEdge = screenshot.x + screenshot.width + 500;
-      const bottomEdge = screenshot.y + screenshot.height + 500;
-      
-      if (rightEdge > maxX) {
-        maxX = rightEdge;
-        needsExpansion = true;
-      }
-      if (bottomEdge > maxY) {
-        maxY = bottomEdge;
-        needsExpansion = true;
-      }
-    });
-
-    // Check drawing paths boundaries
-    paths.forEach(path => {
-      path.points.forEach(point => {
-        if (point.x + 500 > maxX) {
-          maxX = point.x + 500;
-          needsExpansion = true;
-        }
-        if (point.y + 500 > maxY) {
-          maxY = point.y + 500;
-          needsExpansion = true;
-        }
-      });
-    });
-
-    // Check current drawing path
-    currentPath.forEach(point => {
-      if (point.x + 500 > maxX) {
-        maxX = point.x + 500;
-        needsExpansion = true;
-      }
-      if (point.y + 500 > maxY) {
-        maxY = point.y + 500;
-        needsExpansion = true;
-      }
-    });
-
-    // Only expand, never shrink (infinite canvas behavior)
-    return {
-      width: Math.max(maxX, canvasSize.width),
-      height: Math.max(maxY, canvasSize.height),
-      needsExpansion
-    };
-  }, [screenshots, paths, currentPath, canvasSize]);
-
-  // Initialize canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    canvas.width = canvasSize.width;
-    canvas.height = canvasSize.height;
-    canvas.style.width = `${canvasSize.width}px`;
-    canvas.style.height = `${canvasSize.height}px`;
-  }, [canvasSize]);
-
-  // Check for canvas expansion needs
-  useEffect(() => {
-    const { width, height, needsExpansion } = calculateCanvasSize();
-    
-    if (needsExpansion) {
-      setCanvasSize({
-        width: Math.max(width, canvasSize.width),
-        height: Math.max(height, canvasSize.height)
-      });
-    }
-  }, [screenshots, paths, currentPath, calculateCanvasSize, canvasSize]);
-
-  // Handle scroll near edges to expand canvas
-  useEffect(() => {
-    const container = document.querySelector('.board-content');
-    if (!container) return;
-
-    const handleScroll = () => {
-      const scrollLeft = container.scrollLeft;
-      const scrollTop = container.scrollTop;
-      const scrollWidth = container.scrollWidth;
-      const scrollHeight = container.scrollHeight;
-      const clientWidth = container.clientWidth;
-      const clientHeight = container.clientHeight;
-
-      // Expand if scrolled near edges (within 200px)
-      const expandThreshold = 200;
-      let needsExpansion = false;
-      let newWidth = canvasSize.width;
-      let newHeight = canvasSize.height;
-
-      // Check right edge
-      if (scrollLeft + clientWidth > scrollWidth - expandThreshold) {
-        newWidth = canvasSize.width + 1000;
-        needsExpansion = true;
-      }
-
-      // Check bottom edge
-      if (scrollTop + clientHeight > scrollHeight - expandThreshold) {
-        newHeight = canvasSize.height + 1000;
-        needsExpansion = true;
-      }
-
-      if (needsExpansion) {
-        setCanvasSize({
-          width: newWidth,
-          height: newHeight
-        });
-      }
-    };
-
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [canvasSize]);
-
-  // Redraw canvas with fixed image handling
+  // Enhanced canvas redraw with better performance
   const redrawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
+    
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    let pendingImages = 0;
-
-    // Draw screenshots first (as background)
-    screenshots.forEach((screenshot) => {
+    
+    // Clear with white background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw grid pattern for infinite canvas
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.03)';
+    ctx.lineWidth = 1;
+    const gridSize = 50;
+    
+    // Vertical lines
+    for (let x = 0; x <= canvas.width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    
+    // Horizontal lines  
+    for (let y = 0; y <= canvas.height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+    
+    // Apply zoom transformation
+    ctx.save();
+    ctx.scale(zoom, zoom);
+    ctx.translate(pan.x, pan.y);
+    
+    // Draw screenshots first (background layer)
+    screenshots.forEach(screenshot => {
       let img = imageCache.current.get(screenshot.id);
       
       if (!img) {
@@ -205,55 +240,110 @@ const Board = () => {
         imageCache.current.set(screenshot.id, img);
         
         img.onload = () => {
-          pendingImages--;
-          if (pendingImages === 0) {
-            requestAnimationFrame(() => redrawCanvas());
-          }
+          requestAnimationFrame(() => redrawCanvas());
         };
         
         img.onerror = () => {
-          console.error('Failed to load image:', screenshot.src);
-          pendingImages--;
+          console.error('Failed to load screenshot:', screenshot.id);
+          imageCache.current.delete(screenshot.id);
         };
         
-        pendingImages++;
         img.src = screenshot.src;
       }
       
       if (img.complete && img.naturalWidth > 0) {
-        try {
-          ctx.save();
-          ctx.globalCompositeOperation = 'source-over';
-          ctx.globalAlpha = 1.0;
-          ctx.drawImage(img, screenshot.x, screenshot.y, screenshot.width, screenshot.height);
+        ctx.save();
+        ctx.globalAlpha = screenshot.opacity || 1;
+        
+        // Draw image
+        ctx.drawImage(
+          img, 
+          screenshot.x, 
+          screenshot.y, 
+          screenshot.width, 
+          screenshot.height
+        );
+        
+        // Draw selection border if selected
+        if (selectedScreenshot?.id === screenshot.id) {
+          ctx.strokeStyle = '#0066ff';
+          ctx.lineWidth = 3;
+          ctx.setLineDash([5, 5]);
+          ctx.strokeRect(
+            screenshot.x - 2, 
+            screenshot.y - 2, 
+            screenshot.width + 4, 
+            screenshot.height + 4
+          );
+          ctx.setLineDash([]);
           
-          // Draw selection border if selected
-          if (currentTool === 'move' && selectedScreenshot?.id === screenshot.id) {
-            ctx.strokeStyle = '#FF6900';
-            ctx.lineWidth = 3;
-            ctx.setLineDash([8, 4]);
-            ctx.strokeRect(screenshot.x - 1, screenshot.y - 1, screenshot.width + 2, screenshot.height + 2);
-            ctx.setLineDash([]);
+          // Draw resize handles when resize tool is active
+          if (currentTool === 'resize') {
+            const handleSize = 10;
+            ctx.fillStyle = '#0066ff';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            
+            // Corner handles
+            const handles = [
+              { x: screenshot.x, y: screenshot.y }, // top-left
+              { x: screenshot.x + screenshot.width, y: screenshot.y }, // top-right
+              { x: screenshot.x, y: screenshot.y + screenshot.height }, // bottom-left
+              { x: screenshot.x + screenshot.width, y: screenshot.y + screenshot.height } // bottom-right
+            ];
+            
+            handles.forEach(handle => {
+              // Draw white border first
+              ctx.strokeRect(
+                handle.x - handleSize / 2,
+                handle.y - handleSize / 2,
+                handleSize,
+                handleSize
+              );
+              // Then fill with blue
+              ctx.fillRect(
+                handle.x - handleSize / 2,
+                handle.y - handleSize / 2,
+                handleSize,
+                handleSize
+              );
+            });
+          } else if (currentTool === 'move' && selectedScreenshot?.id === screenshot.id) {
+            // Show move cursor indicator
+            ctx.fillStyle = 'rgba(0, 102, 255, 0.1)';
+            ctx.fillRect(
+              screenshot.x,
+              screenshot.y,
+              screenshot.width,
+              screenshot.height
+            );
           }
-          ctx.restore();
-        } catch (error) {
-          console.error('Error drawing image:', error);
         }
       }
+      
+      ctx.restore();
     });
-
-    // Draw all completed paths
-    paths.forEach((path) => {
+    
+    // Draw paths (foreground layer)
+    paths.forEach(path => {
       if (path.points.length < 2) return;
-
+      
       ctx.save();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = path.color;
-      ctx.lineWidth = path.width;
+      
+      if (path.tool === 'eraser') {
+        // Eraser tool - use destination-out to erase
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        ctx.lineWidth = path.width * 2; // Make eraser wider
+      } else {
+        ctx.strokeStyle = path.color;
+        ctx.lineWidth = path.width;
+        ctx.globalAlpha = path.tool === 'highlighter' ? 0.5 : 1.0;
+      }
+      
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.globalAlpha = path.tool === 'highlighter' ? 0.5 : 1.0;
-
+      
       ctx.beginPath();
       ctx.moveTo(path.points[0].x, path.points[0].y);
       
@@ -264,17 +354,25 @@ const Board = () => {
       ctx.stroke();
       ctx.restore();
     });
-
+    
     // Draw current path being drawn
     if (currentPath.length > 1) {
       ctx.save();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = currentColor;
-      ctx.lineWidth = strokeWidth;
+      
+      if (currentTool === 'eraser') {
+        // Eraser tool for current path
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        ctx.lineWidth = strokeWidth * 2; // Make eraser wider
+      } else {
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = strokeWidth;
+        ctx.globalAlpha = currentTool === 'highlighter' ? 0.5 : 1.0;
+      }
+      
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.globalAlpha = currentTool === 'highlighter' ? 0.5 : 1.0;
-
+      
       ctx.beginPath();
       ctx.moveTo(currentPath[0].x, currentPath[0].y);
       
@@ -285,771 +383,757 @@ const Board = () => {
       ctx.stroke();
       ctx.restore();
     }
-  }, [screenshots, paths, currentPath, currentTool, currentColor, strokeWidth, selectedScreenshot]);
+    
+    ctx.restore();
+  }, [screenshots, paths, currentPath, currentColor, strokeWidth, currentTool, selectedScreenshot, zoom, pan]);
 
-  // Redraw when dependencies change
-  useEffect(() => {
-    redrawCanvas();
-  }, [redrawCanvas]);
-
-  // Handle paste events for screenshots
+  // Enhanced paste handler for screenshots with Ctrl+V support
   useEffect(() => {
     const handlePaste = async (e) => {
-      const items = e.clipboardData.items;
-      
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const file = items[i].getAsFile();
-          const reader = new FileReader();
-          
-          reader.onload = (event) => {
-            const img = new Image();
-            img.onload = () => {
-              // Calculate optimal size for A4 prescriptions
-              const canvas = canvasRef.current;
-              const maxWidth = canvas ? canvas.width * 0.7 : 600;
-              const maxHeight = canvas ? canvas.height * 0.7 : 800;
+      try {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.type.indexOf('image') !== -1) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const blob = item.getAsFile();
+            if (!blob) continue;
+            
+            const reader = new FileReader();
+            
+            reader.onload = (event) => {
+              const img = new Image();
+              img.onload = () => {
+                const canvas = canvasRef.current;
+                const container = containerRef.current;
+                
+                if (!canvas || !container) return;
               
-              // Calculate scaling to fit within max dimensions while preserving aspect ratio
+              // Calculate optimal size
+              const maxWidth = 400;
+              const maxHeight = 400;
               const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
               const scaledWidth = img.width * scale;
               const scaledHeight = img.height * scale;
               
-              // Center the image
-              const centerX = canvas ? (canvas.width - scaledWidth) / 2 : 100;
-              const centerY = canvas ? (canvas.height - scaledHeight) / 2 : 100;
+              // Get current viewport position
+              const rect = canvas.getBoundingClientRect();
+              const containerRect = container.getBoundingClientRect();
+              
+              // Calculate center of current view
+              const viewCenterX = (container.scrollLeft + container.clientWidth / 2);
+              const viewCenterY = (container.scrollTop + container.clientHeight / 2);
+              
+              // Position screenshot at center of current view
+              const x = viewCenterX - scaledWidth / 2;
+              const y = viewCenterY - scaledHeight / 2;
               
               const newScreenshot = {
-                id: Date.now() + Math.random(), // Unique ID
+                id: `screenshot_${Date.now()}_${Math.random()}`,
                 src: event.target.result,
-                x: Math.max(20, centerX),
-                y: Math.max(20, centerY),
+                x: Math.max(20, x),
+                y: Math.max(20, y),
                 width: scaledWidth,
                 height: scaledHeight,
                 originalWidth: img.width,
-                originalHeight: img.height
+                originalHeight: img.height,
+                opacity: 1,
+                zIndex: screenshots.length
               };
               
               setScreenshots(prev => [...prev, newScreenshot]);
-              // Save to history after screenshot is added
-              setTimeout(() => saveToHistory(), 100);
+              setSelectedScreenshot(newScreenshot);
+              setCurrentTool('move'); // Auto-switch to move tool
+              
+              // Save to history
+              saveToHistory();
+              
+              // Force immediate redraw
+              setTimeout(() => {
+                redrawCanvas();
+              }, 10);
+              
+              console.log('Screenshot pasted successfully:', newScreenshot.id);
             };
+            
+            img.onerror = (error) => {
+              console.error('Error loading pasted image:', error);
+            };
+            
             img.src = event.target.result;
           };
           
-          reader.readAsDataURL(file);
-          break;
+          reader.onerror = (error) => {
+            console.error('Error reading pasted file:', error);
+          };
+          
+          reader.readAsDataURL(blob);
+          return; // Exit after processing first image
         }
       }
+    } catch (error) {
+      console.error('Paste error:', error);
+    }
+  };
+
+    // Add paste listener with capture phase for better handling
+    document.addEventListener('paste', handlePaste, true);
+    
+    // Add keyboard shortcut handler
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        // The paste event will be triggered automatically by the browser
+        // Just ensure focus is on the document
+        e.stopPropagation();
+      }
     };
+    
+    document.addEventListener('keydown', handleKeyDown, true);
+    
+    return () => {
+      document.removeEventListener('paste', handlePaste, true);
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [screenshots, saveToHistory, redrawCanvas]);
 
-    document.addEventListener('paste', handlePaste);
-    return () => document.removeEventListener('paste', handlePaste);
-  }, []);
+  // Redraw on dependencies change
+  useEffect(() => {
+    redrawCanvas();
+  }, [redrawCanvas]);
 
-  // Mouse and touch event position handler with accurate scroll consideration
-  const getEventPosition = (e) => {
+  // Get mouse/touch position relative to canvas with proper offset handling
+  const getCanvasPosition = useCallback((e) => {
     const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0, pressure: 1 };
+    if (!canvas) return { x: 0, y: 0 };
     
-    // Handle both mouse, touch, and pen/pointer events
-    let clientX, clientY, pressure = 1;
+    const rect = canvas.getBoundingClientRect();
     
+    // Get the actual event coordinates (works for both mouse and touch)
+    let clientX, clientY;
     if (e.touches && e.touches.length > 0) {
-      // Touch events
+      // Touch event
       clientX = e.touches[0].clientX;
       clientY = e.touches[0].clientY;
-      // Touch pressure if available
-      if (e.touches[0].force !== undefined) {
-        pressure = e.touches[0].force || 1;
-      }
-    } else if (e.pointerType) {
-      // Pointer events (pen, touch, mouse)
-      clientX = e.clientX;
-      clientY = e.clientY;
-      // Pen pressure support
-      if (e.pointerType === 'pen' && e.pressure !== undefined) {
-        pressure = e.pressure;
-      }
+    } else if (e.changedTouches && e.changedTouches.length > 0) {
+      // Touch end event
+      clientX = e.changedTouches[0].clientX;
+      clientY = e.changedTouches[0].clientY;
     } else {
-      // Mouse events
+      // Mouse event
       clientX = e.clientX;
       clientY = e.clientY;
     }
     
-    // Get canvas bounding rect (accounts for scroll automatically)
-    const rect = canvas.getBoundingClientRect();
-    
-    // Calculate position relative to canvas
-    // getBoundingClientRect already accounts for page scroll position
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
-    
-    // Scale coordinates if canvas display size differs from canvas resolution
+    // Calculate scale factor between canvas internal size and display size
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     
-    return { 
-      x: x * scaleX, 
-      y: y * scaleY,
-      pressure: pressure
-    };
-  };
+    // Calculate position relative to canvas accounting for the scale and zoom
+    const x = ((clientX - rect.left) * scaleX) / zoom - pan.x;
+    const y = ((clientY - rect.top) * scaleY) / zoom - pan.y;
+    
+    return { x, y };
+  }, [zoom, pan]);
 
-  // Mouse and touch event handlers with improved accuracy
-  const handleStart = (e) => {
-    e.preventDefault(); // Prevent scrolling on touch
+  // Enhanced mouse/touch handlers
+  const handlePointerDown = useCallback((e) => {
+    // Prevent default only for touch to avoid scrolling
+    if (e.type.includes('touch')) {
+      e.preventDefault();
+    }
+    const pos = getCanvasPosition(e);
     
     if (currentTool === 'move' || currentTool === 'resize') {
-      handleScreenshotMouseDown(e);
-      return;
-    }
-
-    const { x, y } = getEventPosition(e);
-
-    setIsDrawing(true);
-    setCurrentPath([{ x, y }]);
-  };
-
-  const handleMove = (e) => {
-    e.preventDefault(); // Prevent scrolling on touch
-    
-    if ((currentTool === 'move' || currentTool === 'resize') && selectedScreenshot) {
-      handleScreenshotMouseMove(e);
-      return;
-    }
-
-    if (!isDrawing) return;
-
-    const { x, y } = getEventPosition(e);
-    setCurrentPath(prev => [...prev, { x, y }]);
-    
-    // Auto-expand canvas if drawing near edges
-    const expandThreshold = 100;
-    let needsExpansion = false;
-    let newWidth = canvasSize.width;
-    let newHeight = canvasSize.height;
-    
-    if (x > canvasSize.width - expandThreshold) {
-      newWidth = canvasSize.width + 500;
-      needsExpansion = true;
-    }
-    if (y > canvasSize.height - expandThreshold) {
-      newHeight = canvasSize.height + 500;
-      needsExpansion = true;
-    }
-    
-    if (needsExpansion) {
-      setCanvasSize({ width: newWidth, height: newHeight });
-    }
-  };
-
-  const handleEnd = (e) => {
-    e.preventDefault();
-    handleMouseUp();
-  };
-
-  const handleMouseUp = () => {
-    if (currentTool === 'move') {
-      if (selectedScreenshot && (dragOffset.x !== 0 || dragOffset.y !== 0)) {
-        saveToHistory();
+      // Check if clicking on a screenshot
+      const clickedScreenshot = [...screenshots].reverse().find(s => 
+        pos.x >= s.x && 
+        pos.x <= s.x + s.width && 
+        pos.y >= s.y && 
+        pos.y <= s.y + s.height
+      );
+      
+      if (clickedScreenshot) {
+        setSelectedScreenshot(clickedScreenshot);
+        
+        if (currentTool === 'move') {
+          setIsDragging(true);
+          setDragStart({
+            x: pos.x - clickedScreenshot.x,
+            y: pos.y - clickedScreenshot.y
+          });
+        } else if (currentTool === 'resize') {
+          // Determine which resize handle was clicked
+          const handleSize = 20;
+          const handles = [
+            { type: 'nw', x: clickedScreenshot.x, y: clickedScreenshot.y },
+            { type: 'ne', x: clickedScreenshot.x + clickedScreenshot.width, y: clickedScreenshot.y },
+            { type: 'sw', x: clickedScreenshot.x, y: clickedScreenshot.y + clickedScreenshot.height },
+            { type: 'se', x: clickedScreenshot.x + clickedScreenshot.width, y: clickedScreenshot.y + clickedScreenshot.height }
+          ];
+          
+          const clickedHandle = handles.find(h => 
+            Math.abs(pos.x - h.x) < handleSize && 
+            Math.abs(pos.y - h.y) < handleSize
+          );
+          
+          if (clickedHandle) {
+            setIsResizing(true);
+            setResizeHandle(clickedHandle.type);
+            setDragStart(pos);
+          }
+        }
+      } else {
+        // Click outside - deselect
+        setSelectedScreenshot(null);
       }
-      // Deselect screenshot and switch to pen tool after placing
-      setSelectedScreenshot(null);
-      setDragOffset({ x: 0, y: 0 });
-      setCurrentTool('pen'); // Switch back to pen tool after moving
-      return;
+    } else if (currentTool === 'pen' || currentTool === 'highlighter' || currentTool === 'eraser') {
+      setIsDrawing(true);
+      setCurrentPath([pos]);
     }
+  }, [currentTool, screenshots, getCanvasPosition]);
 
-    if (currentTool === 'resize') {
-      if (selectedScreenshot && resizeHandle) {
-        saveToHistory();
-      }
-      // Keep selectedScreenshot for resize mode
-      setResizeHandle(null);
-      return;
+  const handlePointerMove = useCallback((e) => {
+    const pos = getCanvasPosition(e);
+    
+    // Expand canvas if drawing near edge
+    if (isDrawing) {
+      expandCanvasIfNeeded(pos.x, pos.y);
     }
+    
+    if (isDragging && selectedScreenshot) {
+      // Update screenshot position
+      setScreenshots(prev => prev.map(s => 
+        s.id === selectedScreenshot.id 
+          ? { ...s, x: pos.x - dragStart.x, y: pos.y - dragStart.y }
+          : s
+      ));
+    } else if (isResizing && selectedScreenshot && resizeHandle) {
+      // Update screenshot size
+      setScreenshots(prev => prev.map(s => {
+        if (s.id !== selectedScreenshot.id) return s;
+        
+        let newX = s.x;
+        let newY = s.y;
+        let newWidth = s.width;
+        let newHeight = s.height;
+        
+        switch (resizeHandle) {
+          case 'se':
+            newWidth = Math.max(50, pos.x - s.x);
+            newHeight = Math.max(50, pos.y - s.y);
+            break;
+          case 'sw':
+            newWidth = Math.max(50, s.x + s.width - pos.x);
+            newX = pos.x;
+            newHeight = Math.max(50, pos.y - s.y);
+            break;
+          case 'ne':
+            newWidth = Math.max(50, pos.x - s.x);
+            newHeight = Math.max(50, s.y + s.height - pos.y);
+            newY = pos.y;
+            break;
+          case 'nw':
+            newWidth = Math.max(50, s.x + s.width - pos.x);
+            newHeight = Math.max(50, s.y + s.height - pos.y);
+            newX = pos.x;
+            newY = pos.y;
+            break;
+        }
+        
+        return { ...s, x: newX, y: newY, width: newWidth, height: newHeight };
+      }));
+    } else if (isDrawing) {
+      setCurrentPath(prev => [...prev, pos]);
+    }
+  }, [isDragging, isResizing, isDrawing, selectedScreenshot, dragStart, resizeHandle, getCanvasPosition, expandCanvasIfNeeded, zoom, pan]);
 
+  const handlePointerUp = useCallback(() => {
     if (isDrawing && currentPath.length > 1) {
       const newPath = {
+        id: Date.now(),
         points: currentPath,
-        tool: currentTool,
         color: currentColor,
-        width: strokeWidth
+        width: strokeWidth,
+        tool: currentTool
       };
       setPaths(prev => [...prev, newPath]);
       saveToHistory();
     }
-
+    
+    if (isDragging || isResizing) {
+      saveToHistory();
+    }
+    
     setIsDrawing(false);
+    setIsDragging(false);
+    setIsResizing(false);
     setCurrentPath([]);
-  };
-
-  // Screenshot interaction handlers with separate move/resize logic
-  const handleScreenshotMouseDown = (e) => {
-    const { x, y } = getEventPosition(e);
-
-    let screenshotFound = false;
-
-    // Check if clicking on a screenshot (with tolerance)
-    const tolerance = 10;
-    for (let i = screenshots.length - 1; i >= 0; i--) {
-      const screenshot = screenshots[i];
-      if (x >= screenshot.x - tolerance && x <= screenshot.x + screenshot.width + tolerance &&
-          y >= screenshot.y - tolerance && y <= screenshot.y + screenshot.height + tolerance) {
-        
-        screenshotFound = true;
-        setSelectedScreenshot(screenshot);
-        
-        if (currentTool === 'resize') {
-          // In resize mode, only check for resize handles
-          const handleSize = 25; // Larger for easier interaction
-          const handles = [
-            { name: 'nw', x: screenshot.x, y: screenshot.y },
-            { name: 'ne', x: screenshot.x + screenshot.width, y: screenshot.y },
-            { name: 'sw', x: screenshot.x, y: screenshot.y + screenshot.height },
-            { name: 'se', x: screenshot.x + screenshot.width, y: screenshot.y + screenshot.height }
-          ];
-          
-          for (const handle of handles) {
-            if (x >= handle.x - handleSize && x <= handle.x + handleSize &&
-                y >= handle.y - handleSize && y <= handle.y + handleSize) {
-              setResizeHandle(handle.name);
-              e.preventDefault();
-              e.stopPropagation();
-              return;
-            }
-          }
-        } else if (currentTool === 'move') {
-          // In move mode, only set up dragging
-          if (x >= screenshot.x && x <= screenshot.x + screenshot.width &&
-              y >= screenshot.y && y <= screenshot.y + screenshot.height) {
-            setDragOffset({
-              x: x - screenshot.x,
-              y: y - screenshot.y
-            });
-          }
-        }
-        
-        break;
-      }
-    }
-
-    // If no screenshot was clicked, deselect current selection
-    if (!screenshotFound && (currentTool === 'move' || currentTool === 'resize')) {
-      setSelectedScreenshot(null);
-      setResizeHandle(null);
-      setDragOffset({ x: 0, y: 0 });
-    }
-  };
-
-  const handleScreenshotMouseMove = (e) => {
-    if (!selectedScreenshot) return;
-
-    const { x, y } = getEventPosition(e);
-
-    if (currentTool === 'resize' && resizeHandle) {
-      // Handle resizing only in resize mode
-      const newScreenshots = screenshots.map(screenshot => {
-        if (screenshot.id !== selectedScreenshot.id) return screenshot;
-
-        const aspectRatio = screenshot.originalWidth / screenshot.originalHeight;
-        let newWidth = screenshot.width;
-        let newHeight = screenshot.height;
-        let newX = screenshot.x;
-        let newY = screenshot.y;
-
-        switch (resizeHandle) {
-          case 'se': // Southeast
-            newWidth = Math.max(50, x - screenshot.x);
-            newHeight = newWidth / aspectRatio;
-            break;
-          case 'sw': // Southwest
-            newWidth = Math.max(50, screenshot.x + screenshot.width - x);
-            newHeight = newWidth / aspectRatio;
-            newX = screenshot.x + screenshot.width - newWidth;
-            break;
-          case 'ne': // Northeast
-            newWidth = Math.max(50, x - screenshot.x);
-            newHeight = newWidth / aspectRatio;
-            newY = screenshot.y + screenshot.height - newHeight;
-            break;
-          case 'nw': // Northwest
-            newWidth = Math.max(50, screenshot.x + screenshot.width - x);
-            newHeight = newWidth / aspectRatio;
-            newX = screenshot.x + screenshot.width - newWidth;
-            newY = screenshot.y + screenshot.height - newHeight;
-            break;
-        }
-
-        return {
-          ...screenshot,
-          x: Math.max(0, newX),
-          y: Math.max(0, newY),
-          width: newWidth,
-          height: newHeight
-        };
-      });
-
-      setScreenshots(newScreenshots);
-      setSelectedScreenshot(newScreenshots.find(s => s.id === selectedScreenshot.id));
-    } else if (currentTool === 'move' && dragOffset.x !== undefined && dragOffset.y !== undefined) {
-      // Handle dragging only in move mode
-      const newScreenshots = screenshots.map(screenshot => {
-        if (screenshot.id !== selectedScreenshot.id) return screenshot;
-        
-        return {
-          ...screenshot,
-          x: Math.max(0, x - dragOffset.x),
-          y: Math.max(0, y - dragOffset.y)
-        };
-      });
-
-      setScreenshots(newScreenshots);
-      setSelectedScreenshot(newScreenshots.find(s => s.id === selectedScreenshot.id));
-    }
-  };
+    setResizeHandle(null);
+  }, [isDrawing, isDragging, isResizing, currentPath, currentColor, strokeWidth, currentTool, saveToHistory]);
 
   // Tool handlers
   const handleToolChange = (tool) => {
-    setCurrentTool(tool);
+    // Toggle menus for pen and highlighter in mobile/tablet
+    if (deviceMode !== 'desktop') {
+      if (tool === 'pen' && currentTool !== 'pen') {
+        setShowPenMenu(true);
+        setShowHighlighterMenu(false);
+      } else if (tool === 'highlighter' && currentTool !== 'highlighter') {
+        setShowHighlighterMenu(true);
+        setShowPenMenu(false);
+        setShowEraserMenu(false);
+      } else if (tool === 'eraser' && currentTool !== 'eraser') {
+        setShowEraserMenu(true);
+        setShowPenMenu(false);
+        setShowHighlighterMenu(false);
+      } else if (tool === currentTool) {
+        // Toggle off if clicking same tool
+        setShowPenMenu(false);
+        setShowHighlighterMenu(false);
+        setShowEraserMenu(false);
+      } else {
+        setShowPenMenu(false);
+        setShowHighlighterMenu(false);
+        setShowEraserMenu(false);
+      }
+    }
     
-    // Clear selection when switching away from move/resize tools
+    setCurrentTool(tool);
     if (tool !== 'move' && tool !== 'resize') {
       setSelectedScreenshot(null);
-      setResizeHandle(null);
-      setDragOffset({ x: 0, y: 0 });
     }
     
-    // Clear resize handle when switching to move mode
-    if (tool === 'move') {
-      setResizeHandle(null);
-    }
-    
-    // Clear drag offset when switching to resize mode
-    if (tool === 'resize') {
-      setDragOffset({ x: 0, y: 0 });
-    }
-    
-    if (tool === 'highlighter') {
+    // Auto-select colors for specific tools (only if switching from a different tool type)
+    if (tool === 'highlighter' && currentTool !== 'highlighter') {
       setCurrentColor('#ffff00');
+      // Don't reset stroke width if user has customized it
+      if (currentTool !== 'pen') {
+        setStrokeWidth(15);
+      }
+    } else if (tool === 'pen' && currentTool !== 'pen') {
+      setCurrentColor('#000000');
+      // Don't reset stroke width if user has customized it
+      if (currentTool !== 'highlighter') {
+        setStrokeWidth(2);
+      }
+    } else if (tool === 'eraser' && currentTool !== 'eraser') {
       setStrokeWidth(20);
-    } else if (tool === 'marker') {
-      setCurrentColor('#000000'); // Default to black for marker
-      setStrokeWidth(5);
     }
   };
 
-  const handleStrokeWidthChange = (width) => {
-    setStrokeWidth(width);
-  };
-
-  const handleColorChange = (color) => {
-    setCurrentColor(color);
-  };
-
-  // Undo functionality
-  const handleUndo = useCallback(() => {
+  // Undo/Redo
+  const handleUndo = () => {
     if (historyIndex > 0) {
-      const prevIndex = historyIndex - 1;
-      const prevState = history[prevIndex];
-      
-      setPaths([...prevState.paths]);
-      setScreenshots([...prevState.screenshots]);
-      setHistoryIndex(prevIndex);
-      
-      // Clear current drawing path
-      setCurrentPath([]);
-      setIsDrawing(false);
-      
-      // Clear image cache to force refresh
-      imageCache.current.clear();
-    }
-  }, [historyIndex, history]);
-
-  // Redo functionality
-  const handleRedo = useCallback(() => {
-    if (historyIndex < history.length - 1) {
-      const nextIndex = historyIndex + 1;
-      const nextState = history[nextIndex];
-      
-      setPaths([...nextState.paths]);
-      setScreenshots([...nextState.screenshots]);
-      setHistoryIndex(nextIndex);
-      
-      // Clear current drawing path
-      setCurrentPath([]);
-      setIsDrawing(false);
-      
-      // Clear image cache to force refresh
-      imageCache.current.clear();
-    }
-  }, [historyIndex, history]);
-
-  const clearBoard = useCallback(() => {
-    // Save current state before clearing
-    saveToHistory();
-    
-    // Clear all content
-    setPaths([]);
-    setScreenshots([]);
-    setCurrentPath([]);
-    setSelectedScreenshot(null);
-    setIsDrawing(false);
-    
-    // Clear image cache completely
-    imageCache.current.clear();
-  }, [saveToHistory]);
-
-  const getNextDrawingNumber = async () => {
-    try {
-      if (!db) return 1;
-      
-      const notesRef = collection(db, 'notes');
-      const q = query(notesRef, where('title', '>=', 'Drawing '), where('title', '<=', 'Drawing ~'));
-      const snapshot = await getDocs(q);
-      
-      let maxNumber = 0;
-      snapshot.forEach(doc => {
-        const title = doc.data().title;
-        const match = title.match(/^Drawing (\d+)$/);
-        if (match) {
-          const num = parseInt(match[1]);
-          maxNumber = Math.max(maxNumber, num);
-        }
-      });
-      
-      return maxNumber + 1;
-    } catch (error) {
-      console.error('Error getting drawing number:', error);
-      return 1;
+      const newIndex = historyIndex - 1;
+      const state = history[newIndex];
+      setPaths(state.paths || []);
+      setScreenshots(state.screenshots || []);
+      setHistoryIndex(newIndex);
     }
   };
 
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      const state = history[newIndex];
+      setPaths(state.paths || []);
+      setScreenshots(state.screenshots || []);
+      setHistoryIndex(newIndex);
+    }
+  };
+
+  // Clear board
+  const clearBoard = () => {
+    if (window.confirm('Clear the entire drawing board?')) {
+      setPaths([]);
+      setScreenshots([]);
+      setSelectedScreenshot(null);
+      imageCache.current.clear();
+      saveToHistory();
+    }
+  };
+
+  // Download board
+  const downloadBoard = () => {
+    const canvas = canvasRef.current;
+    const link = document.createElement('a');
+    link.download = `drawing-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+  
+  // Handle file upload
+  /* Removed - using paste only
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = canvasRef.current;
+        const container = containerRef.current;
+        
+        if (!canvas || !container) return;
+        
+        // Calculate optimal size
+        const maxWidth = 600;
+        const maxHeight = 800;
+        const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
+        const scaledWidth = img.width * scale;
+        const scaledHeight = img.height * scale;
+        
+        // Position in center of viewport
+        const x = container.scrollLeft + (container.clientWidth - scaledWidth) / 2;
+        const y = container.scrollTop + (container.clientHeight - scaledHeight) / 2;
+        
+        const newScreenshot = {
+          id: `upload_${Date.now()}_${Math.random()}`,
+          src: event.target.result,
+          x: Math.max(20, x),
+          y: Math.max(20, y),
+          width: scaledWidth,
+          height: scaledHeight,
+          originalWidth: img.width,
+          originalHeight: img.height,
+          opacity: 1,
+          zIndex: screenshots.length
+        };
+        
+        setScreenshots(prev => [...prev, newScreenshot]);
+        setSelectedScreenshot(newScreenshot);
+        setCurrentTool('move');
+        saveToHistory();
+        
+        // Force redraw
+        setTimeout(() => redrawCanvas(), 10);
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input
+    // Reset tool to pen after clearing
+    setCurrentTool('pen');
+  }; */
+
+  // Save as note (existing functionality)
   const saveAsNote = async () => {
     if (isSaving) return;
-    
     setIsSaving(true);
     
     try {
       const canvas = canvasRef.current;
-      if (!canvas) {
-        alert('No canvas found');
-        return;
-      }
+      if (!canvas) return;
       
-      // Compress the image to avoid Firestore size limits
-      // First try with lower quality JPEG
-      let imageDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      const title = `Drawing ${new Date().toLocaleString()}`;
       
-      // If still too large (>900KB to be safe), reduce quality further
-      if (imageDataUrl.length > 900000) {
-        imageDataUrl = canvas.toDataURL('image/jpeg', 0.5);
-      }
+      const noteData = {
+        title,
+        content: `<img src="${imageDataUrl}" alt="${title}" style="max-width: 100%;" />`,
+        starred: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
       
-      // If still too large, resize the canvas
-      if (imageDataUrl.length > 900000) {
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        const scale = 0.75; // Scale down to 75%
-        tempCanvas.width = canvas.width * scale;
-        tempCanvas.height = canvas.height * scale;
-        tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
-        imageDataUrl = tempCanvas.toDataURL('image/jpeg', 0.6);
-      }
-      
-      // Get the next drawing number
-      const drawingNumber = await getNextDrawingNumber();
-      const title = `Drawing ${drawingNumber}`;
-      
-      // Check final size and adjust storage method
-      let noteData;
-      
-      if (imageDataUrl.length < 900000) {
-        // If image is small enough, embed it directly
-        noteData = {
-          title: title,
-          content: `<h2>${title}</h2><p>Created from Drawing Board on ${new Date().toLocaleDateString()}</p><img src="${imageDataUrl}" alt="${title}" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px;" />`,
-          starred: false,
-          images: [],
-          banners: [],
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        };
-      } else {
-        // If still too large, create a smaller thumbnail and save minimal data
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        const maxDim = 400; // Maximum dimension for thumbnail
-        const scale = Math.min(maxDim / canvas.width, maxDim / canvas.height);
-        tempCanvas.width = canvas.width * scale;
-        tempCanvas.height = canvas.height * scale;
-        tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
-        const thumbnailUrl = tempCanvas.toDataURL('image/jpeg', 0.5);
-        
-        noteData = {
-          title: title,
-          content: `<h2>${title}</h2><p>Created from Drawing Board on ${new Date().toLocaleDateString()}</p><p style="background: #f0f0f0; padding: 20px; border-radius: 8px; text-align: center;"><img src="${thumbnailUrl}" alt="${title} thumbnail" style="max-width: 100%; height: auto; border: 1px solid #ddd;" /><br/><small>Note: This is a compressed preview. Download the full image from the Drawing Board.</small></p>`,
-          starred: false,
-          images: [],
-          banners: [],
-          drawingData: {
-            width: canvas.width,
-            height: canvas.height,
-            date: new Date().toISOString()
-          },
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        };
-      }
-      
-      // Save to Firebase
-      try {
+      if (db) {
         const notesRef = collection(db, 'notes');
-        const docRef = await addDoc(notesRef, noteData);
-        
-        // Show success message
-        if (docRef.id) {
-          alert(`Drawing saved as "${title}" in Notes!`);
-        }
-        
-        // Optionally navigate to notes page
-        // navigate('/notes');
-      } catch (dbError) {
-        console.error('Database error:', dbError);
-        
-        // Check if it's a size error
-        if (dbError.message && dbError.message.includes('bytes')) {
-          alert('The drawing is too large to save. Try clearing some elements or using the Download button instead.');
-        } else {
-          alert('Database connection not available. Please check your connection and try again.');
-        }
+        await addDoc(notesRef, noteData);
+        alert(`Drawing saved as "${title}" in Notes!`);
       }
     } catch (error) {
-      console.error('Error saving drawing as note:', error);
-      alert('Failed to save drawing. Please try again.');
+      console.error('Error saving as note:', error);
+      alert('Failed to save drawing as note');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const downloadBoard = () => {
-    const canvas = canvasRef.current;
-    const link = document.createElement('a');
-    link.download = `board-${new Date().toISOString().slice(0, 10)}.png`;
-    link.href = canvas.toDataURL();
-    link.click();
+  // Zoom controls
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev * 1.2, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev / 1.2, 0.5));
+  };
+
+  const handleZoomReset = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
   };
 
   return (
-    <div className={`board-page ${theme} page-container`}>
-      <div className="board-toolbar">
-        <div className="toolbar-row">
-          {/* Tool Selection Group */}
-          <div className="toolbar-group tool-group">
-            <button
-              className={`toolbar-btn tool-btn ${currentTool === 'highlighter' ? 'active' : ''}`}
-              onClick={() => handleToolChange('highlighter')}
-              title="Highlighter"
-            >
-              <Highlighter size={16} />
-              <span>Highlighter</span>
-            </button>
-            <button
-              className={`toolbar-btn tool-btn ${currentTool === 'marker' ? 'active' : ''}`}
-              onClick={() => handleToolChange('marker')}
-              title="Marker"
-            >
-              <Pen size={16} />
-              <span>Marker</span>
-            </button>
-            <button
-              className={`toolbar-btn tool-btn ${currentTool === 'move' ? 'active' : ''}`}
-              onClick={() => handleToolChange('move')}
-              title="Move"
-            >
-              <Move size={16} />
-              <span>Move</span>
-            </button>
-            <button
-              className={`toolbar-btn tool-btn ${currentTool === 'resize' ? 'active' : ''}`}
-              onClick={() => handleToolChange('resize')}
-              title="Resize"
-            >
-              <Maximize2 size={16} />
-              <span>Resize</span>
-            </button>
-          </div>
+    <div className={`board-enhanced ${theme}`}>
+      {/* Responsive Toolbar - v2.0 */}
+      <div className={`board-toolbar board-toolbar-${deviceMode}`} title={`Device: ${deviceMode} | Version: 2.0`}>
+        <div className="toolbar-section">
+          <button className="tool-button" onClick={handleUndo} disabled={historyIndex <= 0}>
+            <Undo size={20} />
+          </button>
+          <button className="tool-button" onClick={handleRedo} disabled={historyIndex >= history.length - 1}>
+            <Redo size={20} />
+          </button>
+        </div>
 
-          {/* Size and Color wrapper for mobile */}
-          <div className="size-color-wrapper">
-            {/* Size Selection Group - Always visible */}
-            <div className="toolbar-group size-group">
-              <span className="toolbar-label">Size:</span>
-              <div className="size-buttons">
-                {[5, 10, 20, 30, 40].map(width => (
+        <div className="toolbar-section tools">
+          <button 
+            className={`tool-button ${currentTool === 'move' ? 'active' : ''}`}
+            onClick={() => handleToolChange('move')}
+            title="Move (V)"
+          >
+            <Move size={deviceMode === 'mobile' ? 18 : 20} />
+          </button>
+          <button 
+            className={`tool-button ${currentTool === 'pen' ? 'active' : ''}`}
+            onClick={() => handleToolChange('pen')}
+            title="Pen (P)"
+          >
+            <Edit3 size={deviceMode === 'mobile' ? 18 : 20} />
+          </button>
+          <button 
+            className={`tool-button ${currentTool === 'highlighter' ? 'active' : ''}`}
+            onClick={() => handleToolChange('highlighter')}
+            title="Highlighter (H)"
+          >
+            <Highlighter size={deviceMode === 'mobile' ? 18 : 20} />
+          </button>
+          <button 
+            className={`tool-button ${currentTool === 'eraser' ? 'active' : ''}`}
+            onClick={() => handleToolChange('eraser')}
+            title="Eraser (E)"
+          >
+            <Eraser size={deviceMode === 'mobile' ? 18 : 20} />
+          </button>
+          <button 
+            className={`tool-button ${currentTool === 'resize' ? 'active' : ''}`}
+            onClick={() => handleToolChange('resize')}
+            title="Resize (R)"
+          >
+            <Square size={deviceMode === 'mobile' ? 18 : 20} />
+          </button>
+        </div>
+
+        {/* Desktop Mode - Inline Color & Stroke */}
+        {deviceMode === 'desktop' && (currentTool === 'pen' || currentTool === 'highlighter') && (
+          <div className="toolbar-section colors">
+            <div className="color-picker">
+              {currentTool === 'pen' ? (
+                // Pen colors
+                ['#000000', '#ffffff', '#0066ff', '#ff0000', '#00cc00', '#ffaa00'].map(color => (
                   <button
-                    key={width}
-                    className={`size-btn ${strokeWidth === width ? 'active' : ''} ${
-                      (currentTool !== 'highlighter' && currentTool !== 'marker') ? 'disabled' : ''
-                    }`}
-                    onClick={() => (currentTool === 'highlighter' || currentTool === 'marker') && handleStrokeWidthChange(width)}
-                    disabled={currentTool !== 'highlighter' && currentTool !== 'marker'}
-                    title={`Size ${width}`}
-                  >
-                    <div 
-                      className="size-indicator"
-                      style={{
-                        width: width <= 5 ? '4px' : width <= 10 ? '6px' : width <= 20 ? '8px' : width <= 30 ? '10px' : '12px',
-                        height: width <= 5 ? '4px' : width <= 10 ? '6px' : width <= 20 ? '8px' : width <= 30 ? '10px' : '12px',
-                        borderRadius: '50%'
-                      }}
-                    />
-                  </button>
-                ))}
-              </div>
+                    key={color}
+                    className={`color-button ${currentColor === color ? 'active' : ''}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => setCurrentColor(color)}
+                  />
+                ))
+              ) : (
+                // Highlighter colors
+                ['#ffff00', '#00ff00', '#00ffff', '#ff00ff', '#ff9900', '#ff0000'].map(color => (
+                  <button
+                    key={color}
+                    className={`color-button ${currentColor === color ? 'active' : ''}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => setCurrentColor(color)}
+                  />
+                ))
+              )}
             </div>
-
-            {/* Color Selection Group - Always visible */}
-            <div className="toolbar-group color-group">
-              <span className="toolbar-label">Color:</span>
-              <div className="color-buttons">
-                {(() => {
-                  // Different colors for marker vs highlighter
-                  const colors = currentTool === 'marker' 
-                    ? ['#0000ff', '#ff0000', '#000000', '#00ff00', '#ff6900'] // Blue, Red, Black, Green, Orange for marker
-                    : ['#ffff00', '#00ff00', '#ff6900', '#ff69b4', '#00bfff']; // Yellow, Green, Orange, Pink, Blue for highlighter
-                  
-                  return colors.map(color => (
-                    <button
-                      key={color}
-                      className={`color-btn ${currentColor === color ? 'active' : ''} ${
-                        (currentTool !== 'highlighter' && currentTool !== 'marker') ? 'disabled' : ''
-                      }`}
-                      onClick={() => (currentTool === 'highlighter' || currentTool === 'marker') && handleColorChange(color)}
-                      disabled={currentTool !== 'highlighter' && currentTool !== 'marker'}
-                      style={{ backgroundColor: color }}
-                      title={color}
-                    />
-                  ));
-                })()}
-              </div>
+            
+            {/* Stroke width */}
+            <div className="stroke-picker">
+              {[3, 8, 15, 25, 40].map(width => (
+                <button
+                  key={width}
+                  className={`stroke-button ${strokeWidth === width ? 'active' : ''}`}
+                  onClick={() => setStrokeWidth(width)}
+                >
+                  <div 
+                    className="stroke-indicator" 
+                    style={{ 
+                      width: Math.min(width / 2, 16) + 'px', 
+                      height: Math.min(width / 2, 16) + 'px',
+                      backgroundColor: currentColor
+                    }} 
+                  />
+                </button>
+              ))}
             </div>
           </div>
+        )}
 
-          {/* Action Buttons Group */}
-          <div className="toolbar-group action-group">
-            <button
-              className="toolbar-btn action-btn"
-              onClick={handleUndo}
-              disabled={historyIndex <= 0}
-              title="Undo"
-            >
-              <Undo size={16} />
-              <span>Undo</span>
+        <div className="toolbar-section actions">
+          <button className="tool-button" onClick={clearBoard} title="Clear All">
+            <Trash2 size={20} />
+          </button>
+          <button className="tool-button" onClick={downloadBoard} title="Download">
+            <Download size={20} />
+          </button>
+          <button className="tool-button" onClick={saveAsNote} disabled={isSaving} title="Save to Notes">
+            <Save size={20} />
+          </button>
+        </div>
+
+        <div className="toolbar-section zoom">
+          <button className="tool-button" onClick={handleZoomOut} title="Zoom Out">
+            <ZoomOut size={deviceMode === 'mobile' ? 18 : 20} />
+          </button>
+          <span className="zoom-level">{Math.round(zoom * 100)}%</span>
+          <button className="tool-button" onClick={handleZoomIn} title="Zoom In">
+            <ZoomIn size={deviceMode === 'mobile' ? 18 : 20} />
+          </button>
+          {deviceMode !== 'mobile' && (
+            <button className="tool-button" onClick={handleZoomReset} title="Reset View">
+              <Maximize2 size={20} />
             </button>
-            <button
-              className="toolbar-btn action-btn"
-              onClick={handleRedo}
-              disabled={historyIndex >= history.length - 1}
-              title="Redo"
-            >
-              <Redo size={16} />
-              <span>Redo</span>
-            </button>
-            <button
-              className="toolbar-btn action-btn"
-              onClick={clearBoard}
-              title="Clear"
-            >
-              <Trash2 size={16} />
-              <span>Clear</span>
-            </button>
-            <button
-              className="toolbar-btn action-btn"
-              onClick={saveAsNote}
-              disabled={isSaving}
-              title="Save as Note"
-            >
-              <Save size={16} />
-              <span>{isSaving ? 'Saving...' : 'Save as Note'}</span>
-            </button>
-            <button
-              className="toolbar-btn action-btn"
-              onClick={downloadBoard}
-              title="Download"
-            >
-              <Download size={16} />
-              <span>Download</span>
-            </button>
-          </div>
+          )}
         </div>
       </div>
-
-      <div className="board-content">
-        {/* Infinite Canvas Indicator */}
-        <div className="infinite-canvas-indicator" title="Infinite Canvas - Scroll or draw to expand">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 12h18m-6-6l6 6-6 6" />
-            <path d="M12 3v18m-6-6l6 6 6-6" opacity="0.5" />
-          </svg>
-        </div>
-        <canvas
-          ref={canvasRef}
-          className={`board-canvas ${
-            currentTool === 'move' ? 'move-cursor' : 
-            currentTool === 'resize' ? 'resize-cursor' :
-            'draw-cursor'
-          }`}
-          onMouseDown={handleStart}
-          onMouseMove={handleMove}
-          onMouseUp={handleEnd}
-          onMouseLeave={handleEnd}
-          onTouchStart={handleStart}
-          onTouchMove={handleMove}
-          onTouchEnd={handleEnd}
-          onTouchCancel={handleEnd}
-          onPointerDown={handleStart}
-          onPointerMove={handleMove}
-          onPointerUp={handleEnd}
-          onPointerCancel={handleEnd}
-          style={{ touchAction: 'none' }}
-        />
-
-        {/* Resize handles only show in resize mode */}
-        {currentTool === 'resize' && selectedScreenshot && (() => {
-          const canvas = canvasRef.current;
-          if (!canvas) return null;
-          
-          const rect = canvas.getBoundingClientRect();
-          const scaleX = rect.width / canvas.width;
-          const scaleY = rect.height / canvas.height;
-          
-          return (
-            <div className="resize-handles">
-              {['nw', 'ne', 'sw', 'se'].map(handle => (
-                <div
-                  key={handle}
-                  className={`resize-handle ${handle}`}
-                  style={{
-                    left: (handle.includes('e') ? selectedScreenshot.x + selectedScreenshot.width : selectedScreenshot.x) * scaleX,
-                    top: (handle.includes('s') ? selectedScreenshot.y + selectedScreenshot.height : selectedScreenshot.y) * scaleY
-                  }}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setResizeHandle(handle);
-                  }}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setResizeHandle(handle);
-                  }}
+      
+      {/* Mobile/Tablet Horizontal Menus */}
+      {deviceMode !== 'desktop' && showPenMenu && (
+        <div className="toolbar-submenu toolbar-submenu-horizontal">
+          <div className="submenu-section">
+            <span className="submenu-label">Colors:</span>
+            <div className="color-picker-horizontal">
+              {['#000000', '#ffffff', '#0066ff', '#ff0000', '#00cc00', '#ffaa00'].map(color => (
+                <button
+                  key={color}
+                  className={`color-button ${currentColor === color ? 'active' : ''}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => setCurrentColor(color)}
                 />
               ))}
             </div>
-          );
-        })()}
+          </div>
+          <div className="submenu-section">
+            <span className="submenu-label">Size:</span>
+            <div className="stroke-picker-horizontal">
+              {[3, 8, 15, 25, 40].map(width => (
+                <button
+                  key={width}
+                  className={`stroke-button ${strokeWidth === width ? 'active' : ''}`}
+                  onClick={() => setStrokeWidth(width)}
+                >
+                  <div 
+                    className="stroke-indicator" 
+                    style={{ 
+                      width: Math.min(width / 2, 16) + 'px', 
+                      height: Math.min(width / 2, 16) + 'px',
+                      backgroundColor: currentColor
+                    }} 
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {deviceMode !== 'desktop' && showEraserMenu && (
+        <div className="toolbar-submenu toolbar-submenu-horizontal">
+          <div className="submenu-section">
+            <span className="submenu-label">Eraser Size:</span>
+            <div className="stroke-picker-horizontal">
+              {[10, 20, 30, 50, 80].map(width => (
+                <button
+                  key={width}
+                  className={`stroke-button ${strokeWidth === width ? 'active' : ''}`}
+                  onClick={() => setStrokeWidth(width)}
+                >
+                  <div 
+                    className="stroke-indicator" 
+                    style={{ 
+                      width: Math.min(width / 4, 18) + 'px', 
+                      height: Math.min(width / 4, 18) + 'px',
+                      backgroundColor: '#666'
+                    }} 
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {deviceMode !== 'desktop' && showHighlighterMenu && (
+        <div className="toolbar-submenu toolbar-submenu-horizontal">
+          <div className="submenu-section">
+            <span className="submenu-label">Colors:</span>
+            <div className="color-picker-horizontal">
+              {['#ffff00', '#00ff00', '#00ffff', '#ff00ff', '#ff9900', '#ff0000'].map(color => (
+                <button
+                  key={color}
+                  className={`color-button ${currentColor === color ? 'active' : ''}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => setCurrentColor(color)}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="submenu-section">
+            <span className="submenu-label">Size:</span>
+            <div className="stroke-picker-horizontal">
+              {[20, 30, 40, 50, 70].map(width => (
+                <button
+                  key={width}
+                  className={`stroke-button ${strokeWidth === width ? 'active' : ''}`}
+                  onClick={() => setStrokeWidth(width)}
+                >
+                  <div 
+                    className="stroke-indicator" 
+                    style={{ 
+                      width: Math.min(width / 3.5, 18) + 'px', 
+                      height: Math.min(width / 3.5, 18) + 'px',
+                      backgroundColor: currentColor,
+                      opacity: 0.5
+                    }} 
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Canvas Container with infinite scroll */}
+      <div 
+        ref={containerRef}
+        className="board-content"
+        data-tool={currentTool}
+        style={{ 
+          overflow: 'auto',
+          flex: 1,
+          position: 'relative'
+        }}
+      >
+        <canvas
+          ref={canvasRef}
+          width={canvasSize.width}
+          height={canvasSize.height}
+          className="board-canvas"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+          onTouchStart={handlePointerDown}
+          onTouchMove={handlePointerMove}
+          onTouchEnd={handlePointerUp}
+          style={{ 
+            touchAction: 'none',
+            display: 'block',
+            width: '100%',
+            height: 'auto',
+            maxWidth: `${canvasSize.width}px`
+          }}
+        />
       </div>
     </div>
   );

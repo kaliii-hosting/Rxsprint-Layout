@@ -1,0 +1,722 @@
+/* Responsive Page Settings Dropdown */
+.responsive-page-settings {
+  position: relative;
+  display: block; /* Always visible when rendered */
+  z-index: 1000;
+  contain: layout; /* Prevent layout recalculation affecting siblings */
+}
+
+/* Ensure the dropdown container doesn't interfere with positioning */
+.responsive-page-settings * {
+  box-sizing: border-box;
+}
+
+/* Trigger Button */
+.settings-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--card-background, #ffffff);
+  color: #24292e !important; /* Always dark text */
+  border: 1px solid var(--border-color, #d0d7de);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  white-space: nowrap;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Button Variants */
+.settings-trigger.compact {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  gap: 0.375rem;
+}
+
+.settings-trigger.compact svg {
+  width: 16px;
+  height: 16px;
+}
+
+.settings-trigger.icon-only {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  gap: 0;
+}
+
+.settings-trigger.icon-only span {
+  display: none;
+}
+
+.settings-trigger.icon-only .chevron {
+  display: none;
+}
+
+.settings-trigger:hover {
+  background: var(--hover-background, #f3f4f6);
+  border-color: var(--hover-border, #8b949e);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.settings-trigger.active {
+  background: #FF6900;
+  color: white !important; /* White text on orange background */
+  border-color: #FF6900;
+  box-shadow: 0 2px 4px rgba(255, 105, 0, 0.2);
+}
+
+.settings-trigger:active {
+  transform: scale(0.98); /* Slight scale for feedback */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
+}
+
+.settings-trigger.active svg {
+  color: white !important;
+}
+
+.settings-trigger .chevron {
+  transition: transform 0.2s ease;
+  margin-left: auto;
+}
+
+.settings-trigger .chevron.rotate {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.settings-dropdown {
+  position: fixed !important; /* Use fixed positioning for proper display */
+  background: var(--card-background, #ffffff);
+  border: 1px solid var(--border-color, #d0d7de);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: visible; /* Allow proper dropdown display */
+  animation: slideIn 0.15s ease-out; /* Faster, simpler animation */
+  z-index: 999999; /* Very high z-index to ensure visibility */
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto; /* Ensure clicks work */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  min-width: 280px;
+  max-width: 320px;
+  will-change: opacity; /* Only animate opacity to prevent layout shift */
+  backface-visibility: hidden; /* Fix rendering issues */
+  contain: layout style paint; /* Prevent layout recalculation affecting other elements */
+}
+
+/* Position variants - simplified without transform-origin to prevent layout shift */
+.settings-dropdown.bottom-center,
+.settings-dropdown.bottom-right,
+.settings-dropdown.bottom-left {
+  /* No transform-origin needed for opacity-only animation */
+}
+
+.settings-dropdown.top-center,
+.settings-dropdown.top-right,
+.settings-dropdown.top-left {
+  animation: slideDown 0.15s ease-out; /* Faster, consistent animation */
+}
+
+/* Dropdown Header */
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  background: var(--secondary-background, #f6f8fa);
+  border-bottom: 1px solid var(--border-color, #e1e4e8);
+}
+
+.dropdown-header h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary, #24292e);
+}
+
+.dropdown-header .close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary, #57606a);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.dropdown-header .close-btn:hover {
+  background: var(--hover-background, #f3f4f6);
+  color: var(--text-primary, #24292e);
+}
+
+/* Dropdown Content */
+.dropdown-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem;
+  min-height: 100px;
+  max-height: 400px; /* Ensure proper height constraint */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  overscroll-behavior: contain; /* Prevent scroll chaining */
+}
+
+.dropdown-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dropdown-content::-webkit-scrollbar-track {
+  background: var(--secondary-background, #f6f8fa);
+  border-radius: 4px;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb {
+  background: var(--border-color, #d0d7de);
+  border-radius: 4px;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb:hover {
+  background: var(--hover-border, #8b949e);
+}
+
+/* Menu Items */
+.menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  background: transparent;
+  color: #1a1a1a !important; /* Darker text for better readability */
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  margin-bottom: 0.125rem;
+}
+
+/* Ensure all menu items have dark text except primary buttons */
+.menu-item:not(.primary) {
+  color: #1a1a1a !important;
+}
+
+.menu-item:not(.primary) .item-icon svg,
+.menu-item:not(.primary) .item-label {
+  color: #1a1a1a !important;
+}
+
+.menu-item:hover {
+  background: var(--hover-background, #f3f4f6);
+  transform: translateX(2px);
+}
+
+.menu-item:active {
+  transform: translateX(0);
+  background: var(--active-background, #e1e4e8);
+}
+
+.menu-item.active {
+  background: rgba(255, 105, 0, 0.12); /* Light orange background */
+  color: #1a1a1a !important; /* Dark/black text for active items */
+  font-weight: 600;
+}
+
+.menu-item.active:hover {
+  background: rgba(255, 105, 0, 0.16);
+  color: #000000 !important; /* Pure black on hover */
+}
+
+
+
+.menu-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Menu Item Components */
+.item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: inherit !important;
+}
+
+/* Ensure icons follow parent text color */
+.menu-item .item-icon svg {
+  color: currentColor !important;
+}
+
+/* Primary button styles - Orange with WHITE text */
+.menu-item.primary,
+button.primary,
+.action-button.primary,
+.tab-button.active {
+  background: linear-gradient(135deg, #FF6900 0%, #FF5500 100%);
+  color: white !important;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(255, 85, 0, 0.15);
+}
+
+.menu-item.primary:hover,
+button.primary:hover,
+.action-button.primary:hover {
+  background: linear-gradient(135deg, #FF5500 0%, #FF4400 100%);
+  color: white !important;
+  box-shadow: 0 3px 6px rgba(255, 85, 0, 0.2);
+}
+
+/* Ensure primary button icons are white */
+.menu-item.primary .item-icon,
+.menu-item.primary .item-label,
+button.primary svg,
+.action-button.primary svg,
+.tab-button.active svg {
+  color: white !important;
+}
+
+/* Secondary button styles - Light background with DARK text */
+.menu-item.secondary,
+button.secondary,
+.action-button.secondary,
+.settings-trigger:not(.active),
+.tab-button:not(.active) {
+  background: var(--card-background, #ffffff);
+  color: #1a1a1a !important; /* Dark text for maximum readability */
+  border: 1px solid var(--border-color, #d0d7de);
+  font-weight: 500;
+}
+
+.menu-item.secondary:hover,
+button.secondary:hover,
+.action-button.secondary:hover,
+.settings-trigger:not(.active):hover,
+.tab-button:not(.active):hover {
+  background: var(--hover-background, #f3f4f6);
+  color: #000000 !important; /* Pure black on hover */
+  border-color: var(--hover-border, #8b949e);
+}
+
+/* Ensure secondary button icons follow text color */
+.menu-item.secondary .item-icon,
+.menu-item.secondary .item-label,
+button.secondary svg,
+.action-button.secondary svg,
+.settings-trigger:not(.active) svg,
+.tab-button:not(.active) svg {
+  color: #1a1a1a !important; /* Force dark color for all secondary icons and text */
+}
+
+.item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit !important;
+}
+
+.item-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #FF6900;
+  color: white;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.menu-item.active .item-badge {
+  background: white;
+  color: #FF6900;
+}
+
+.item-indicator {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  background: #FF6900; /* Keep orange indicator bar */
+  border-radius: 0 3px 3px 0;
+}
+
+/* Menu Divider */
+.menu-divider {
+  height: 1px;
+  background: var(--border-color, #e1e4e8);
+  margin: 0.5rem 0;
+}
+
+/* Backdrop */
+.dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1); /* Slight tint for better UX */
+  z-index: 999998; /* Just below dropdown */
+  pointer-events: auto; /* Ensure it captures clicks */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+/* Animations - Remove transform animations to prevent layout shift */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive Breakpoints */
+
+/* Show on tablets in portrait mode */
+/* Show ResponsivePageSettings on mobile and high zoom levels */
+@media (max-width: 968px), 
+       (min-resolution: 125dpi), 
+       (min-resolution: 1.25dppx),
+       (-webkit-min-device-pixel-ratio: 1.25) {
+  .responsive-page-settings {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+}
+
+/* Higher zoom levels */
+@media (min-resolution: 150dpi), 
+       (min-resolution: 1.5dppx),
+       (-webkit-min-device-pixel-ratio: 1.5) {
+  .responsive-page-settings {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+}
+
+@media (min-resolution: 200dpi), 
+       (min-resolution: 2dppx),
+       (-webkit-min-device-pixel-ratio: 2) {
+  .responsive-page-settings {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+}
+
+/* Optimize for mobile */
+@media (max-width: 768px) {
+  .settings-trigger {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    touch-action: manipulation; /* Prevent double-tap zoom */
+    user-select: none; /* Prevent text selection */
+  }
+  
+  .settings-dropdown {
+    position: fixed !important; /* Use fixed for better mobile positioning */
+    animation: slideIn 0.15s ease-out; /* Faster, simpler animation */
+    border-radius: 12px; /* Consistent border radius */
+    max-width: 90vw !important;
+    min-width: 260px !important;
+    transform: none !important; /* Remove any transform that might cause glitches */
+    -webkit-transform: none !important;
+    contain: layout style paint; /* Prevent layout recalculation */
+  }
+  
+  .dropdown-content {
+    padding-bottom: env(safe-area-inset-bottom, 20px); /* Account for iPhone safe area */
+    max-height: 60vh; /* Limit height on mobile */
+    overflow-y: auto;
+  }
+  
+  /* Better touch targets for mobile */
+  .menu-item {
+    min-height: 44px; /* iOS recommended touch target size */
+    padding: 0.75rem 1rem;
+  }
+  
+  .dropdown-header .close-btn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .settings-trigger {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+    gap: 0.375rem;
+  }
+  
+  .settings-trigger svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .settings-dropdown {
+    max-width: calc(100vw - 40px) !important;
+    border-radius: 12px; /* Keep consistent radius */
+  }
+  
+  .dropdown-header {
+    padding: 0.75rem 0.875rem;
+    position: sticky;
+    top: 0;
+    background: var(--secondary-background, #f6f8fa);
+    z-index: 10;
+  }
+  
+  .dropdown-header h3 {
+    font-size: 0.8125rem;
+  }
+  
+  .menu-item {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8125rem;
+    min-height: 44px;
+  }
+  
+  .item-badge {
+    font-size: 0.625rem;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+  }
+}
+
+/* Remove slideUp animation - using slideIn for all */
+/* slideIn animation handles all cases properly */
+
+/* Dark theme support */
+[data-theme="dark"] .settings-trigger {
+  background: var(--card-background, #0d1117);
+  color: var(--text-primary, #c9d1d9);
+  border-color: var(--border-color, #30363d);
+}
+
+[data-theme="dark"] .settings-trigger:hover {
+  background: var(--hover-background, #21262d);
+  border-color: var(--hover-border, #8b949e);
+}
+
+[data-theme="dark"] .settings-trigger:active,
+[data-theme="dark"] .settings-trigger.active {
+  background: #FF6900;
+  color: white;
+  border-color: #FF6900;
+}
+
+[data-theme="dark"] .settings-dropdown {
+  background: var(--card-background, #0d1117);
+  border-color: var(--border-color, #30363d);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .dropdown-header {
+  background: var(--secondary-background, #161b22);
+  border-bottom-color: var(--border-color, #30363d);
+}
+
+[data-theme="dark"] .dropdown-header h3 {
+  color: var(--text-primary, #c9d1d9);
+}
+
+[data-theme="dark"] .dropdown-header .close-btn {
+  color: var(--text-secondary, #8b949e);
+}
+
+[data-theme="dark"] .dropdown-header .close-btn:hover {
+  background: var(--hover-background, #21262d);
+  color: var(--text-primary, #c9d1d9);
+}
+
+[data-theme="dark"] .menu-item {
+  color: #c9d1d9 !important; /* Light text for dark mode */
+}
+
+[data-theme="dark"] .menu-item:hover {
+  background: var(--hover-background, #21262d);
+}
+
+[data-theme="dark"] .menu-item.active {
+  background: rgba(255, 105, 0, 0.15);
+  color: #ffffff !important; /* White text for active items in dark mode */
+}
+
+[data-theme="dark"] .menu-item.secondary {
+  color: #8b949e !important; /* Muted text for secondary in dark mode */
+}
+
+[data-theme="dark"] .menu-divider {
+  background: var(--border-color, #30363d);
+}
+
+/* Browser zoom support - detect zoom levels */
+@media (min-resolution: 120dpi), (min-resolution: 1.25dppx), (min-zoom: 1.25), (-webkit-min-device-pixel-ratio: 1.25) {
+  .responsive-page-settings {
+    display: block !important;
+  }
+}
+
+@media (min-resolution: 144dpi), (min-resolution: 1.5dppx), (min-zoom: 1.5), (-webkit-min-device-pixel-ratio: 1.5) {
+  .settings-trigger {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  .settings-dropdown {
+    min-width: 240px;
+  }
+}
+
+@media (min-resolution: 192dpi), (min-resolution: 2dppx), (min-zoom: 2), (-webkit-min-device-pixel-ratio: 2) {
+  /* High zoom styles if needed */
+}
+
+/* Ensure proper positioning to avoid overlap with side menu */
+.page-content .responsive-page-settings {
+  margin-left: 0.5rem;
+  z-index: 900; /* Below dropdown but above content */
+}
+
+/* Position adjustments for different layouts */
+.enterprise-header .responsive-page-settings {
+  margin-left: auto;
+  margin-right: 0.5rem;
+}
+
+/* Ensure dropdown works on desktop too */
+@media (min-width: 969px) {
+  .responsive-page-settings {
+    display: block !important;
+  }
+  
+  .settings-dropdown {
+    position: fixed !important;
+  }
+}
+
+/* Force dropdown to be visible when open */
+.responsive-page-settings .settings-dropdown {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  .settings-dropdown {
+    -webkit-backface-visibility: hidden; /* Fix rendering issues */
+    -webkit-transform: translateZ(0); /* Force GPU acceleration without position changes */
+  }
+  
+  .dropdown-content {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Ensure dropdown is visible during zoom */
+html {
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+body {
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .settings-dropdown {
+    border-width: 2px;
+  }
+  
+  .menu-item {
+    border: 1px solid transparent;
+  }
+  
+  .menu-item:focus {
+    border-color: currentColor;
+  }
+}
+
+/* Global button text color fixes for readability */
+.action-button:not(.primary),
+.tab-button:not(.active),
+button:not(.primary):not([class*="active"]) {
+  color: #1a1a1a !important;
+}
+
+.action-button:not(.primary):hover,
+.tab-button:not(.active):hover,
+button:not(.primary):not([class*="active"]):hover {
+  color: #000000 !important;
+}
+
+/* Ensure icon colors follow text colors */
+.action-button:not(.primary) svg,
+.tab-button:not(.active) svg,
+button:not(.primary):not([class*="active"]) svg {
+  color: #1a1a1a !important;
+}
+
+/* Fix for light/secondary themed buttons - ensure dark text */
+[class*="light"],
+[class*="secondary"],
+.menu-item:not(.primary):not(.active) {
+  color: #1a1a1a !important;
+}
+
+[class*="light"]:hover,
+[class*="secondary"]:hover,
+.menu-item:not(.primary):not(.active):hover {
+  color: #000000 !important;
+}
+
+/* Ensure all non-primary buttons in dropdown have dark text */
+.settings-dropdown .menu-item:not(.primary) {
+  color: #1a1a1a !important;
+}
+
+.settings-dropdown .menu-item:not(.primary) * {
+  color: inherit !important;
+}
