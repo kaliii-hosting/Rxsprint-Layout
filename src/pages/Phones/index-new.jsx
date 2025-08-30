@@ -391,64 +391,43 @@ const Phones = () => {
       <div className="content-area">
         {/* Contacts List */}
         {!showAddContact && (!selectedContact || deviceMode !== 'mobile') && (
-          <>
-            <div className={`contacts-list ${deviceMode}`}>
-              {loading ? (
-                <div className="loading-state">
-                  <div className="spinner" />
-                  <span>Loading...</span>
-                </div>
-              ) : Object.keys(groupedContacts).length === 0 ? (
-                <div className="empty-state">
-                  <User size={60} strokeWidth={1} />
-                  <h3>No Contacts</h3>
-                  <p>Tap + to add your first contact</p>
-                </div>
-              ) : (
-                <div className="contacts-scroll">
-                  {Object.keys(groupedContacts).sort().map(letter => (
-                    <div key={letter} className="contact-section" id={`section-${letter}`}>
-                      <div className="section-header">{letter}</div>
-                      {groupedContacts[letter].map((contact, index) => (
-                        <div
-                          key={contact.id}
-                          className={`contact-row ${index === groupedContacts[letter].length - 1 ? 'last' : ''}`}
-                          onClick={() => setSelectedContact(contact)}
-                        >
-                          <div className="contact-content">
-                            {contact.favorite && <Star size={14} className="favorite-icon" fill="currentColor" />}
-                            <span className="contact-name">
-                              {contact.name || `${contact.firstName || ''} ${contact.lastName || ''}`.trim()}
-                            </span>
-                          </div>
-                          <ChevronRight size={16} className="chevron" />
+          <div className={`contacts-list ${deviceMode}`}>
+            {loading ? (
+              <div className="loading-state">
+                <div className="spinner" />
+                <span>Loading...</span>
+              </div>
+            ) : Object.keys(groupedContacts).length === 0 ? (
+              <div className="empty-state">
+                <User size={60} strokeWidth={1} />
+                <h3>No Contacts</h3>
+                <p>Tap + to add your first contact</p>
+              </div>
+            ) : (
+              <div className="contacts-scroll">
+                {Object.keys(groupedContacts).sort().map(letter => (
+                  <div key={letter} className="contact-section">
+                    <div className="section-header">{letter}</div>
+                    {groupedContacts[letter].map((contact, index) => (
+                      <div
+                        key={contact.id}
+                        className={`contact-row ${index === groupedContacts[letter].length - 1 ? 'last' : ''}`}
+                        onClick={() => setSelectedContact(contact)}
+                      >
+                        <div className="contact-content">
+                          {contact.favorite && <Star size={14} className="favorite-icon" fill="currentColor" />}
+                          <span className="contact-name">
+                            {contact.name || `${contact.firstName || ''} ${contact.lastName || ''}`.trim()}
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            {/* Alphabet Navigation */}
-            {Object.keys(groupedContacts).length > 0 && (
-              <div className="alphabet-navigation">
-                {'ABCDEFGHIJKLMNOPQRSTUVWXYZ#'.split('').map(letter => (
-                  <div
-                    key={letter}
-                    className={`alphabet-letter ${groupedContacts[letter] ? '' : 'disabled'}`}
-                    onClick={() => {
-                      if (groupedContacts[letter]) {
-                        document.getElementById(`section-${letter}`)?.scrollIntoView({ behavior: 'smooth' });
-                      }
-                    }}
-                  >
-                    {letter}
+                        <ChevronRight size={16} className="chevron" />
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
 
         {/* Contact View */}
@@ -472,6 +451,32 @@ const Phones = () => {
               )}
             </div>
 
+            <div className="contact-actions">
+              <button className="action-btn">
+                <div className="action-icon">
+                  <MessageSquare size={20} />
+                </div>
+                <span>message</span>
+              </button>
+              <button className="action-btn" onClick={() => window.location.href = `tel:${selectedContact.phones?.[0]?.value || selectedContact.phone}`}>
+                <div className="action-icon">
+                  <Phone size={20} />
+                </div>
+                <span>call</span>
+              </button>
+              <button className="action-btn">
+                <div className="action-icon">
+                  <Video size={20} />
+                </div>
+                <span>video</span>
+              </button>
+              <button className="action-btn" onClick={() => window.location.href = `mailto:${selectedContact.emails?.[0]?.value || selectedContact.email}`}>
+                <div className="action-icon">
+                  <Mail size={20} />
+                </div>
+                <span>mail</span>
+              </button>
+            </div>
 
             <div className="contact-details">
               {/* Phone Numbers */}

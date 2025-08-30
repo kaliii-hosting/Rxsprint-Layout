@@ -5,34 +5,9 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: #f2f2f7;
+  background: var(--background, #f2f2f7);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
   overflow: hidden;
-  
-  /* Force Light Theme */
-  --background: #f2f2f7;
-  --header-bg: #f8f8f8;
-  --card-bg: #ffffff;
-  --content-bg: #ffffff;
-  --form-bg: #f2f2f7;
-  --view-bg: #f2f2f7;
-  --section-header-bg: #f2f2f7;
-  --row-bg: #ffffff;
-  --row-active: #d1d1d6;
-  --search-bg: rgba(142, 142, 147, 0.12);
-  --search-focus: rgba(142, 142, 147, 0.24);
-  --photo-bg: #e1e1e6;
-  --text-primary: #000000;
-  --text-secondary: #8e8e93;
-  --text-tertiary: #c7c7cc;
-  --text-disabled: #c7c7cc;
-  --border-color: rgba(0, 0, 0, 0.1);
-  --link-color: #007AFF;
-  --danger: #FF3B30;
-  --warning: #FFD60A;
-  --button-bg: #f0f0f0;
-  --button-hover: #e0e0e0;
-  --search-container-bg: #f8f8f8;
 }
 
 /* ============= Mobile Header (iOS Style) ============= */
@@ -443,6 +418,48 @@
   margin: 0;
 }
 
+/* Contact Actions */
+.contact-actions {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding: 16px;
+  background: var(--card-bg, #ffffff);
+  border-bottom: 0.5px solid var(--border-color, #e1e1e6);
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.action-btn:active {
+  opacity: 0.6;
+}
+
+.action-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--link-color, #007AFF);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.action-btn span {
+  font-size: 11px;
+  color: var(--link-color, #007AFF);
+}
+
 /* Contact Details */
 .contact-details {
   padding: 0;
@@ -450,13 +467,9 @@
 
 .detail-section {
   background: var(--card-bg, #ffffff);
-  margin-top: 20px;
+  margin-top: 35px;
   border-top: 0.5px solid var(--border-color, #e1e1e6);
   border-bottom: 0.5px solid var(--border-color, #e1e1e6);
-}
-
-.detail-section:first-child {
-  margin-top: 0;
 }
 
 .detail-row {
@@ -730,52 +743,31 @@
   transform: rotate(180deg);
 }
 
-/* Alphabet Navigation */
-.alphabet-navigation {
-  position: fixed;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  z-index: 100;
-  padding: 4px 0;
-}
-
-.alphabet-letter {
-  padding: 1px 6px;
-  font-size: 11px;
-  font-weight: 500;
-  color: #007AFF;
-  cursor: pointer;
-  text-align: center;
-  line-height: 1.2;
-  transition: opacity 0.2s;
-}
-
-.alphabet-letter:active {
-  opacity: 0.6;
-}
-
-.alphabet-letter.disabled {
-  color: #c7c7cc;
-  cursor: default;
-}
-
-/* Adjust content area for alphabet nav */
-.contacts-list.mobile {
-  padding-right: 24px;
-}
-
-@media (min-width: 769px) {
-  .alphabet-navigation {
-    right: 8px;
-  }
-  
-  .alphabet-letter {
-    padding: 2px 8px;
-    font-size: 13px;
+/* ============= Dark Mode Support ============= */
+@media (prefers-color-scheme: dark) {
+  .phones-page {
+    --background: #000000;
+    --header-bg: #1c1c1e;
+    --card-bg: #1c1c1e;
+    --content-bg: #000000;
+    --form-bg: #000000;
+    --view-bg: #000000;
+    --section-header-bg: #000000;
+    --row-bg: #1c1c1e;
+    --row-active: #2c2c2e;
+    --search-bg: rgba(142, 142, 147, 0.24);
+    --search-focus: rgba(142, 142, 147, 0.36);
+    --photo-bg: #2c2c2e;
+    --text-primary: #ffffff;
+    --text-secondary: #8e8e93;
+    --text-tertiary: #48484a;
+    --text-disabled: #48484a;
+    --border-color: rgba(255, 255, 255, 0.15);
+    --link-color: #0A84FF;
+    --danger: #FF453A;
+    --warning: #FFD60A;
+    --button-bg: #2c2c2e;
+    --button-hover: #3a3a3c;
   }
 }
 
