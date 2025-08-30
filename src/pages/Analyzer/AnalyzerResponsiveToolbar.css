@@ -77,13 +77,34 @@
 
 /* Active segment with orange color */
 .analyzer-page .toggle-segment.active {
-  background: #ff5500;
-  color: white;
+  background: #ff5500 !important;
+  color: white !important;
   box-shadow: 0 1px 3px rgba(255, 85, 0, 0.2);
 }
 
+.analyzer-page .toggle-segment.active span {
+  color: white !important;
+}
+
+.analyzer-page .toggle-segment.active svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
 .analyzer-page .toggle-segment.active:hover {
-  background: #e64a00;
+  background: #e64a00 !important;
+  color: white !important;
+}
+
+.analyzer-page .toggle-segment.active:hover span {
+  color: white !important;
+}
+
+.analyzer-page .toggle-segment.active:hover svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
 }
 
 /* Icon styling */

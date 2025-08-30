@@ -54,6 +54,7 @@ import { exportWorkflowToPDF } from './ExportPDFEnhanced';
 import { exportWorkflowToPDFWithScreenshots } from './ExportPDFWithScreenshot';
 import { exportWorkflowToPDFReliable } from './ExportPDFReliable';
 import { exportWorkflowToPDFProfessional } from './ExportPDFProfessional';
+import { ActionButton, ActionGroup } from '../../components/EnterpriseHeader/EnterpriseHeader.jsx';
 
 const Workflow = () => {
   const { theme } = useTheme();

@@ -20,6 +20,7 @@ import Pump from './pages/Pump'
 import Supplies from './pages/Supplies'
 import Notes from './pages/Notes'
 import Analyzer from './pages/Analyzer'
+import Phones from './pages/Phones'
 import BookmarkManager from './pages/BookmarkManager'
 import Board from './pages/Board'
 import Terminal from './pages/Terminal'
@@ -55,6 +56,7 @@ function AppContent() {
                 {/* Shop route removed */}
                 <Route path="/notes" element={<Notes />} />
                 <Route path="/analyzer" element={<Analyzer />} />
+                <Route path="/phones" element={<Phones />} />
                 <Route path="/bookmark-manager" element={<BookmarkManager />} />
                 <Route path="/board" element={<Board />} />
                 <Route path="/terminal" element={<Terminal />} />

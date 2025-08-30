@@ -485,25 +485,27 @@ const Calendar = () => {
 
   return (
     <div className={`calendar-page page-container ${isCreating ? 'is-creating' : ''}`}>
-      {/* Responsive Toolbar - Same style as Medications page */}
+      {/* Responsive Toolbar - Notes page style */}
       <div className={`board-toolbar board-toolbar-${deviceMode}`}>
-        {/* Navigation Section */}
+        {/* Title Section */}
         <div className="toolbar-section">
-          <button className="tool-button" onClick={() => navigate(-1)} title="Previous month">
-            <ChevronLeft size={deviceMode === 'mobile' ? 18 : 20} />
-          </button>
-          <div className="calendar-month-display">
-            <CalendarIcon size={deviceMode === 'mobile' ? 16 : 18} />
-            <span>
-              {deviceMode === 'mobile' 
-                ? `${monthNames[currentDate.getMonth()].slice(0, 3)} ${currentDate.getFullYear()}`
-                : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
-              }
-            </span>
+          <div className="calendar-title-section">
+            <button className="tool-button" onClick={() => navigate(-1)} title="Previous month">
+              <ChevronLeft size={deviceMode === 'mobile' ? 18 : 20} />
+            </button>
+            <div className="calendar-month-display">
+              <CalendarIcon size={deviceMode === 'mobile' ? 16 : 18} />
+              <h2>
+                {deviceMode === 'mobile' 
+                  ? `${monthNames[currentDate.getMonth()].slice(0, 3)} ${currentDate.getFullYear()}`
+                  : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
+                }
+              </h2>
+            </div>
+            <button className="tool-button" onClick={() => navigate(1)} title="Next month">
+              <ChevronRight size={deviceMode === 'mobile' ? 18 : 20} />
+            </button>
           </div>
-          <button className="tool-button" onClick={() => navigate(1)} title="Next month">
-            <ChevronRight size={deviceMode === 'mobile' ? 18 : 20} />
-          </button>
         </div>
         
         {/* Actions Section */}
@@ -646,7 +648,7 @@ const Calendar = () => {
                         setIsCreating(true);
                       }}>
                         <Plus size={16} />
-                        Add Event
+                        <span>Add Event</span>
                       </button>
                     </div>
                   ) : (

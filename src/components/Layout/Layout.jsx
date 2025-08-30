@@ -19,7 +19,8 @@ import {
   Palette,
   Terminal,
   Brain,
-  Clock
+  Clock,
+  Phone
 } from 'lucide-react';
 import { useCalculator } from '../../contexts/CalculatorContext';
 import { useSearch } from '../../contexts/SearchContext';
@@ -84,6 +85,7 @@ const Layout = ({ children }) => {
     { path: '/supplies', icon: Package, label: 'Supplies' },
     { path: '/notes', icon: StickyNote, label: 'Notes' },
     { path: '/analyzer', icon: ScanLine, label: 'Analyzer' },
+    { path: '/phones', icon: Phone, label: 'Phones' },
     { path: '/bookmark-manager', icon: Bookmark, label: 'Bookmarks' },
     { path: '/board', icon: Palette, label: 'Board' }
   ];

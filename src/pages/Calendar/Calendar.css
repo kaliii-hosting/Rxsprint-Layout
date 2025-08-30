@@ -109,11 +109,27 @@
   background: var(--calendar-primary, #FF6900);
   color: white;
   border-color: var(--calendar-primary, #FF6900);
+  font-weight: 600;
 }
 
 .tool-button.accent:hover {
   background: #E55A00;
   border-color: #E55A00;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 105, 0, 0.3);
+}
+
+.tool-button.accent span {
+  margin-left: 0.25rem;
+}
+
+.tool-button.icon-only {
+  padding: 0.5rem;
+  min-width: unset;
+}
+
+.tool-button.icon-only svg {
+  margin: 0;
 }
 
 .toolbar-section {
@@ -126,20 +142,42 @@
   margin-left: auto;
 }
 
-/* Calendar Month Display */
+/* Calendar Title Section - Notes page style */
+.calendar-title-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .calendar-month-display {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
-  background: var(--bg-tertiary, #f6f8fa);
-  border-radius: 6px;
+  padding: 0 0.5rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
+.calendar-month-display h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
 .calendar-month-display svg {
   color: var(--calendar-primary);
+  flex-shrink: 0;
+}
+
+/* Mobile adjustments */
+.board-toolbar-mobile .calendar-month-display h2 {
+  font-size: 1rem;
+}
+
+.board-toolbar-tablet .calendar-month-display h2 {
+  font-size: 1.0625rem;
 }
 
 /* Remove old calendar date navigation styles - now using toolbar */
@@ -434,20 +472,28 @@
 .btn-add-event {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.375rem;
   padding: 0.5rem 1rem;
   background: var(--calendar-primary);
   color: white;
   border: none;
   border-radius: 6px;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
+.btn-add-event svg {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
 .btn-add-event:hover {
   background: #e55a00;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 105, 0, 0.3);
 }
 
 /* Modern Event Items */
