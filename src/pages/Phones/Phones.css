@@ -139,6 +139,81 @@
   opacity: 0.8;
 }
 
+/* iPhone-style Search Bar */
+.search-section {
+  flex: 1;
+  max-width: 400px;
+  margin: 0 1rem;
+}
+
+.iphone-search-bar {
+  position: relative;
+  width: 100%;
+}
+
+.iphone-search-bar .search-input {
+  width: 100%;
+  padding: 0.5rem 2rem 0.5rem 2rem;
+  background: var(--search-bg, #f0f0f0);
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  color: var(--text-primary, #000);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.iphone-search-bar .search-input::placeholder {
+  color: var(--text-secondary, #8e8e93);
+}
+
+.iphone-search-bar .search-input:focus {
+  background: var(--search-focus-bg, #e8e8e8);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.iphone-search-bar .search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary, #8e8e93);
+  pointer-events: none;
+}
+
+.iphone-search-bar .clear-search {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--text-secondary, #c7c7cc);
+  border: none;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.iphone-search-bar .clear-search:hover {
+  background: var(--text-secondary-hover, #a8a8ac);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.iphone-search-bar .clear-search:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
 /* Tool Button Styles (matching Medications) */
 .tool-button {
   display: flex;
@@ -477,9 +552,11 @@
   padding: 24px;
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
+  max-height: calc(100vh - 400px);
 }
 
 .detail-item {
@@ -487,6 +564,9 @@
   align-items: flex-start;
   padding: 16px;
   background: #f9f9fb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
   border-radius: 8px;
   border: 1px solid #e5e5ea;
   gap: 12px;
@@ -497,6 +577,42 @@
   background: white;
   border-color: #FF6900;
   box-shadow: 0 2px 8px rgba(255, 105, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.detail-item:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(255, 105, 0, 0.2);
+}
+
+/* Copy notification */
+.copy-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #10b981;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10000;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .detail-item svg {
@@ -1243,7 +1359,7 @@
   color: white;
 }
 
-/* Alphabet Navigation */
+/* Alphabet Navigation - Fixed to span full height */
 .alphabet-nav {
   width: 30px;
   background: #f6f6f6;
@@ -1252,25 +1368,42 @@
   flex-direction: column;
   align-items: center;
   padding: 8px 0;
-  overflow-y: auto;
+  overflow-y: hidden;
+  justify-content: space-between;
+  height: 100%;
 }
 
 .nav-letter {
   font-size: 11px;
   color: #c7c7cc;
-  padding: 1px 0;
+  padding: 2px 4px;
   cursor: pointer;
   user-select: none;
-  transition: color 0.2s;
+  transition: all 0.2s;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
 }
 
 .nav-letter.active {
   color: #FF6900;
   font-weight: 600;
+  background: rgba(255, 105, 0, 0.1);
+}
+
+.nav-letter.selected {
+  background: #FF6900;
+  color: white;
+  font-weight: 600;
+  border-radius: 4px;
 }
 
 .nav-letter:hover {
   color: #FF6900;
+  background: rgba(255, 105, 0, 0.05);
 }
 
 /* Context Menu */
@@ -1310,6 +1443,192 @@
   margin: 4px 0;
 }
 
+/* Group Management Styles */
+.group-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.group-item:hover {
+  background: rgba(255, 105, 0, 0.05);
+}
+
+.group-item.active {
+  background: rgba(255, 105, 0, 0.1);
+  color: #FF6900;
+  font-weight: 500;
+}
+
+.group-actions {
+  display: none;
+  gap: 4px;
+}
+
+.group-item:hover .group-actions {
+  display: flex;
+}
+
+.group-action-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #8e8e93;
+  transition: color 0.2s;
+  border-radius: 4px;
+}
+
+.group-action-btn:hover {
+  color: #FF6900;
+  background: rgba(255, 105, 0, 0.1);
+}
+
+/* Groups Selection in Form */
+.groups-selection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.groups-selection .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px 12px;
+  background: #f2f2f7;
+  border-radius: 16px;
+  transition: all 0.2s;
+}
+
+.groups-selection .checkbox-label:hover {
+  background: #e5e5ea;
+}
+
+.groups-selection input[type="checkbox"] {
+  margin: 0;
+}
+
+.groups-selection input[type="checkbox"]:checked + span {
+  color: #FF6900;
+  font-weight: 500;
+}
+
+/* Group Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.group-modal {
+  background: white;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.group-modal .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.group-modal .modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.group-modal .close-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #8e8e93;
+  transition: color 0.2s;
+}
+
+.group-modal .close-btn:hover {
+  color: #000;
+}
+
+.group-modal .modal-body {
+  padding: 20px;
+}
+
+.group-modal .modal-body input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.group-modal .modal-body input:focus {
+  outline: none;
+  border-color: #FF6900;
+}
+
+.group-modal .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.group-modal .btn-secondary,
+.group-modal .btn-primary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.group-modal .btn-secondary {
+  background: #f2f2f7;
+  color: #000;
+}
+
+.group-modal .btn-secondary:hover {
+  background: #e5e5ea;
+}
+
+.group-modal .btn-primary {
+  background: #FF6900;
+  color: white;
+}
+
+.group-modal .btn-primary:hover {
+  background: #e55d00;
+}
+
+.group-modal .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .groups-sidebar {
@@ -1319,6 +1638,12 @@
   .alphabet-nav {
     width: 20px;
     font-size: 10px;
+    padding: 4px 0;
+  }
+  
+  .nav-letter {
+    font-size: 9px;
+    padding: 1px 2px;
   }
   
   .apple-contacts-container {

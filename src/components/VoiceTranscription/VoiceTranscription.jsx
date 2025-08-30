@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Mic } from 'lucide-react';
 import gsap from 'gsap';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { storage, firestore } from '../../config/firebase';
+import { firestore } from '../../config/firebase';
 import { useNavigate } from 'react-router-dom';
 import ConfirmationPopup from '../ConfirmationPopup/ConfirmationPopup';
 import './VoiceTranscription.css';
@@ -231,25 +230,27 @@ const VoiceTranscription = ({ isOpen, onClose }) => {
       // Calculate duration
       const duration = Math.floor((Date.now() - recordingStartTimeRef.current) / 1000);
       
-      let audioUrl = null;
-      let fileName = null;
+      let audioBase64 = null;
       
-      // Try to upload audio to Firebase Storage
+      // Convert audio to base64 string to store directly in Firestore
       try {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        fileName = `voice-notes/audio_${timestamp}.webm`;
-        const storageRef = ref(storage, fileName);
         
-        const snapshot = await uploadBytes(storageRef, audioBlob);
-        audioUrl = await getDownloadURL(snapshot.ref);
-        console.log('Audio uploaded successfully');
-      } catch (storageError) {
-        console.error('Error uploading audio to storage:', storageError);
-        // Continue without audio URL - just save the transcription
+        // Convert blob to base64
+        const reader = new FileReader();
+        audioBase64 = await new Promise((resolve, reject) => {
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(audioBlob);
+        });
+        
+        console.log('Audio converted to base64 successfully');
+      } catch (conversionError) {
+        console.error('Error converting audio to base64:', conversionError);
+        // Continue without audio - just save the transcription
       }
       
-      // Save transcription to Firestore (with or without audio)
+      // Save transcription and audio to Firestore
       const notesRef = collection(firestore, 'notes');
       const noteData = {
         title: `Voice Note - ${new Date().toLocaleString()}`,
@@ -260,10 +261,10 @@ const VoiceTranscription = ({ isOpen, onClose }) => {
         updatedAt: serverTimestamp()
       };
       
-      // Only add audio fields if upload was successful
-      if (audioUrl) {
-        noteData.audioUrl = audioUrl;
-        noteData.fileName = fileName;
+      // Add audio data if conversion was successful
+      if (audioBase64) {
+        noteData.audioData = audioBase64;
+        noteData.audioType = 'audio/webm';
       }
       
       const docRef = await addDoc(notesRef, noteData);

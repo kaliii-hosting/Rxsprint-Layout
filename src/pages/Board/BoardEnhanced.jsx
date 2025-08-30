@@ -177,12 +177,19 @@ const BoardEnhanced = () => {
                 zIndex: screenshots.length
               };
               
+              // Pre-cache the image for immediate rendering
+              imageCache.current.set(newScreenshot.id, img);
+              
               setScreenshots(prev => [...prev, newScreenshot]);
               setSelectedScreenshot(newScreenshot);
               setCurrentTool('move'); // Auto-switch to move tool
               
-              // Force immediate redraw
-              setTimeout(() => redrawCanvas(), 0);
+              // Force immediate redraw - multiple frames to ensure visibility
+              requestAnimationFrame(() => {
+                redrawCanvas();
+                // Double-tap redraw to ensure image appears
+                requestAnimationFrame(() => redrawCanvas());
+              });
               
               // Save to history
               saveToHistory();
@@ -198,7 +205,7 @@ const BoardEnhanced = () => {
 
     document.addEventListener('paste', handlePaste);
     return () => document.removeEventListener('paste', handlePaste);
-  }, [screenshots]);
+  }, [screenshots, redrawCanvas, saveToHistory]);
 
   // Save to history
   const saveToHistory = useCallback(() => {
@@ -280,10 +287,9 @@ const BoardEnhanced = () => {
           
           // Draw resize handles
           if (currentTool === 'resize') {
-            const handleSize = 8 / zoom;
-            ctx.fillStyle = '#0066ff';
+            const handleSize = Math.max(12 / zoom, 8); // Minimum 8px visual size
             
-            // Corner handles
+            // Corner handles with better visibility
             const handles = [
               { x: screenshot.x, y: screenshot.y }, // top-left
               { x: screenshot.x + screenshot.width, y: screenshot.y }, // top-right
@@ -291,13 +297,28 @@ const BoardEnhanced = () => {
               { x: screenshot.x + screenshot.width, y: screenshot.y + screenshot.height } // bottom-right
             ];
             
-            handles.forEach(handle => {
+            handles.forEach((handle, index) => {
+              // White background for contrast
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(
+                handle.x - handleSize / 2 - 1,
+                handle.y - handleSize / 2 - 1,
+                handleSize + 2,
+                handleSize + 2
+              );
+              
+              // Blue handle
+              ctx.fillStyle = '#0066ff';
               ctx.fillRect(
                 handle.x - handleSize / 2,
                 handle.y - handleSize / 2,
                 handleSize,
                 handleSize
               );
+              
+              // Add hover cursor hint
+              const cursorTypes = ['nw-resize', 'ne-resize', 'sw-resize', 'se-resize'];
+              ctx.canvas.style.cursor = isResizing ? cursorTypes[index] : 'default';
             });
           }
         }
@@ -396,7 +417,8 @@ const BoardEnhanced = () => {
           });
         } else if (currentTool === 'resize') {
           // Determine which resize handle was clicked
-          const handleSize = 20;
+          // Make handle size larger and account for zoom level
+          const handleSize = Math.max(30, 20 / zoom); // Bigger click area, minimum 30px
           const handles = [
             { type: 'nw', x: clickedScreenshot.x, y: clickedScreenshot.y },
             { type: 'ne', x: clickedScreenshot.x + clickedScreenshot.width, y: clickedScreenshot.y },
@@ -413,6 +435,13 @@ const BoardEnhanced = () => {
             setIsResizing(true);
             setResizeHandle(clickedHandle.type);
             setDragStart(pos);
+          } else {
+            // If no handle clicked, but clicked on screenshot, start dragging instead
+            setIsDragging(true);
+            setDragStart({
+              x: pos.x - clickedScreenshot.x,
+              y: pos.y - clickedScreenshot.y
+            });
           }
         }
       } else {
@@ -426,6 +455,33 @@ const BoardEnhanced = () => {
 
   const handlePointerMove = useCallback((e) => {
     const pos = getCanvasPosition(e);
+    
+    // Update cursor for resize handles when hovering
+    if (currentTool === 'resize' && selectedScreenshot && !isResizing && !isDragging) {
+      const handleSize = Math.max(30, 20 / zoom);
+      const handles = [
+        { type: 'nw', x: selectedScreenshot.x, y: selectedScreenshot.y, cursor: 'nw-resize' },
+        { type: 'ne', x: selectedScreenshot.x + selectedScreenshot.width, y: selectedScreenshot.y, cursor: 'ne-resize' },
+        { type: 'sw', x: selectedScreenshot.x, y: selectedScreenshot.y + selectedScreenshot.height, cursor: 'sw-resize' },
+        { type: 'se', x: selectedScreenshot.x + selectedScreenshot.width, y: selectedScreenshot.y + selectedScreenshot.height, cursor: 'se-resize' }
+      ];
+      
+      const hoveredHandle = handles.find(h => 
+        Math.abs(pos.x - h.x) < handleSize && 
+        Math.abs(pos.y - h.y) < handleSize
+      );
+      
+      if (hoveredHandle) {
+        canvasRef.current.style.cursor = hoveredHandle.cursor;
+      } else if (pos.x >= selectedScreenshot.x && 
+                 pos.x <= selectedScreenshot.x + selectedScreenshot.width && 
+                 pos.y >= selectedScreenshot.y && 
+                 pos.y <= selectedScreenshot.y + selectedScreenshot.height) {
+        canvasRef.current.style.cursor = 'move';
+      } else {
+        canvasRef.current.style.cursor = 'crosshair';
+      }
+    }
     
     if (isDragging && selectedScreenshot) {
       // Update screenshot position
@@ -472,7 +528,7 @@ const BoardEnhanced = () => {
     } else if (isDrawing) {
       setCurrentPath(prev => [...prev, pos]);
     }
-  }, [isDragging, isResizing, isDrawing, selectedScreenshot, dragStart, resizeHandle, getCanvasPosition]);
+  }, [isDragging, isResizing, isDrawing, selectedScreenshot, dragStart, resizeHandle, getCanvasPosition, currentTool, zoom]);
 
   const handlePointerUp = useCallback(() => {
     if (isDrawing && currentPath.length > 1) {
@@ -729,7 +785,7 @@ const BoardEnhanced = () => {
       <div 
         ref={containerRef}
         className="board-container"
-        style={{ cursor: currentTool === 'move' ? 'grab' : 'crosshair' }}
+        style={{ cursor: currentTool === 'move' ? (isDragging ? 'grabbing' : 'grab') : 'crosshair' }}
       >
         <canvas
           ref={canvasRef}

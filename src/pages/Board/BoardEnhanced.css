@@ -182,6 +182,9 @@
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  will-change: transform;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 .drawing-canvas.move-mode {
@@ -190,6 +193,11 @@
 
 .drawing-canvas.move-mode:active {
   cursor: grabbing;
+}
+
+/* Optimize canvas interactions */
+.drawing-canvas:active {
+  pointer-events: auto;
 }
 
 /* Screenshot selection overlay */

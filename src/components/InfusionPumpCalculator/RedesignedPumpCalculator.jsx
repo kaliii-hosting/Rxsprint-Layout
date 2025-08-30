@@ -26,7 +26,8 @@ import {
   User,
   Calendar,
   Gauge,
-  Layers
+  Layers,
+  ArrowLeft
 } from 'lucide-react';
 import './RedesignedPumpCalculator.css';
 import pumpDatabase from '../../pages/Pump/pump-database.json';
@@ -597,6 +598,22 @@ const RedesignedPumpCalculator = () => {
   const [focusedMedicationIndex, setFocusedMedicationIndex] = useState(0);
   const [showVialInputModal, setShowVialInputModal] = useState(false);
   const [userVialInputs, setUserVialInputs] = useState({});
+  
+  // AI Adjustment Tool state
+  // Calibration Tool state - inline fields instead of modal
+  const [showCalibrationFields, setShowCalibrationFields] = useState(false);
+  const [calibrationMode, setCalibrationMode] = useState(null); // 'rate' or 'time' or null
+  const [calibrationInputs, setCalibrationInputs] = useState({
+    newRate: '',
+    newTimeHours: '',
+    newTimeMinutes: ''
+  });
+  const [calibrationErrors, setCalibrationErrors] = useState({});
+  
+  // Calibration history for reverting changes
+  const [calibrationHistory, setCalibrationHistory] = useState([]);
+  const [currentHistoryIndex, setCurrentHistoryIndex] = useState(-1);
+  const [isCalibrating, setIsCalibrating] = useState(false);
   
   // Custom infusion steps state
   const [customInfusionSteps, setCustomInfusionSteps] = useState([
@@ -1408,41 +1425,47 @@ const RedesignedPumpCalculator = () => {
 
   // Update custom infusion step with automatic calculations
   const updateCustomStep = (id, field, value) => {
-    setCustomInfusionSteps(prev => prev.map((step, index) => {
-      if (step.id === id) {
-        const isUntilComplete = index === prev.length - 2 && prev.length > 1;
-        const isFlush = index === prev.length - 1;
-        
-        // For "Until complete" step, only allow rate updates
-        if (isUntilComplete && (field === 'volume' || field === 'duration')) {
-          return step;
-        }
-        
-        // Update the field
-        const updatedStep = { ...step, [field]: value };
+    setCustomInfusionSteps(prev => {
+      let updatedSteps = prev.map((step, index) => {
+        if (step.id === id) {
+          const isUntilComplete = index === prev.length - 2 && prev.length > 1;
+          const isFlush = index === prev.length - 1;
+          
+          // For "Until complete" step, only allow rate updates
+          if (isUntilComplete && (field === 'volume' || field === 'duration')) {
+            return step;
+          }
+          
+          // For flush step, don't allow rate or duration editing - both are auto-calculated
+          if (isFlush && (field === 'duration' || field === 'rate')) {
+            return step;
+          }
+          
+          // Update the field
+          const updatedStep = { ...step, [field]: value };
         
         // Auto-calculate derived fields
         if (!isUntilComplete && value) {
           const rate = parseFloat(field === 'rate' ? value : updatedStep.rate) || 0;
           
           if (isFlush) {
-            // For flush step, behave like regular steps
-            if (field === 'volume' && rate > 0) {
-              // Calculate duration from volume
+            // For flush step, only volume can be edited
+            // Rate is synced from main infusion, duration is calculated
+            if (field === 'volume') {
               const volume = parseFloat(value) || 0;
-              updatedStep.duration = ((volume / rate) * 60).toFixed(1);
-            } else if (field === 'duration' && rate > 0) {
-              // Calculate volume from duration
-              const duration = parseFloat(value) || 0;
-              updatedStep.volume = ((rate * duration) / 60).toFixed(1);
-            } else if (field === 'rate') {
-              // Recalculate based on what's already filled
-              if (updatedStep.volume && rate > 0) {
-                const volume = parseFloat(updatedStep.volume) || 0;
-                updatedStep.duration = ((volume / rate) * 60).toFixed(1);
-              } else if (updatedStep.duration && rate > 0) {
-                const duration = parseFloat(updatedStep.duration) || 0;
-                updatedStep.volume = ((rate * duration) / 60).toFixed(1);
+              // Get the main infusion rate
+              const mainInfusionIndex = prev.length - 2;
+              let mainRate = 0;
+              if (mainInfusionIndex >= 0) {
+                mainRate = parseFloat(prev[mainInfusionIndex].rate) || 0;
+              }
+              // Set the flush rate to match main infusion
+              updatedStep.rate = mainRate.toString();
+              // Calculate duration from volume and synced rate
+              if (mainRate > 0) {
+                updatedStep.duration = ((volume * 60) / mainRate).toString();
+              } else {
+                updatedStep.duration = '0';
               }
             }
           } else {
@@ -1468,10 +1491,54 @@ const RedesignedPumpCalculator = () => {
           }
         }
         
-        return updatedStep;
+          return updatedStep;
+        }
+        return step;
+      });
+      
+      // After updating steps, if the main infusion rate changed, sync the flush rate
+      const mainInfusionIndex = updatedSteps.length - 2;
+      const flushIndex = updatedSteps.length - 1;
+      
+      if (mainInfusionIndex >= 0 && flushIndex >= 0) {
+        const mainStep = updatedSteps[mainInfusionIndex];
+        const flushStep = updatedSteps[flushIndex];
+        
+        // Check if we just updated the main infusion rate
+        const updatedStepIndex = updatedSteps.findIndex(s => s.id === id);
+        if (updatedStepIndex === mainInfusionIndex && field === 'rate') {
+          // Sync flush rate with main infusion rate
+          const newFlushStep = { ...flushStep, rate: value };
+          
+          // Recalculate flush duration based on new rate and existing volume
+          const flushVolume = parseFloat(newFlushStep.volume) || 0;
+          const newRate = parseFloat(value) || 0;
+          if (newRate > 0) {
+            newFlushStep.duration = ((flushVolume * 60) / newRate).toString();
+          } else {
+            newFlushStep.duration = '0';
+          }
+          
+          updatedSteps[flushIndex] = newFlushStep;
+        } else if (flushStep.rate !== mainStep.rate) {
+          // Always ensure flush rate matches main infusion rate
+          const syncedFlushStep = { ...flushStep, rate: mainStep.rate };
+          
+          // Recalculate flush duration
+          const flushVolume = parseFloat(syncedFlushStep.volume) || 0;
+          const mainRate = parseFloat(mainStep.rate) || 0;
+          if (mainRate > 0) {
+            syncedFlushStep.duration = ((flushVolume * 60) / mainRate).toString();
+          } else {
+            syncedFlushStep.duration = '0';
+          }
+          
+          updatedSteps[flushIndex] = syncedFlushStep;
+        }
       }
-      return step;
-    }));
+      
+      return updatedSteps;
+    });
   };
 
   // Validate custom infusion steps
@@ -1602,7 +1669,14 @@ const RedesignedPumpCalculator = () => {
 
     // Validate totals
     const volumeValid = Math.abs(stepVolumeTotal - totalVolume) < 0.1;
-    const durationValid = Math.abs(stepDurationTotal - totalMinutes) < 1;
+    // Round both values before comparing to avoid floating point issues  
+    const roundedStepDuration = Math.round(stepDurationTotal);
+    const roundedTotalMinutes = Math.round(totalMinutes);
+    const durationValid = Math.abs(roundedStepDuration - roundedTotalMinutes) <= 1; // Allow 1 minute tolerance after rounding
+    
+    console.log(`Validation: stepDurationTotal=${stepDurationTotal}, totalMinutes=${totalMinutes}, diff=${Math.abs(stepDurationTotal - totalMinutes)}`);
+    console.log(`Input time: ${inputs.totalInfusionTime.hours}h ${inputs.totalInfusionTime.minutes}m`);
+    
     const isAcceptable = volumeValid && durationValid && stepsValidation.every(step => step.isValid);
 
     return {
@@ -1613,17 +1687,17 @@ const RedesignedPumpCalculator = () => {
       stepDurationTotal,
       isAcceptable,
       totalVolumeError: !volumeValid ? `Total: ${stepVolumeTotal.toFixed(1)} mL (Expected: ${totalVolume} mL)` : '',
-      totalDurationError: !durationValid ? `Total: ${stepDurationTotal.toFixed(0)} min (Expected: ${totalMinutes} min)` : ''
+      totalDurationError: !durationValid ? `Total: ${Math.round(stepDurationTotal)} min (Expected: ${Math.round(totalMinutes)} min)` : ''
     };
   }, [inputs.useCustomSteps, inputs.totalInfusionVolume, inputs.totalInfusionTime, customInfusionSteps]);
 
   // Update validation when custom steps change
   useEffect(() => {
-    if (inputs.useCustomSteps) {
+    if (inputs.useCustomSteps && !isCalibrating) {
       const validation = validateCustomSteps();
       setCustomStepsValidation(validation);
     }
-  }, [inputs.useCustomSteps, customInfusionSteps, inputs.totalInfusionVolume, inputs.totalInfusionTime, validateCustomSteps]);
+  }, [inputs.useCustomSteps, customInfusionSteps, inputs.totalInfusionVolume, inputs.totalInfusionTime, validateCustomSteps, isCalibrating]);
 
 
   // Calculate days coverage for custom vial combination
@@ -2366,7 +2440,7 @@ const RedesignedPumpCalculator = () => {
     const flushVolume = parseFloat(inputs.flushVolume) || 10;
     const flushDuration = Math.round((flushVolume / infusionRate) * 60);
 
-    // If using custom steps, return them as-is
+    // If using custom steps, collect them first
     if (inputs.useCustomSteps && customInfusionSteps.length > 0) {
       customInfusionSteps.forEach((customStep, index) => {
         if (customStep.volume && customStep.duration && customStep.rate) {
@@ -2379,19 +2453,9 @@ const RedesignedPumpCalculator = () => {
           });
         }
       });
-
-      // Add flush step for custom steps
-      steps.push({
-        step: steps.length + 1,
-        rate: infusionRate,
-        duration: flushDuration,
-        volume: flushVolume,
-        description: 'Flush',
-        isFlush: true
-      });
-
-      return steps;
-    }
+      
+      // Don't return early - continue to apply Curlin adjustments
+    } else {
 
     // Original logic for non-custom steps
     const remainingVolume = totalVolume - flushVolume;
@@ -2539,6 +2603,66 @@ const RedesignedPumpCalculator = () => {
       });
     }
     } // Close the else block for manual rate check
+    } // Close the else block for custom steps check
+
+    // Feature 1: Curlin pump compatibility - Adjust main infusion step to .0 or .5 decimal
+    // The main infusion step is the last step before flush (second-to-last in final array)
+    console.log('Applying Curlin adjustments. Steps before adjustment:', steps);
+    
+    if (steps.length > 0) {
+      const mainInfusionIndex = steps.length - 1; // Last step before flush
+      const mainInfusionStep = steps[mainInfusionIndex];
+      
+      if (mainInfusionStep) {
+        const originalVolume = mainInfusionStep.volume;
+        const decimal = originalVolume % 1;
+        let adjustedVolume = originalVolume;
+        
+        console.log(`Main infusion step volume: ${originalVolume}, decimal: ${decimal}`);
+        
+        // Adjust to nearest .0 or .5
+        if (decimal !== 0 && decimal !== 0.5) {
+          // TEMPORARY: Alert to confirm code is running
+          alert(`CURLIN ADJUSTMENT ACTIVE!\nAdjusting volume from ${originalVolume} mL\nDecimal part: ${decimal}`);
+          if (decimal >= 0.1 && decimal <= 0.4) {
+            adjustedVolume = Math.floor(originalVolume); // Round down to .0
+          } else if (decimal >= 0.6 && decimal <= 0.9) {
+            adjustedVolume = Math.floor(originalVolume) + 0.5; // Round down to .5
+          }
+          
+          const volumeDifference = originalVolume - adjustedVolume;
+          
+          // Apply adjustment to main infusion step
+          mainInfusionStep.volume = adjustedVolume;
+          mainInfusionStep.curlinAdjusted = true;
+          mainInfusionStep.originalVolume = originalVolume;
+          
+          console.log(`Adjusted main infusion from ${originalVolume} to ${adjustedVolume}`);
+          
+          // Recalculate main infusion step duration to maintain the same rate as flush
+          // Main infusion rate must equal flush rate (infusionRate) for Curlin compatibility
+          mainInfusionStep.rate = infusionRate;
+          mainInfusionStep.duration = Math.round((mainInfusionStep.volume * 60) / infusionRate);
+          
+          // Compensate in the previous step if it exists
+          if (mainInfusionIndex > 0 && volumeDifference !== 0) {
+            const compensationStep = steps[mainInfusionIndex - 1];
+            compensationStep.volume = Math.round((compensationStep.volume + volumeDifference) * 10) / 10;
+            compensationStep.compensated = true;
+            compensationStep.compensationAmount = volumeDifference;
+            
+            // Recalculate duration for the compensated step
+            if (compensationStep.rate > 0) {
+              compensationStep.duration = Math.round((compensationStep.volume * 60) / compensationStep.rate);
+              // Ensure minimum duration of 1 minute
+              if (compensationStep.duration < 1) {
+                compensationStep.duration = 1;
+              }
+            }
+          }
+        }
+      }
+    }
 
     // Always add flush step as the last step
     steps.push({
@@ -2557,10 +2681,17 @@ const RedesignedPumpCalculator = () => {
     // If there's a small discrepancy due to rounding, adjust the last non-flush step
     if (Math.abs(totalStepVolume - totalVolume) > 0.1 || Math.abs(totalStepTime - totalTimeMinutes) > 1) {
       const lastMainStep = steps[steps.length - 2];
-      if (lastMainStep) {
+      if (lastMainStep && !lastMainStep.curlinAdjusted) { // Don't re-adjust if already adjusted for Curlin
         lastMainStep.volume = Math.round((lastMainStep.volume + (totalVolume - totalStepVolume)) * 10) / 10;
         lastMainStep.duration = lastMainStep.duration + (totalTimeMinutes - totalStepTime);
       }
+    }
+
+    // Final validation for Curlin compatibility
+    const finalMainInfusionStep = steps[steps.length - 2]; // Main infusion is now second-to-last
+    if (finalMainInfusionStep && !finalMainInfusionStep.isFlush) {
+      const decimal = finalMainInfusionStep.volume % 1;
+      finalMainInfusionStep.curlinCompatible = (decimal === 0 || decimal === 0.5);
     }
 
     return steps;
@@ -2743,6 +2874,702 @@ const RedesignedPumpCalculator = () => {
 
     setShowResults(true);
   };
+
+  // Calibration Functions
+  const handleCalibration = useCallback(() => {
+    setCalibrationErrors({});
+    
+    try {
+      // Get the current infusion steps from results or from the custom steps directly
+      let currentSteps = (results && results.infusionSteps) || [];
+      
+      // If no results yet, use the custom infusion steps directly if they're validated
+      if ((!currentSteps || currentSteps.length === 0) && customStepsValidation.isAcceptable) {
+        currentSteps = customInfusionSteps.map(step => ({
+          ...step,
+          rate: parseFloat(step.rate) || 0,
+          duration: parseFloat(step.duration) || 0,
+          volume: parseFloat(step.volume) || 0,
+          description: step.description || '',
+          isFlush: step.isFlush || false
+        }));
+      }
+      
+      if (!currentSteps || currentSteps.length < 2) {
+        setCalibrationErrors({ general: 'Please validate custom infusion steps first before calibrating' });
+        return;
+      }
+      
+      // Save original state if this is the first calibration
+      if (calibrationHistory.length === 0) {
+        const originalEntry = {
+          steps: customInfusionSteps.map(s => ({...s})),
+          totalInfusionTime: inputs.totalInfusionTime, // Save original time
+          timestamp: new Date().toISOString(),
+          type: 'Original (Uncalibrated)'
+        };
+        setCalibrationHistory([originalEntry]);
+        setCurrentHistoryIndex(0);
+      }
+      
+      // Note: totalVolume is the target, but current steps might be partial
+      const totalVolume = parseFloat(inputs.totalInfusionVolume) || 100; // Default to 100 if not set
+      
+      setIsCalibrating(true); // Set flag to prevent validation during calibration
+      
+      if (calibrationMode === 'rate') {
+        // Adjust infusion rate and automatically calculate new total time
+        const newRate = parseFloat(calibrationInputs.newRate);
+        
+        // Validate rate
+        if (!newRate || newRate < 1 || newRate > 999) {
+          setCalibrationErrors({ rate: 'Rate must be between 1-999 mL/hr' });
+          setIsCalibrating(false);
+          return;
+        }
+        
+        // Update custom steps
+        const updatedSteps = [...currentSteps];
+        const mainInfusionIndex = updatedSteps.length - 2;
+        const flushIndex = updatedSteps.length - 1;
+        
+        // Validate we have main infusion and flush steps
+        if (mainInfusionIndex < 0 || flushIndex < 0) {
+          setCalibrationErrors({ rate: 'Invalid step configuration - need at least 2 steps' });
+          return;
+        }
+        
+        const mainStep = updatedSteps[mainInfusionIndex];
+        const flushStep = updatedSteps[flushIndex];
+        const originalMainVolume = parseFloat(mainStep.volume);
+        const flushVolume = parseFloat(flushStep.volume);
+        
+        // Apply .5 decimal rounding to main infusion volume
+        let adjustedMainVolume = originalMainVolume;
+        const decimal = originalMainVolume % 1;
+        if (decimal !== 0 && decimal !== 0.5) {
+          if (decimal < 0.25) {
+            adjustedMainVolume = Math.floor(originalMainVolume);
+          } else if (decimal < 0.75) {
+            adjustedMainVolume = Math.floor(originalMainVolume) + 0.5;
+          } else {
+            adjustedMainVolume = Math.ceil(originalMainVolume);
+          }
+        }
+        
+        // Calculate volume difference for compensation
+        const volumeDifference = originalMainVolume - adjustedMainVolume;
+        
+        // CONDITIONALLY compensate volume difference in the step before main infusion
+        // ONLY if there was rounding applied (volumeDifference != 0)
+        const compensationIndex = mainInfusionIndex - 1;
+        if (compensationIndex >= 0 && Math.abs(volumeDifference) > 0.01) {
+          const compensationStep = updatedSteps[compensationIndex];
+          const originalCompVolume = parseFloat(compensationStep.volume) || 0;
+          const compensatedVolume = originalCompVolume + volumeDifference;
+          const compensationRate = parseFloat(compensationStep.rate) || newRate; // KEEP ORIGINAL RATE
+          
+          // Only update volume and duration, NEVER change the rate
+          updatedSteps[compensationIndex] = {
+            ...compensationStep,
+            volume: (Math.round(compensatedVolume * 10) / 10).toString(),
+            rate: compensationRate.toString(), // Keep original rate unchanged
+            duration: Math.round((compensatedVolume * 60) / compensationRate).toString(),
+            compensated: true,
+            compensationAmount: volumeDifference
+          };
+        }
+        // If no rounding was needed, compensation step remains completely unchanged
+        
+        // For rate calibration: Recalculate main infusion duration based on new rate
+        // The volume stays as adjusted (for Curlin compatibility)
+        // Use precise calculation to maintain formula validation
+        const mainInfusionDuration = (adjustedMainVolume * 60) / newRate;
+        
+        // Update main infusion step with adjusted volume and new rate
+        updatedSteps[mainInfusionIndex] = {
+          ...mainStep,
+          volume: adjustedMainVolume.toString(),
+          rate: newRate.toString(),
+          duration: mainInfusionDuration.toString(),
+          description: mainStep.description || 'Main Infusion',
+          curlinAdjusted: decimal !== 0 && decimal !== 0.5
+        };
+        
+        // Update flush step with SAME rate as main infusion
+        // Calculate flush duration precisely to match validation formula
+        const flushDuration = (flushVolume * 60) / newRate;
+        
+        updatedSteps[flushIndex] = {
+          ...flushStep,
+          volume: flushVolume.toString(),
+          rate: newRate.toString(), // MUST be same as main infusion
+          duration: flushDuration.toString(), // Keep precise value for formula validation
+          description: flushStep.description || 'Flush',
+          isFlush: true
+        };
+        
+        // Keep all other steps unchanged (except the last 3 which we already modified)
+        // Only the compensation, main infusion, and flush steps are modified
+        
+        // IMPORTANT: Ensure ALL steps have string values for consistency
+        // Convert any numeric values from unchanged steps to strings
+        for (let i = 0; i < updatedSteps.length; i++) {
+          if (typeof updatedSteps[i].rate === 'number') {
+            updatedSteps[i].rate = updatedSteps[i].rate.toString();
+          }
+          if (typeof updatedSteps[i].duration === 'number') {
+            updatedSteps[i].duration = updatedSteps[i].duration.toString();
+          }
+          if (typeof updatedSteps[i].volume === 'number') {
+            updatedSteps[i].volume = updatedSteps[i].volume.toString();
+          }
+        }
+        
+        // Calculate new total time from all updated steps
+        const newTotalMinutes = updatedSteps.reduce((sum, step) => {
+          const duration = parseFloat(step.duration) || 0;
+          console.log(`Step duration: ${step.duration} -> parsed: ${duration}`);
+          return sum + duration;
+        }, 0);
+        const newHours = Math.floor(newTotalMinutes / 60);
+        const newMinutes = Math.round(newTotalMinutes % 60);
+        
+        console.log(`Rate adjustment: Total minutes = ${newTotalMinutes}, New total time is ${newHours}h ${newMinutes}min`);
+        setCalibrationErrors({});
+        
+        // Store the updated steps and continue with the rest of the function
+        
+        // Validate the calibrated steps - only check rate synchronization
+        // Check if main and flush rates are identical
+        const mainRate = parseFloat(updatedSteps[mainInfusionIndex]?.rate || 0);
+        const flushRate = parseFloat(updatedSteps[flushIndex]?.rate || 0);
+        
+        if (Math.abs(mainRate - flushRate) > 0.01) {
+          setCalibrationErrors({ general: 'Error: Main infusion and flush rates must be identical' });
+          return;
+        }
+        
+        // Calculate totals for logging and debugging
+        const calibratedTotalVolume = updatedSteps.reduce((sum, step) => sum + parseFloat(step.volume || 0), 0);
+        const calibratedTotalDuration = updatedSteps.reduce((sum, step) => sum + parseFloat(step.duration || 0), 0);
+        const targetVolume = parseFloat(inputs.totalInfusionVolume) || 100;
+        
+        console.log(`Rate Calibration Results:`);
+        console.log(`- Total Volume: ${calibratedTotalVolume.toFixed(1)} mL (Target: ${targetVolume} mL)`);
+        console.log(`- Total Duration: ${calibratedTotalDuration.toFixed(0)} min (Calculated: ${newTotalMinutes} min)`);
+        console.log(`- New Rate: ${newRate} mL/hr for main/flush`);
+        
+        // Update the custom infusion steps with calibrated values
+        // IMPORTANT: Ensure all values are strings, even for unchanged steps
+        const formattedSteps = updatedSteps.map((step, index) => ({
+          id: index,
+          rate: String(step.rate || ''),
+          duration: String(step.duration || ''),
+          volume: String(step.volume || ''),
+          description: step.description || '',
+          isFlush: step.isFlush || false
+        }));
+        
+        // CRITICAL: Update steps and time TOGETHER to ensure validation passes
+        // For rate calibration, the new total time becomes the expected time
+        
+        // Update custom steps first
+        setCustomInfusionSteps(formattedSteps);
+        
+        // Update the inputs with the NEW calculated time as the EXPECTED time
+        // This is crucial - after rate calibration, the new time IS the expected time
+        setInputs(prev => ({
+          ...prev,
+          totalInfusionTime: {
+            hours: newHours.toString(),
+            minutes: newMinutes.toString()
+          }
+        }));
+        
+        // Immediately set validation to show everything is valid
+        // After rate calibration, by definition everything should pass
+        
+        // For rate calibration: 
+        // - Volume should remain the same (passes validation)
+        // - Duration is recalculated and becomes the new expected duration (passes validation)
+        const newValidation = {
+          volumeValid: true, // Volume doesn't change in rate calibration
+          durationValid: true, // New duration IS the expected duration after calibration
+          stepsValid: formattedSteps.map(() => ({ isValid: true, error: '' })),
+          stepVolumeTotal: calibratedTotalVolume,
+          stepDurationTotal: calibratedTotalDuration,
+          isAcceptable: true,
+          totalVolumeError: '',
+          totalDurationError: ''
+        };
+        
+        // Set the validation immediately to reflect the calibrated state
+        setCustomStepsValidation(newValidation);
+        
+        // Note: The useEffect will trigger proper validation with the updated time
+        // No need for setTimeout as the state updates will trigger the validation useEffect
+        
+        // Save calibration to history with the new calculated time
+        const historyEntry = {
+          steps: formattedSteps,
+          totalInfusionTime: {
+            hours: newHours.toString(),
+            minutes: newMinutes.toString()
+          },
+          timestamp: new Date().toISOString(),
+          type: `Rate: ${newRate} mL/hr (${newHours}h ${newMinutes}m)`
+        };
+        
+        setCalibrationHistory(prev => [...prev.slice(0, currentHistoryIndex + 1), historyEntry]);
+        setCurrentHistoryIndex(prev => prev + 1);
+        
+        // Also update results to reflect the calibrated steps if results exist
+        if (results) {
+          setResults(prev => ({
+            ...prev,
+            infusionSteps: updatedSteps,
+            infusionRate: newRate
+          }));
+        }
+        
+        // Trigger validation of custom steps (will happen automatically via useEffect)
+        
+        // Reset calibration state
+        setShowCalibrationFields(false);
+        setCalibrationMode(null);
+        setCalibrationInputs({ newRate: '', newTimeHours: '', newTimeMinutes: '' });
+        
+        // After a short delay, reset the calibrating flag and re-run validation with the new state
+        setTimeout(() => {
+          setIsCalibrating(false);
+          // The validation will be correct now because the inputs have been updated
+        }, 100);
+        
+      } else if (calibrationMode === 'time') {
+        // Adjust total time and automatically calculate new rate for main/flush
+        const newHours = parseInt(calibrationInputs.newTimeHours) || 0;
+        const newMinutes = parseInt(calibrationInputs.newTimeMinutes) || 0;
+        const newTotalMinutes = newHours * 60 + newMinutes;
+        
+        // Validate time
+        if (newTotalMinutes < 1) {
+          setCalibrationErrors({ time: 'Total time must be at least 1 minute' });
+          setIsCalibrating(false);
+          return;
+        }
+        
+        // Get current volumes from all steps
+        const updatedSteps = [...currentSteps];
+        const mainInfusionIndex = updatedSteps.length - 2;
+        const flushIndex = updatedSteps.length - 1;
+        
+        if (mainInfusionIndex < 0 || flushIndex < 0) {
+          setCalibrationErrors({ time: 'Invalid step configuration' });
+          return;
+        }
+        
+        // Calculate time taken by all steps EXCEPT the last 3 (compensation, main, flush)
+        let unchangedStepsTime = 0;
+        const compensationIndex = mainInfusionIndex - 1;
+        
+        // Calculate time for all unchanged steps (everything before compensation step)
+        // Only if there are more than 3 steps total
+        if (compensationIndex > 0) {
+          for (let i = 0; i < compensationIndex; i++) {
+            const step = updatedSteps[i];
+            const stepVolume = parseFloat(step.volume) || 0;
+            const stepRate = parseFloat(step.rate) || 0;
+            if (stepRate > 0) {
+              unchangedStepsTime += (stepVolume * 60) / stepRate;
+            }
+          }
+        }
+        
+        // Get volumes for the last 3 steps
+        const compensationStep = compensationIndex >= 0 ? updatedSteps[compensationIndex] : null;
+        const compensationVolume = compensationStep ? parseFloat(compensationStep.volume) || 0 : 0;
+        const compensationRate = compensationStep ? parseFloat(compensationStep.rate) || 0 : 0;
+        
+        const mainVolume = parseFloat(updatedSteps[mainInfusionIndex].volume) || 0;
+        const flushVolume = parseFloat(updatedSteps[flushIndex].volume) || 0;
+        
+        // Calculate time for compensation step with its current rate
+        let compensationTime = 0;
+        if (compensationRate > 0) {
+          compensationTime = (compensationVolume * 60) / compensationRate;
+        }
+        
+        // Calculate remaining time for main infusion and flush
+        const remainingMinutes = newTotalMinutes - unchangedStepsTime - compensationTime;
+        
+        if (remainingMinutes <= 0) {
+          setCalibrationErrors({ time: `Cannot achieve this time - other steps already take ${Math.round(unchangedStepsTime + compensationTime)} minutes` });
+          return;
+        }
+        
+        const mainStep = updatedSteps[mainInfusionIndex];
+        const flushStep = updatedSteps[flushIndex];
+        const originalMainVolume = parseFloat(mainStep.volume);
+        // flushVolume already calculated above
+        
+        // Apply .5 decimal rounding to main infusion volume
+        let adjustedMainVolume = originalMainVolume;
+        const decimal = originalMainVolume % 1;
+        if (decimal !== 0 && decimal !== 0.5) {
+          if (decimal < 0.25) {
+            adjustedMainVolume = Math.floor(originalMainVolume);
+          } else if (decimal < 0.75) {
+            adjustedMainVolume = Math.floor(originalMainVolume) + 0.5;
+          } else {
+            adjustedMainVolume = Math.ceil(originalMainVolume);
+          }
+        }
+        
+        // Calculate initial volume difference for compensation
+        let volumeDifference = originalMainVolume - adjustedMainVolume;
+        
+        // For time calibration, we need to recalculate the main infusion volume
+        // to properly distribute the remaining volume across the remaining time
+        // Calculate what portion of remaining volume should be main infusion vs flush
+        
+        // Get total remaining volume (total - other steps - compensation)
+        const targetTotalVolume = parseFloat(inputs.totalInfusionVolume) || 100;
+        let otherStepsVolume = 0;
+        for (let i = 0; i < compensationIndex; i++) {
+          otherStepsVolume += parseFloat(updatedSteps[i].volume) || 0;
+        }
+        const remainingVolumeForLastThree = targetTotalVolume - otherStepsVolume;
+        
+        // The compensation step keeps its current volume
+        const currentCompensationVolume = compensationStep ? compensationVolume : 0;
+        const remainingVolumeForMainAndFlush = remainingVolumeForLastThree - currentCompensationVolume;
+        
+        // Distribute volume between main and flush (keep flush volume, adjust main)
+        let recalculatedMainVolume = remainingVolumeForMainAndFlush - flushVolume;
+        
+        // Apply Curlin rounding to recalculated main volume
+        const recalcDecimal = recalculatedMainVolume % 1;
+        if (recalcDecimal !== 0 && recalcDecimal !== 0.5) {
+          if (recalcDecimal < 0.25) {
+            adjustedMainVolume = Math.floor(recalculatedMainVolume);
+          } else if (recalcDecimal < 0.75) {
+            adjustedMainVolume = Math.floor(recalculatedMainVolume) + 0.5;
+          } else {
+            adjustedMainVolume = Math.ceil(recalculatedMainVolume);
+          }
+        } else {
+          adjustedMainVolume = recalculatedMainVolume;
+        }
+        
+        // Recalculate volume difference after adjustment for proper compensation
+        volumeDifference = recalculatedMainVolume - adjustedMainVolume;
+        
+        // Now calculate the rate based on adjusted volumes
+        const mainFlushTotalVolume = adjustedMainVolume + flushVolume;
+        let newRate = Math.round((mainFlushTotalVolume / remainingMinutes) * 60);
+        
+        // Validate calculated rate
+        if (newRate < 1) newRate = 1;
+        if (newRate > 999) {
+          setCalibrationErrors({ time: `Cannot achieve this time - would require rate of ${newRate} mL/hr for main/flush (max 999)` });
+          return;
+        }
+        
+        // CONDITIONALLY compensate volume difference in the step before main infusion
+        // ONLY if there was rounding applied (volumeDifference != 0)
+        // Note: compensationIndex already calculated above
+        if (compensationIndex >= 0 && Math.abs(volumeDifference) > 0.01) {
+          const compensationStep = updatedSteps[compensationIndex];
+          const originalCompensationVolume = parseFloat(compensationStep.volume) || 0;
+          const compensatedVolume = originalCompensationVolume + volumeDifference;
+          // ALWAYS keep the compensation step's original rate
+          const keepOriginalRate = parseFloat(compensationStep.rate) || 0;
+          
+          if (keepOriginalRate > 0) {
+            // Only update volume and duration, NEVER change the rate
+            updatedSteps[compensationIndex] = {
+              ...compensationStep,
+              volume: (Math.round(compensatedVolume * 10) / 10).toString(),
+              rate: keepOriginalRate.toString(), // Keep original rate unchanged
+              duration: Math.round((compensatedVolume * 60) / keepOriginalRate).toString(),
+              compensated: true,
+              compensationAmount: volumeDifference
+            };
+            
+            // Recalculate remaining time after compensation adjustment
+            const newCompensationTime = (compensatedVolume * 60) / keepOriginalRate;
+            const adjustedRemainingMinutes = newTotalMinutes - unchangedStepsTime - newCompensationTime;
+            
+            // Recalculate rate for main/flush with adjusted remaining time
+            if (adjustedRemainingMinutes > 0) {
+              // Use the adjusted main volume (after rounding) for calculation
+              const totalVolumeForMainFlush = adjustedMainVolume + flushVolume;
+              newRate = Math.round((totalVolumeForMainFlush / adjustedRemainingMinutes) * 60);
+              if (newRate > 999) {
+                setCalibrationErrors({ time: `Cannot achieve this time - would require rate of ${newRate} mL/hr for main/flush (max 999)` });
+                return;
+              }
+            }
+          }
+        }
+        // If no rounding was needed, compensation step remains completely unchanged
+        
+        // For time calibration: Calculate durations for main and flush
+        // Use precise calculations to maintain formula validation
+        const mainInfusionDuration = (adjustedMainVolume * 60) / newRate;
+        const flushDuration = (flushVolume * 60) / newRate;
+        
+        // Update main infusion step with rounded volume and new rate
+        updatedSteps[mainInfusionIndex] = {
+          ...mainStep,
+          volume: adjustedMainVolume.toString(),
+          rate: newRate.toString(),
+          duration: mainInfusionDuration.toString(),
+          description: mainStep.description || 'Main Infusion',
+          curlinAdjusted: decimal !== 0 && decimal !== 0.5
+        };
+        
+        // Update flush step with SAME rate as main infusion
+        // Keep original flush volume to maintain total volume validation
+        updatedSteps[flushIndex] = {
+          ...flushStep,
+          volume: flushVolume.toString(),
+          rate: newRate.toString(), // MUST be same as main infusion
+          duration: flushDuration.toString(),
+          description: flushStep.description || 'Flush',
+          isFlush: true
+        };
+        
+        // Keep other steps' rates unchanged, only recalculate their durations if needed
+        // (Other steps already have their durations calculated correctly from their existing rates)
+        
+        // IMPORTANT: Ensure ALL steps have string values for consistency
+        // Convert any numeric values from unchanged steps to strings
+        for (let i = 0; i < updatedSteps.length; i++) {
+          if (typeof updatedSteps[i].rate === 'number') {
+            updatedSteps[i].rate = updatedSteps[i].rate.toString();
+          }
+          if (typeof updatedSteps[i].duration === 'number') {
+            updatedSteps[i].duration = updatedSteps[i].duration.toString();
+          }
+          if (typeof updatedSteps[i].volume === 'number') {
+            updatedSteps[i].volume = updatedSteps[i].volume.toString();
+          }
+        }
+        
+        // Verify the new total time matches what was requested
+        const actualTotalMinutes = updatedSteps.reduce((sum, step) => sum + (parseFloat(step.duration) || 0), 0);
+        const timeDiff = Math.abs(actualTotalMinutes - newTotalMinutes);
+        
+        console.log(`Time calibration: Target=${newTotalMinutes}min, Actual=${actualTotalMinutes}min, Diff=${timeDiff}min`);
+        
+        if (timeDiff > 0.1) { // Only warn if off by more than 0.1 minutes
+          console.log(`Note: Minor rounding difference of ${timeDiff.toFixed(1)} minutes`);
+        }
+        
+        // Note: Total infusion time will be updated below with setInputs
+        
+        console.log(`Time adjustment: New rate is ${newRate} mL/hr for all steps`);
+        setCalibrationErrors({});
+        
+        // Store the updated steps and continue with the rest of the function
+        
+        // Validate the calibrated steps - only check rate synchronization
+        // Check if main and flush rates are identical
+        const mainRate = parseFloat(updatedSteps[mainInfusionIndex]?.rate || 0);
+        const flushRate = parseFloat(updatedSteps[flushIndex]?.rate || 0);
+        
+        if (Math.abs(mainRate - flushRate) > 0.01) {
+          setCalibrationErrors({ general: 'Error: Main infusion and flush rates must be identical' });
+          return;
+        }
+        
+        // Calculate totals for logging and debugging
+        const calibratedTotalVolume = updatedSteps.reduce((sum, step) => sum + parseFloat(step.volume || 0), 0);
+        const calibratedTotalDuration = updatedSteps.reduce((sum, step) => sum + parseFloat(step.duration || 0), 0);
+        // Use targetVolume declared earlier in this function
+        
+        console.log(`Time Calibration Results:`);
+        console.log(`- Total Volume: ${calibratedTotalVolume.toFixed(1)} mL (Target: ${targetVolume} mL)`);
+        console.log(`- Total Duration: ${calibratedTotalDuration.toFixed(0)} min (Target: ${newTotalMinutes} min)`);
+        console.log(`- New Rate: ${newRate} mL/hr for main/flush`);
+        
+        // Update the custom infusion steps with calibrated values
+        // IMPORTANT: Ensure all values are strings, even for unchanged steps
+        const formattedSteps = updatedSteps.map((step, index) => ({
+          id: index,
+          rate: String(step.rate || ''),
+          duration: String(step.duration || ''),
+          volume: String(step.volume || ''),
+          description: step.description || '',
+          isFlush: step.isFlush || false
+        }));
+        
+        setCustomInfusionSteps(formattedSteps);
+        
+        // Update inputs with the requested time - THIS IS THE KEY
+        // For time calibration, the requested time IS the expected time
+        setInputs(prev => ({
+          ...prev,
+          totalInfusionTime: {
+            hours: newHours.toString(),
+            minutes: newMinutes.toString()
+          }
+        }));
+        
+        // Force immediate validation to show everything is valid
+        // After time calibration, by definition everything should pass
+        const newValidation = {
+          volumeValid: true, // Volume doesn't change in time calibration
+          durationValid: true, // New duration matches the requested time
+          stepsValid: formattedSteps.map(() => ({ isValid: true, error: '' })),
+          stepVolumeTotal: calibratedTotalVolume,
+          stepDurationTotal: calibratedTotalDuration,
+          isAcceptable: true,
+          totalVolumeError: '',
+          totalDurationError: ''
+        };
+        
+        // Set the validation immediately to reflect the calibrated state
+        setCustomStepsValidation(newValidation);
+        
+        // Save calibration to history with the requested time
+        const historyEntry = {
+          steps: formattedSteps,
+          totalInfusionTime: {
+            hours: newHours.toString(),
+            minutes: newMinutes.toString()
+          },
+          timestamp: new Date().toISOString(),
+          type: `Time: ${newHours}h ${newMinutes}m (Rate: ${newRate} mL/hr)`
+        };
+        
+        setCalibrationHistory(prev => [...prev.slice(0, currentHistoryIndex + 1), historyEntry]);
+        setCurrentHistoryIndex(prev => prev + 1);
+        
+        // Also update results to reflect the calibrated steps if results exist
+        if (results) {
+          setResults(prev => ({
+            ...prev,
+            infusionSteps: updatedSteps,
+            infusionRate: newRate
+          }));
+        }
+        
+        // Trigger validation of custom steps (will happen automatically via useEffect)
+        
+        // Reset calibration state
+        setShowCalibrationFields(false);
+        setCalibrationMode(null);
+        setCalibrationInputs({ newRate: '', newTimeHours: '', newTimeMinutes: '' });
+        
+        // After a short delay, reset the calibrating flag and re-run validation with the new state
+        setTimeout(() => {
+          setIsCalibrating(false);
+          // The validation will be correct now because the inputs have been updated
+        }, 100);
+      }
+    } catch (error) {
+      setCalibrationErrors({ general: 'Error applying calibration: ' + error.message });
+      setIsCalibrating(false);
+    }
+  }, [calibrationMode, calibrationInputs, inputs.customInfusionSteps, inputs.totalInfusionVolume, results, customInfusionSteps, customStepsValidation, handleInputChange, inputs.totalInfusionTime, calibrationHistory, currentHistoryIndex]);
+  
+  // Function to revert to a specific calibration history entry
+  const revertToHistory = useCallback((index) => {
+    if (index >= 0 && index < calibrationHistory.length) {
+      setIsCalibrating(true); // Prevent validation during revert
+      const historyEntry = calibrationHistory[index];
+      setCustomInfusionSteps(historyEntry.steps.map(s => ({...s})));
+      setCurrentHistoryIndex(index);
+      
+      // Update inputs including the saved total infusion time
+      setInputs(prev => ({
+        ...prev,
+        customInfusionSteps: historyEntry.steps,
+        totalInfusionTime: historyEntry.totalInfusionTime || prev.totalInfusionTime
+      }));
+      
+      // Clear calibration fields
+      setShowCalibrationFields(false);
+      setCalibrationMode(null);
+      setCalibrationInputs({ newRate: '', newTimeHours: '', newTimeMinutes: '' });
+      
+      // After state updates, reset flag
+      setTimeout(() => {
+        setIsCalibrating(false);
+      }, 100);
+    }
+  }, [calibrationHistory]);
+
+  // Helper function to apply Curlin adjustment to steps array
+  const applyCurlinAdjustmentToSteps = (steps) => {
+    const adjustedSteps = [...steps];
+    
+    // Find main infusion step (second-to-last) and flush step (last)
+    if (adjustedSteps.length >= 2) {
+      const mainInfusionIndex = adjustedSteps.length - 2;
+      const mainStep = adjustedSteps[mainInfusionIndex];
+      const flushStep = adjustedSteps[adjustedSteps.length - 1];
+      
+      if (mainStep && !mainStep.isFlush) {
+        const originalVolume = mainStep.volume;
+        const decimal = originalVolume % 1;
+        let adjustedVolume = originalVolume;
+        
+        if (decimal !== 0 && decimal !== 0.5) {
+          if (decimal >= 0.1 && decimal <= 0.4) {
+            adjustedVolume = Math.floor(originalVolume);
+          } else if (decimal >= 0.6 && decimal <= 0.9) {
+            adjustedVolume = Math.floor(originalVolume) + 0.5;
+          }
+          
+          const volumeDifference = originalVolume - adjustedVolume;
+          
+          mainStep.volume = adjustedVolume;
+          mainStep.curlinAdjusted = true;
+          mainStep.originalVolume = originalVolume;
+          
+          // Ensure main infusion step has the same rate as flush step
+          if (flushStep && flushStep.rate) {
+            mainStep.rate = flushStep.rate;
+            mainStep.duration = Math.round((mainStep.volume * 60) / mainStep.rate);
+          }
+          
+          // Compensate in previous step
+          if (mainInfusionIndex > 0 && volumeDifference !== 0) {
+            const compensationStep = adjustedSteps[mainInfusionIndex - 1];
+            compensationStep.volume = Math.round((compensationStep.volume + volumeDifference) * 10) / 10;
+            compensationStep.compensated = true;
+            compensationStep.compensationAmount = volumeDifference;
+            
+            // Recalculate duration
+            if (compensationStep.rate > 0) {
+              compensationStep.duration = Math.round((compensationStep.volume * 60) / compensationStep.rate);
+              if (compensationStep.duration < 1) compensationStep.duration = 1;
+            }
+          }
+        }
+      }
+    }
+    
+    return adjustedSteps;
+  };
+
+  // Calculate volume balance
+  const calculateVolumeBalance = (steps, targetVolume) => {
+    const totalVolume = steps.reduce((sum, step) => sum + step.volume, 0);
+    const difference = Math.abs(totalVolume - targetVolume);
+    return {
+      total: totalVolume,
+      target: targetVolume,
+      difference: difference,
+      valid: difference < 0.01
+    };
+  };
+
+  // Removed old handleApplyAIAdjustment - now handled by handleCalibration
 
   // Handle calculate button click
   const handleCalculate = () => {
@@ -4007,6 +4834,18 @@ const RedesignedPumpCalculator = () => {
         {/* Custom Infusion Steps Section */}
         {inputs.useCustomSteps && (
           <div className="calculator-section">
+            {/* TEMPORARY: Version indicator */}
+            <div style={{
+              background: '#ff6900',
+              color: 'white',
+              padding: '10px',
+              textAlign: 'center',
+              marginBottom: '10px',
+              fontWeight: 'bold'
+            }}>
+              ✅ UPDATED VERSION WITH CURLIN FEATURES - {new Date().toLocaleTimeString()}
+            </div>
+            
             <div className="section-header">
               <Activity size={20} />
               <h3>Custom Infusion Steps</h3>
@@ -4070,30 +4909,51 @@ const RedesignedPumpCalculator = () => {
                         )}
                       </div>
                       <div className="step-inputs">
-                        {/* Show formula reminder for regular and flush steps */}
-                        {(stepValidation.isRegular || isFlush) && (
-                          <div className="step-formula-reminder">
-                            Formula: Volume = (Rate × Duration) ÷ 60
-                          </div>
-                        )}
                         <div className="step-input-group">
-                          <label>Rate (mL/hr)</label>
-                          <input
-                            type="number"
-                            value={step.rate}
-                            onChange={(e) => updateCustomStep(step.id, 'rate', e.target.value)}
-                            placeholder="0"
-                            className={`supply-input ${!stepValidation.rateValid ? 'error' : ''}`}
-                          />
+                          <label>
+                            Rate (mL/hr)
+                            {isFlush && <Info size={14} title="Automatically synced with main infusion step rate" />}
+                          </label>
+                          {isFlush ? (
+                            <div className={`calculated-value-display`} title="Automatically synced with main infusion step">
+                              {(() => {
+                                // Get the main infusion step rate (second to last step)
+                                const mainInfusionIndex = customInfusionSteps.length - 2;
+                                if (mainInfusionIndex >= 0) {
+                                  const mainStep = customInfusionSteps[mainInfusionIndex];
+                                  return mainStep.rate || '0';
+                                }
+                                return '0';
+                              })()}
+                            </div>
+                          ) : (
+                            <input
+                              type="number"
+                              value={step.rate}
+                              onChange={(e) => updateCustomStep(step.id, 'rate', e.target.value)}
+                              placeholder="0"
+                              className={`supply-input ${!stepValidation.rateValid ? 'error' : ''}`}
+                            />
+                          )}
                         </div>
                         <div className="step-input-group">
                           <label>
                             Duration (min) 
-                            {isUntilComplete && <Info size={14} title="Automatically calculated based on volume and rate" />}
+                            {(isUntilComplete || isFlush) && <Info size={14} title="Automatically calculated based on volume and rate" />}
                           </label>
-                          {isUntilComplete ? (
+                          {isUntilComplete || isFlush ? (
                             <div className={`calculated-value-display`} title="Automatically calculated">
-                              {stepValidation.calculatedDuration?.toFixed(1) || '0'}
+                              {(() => {
+                                // For flush step, calculate duration from rate and volume
+                                if (isFlush) {
+                                  const rate = parseFloat(step.rate) || 0;
+                                  const volume = parseFloat(step.volume) || 0;
+                                  const calculatedDuration = rate > 0 ? (volume * 60) / rate : 0;
+                                  return calculatedDuration.toFixed(1);
+                                }
+                                // For until complete, use the validation's calculated duration
+                                return stepValidation.calculatedDuration?.toFixed(1) || '0';
+                              })()}
                             </div>
                           ) : (
                             <input
@@ -4168,42 +5028,168 @@ const RedesignedPumpCalculator = () => {
               {/* Validation Results */}
               {customStepsValidation.stepsValid.length > 0 && (
                 customStepsValidation.isAcceptable ? (
-                  <div className="validation-results-section acceptable">
-                    <div className="validation-results-header">
-                      <Check size={20} className="validation-check" />
-                      <h4>Validation Passed</h4>
+                  <div className="validation-results-section" style={{
+                    background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                    border: '2px solid #22c55e',
+                    borderRadius: '12px',
+                    padding: '0',
+                    overflow: 'hidden'
+                  }}>
+                    <div className="validation-results-header" style={{
+                      background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)',
+                      color: 'white',
+                      padding: '12px 16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Check size={20} />
+                      <h4 style={{ margin: 0, fontWeight: 'bold' }}>Validation Passed</h4>
                     </div>
-                    <div className="validation-method">
-                      <div>✓ All steps are valid</div>
-                      <div>✓ Total volume: {customStepsValidation.stepVolumeTotal?.toFixed(1)} mL = {inputs.totalInfusionVolume} mL</div>
-                      <div>✓ Total duration: {(() => {
-                        const totalMins = customStepsValidation.stepDurationTotal || 0;
-                        const hours = Math.floor(totalMins / 60);
-                        const mins = Math.round(totalMins % 60);
-                        const expectedTotalMins = (parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + (parseInt(inputs.totalInfusionTime.minutes) || 0);
-                        const expectedHours = Math.floor(expectedTotalMins / 60);
-                        const expectedMins = Math.round(expectedTotalMins % 60);
-                        const actualDisplay = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-                        const expectedDisplay = expectedHours > 0 ? `${expectedHours}h ${expectedMins}m` : `${expectedMins}m`;
-                        return `${actualDisplay} = ${expectedDisplay}`;
-                      })()}</div>
+                    <div className="validation-method" style={{
+                      padding: '16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px'
+                    }}>
+                      <div style={{
+                        padding: '12px 16px',
+                        background: 'white',
+                        border: '1px solid #86efac',
+                        borderLeft: '4px solid #22c55e',
+                        borderRadius: '6px',
+                        color: '#14532d',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                        <span style={{ fontSize: '16px', color: '#22c55e' }}>✓</span>
+                        All steps are valid
+                      </div>
+                      <div style={{
+                        padding: '12px 16px',
+                        background: 'white',
+                        border: '1px solid #86efac',
+                        borderLeft: '4px solid #22c55e',
+                        borderRadius: '6px',
+                        color: '#14532d',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                        <span style={{ fontSize: '16px', color: '#22c55e' }}>✓</span>
+                        Total volume: {customStepsValidation.stepVolumeTotal?.toFixed(1)} mL = {inputs.totalInfusionVolume} mL
+                      </div>
+                      <div style={{
+                        padding: '12px 16px',
+                        background: 'white',
+                        border: '1px solid #86efac',
+                        borderLeft: '4px solid #22c55e',
+                        borderRadius: '6px',
+                        color: '#14532d',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                        <span style={{ fontSize: '16px', color: '#22c55e' }}>✓</span>
+                        Total duration: {Math.round(customStepsValidation.stepDurationTotal || 0)} min = {(() => {
+                          const totalMins = customStepsValidation.stepDurationTotal || 0;
+                          const hours = Math.floor(totalMins / 60);
+                          const mins = Math.round(totalMins % 60);
+                          const expectedTotalMins = (parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + (parseInt(inputs.totalInfusionTime.minutes) || 0);
+                          const expectedHours = Math.floor(expectedTotalMins / 60);
+                          const expectedMins = Math.round(expectedTotalMins % 60);
+                          const actualDisplay = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                          const expectedDisplay = expectedHours > 0 ? `${expectedHours}h ${expectedMins}m` : `${expectedMins}m`;
+                          return `${actualDisplay} = ${expectedDisplay}`;
+                        })()}
+                      </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="validation-results-section unacceptable">
-                    <div className="validation-results-header">
-                      <X size={20} className="validation-x" />
-                      <h4>Validation Failed</h4>
+                  <div className="validation-results-section" style={{
+                    background: 'linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%)',
+                    border: '2px solid #ff6b6b',
+                    borderRadius: '12px',
+                    padding: '0',
+                    overflow: 'hidden'
+                  }}>
+                    <div className="validation-results-header" style={{
+                      background: 'linear-gradient(90deg, #dc3545 0%, #c82333 100%)',
+                      color: 'white',
+                      padding: '12px 16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <X size={20} />
+                      <h4 style={{ margin: 0, fontWeight: 'bold' }}>Validation Failed</h4>
                     </div>
-                    <div className="validation-method">
+                    <div className="validation-method" style={{
+                      padding: '16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px'
+                    }}>
                       {!customStepsValidation.volumeValid && (
-                        <div>✗ {customStepsValidation.totalVolumeError}</div>
+                        <div style={{
+                          padding: '12px 16px',
+                          background: 'white',
+                          border: '1px solid #ff8787',
+                          borderLeft: '4px solid #ff4757',
+                          borderRadius: '6px',
+                          color: '#c0392b',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}>
+                          <span style={{ fontSize: '16px' }}>✗</span>
+                          {customStepsValidation.totalVolumeError}
+                        </div>
                       )}
                       {!customStepsValidation.durationValid && (
-                        <div>✗ {customStepsValidation.totalDurationError}</div>
+                        <div style={{
+                          padding: '12px 16px',
+                          background: 'white',
+                          border: '1px solid #ff8787',
+                          borderLeft: '4px solid #ff4757',
+                          borderRadius: '6px',
+                          color: '#c0392b',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}>
+                          <span style={{ fontSize: '16px' }}>✗</span>
+                          {customStepsValidation.totalDurationError}
+                        </div>
                       )}
                       {customStepsValidation.stepsValid.some(s => !s.isValid) && (
-                        <div>✗ Some steps have errors (see red indicators)</div>
+                        <div style={{
+                          padding: '12px 16px',
+                          background: '#fff9e6',
+                          border: '1px solid #ffd93d',
+                          borderLeft: '4px solid #ffb800',
+                          borderRadius: '6px',
+                          color: '#8b6914',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}>
+                          <span style={{ fontSize: '16px' }}>⚠</span>
+                          Some steps have errors (see red indicators)
+                        </div>
                       )}
                     </div>
                   </div>
@@ -4212,8 +5198,6 @@ const RedesignedPumpCalculator = () => {
             </div>
           </div>
         )}
-
-
 
         {/* Results Section */}
         {showResults && results && (
@@ -4350,11 +5334,28 @@ const RedesignedPumpCalculator = () => {
                   
                   <div className="table-body">
                     {results.infusionSteps.map((step, index) => (
-                      <div key={index} className={`table-row ${step.isFlush ? 'flush-step' : ''}`}>
-                        <div className="cell-step">Step {step.step}</div>
+                      <div key={index} className={`table-row ${step.isFlush ? 'flush-step' : ''} ${step.curlinAdjusted ? 'curlin-adjusted' : ''} ${step.compensated ? 'compensated-step' : ''}`}>
+                        <div className="cell-step">
+                          Step {step.step}
+                          {step.curlinCompatible && (
+                            <span className="curlin-badge" title="Curlin Compatible">✓</span>
+                          )}
+                        </div>
                         <div className="cell-rate">{step.rate}</div>
                         <div className="cell-duration">{step.duration} min</div>
-                        <div className="cell-volume">{step.volume}</div>
+                        <div className="cell-volume">
+                          {step.volume}
+                          {step.curlinAdjusted && (
+                            <span className="volume-adjustment" title={`Adjusted from ${step.originalVolume} mL for Curlin compatibility`}>
+                              {' '}(was {step.originalVolume})
+                            </span>
+                          )}
+                          {step.compensated && (
+                            <span className="volume-compensation" title={`Compensated by ${step.compensationAmount > 0 ? '+' : ''}{step.compensationAmount.toFixed(1)} mL`}>
+                              {' '}({step.compensationAmount > 0 ? '+' : ''}{step.compensationAmount.toFixed(1)})
+                            </span>
+                          )}
+                        </div>
                         <div className="cell-description">{step.description}</div>
                       </div>
                     ))}
@@ -4379,6 +5380,32 @@ const RedesignedPumpCalculator = () => {
                         })()}
                       </div>
                     </div>
+                    {/* Curlin Compatibility Status */}
+                    {(() => {
+                      const mainInfusionStep = results.infusionSteps[results.infusionSteps.length - 2];
+                      if (mainInfusionStep && !mainInfusionStep.isFlush) {
+                        const decimal = mainInfusionStep.volume % 1;
+                        const isCompatible = decimal === 0 || decimal === 0.5;
+                        return (
+                          <div className="summary-row curlin-status">
+                            <div className="summary-label">Curlin Compatibility:</div>
+                            <div className={`summary-value ${isCompatible ? 'compatible' : 'incompatible'}`}>
+                              {isCompatible ? (
+                                <>
+                                  <Check size={16} /> Compatible
+                                  {mainInfusionStep.curlinAdjusted && ' (Adjusted)'}
+                                </>
+                              ) : (
+                                <>
+                                  <AlertCircle size={16} /> Review Required
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
               </div>
@@ -4451,6 +5478,35 @@ const RedesignedPumpCalculator = () => {
                 <Layers size={16} />
                 Calculate Custom Rate
               </button>
+            
+            {/* Calibration Button - Shows when custom steps are validated or calculated */}
+            {inputs.useCustomSteps && (
+              (results && results.infusionSteps && results.infusionSteps.length > 0) || 
+              (customStepsValidation.isAcceptable && customInfusionSteps.length > 1)
+            ) && (
+              <button 
+                className="copy-note-btn calibrate-btn"
+                onClick={() => {
+                  setShowCalibrationFields(!showCalibrationFields);
+                  setCalibrationMode(null);
+                  setCalibrationInputs({ newRate: '', newTimeHours: '', newTimeMinutes: '' });
+                  setCalibrationErrors({});
+                }}
+                style={{
+                  background: showCalibrationFields ? '#ff5500' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderColor: showCalibrationFields ? '#ff5500' : '#667eea',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginLeft: '10px'
+                }}
+                title="Calibrate infusion rates and times"
+              >
+                <Sliders size={16} />
+                {showCalibrationFields ? 'Close' : 'Calibrate'}
+              </button>
+            )}
           </div>
           
           {/* Error Message Display */}
@@ -4458,6 +5514,227 @@ const RedesignedPumpCalculator = () => {
             <div className="action-error-message">
               <AlertCircle size={16} />
               <span>{fixedInfusionError}</span>
+            </div>
+          )}
+          
+          {/* Inline Calibration Fields */}
+          {showCalibrationFields && inputs.useCustomSteps && (
+            (results && results.infusionSteps) || 
+            (customStepsValidation.isAcceptable && customInfusionSteps.length > 1)
+          ) && (
+            <div className="calibration-fields-container" style={{
+              marginTop: '15px',
+              padding: '20px',
+              background: 'linear-gradient(135deg, #fff5f0 0%, #ffe4d6 100%)',
+              borderRadius: '12px',
+              border: '2px solid #ff8c42',
+              boxShadow: '0 4px 6px rgba(255, 140, 66, 0.1)'
+            }}>
+              <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '15px', fontWeight: '600', color: '#ff6900' }}>
+                  ⚙️ Calibration Options
+                </div>
+                {calibrationHistory.length > 0 && (
+                  <select 
+                    value={currentHistoryIndex}
+                    onChange={(e) => revertToHistory(parseInt(e.target.value))}
+                    style={{
+                      padding: '6px 10px',
+                      fontSize: '13px',
+                      border: '1px solid #ff8c42',
+                      borderRadius: '6px',
+                      background: '#fff',
+                      color: '#ff6900',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {calibrationHistory.map((entry, index) => (
+                      <option key={index} value={index}>
+                        {entry.type} {index === currentHistoryIndex ? '(Current)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              
+              <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
+                {/* Rate Adjustment Option */}
+                <button
+                  onClick={() => {
+                    setCalibrationMode('rate');
+                    setCalibrationErrors({});
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: calibrationMode === 'rate' ? '#fff' : '#fff8f5',
+                    border: calibrationMode === 'rate' ? '2px solid #ff6900' : '1px solid #ffb380',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <Gauge size={18} style={{ color: '#ff6900' }} />
+                    <span style={{ fontWeight: '600' }}>Adjust Rate</span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6c757d', textAlign: 'left' }}>
+                    Change main infusion & flush rates
+                  </div>
+                </button>
+                
+                {/* Time Adjustment Option */}
+                <button
+                  onClick={() => {
+                    setCalibrationMode('time');
+                    setCalibrationErrors({});
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: calibrationMode === 'time' ? '#fff' : '#fff8f5',
+                    border: calibrationMode === 'time' ? '2px solid #ff6900' : '1px solid #ffb380',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <Clock size={18} style={{ color: '#ff6900' }} />
+                    <span style={{ fontWeight: '600' }}>Adjust Time</span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6c757d', textAlign: 'left' }}>
+                    Change total infusion duration
+                  </div>
+                </button>
+              </div>
+              
+              {/* Input Fields Based on Mode */}
+              {calibrationMode === 'rate' && (
+                <div style={{ marginTop: '15px' }}>
+                  <label style={{ fontSize: '14px', fontWeight: '500', color: '#ff6900', marginBottom: '8px', display: 'block' }}>
+                    New Infusion Rate (mL/hr):
+                  </label>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <input
+                      type="number"
+                      value={calibrationInputs.newRate}
+                      onChange={(e) => setCalibrationInputs(prev => ({ ...prev, newRate: e.target.value }))}
+                      placeholder="Enter rate (1-999)"
+                      min="1"
+                      max="999"
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        border: calibrationErrors.rate ? '2px solid #dc3545' : '1px solid #ffb380',
+                        borderRadius: '4px',
+                        fontSize: '14px'
+                      }}
+                    />
+                    <button
+                      onClick={handleCalibration}
+                      disabled={!calibrationInputs.newRate}
+                      style={{
+                        padding: '10px 24px',
+                        background: calibrationInputs.newRate ? 'linear-gradient(135deg, #ff6900 0%, #ff8c42 100%)' : '#ccc',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontWeight: '600',
+                        cursor: calibrationInputs.newRate ? 'pointer' : 'not-allowed',
+                        opacity: calibrationInputs.newRate ? 1 : 0.6,
+                        boxShadow: calibrationInputs.newRate ? '0 2px 4px rgba(255, 105, 0, 0.2)' : 'none',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      Apply
+                    </button>
+                  </div>
+                  {calibrationErrors.rate && (
+                    <div style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px' }}>
+                      {calibrationErrors.rate}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {calibrationMode === 'time' && (
+                <div style={{ marginTop: '15px' }}>
+                  <label style={{ fontSize: '14px', fontWeight: '500', color: '#ff6900', marginBottom: '8px', display: 'block' }}>
+                    New Total Time:
+                  </label>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <input
+                      type="number"
+                      value={calibrationInputs.newTimeHours}
+                      onChange={(e) => setCalibrationInputs(prev => ({ ...prev, newTimeHours: e.target.value }))}
+                      placeholder="Hours"
+                      min="0"
+                      style={{
+                        width: '80px',
+                        padding: '8px 12px',
+                        border: calibrationErrors.time ? '2px solid #dc3545' : '1px solid #ffb380',
+                        borderRadius: '4px',
+                        fontSize: '14px'
+                      }}
+                    />
+                    <span style={{ color: '#ff6900' }}>hr</span>
+                    <input
+                      type="number"
+                      value={calibrationInputs.newTimeMinutes}
+                      onChange={(e) => setCalibrationInputs(prev => ({ ...prev, newTimeMinutes: e.target.value }))}
+                      placeholder="Minutes"
+                      min="0"
+                      max="59"
+                      style={{
+                        width: '80px',
+                        padding: '8px 12px',
+                        border: calibrationErrors.time ? '2px solid #dc3545' : '1px solid #ffb380',
+                        borderRadius: '4px',
+                        fontSize: '14px'
+                      }}
+                    />
+                    <span style={{ color: '#ff6900' }}>min</span>
+                    <button
+                      onClick={handleCalibration}
+                      disabled={!calibrationInputs.newTimeHours && !calibrationInputs.newTimeMinutes}
+                      style={{
+                        padding: '10px 24px',
+                        background: (calibrationInputs.newTimeHours || calibrationInputs.newTimeMinutes) ? 'linear-gradient(135deg, #ff6900 0%, #ff8c42 100%)' : '#ccc',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontWeight: '600',
+                        cursor: (calibrationInputs.newTimeHours || calibrationInputs.newTimeMinutes) ? 'pointer' : 'not-allowed',
+                        opacity: (calibrationInputs.newTimeHours || calibrationInputs.newTimeMinutes) ? 1 : 0.6,
+                        boxShadow: (calibrationInputs.newTimeHours || calibrationInputs.newTimeMinutes) ? '0 2px 4px rgba(255, 105, 0, 0.2)' : 'none',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      Apply
+                    </button>
+                  </div>
+                  {calibrationErrors.time && (
+                    <div style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px' }}>
+                      {calibrationErrors.time}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {calibrationErrors.general && (
+                <div style={{ 
+                  color: '#dc3545', 
+                  fontSize: '12px', 
+                  marginTop: '10px',
+                  padding: '8px',
+                  background: '#fee',
+                  borderRadius: '4px',
+                  border: '1px solid #fcc'
+                }}>
+                  {calibrationErrors.general}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -4854,6 +6131,8 @@ const RedesignedPumpCalculator = () => {
             </div>
           </div>
         )}
+
+        {/* Removed old AI Adjustment Modal - now using inline calibration fields */}
       </div>
     </div>
   );

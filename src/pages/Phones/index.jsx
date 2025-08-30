@@ -50,9 +50,9 @@ const Phones = () => {
   const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState(null);
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, contactId: null });
-  const [groups, setGroups] = useState(['Family', 'Work', 'Friends']);
-  const [selectedGroup, setSelectedGroup] = useState('All Contacts');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [selectedLetter, setSelectedLetter] = useState(null);
+  const [copyNotification, setCopyNotification] = useState(null);
 
   // Form state for new/edit contact
   const [formData, setFormData] = useState({
@@ -104,7 +104,7 @@ const Phones = () => {
 
   // Group contacts alphabetically
   const groupedContacts = useMemo(() => {
-    const filtered = contacts.filter(contact => {
+    let filtered = contacts.filter(contact => {
       const searchLower = searchQuery.toLowerCase();
       const contactName = (contact.name || contact.firstName || '').toLowerCase();
       const phoneMatch = contact.phones?.some(p => p.value?.includes(searchQuery)) || contact.phone?.includes(searchQuery);
@@ -114,6 +114,15 @@ const Phones = () => {
              emailMatch ||
              contact.company?.toLowerCase().includes(searchLower);
     });
+
+
+    // Filter by selected letter
+    if (selectedLetter) {
+      filtered = filtered.filter(contact => {
+        const nameToUse = contact.name || contact.firstName || '#';
+        return nameToUse[0].toUpperCase() === selectedLetter;
+      });
+    }
 
     const grouped = {};
     filtered.forEach(contact => {
@@ -126,7 +135,7 @@ const Phones = () => {
     });
 
     return grouped;
-  }, [contacts, searchQuery]);
+  }, [contacts, searchQuery, selectedLetter]);
 
   // Handle image upload
   const handleImageUpload = async (e) => {
@@ -271,6 +280,7 @@ const Phones = () => {
     setShowAddContact(true);
   };
 
+
   const getInitials = (contact) => {
     const name = contact.name || `${contact.firstName || ''} ${contact.lastName || ''}`.trim();
     if (!name) return '?';
@@ -279,6 +289,19 @@ const Phones = () => {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
     return name[0].toUpperCase();
+  };
+
+  // Copy to clipboard function
+  const copyToClipboard = async (text, label) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyNotification(`${label} copied to clipboard`);
+      setTimeout(() => setCopyNotification(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      setCopyNotification('Failed to copy');
+      setTimeout(() => setCopyNotification(null), 2000);
+    }
   };
 
   return (
@@ -291,13 +314,13 @@ const Phones = () => {
           <span className="contact-count">{contacts.length}</span>
         </div>
 
-        {/* Search Section */}
+        {/* iPhone-style Search Bar */}
         <div className="toolbar-section search-section flex-grow">
-          <div className="toolbar-search">
-            <Search size={18} className="search-icon" />
+          <div className="iphone-search-bar">
+            <Search size={16} className="search-icon" />
             <input
               type="text"
-              placeholder="Search contacts"
+              placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -306,8 +329,9 @@ const Phones = () => {
               <button 
                 className="clear-search"
                 onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
               >
-                <X size={16} />
+                <X size={14} />
               </button>
             )}
           </div>
@@ -368,46 +392,9 @@ const Phones = () => {
       <div className="phones-content">
         {/* Apple-style Contacts Container */}
         <div className="apple-contacts-container">
-          {/* Groups Sidebar */}
-          <div className="groups-sidebar">
-            <div className="groups-header">
-              <span>Groups</span>
-              <button className="add-group-btn" title="Add Group">
-                <Plus size={14} />
-              </button>
-            </div>
-            <div className="groups-list">
-              <div 
-                className={`group-item ${selectedGroup === 'All Contacts' ? 'active' : ''}`}
-                onClick={() => setSelectedGroup('All Contacts')}
-              >
-                All Contacts
-              </div>
-              {groups.map(group => (
-                <div 
-                  key={group}
-                  className={`group-item ${selectedGroup === group ? 'active' : ''}`}
-                  onClick={() => setSelectedGroup(group)}
-                >
-                  {group}
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Contacts List */}
           <div className="contacts-list apple-style">
-            {/* Search Bar */}
-            <div className="apple-search-bar">
-              <Search size={16} />
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
             {/* Contacts */}
             <div className="contacts-scroll">
               {loading ? (
@@ -452,11 +439,16 @@ const Phones = () => {
             {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map(letter => (
               <div
                 key={letter}
-                className={`nav-letter ${groupedContacts[letter] ? 'active' : ''}`}
+                className={`nav-letter ${groupedContacts[letter] ? 'active' : ''} ${selectedLetter === letter ? 'selected' : ''}`}
                 onClick={() => {
-                  const element = document.getElementById(`letter-${letter}`);
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
+                  if (selectedLetter === letter) {
+                    setSelectedLetter(null);
+                  } else {
+                    setSelectedLetter(letter);
+                    const element = document.getElementById(`letter-${letter}`);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' });
+                    }
                   }
                 }}
               >
@@ -794,11 +786,15 @@ const Phones = () => {
                   {/* Display phones */}
                   {(selectedContact.phones || []).map((phone, index) => (
                     phone.value && (
-                      <div key={`phone-${index}`} className="detail-item">
+                      <div 
+                        key={`phone-${index}`} 
+                        className="detail-item"
+                        onClick={() => copyToClipboard(phone.value, phone.type || 'Phone')}
+                      >
                         <Phone size={18} />
                         <div className="detail-content">
                           <span className="detail-label">{phone.type || 'Phone'}</span>
-                          <a href={`tel:${phone.value}`}>{phone.value}</a>
+                          <a href={`tel:${phone.value}`} onClick={(e) => e.stopPropagation()}>{phone.value}</a>
                         </div>
                       </div>
                     )
@@ -806,21 +802,27 @@ const Phones = () => {
                   
                   {/* Legacy phone fields */}
                   {!selectedContact.phones?.length && selectedContact.phone && (
-                    <div className="detail-item">
+                    <div 
+                      className="detail-item"
+                      onClick={() => copyToClipboard(selectedContact.phone, 'Phone')}
+                    >
                       <Phone size={18} />
                       <div className="detail-content">
                         <span className="detail-label">Phone</span>
-                        <a href={`tel:${selectedContact.phone}`}>{selectedContact.phone}</a>
+                        <a href={`tel:${selectedContact.phone}`} onClick={(e) => e.stopPropagation()}>{selectedContact.phone}</a>
                       </div>
                     </div>
                   )}
                   
                   {!selectedContact.phones?.length && selectedContact.mobile && (
-                    <div className="detail-item">
+                    <div 
+                      className="detail-item"
+                      onClick={() => copyToClipboard(selectedContact.mobile, 'Mobile')}
+                    >
                       <Phone size={18} />
                       <div className="detail-content">
                         <span className="detail-label">Mobile</span>
-                        <a href={`tel:${selectedContact.mobile}`}>{selectedContact.mobile}</a>
+                        <a href={`tel:${selectedContact.mobile}`} onClick={(e) => e.stopPropagation()}>{selectedContact.mobile}</a>
                       </div>
                     </div>
                   )}
@@ -828,11 +830,15 @@ const Phones = () => {
                   {/* Display emails */}
                   {(selectedContact.emails || []).map((email, index) => (
                     email.value && (
-                      <div key={`email-${index}`} className="detail-item">
+                      <div 
+                        key={`email-${index}`} 
+                        className="detail-item"
+                        onClick={() => copyToClipboard(email.value, email.type || 'Email')}
+                      >
                         <Mail size={18} />
                         <div className="detail-content">
                           <span className="detail-label">{email.type || 'Email'}</span>
-                          <a href={`mailto:${email.value}`}>{email.value}</a>
+                          <a href={`mailto:${email.value}`} onClick={(e) => e.stopPropagation()}>{email.value}</a>
                         </div>
                       </div>
                     )
@@ -840,17 +846,23 @@ const Phones = () => {
                   
                   {/* Legacy email field */}
                   {!selectedContact.emails?.length && selectedContact.email && (
-                    <div className="detail-item">
+                    <div 
+                      className="detail-item"
+                      onClick={() => copyToClipboard(selectedContact.email, 'Email')}
+                    >
                       <Mail size={18} />
                       <div className="detail-content">
                         <span className="detail-label">Email</span>
-                        <a href={`mailto:${selectedContact.email}`}>{selectedContact.email}</a>
+                        <a href={`mailto:${selectedContact.email}`} onClick={(e) => e.stopPropagation()}>{selectedContact.email}</a>
                       </div>
                     </div>
                   )}
 
                   {selectedContact.address && (
-                    <div className="detail-item">
+                    <div 
+                      className="detail-item"
+                      onClick={() => copyToClipboard(selectedContact.address, 'Address')}
+                    >
                       <MapPin size={18} />
                       <div className="detail-content">
                         <span className="detail-label">Address</span>
@@ -860,7 +872,10 @@ const Phones = () => {
                   )}
 
                   {selectedContact.notes && (
-                    <div className="detail-item">
+                    <div 
+                      className="detail-item"
+                      onClick={() => copyToClipboard(selectedContact.notes, 'Notes')}
+                    >
                       <Building size={18} />
                       <div className="detail-content">
                         <span className="detail-label">Notes</span>
@@ -873,7 +888,16 @@ const Phones = () => {
             )}
           </div>
         )}
+
       </div>
+      
+      {/* Copy Notification */}
+      {copyNotification && (
+        <div className="copy-notification">
+          <Check size={16} />
+          {copyNotification}
+        </div>
+      )}
     </div>
   );
 };
