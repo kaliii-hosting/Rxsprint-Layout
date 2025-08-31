@@ -79,7 +79,6 @@ const Layout = ({ children }) => {
     { path: '/calculator', icon: Calculator, label: 'Calculator' },
     { path: '/medications', icon: Pill, label: 'Medications' },
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
-    { path: '/workflow', icon: GitBranch, label: 'Workflow' },
     { path: '/note-generator', icon: Zap, label: 'Note Generator' },
     { path: '/pump', icon: CalcIcon, label: 'Pump' },
     { path: '/supplies', icon: Package, label: 'Supplies' },

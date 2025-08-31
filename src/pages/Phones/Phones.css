@@ -246,6 +246,7 @@
   display: flex;
   overflow: hidden;
   background: var(--content-bg, #ffffff);
+  position: relative;
 }
 
 /* ============= Contacts List ============= */
@@ -253,6 +254,7 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  display: flex;
 }
 
 .contacts-list.mobile {
@@ -267,6 +269,13 @@
 .contacts-list.desktop {
   width: 300px;
   border-right: 1px solid var(--border-color, #e1e1e6);
+}
+
+/* Contacts Content Area */
+.contacts-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .contacts-scroll {
@@ -732,26 +741,37 @@
 
 /* Alphabet Navigation */
 .alphabet-navigation {
-  position: fixed;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
+  width: 1.25rem;
+  min-width: 16px;
+  max-width: 32px;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  z-index: 100;
-  padding: 4px 0;
+  justify-content: space-around;
+  align-items: center;
+  background: var(--content-bg, #ffffff);
+  border-left: 0.5px solid var(--border-color, #e1e1e6);
+  padding: 0.25rem 0;
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .alphabet-letter {
-  padding: 1px 6px;
-  font-size: 11px;
+  font-size: 0.6rem;
   font-weight: 500;
   color: #007AFF;
   cursor: pointer;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1;
   transition: opacity 0.2s;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 0.8rem;
+  max-height: 2rem;
+  overflow: hidden;
 }
 
 .alphabet-letter:active {
@@ -763,19 +783,64 @@
   cursor: default;
 }
 
-/* Adjust content area for alphabet nav */
-.contacts-list.mobile {
-  padding-right: 24px;
-}
-
-@media (min-width: 769px) {
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
   .alphabet-navigation {
-    right: 8px;
+    width: 1rem;
+    min-width: 14px;
+    padding: 0.2rem 0;
   }
   
   .alphabet-letter {
-    padding: 2px 8px;
-    font-size: 13px;
+    font-size: 0.55rem;
+    min-height: 0.7rem;
+    max-height: 1.5rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 481px) and (max-width: 768px) {
+  .alphabet-navigation {
+    width: 1.2rem;
+    min-width: 16px;
+    padding: 0.3rem 0;
+  }
+  
+  .alphabet-letter {
+    font-size: 0.58rem;
+    min-height: 0.75rem;
+    max-height: 1.8rem;
+  }
+}
+
+/* Desktop adjustments */
+@media (min-width: 769px) {
+  .alphabet-navigation {
+    width: 1.5rem;
+    min-width: 20px;
+    max-width: 40px;
+    padding: 0.3rem 0;
+  }
+  
+  .alphabet-letter {
+    font-size: 0.65rem;
+    min-height: 0.9rem;
+    max-height: 2.2rem;
+  }
+}
+
+/* Ensure letters stay visible at high zoom levels */
+@media (min-width: 1200px) {
+  .alphabet-navigation {
+    width: 1.8rem;
+    min-width: 24px;
+    max-width: 48px;
+  }
+  
+  .alphabet-letter {
+    font-size: 0.7rem;
+    min-height: 1rem;
+    max-height: 2.5rem;
   }
 }
 

@@ -100,14 +100,7 @@ const locations = [
     class: 'marker-supplies',
     coords: [29.5423, -95.0956],
     path: '/supplies'
-  },
-  {
-    name: 'Workflow',
-    icon: GitBranch,
-    class: 'marker-workflow',
-    coords: [29.5123, -95.1656],
-    path: '/workflow'
-  },
+  }
 ];
 
 // African locations - spread across the entire continent

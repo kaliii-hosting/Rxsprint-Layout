@@ -3,19 +3,15 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MapPin, Use
 import { firestore } from '../../config/firebase';
 import { collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import EnterpriseHeader, { TabGroup, TabButton, HeaderDivider, ActionGroup, ActionButton } from '../../components/EnterpriseHeader/EnterpriseHeader';
-import './Calendar.css';
-import './CalendarSidebarFix.css';
-import './CalendarResponsive.css';
-import './CalendarCompact.css';
-import './CalendarMobileFull.css';
-import './CalendarMobileHeader.css';
-import './CalendarHeaderFixed.css';
-import './CalendarMobileHeaderFix.css';
-import './CalendarMobileFinal.css';
-import './CalendarResponsiveFix.css';
+import './LightCalendar.css';
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [nextMonthDate, setNextMonthDate] = useState(() => {
+    const next = new Date();
+    next.setMonth(next.getMonth() + 1);
+    return next;
+  });
   const [selectedDate, setSelectedDate] = useState(new Date());
   // Removed view state - now only using month view
   const [showEventModal, setShowEventModal] = useState(false);
@@ -47,8 +43,8 @@ const Calendar = () => {
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 767);
 
-  // Event colors array for variety
-  const eventColors = ['#ff5500', '#ff6b1a', '#ff8533', '#ffa04d', '#ff4d00', '#ff7333'];
+  // Event colors array for variety (using lighter, pastel colors)
+  const eventColors = ['#FF6900', '#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#00BCD4'];
   
   const getEventColor = (index) => {
     return eventColors[index % eventColors.length];
@@ -215,7 +211,9 @@ const Calendar = () => {
   const getFirstDayOfMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    return new Date(year, month, 1).getDay();
+    const firstDay = new Date(year, month, 1).getDay();
+    // Convert Sunday (0) to Monday-first week (Sunday becomes 6)
+    return firstDay === 0 ? 6 : firstDay - 1;
   };
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
@@ -224,9 +222,12 @@ const Calendar = () => {
 
   const navigate = (direction) => {
     const newDate = new Date(currentDate);
+    const newNextDate = new Date(currentDate);
     // Always navigate by month since we're only using month view
     newDate.setMonth(currentDate.getMonth() + direction);
+    newNextDate.setMonth(currentDate.getMonth() + direction + 1);
     setCurrentDate(newDate);
+    setNextMonthDate(newNextDate);
   };
 
   const getEventsForDate = (date) => {
@@ -386,9 +387,172 @@ const Calendar = () => {
     );
   };
 
-  const renderCalendarDays = () => {
+  const renderIOSCalendarDays = () => {
+    const daysInMonth = getDaysInMonth(currentDate);
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+    const days = [];
+    
+    // Previous month days
+    const prevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
+    const daysInPrevMonth = getDaysInMonth(prevMonth);
+    
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const day = daysInPrevMonth - i;
+      const date = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), day);
+      days.push(
+        <div key={`prev-${day}`} className="ios-day other-month">
+          <div className="ios-day-number">{day}</div>
+        </div>
+      );
+    }
+    
+    // Current month days
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      const dayEvents = getEventsForDate(date);
+      const isToday = date.toDateString() === new Date().toDateString();
+      const isSelected = date.toDateString() === selectedDate.toDateString();
+      const isFirstClicked = firstClickedDate && date.toDateString() === firstClickedDate.toDateString();
+      
+      const minDate = firstClickedDate && secondClickedDate ? 
+        (firstClickedDate < secondClickedDate ? firstClickedDate : secondClickedDate) : null;
+      const maxDate = firstClickedDate && secondClickedDate ? 
+        (firstClickedDate > secondClickedDate ? firstClickedDate : secondClickedDate) : null;
+      
+      const isInRange = minDate && maxDate && date > minDate && date < maxDate;
+      const isRangeStart = minDate && date.toDateString() === minDate.toDateString();
+      const isRangeEnd = maxDate && date.toDateString() === maxDate.toDateString();
+      
+      const classNames = [
+        'ios-day',
+        isToday && 'today',
+        (isSelected || (isFirstClicked && !secondClickedDate)) && 'selected',
+        isInRange && 'in-range',
+        isRangeStart && 'range-start',
+        isRangeEnd && 'range-end'
+      ].filter(Boolean).join(' ');
+      
+      days.push(
+        <div
+          key={day}
+          className={classNames}
+          onClick={() => handleDayClick(date)}
+        >
+          <div className="ios-day-number">{day}</div>
+          {dayEvents.length > 0 && (
+            <div className="ios-event-dots">
+              {dayEvents.slice(0, 3).map((_, idx) => (
+                <div key={idx} className="ios-event-dot" />
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    // Next month days
+    const totalCells = days.length;
+    const remainingCells = 42 - totalCells;
+    
+    for (let day = 1; day <= remainingCells; day++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, day);
+      days.push(
+        <div key={`next-${day}`} className="ios-day other-month">
+          <div className="ios-day-number">{day}</div>
+        </div>
+      );
+    }
+    
+    return days;
+  };
+
+  const renderEnterpriseCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDay = getFirstDayOfMonth(currentDate);
+    const days = [];
+    
+    // Get previous month days
+    const prevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
+    const daysInPrevMonth = getDaysInMonth(prevMonth);
+    
+    // Add empty cells for alignment (Sunday-first)
+    const startDay = firstDay === 0 ? 0 : firstDay + 1;
+    for (let i = startDay - 1; i >= 0; i--) {
+      const date = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), daysInPrevMonth - i);
+      days.push(
+        <div key={`prev-${i}`} className="calendar-day other-month">
+          <div className="day-number">{daysInPrevMonth - i}</div>
+        </div>
+      );
+    }
+    
+    // Add days of current month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      const dayEvents = getEventsForDate(date);
+      const isToday = date.toDateString() === new Date().toDateString();
+      const isSelected = date.toDateString() === selectedDate.toDateString();
+      const isFirstClicked = firstClickedDate && date.toDateString() === firstClickedDate.toDateString();
+      const isSecondClicked = secondClickedDate && date.toDateString() === secondClickedDate.toDateString();
+      
+      const minDate = firstClickedDate && secondClickedDate ? 
+        (firstClickedDate < secondClickedDate ? firstClickedDate : secondClickedDate) : null;
+      const maxDate = firstClickedDate && secondClickedDate ? 
+        (firstClickedDate > secondClickedDate ? firstClickedDate : secondClickedDate) : null;
+      
+      const isInRange = minDate && maxDate && date > minDate && date < maxDate;
+      const isRangeStart = minDate && date.toDateString() === minDate.toDateString();
+      const isRangeEnd = maxDate && date.toDateString() === maxDate.toDateString();
+      
+      const classNames = [
+        'calendar-day',
+        isToday && 'today',
+        isSelected && 'selected',
+        isFirstClicked && !secondClickedDate && 'selected',
+        isInRange && 'in-range',
+        isRangeStart && 'range-start',
+        isRangeEnd && 'range-end',
+        dayEvents.length > 0 && 'has-events'
+      ].filter(Boolean).join(' ');
+      
+      days.push(
+        <div
+          key={day}
+          className={classNames}
+          onClick={() => handleDayClick(date)}
+          onContextMenu={(e) => handleDayRightClick(e, date)}
+        >
+          <div className="day-number">{day}</div>
+          <div className="day-events">
+            {dayEvents.slice(0, 3).map((event, idx) => (
+              <div key={idx} className="event-indicator" />
+            ))}
+            {dayEvents.length > 0 && (
+              <div className="event-count">{dayEvents.length} event{dayEvents.length > 1 ? 's' : ''}</div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    // Add next month days to fill the grid
+    const totalCells = days.length;
+    const remainingCells = 42 - totalCells; // 6 weeks * 7 days
+    for (let day = 1; day <= remainingCells; day++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, day);
+      days.push(
+        <div key={`next-${day}`} className="calendar-day other-month">
+          <div className="day-number">{day}</div>
+        </div>
+      );
+    }
+    
+    return days;
+  };
+
+  const renderCalendarDays = (monthDate = currentDate, monthOffset = 0) => {
+    const daysInMonth = getDaysInMonth(monthDate);
+    const firstDay = getFirstDayOfMonth(monthDate);
     const weeks = [];
     let week = [];
 
@@ -401,7 +565,7 @@ const Calendar = () => {
 
     // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
       const dayEvents = getEventsForDate(date);
       const isToday = date.toDateString() === new Date().toDateString();
       const isSelected = date.toDateString() === selectedDate.toDateString();
@@ -422,32 +586,10 @@ const Calendar = () => {
       week.push(
         <td
           key={day}
-          className={`calendar-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''} ${dayEvents.length > 0 ? 'has-events' : ''} ${isFirstClicked && !secondClickedDate ? 'first-clicked' : ''} ${isInRange ? 'in-range' : ''} ${isRangeStart ? 'range-start' : ''} ${isRangeEnd ? 'range-end' : ''}`}
+          className={`calendar-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''} ${isFirstClicked && !secondClickedDate ? 'first-clicked' : ''} ${isInRange ? 'in-range' : ''} ${isRangeStart ? 'range-start' : ''} ${isRangeEnd ? 'range-end' : ''}`}
           onClick={() => handleDayClick(date)}
-          onContextMenu={(e) => handleDayRightClick(e, date)}
         >
-          <div className="cell-content">
-            <span className="day-number">{day}</span>
-            {dayEvents.length > 0 && (
-              <>
-                <div className="event-indicators">
-                  {dayEvents.slice(0, 3).map((event) => (
-                    <div 
-                      key={event.id} 
-                      className="event-dot"
-                      style={{ backgroundColor: getEventColor(events.indexOf(event)) }}
-                      title={`${formatEventTime(event.date).split(' ')[0]} - ${event.title}`}
-                    />
-                  ))}
-                  {dayEvents.length > 3 && (
-                    <span className="more-count">+{dayEvents.length - 3}</span>
-                  )}
-                </div>
-                {/* Mobile event count display */}
-                <span className="event-count d-block d-md-none">{dayEvents.length} event{dayEvents.length > 1 ? 's' : ''}</span>
-              </>
-            )}
-          </div>
+          <span className="day-number">{day}</span>
         </td>
       );
 
@@ -484,209 +626,112 @@ const Calendar = () => {
   const dateInfo = getCurrentDateInfo();
 
   return (
-    <div className={`calendar-page page-container ${isCreating ? 'is-creating' : ''}`}>
-      {/* Responsive Toolbar - Notes page style */}
-      <div className={`board-toolbar board-toolbar-${deviceMode}`}>
-        {/* Title Section */}
-        <div className="toolbar-section">
-          <div className="calendar-title-section">
-            <button className="tool-button" onClick={() => navigate(-1)} title="Previous month">
-              <ChevronLeft size={deviceMode === 'mobile' ? 18 : 20} />
-            </button>
-            <div className="calendar-month-display">
-              <CalendarIcon size={deviceMode === 'mobile' ? 16 : 18} />
-              <h2>
-                {deviceMode === 'mobile' 
-                  ? `${monthNames[currentDate.getMonth()].slice(0, 3)} ${currentDate.getFullYear()}`
-                  : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
-                }
-              </h2>
-            </div>
-            <button className="tool-button" onClick={() => navigate(1)} title="Next month">
-              <ChevronRight size={deviceMode === 'mobile' ? 18 : 20} />
-            </button>
+    <div className="calendar-page">
+      {/* Compact Header Toolbar - All in One Row */}
+      <div className="calendar-header-toolbar">
+        {/* Month Navigation */}
+        <div className="header-nav-section">
+          <button className="nav-btn" onClick={() => navigate(-1)} title="Previous month">
+            <ChevronLeft size={18} />
+          </button>
+          <div className="month-display">
+            <span className="month-text">{monthNames[currentDate.getMonth()]}</span>
+            <span className="year-text">{currentDate.getFullYear()}</span>
           </div>
+          <button className="nav-btn" onClick={() => navigate(1)} title="Next month">
+            <ChevronRight size={18} />
+          </button>
         </div>
-        
-        {/* Actions Section */}
-        <div className="toolbar-section actions">
-          <button 
-            className="tool-button accent icon-only"
-            onClick={() => {
-              const dateToUse = selectedDate || new Date();
-              setSelectedDate(dateToUse);
-              setEventForm(prev => ({ ...prev, date: dateToUse }));
-              setIsCreating(true);
-            }}
-            title="Add Event"
-          >
-            <Plus size={deviceMode === 'mobile' ? 18 : 20} />
+
+        {/* Date Range Display */}
+        <div className="header-range-section">
+          {dayCountDisplay ? (
+            <div className="date-range-display">
+              <span className="range-text">
+                {dayCountDisplay.count} days
+              </span>
+              <span className="range-dates">
+                {dayCountDisplay.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - 
+                {dayCountDisplay.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+              <button className="range-clear" onClick={() => {
+                setDayCountDisplay(null);
+                setFirstClickedDate(null);
+                setSecondClickedDate(null);
+              }}>
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <div className="range-placeholder">
+              Click dates to select range
+            </div>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="header-actions-section">
+          <button className="action-btn today-btn" onClick={() => setCurrentDate(new Date())}>
+            Today
+          </button>
+          <button className="action-btn add-btn" onClick={() => {
+            const dateToUse = selectedDate || new Date();
+            setSelectedDate(dateToUse);
+            setEventForm(prev => ({ ...prev, date: dateToUse }));
+            setShowEventModal(true);
+          }}>
+            <Plus size={16} />
+            <span className="btn-text">Add</span>
           </button>
         </div>
       </div>
       
-      <div className="calendar-content">
-        {/* Modern Minimal Calendar */}
-        <div className="modern-calendar-container">
-          {/* Day Counter Badge */}
-          {dayCountDisplay && (
-            <div className="day-counter-badge">
-              <span className="badge-icon">📅</span>
-              <span className="badge-text">
-                {dayCountDisplay.count} days between {dayCountDisplay.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {dayCountDisplay.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </span>
-              <button className="badge-close" onClick={() => {
-                setDayCountDisplay(null);
-                setFirstClickedDate(null);
-                setSecondClickedDate(null);
-              }}>×</button>
-            </div>
-          )}
-
-          {/* Calendar Month View Only */}
-          <table className="modern-calendar-table">
-            <thead>
-              <tr>
-                {dayNames.map(day => (
-                  <th key={day} className="calendar-weekday">{day}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {renderCalendarDays()}
-            </tbody>
-          </table>
+      {/* iOS Calendar Container */}
+      <div className="ios-calendar-container">
+        {/* Calendar Grid */}
+        <div className="ios-calendar-grid">
+          {/* Weekdays */}
+          <div className="ios-weekdays">
+            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
+              <div key={day} className="ios-weekday">{day}</div>
+            ))}
+          </div>
+          
+          {/* Days Grid */}
+          <div className="ios-days-grid">
+            {renderIOSCalendarDays()}
+          </div>
         </div>
 
-        {/* Events Sidebar with Form */}
-        {selectedDate && (
-          <div className="events-sidebar">
-            {/* Show event form when Add Event is clicked */}
-            {isCreating && !editingEvent ? (
-              <div className="sidebar-form">
-                <div className="sidebar-header">
-                  <h3>Add New Event</h3>
-                  <button className="close-form-btn" onClick={() => {
-                    setIsCreating(false);
-                    resetEventForm();
-                  }}>
-                    <X size={20} />
-                  </button>
-                </div>
-                <div className="sidebar-form-content">
-                  <div className="form-group">
-                    <label>Event Title</label>
-                    <input
-                      type="text"
-                      value={eventForm.title}
-                      onChange={(e) => setEventForm(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder="Enter event title"
-                      className="form-input"
-                      autoFocus
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label>Date</label>
-                    <input
-                      type="date"
-                      value={eventForm.date.toISOString().split('T')[0]}
-                      onChange={(e) => setEventForm(prev => ({ ...prev, date: new Date(e.target.value) }))}
-                      className="form-input"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label>Time</label>
-                    <input
-                      type="time"
-                      value={eventForm.time}
-                      onChange={(e) => setEventForm(prev => ({ ...prev, time: e.target.value }))}
-                      className="form-input"
-                    />
-                  </div>
-                  
-                  <div className="form-actions">
-                    <button 
-                      className="btn-secondary" 
-                      onClick={() => {
-                        setIsCreating(false);
-                        resetEventForm();
-                      }}
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      className="btn-primary"
-                      onClick={saveEvent}
-                      disabled={!eventForm.title.trim()}
-                    >
-                      <Save size={16} />
-                      Save Event
-                    </button>
-                  </div>
+        {/* Events Section */}
+        {selectedDate && getEventsForDate(selectedDate).length > 0 && (
+          <div className="ios-events-section">
+            <div className="ios-events-header">
+              {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </div>
+            {getEventsForDate(selectedDate).map((event, idx) => (
+              <div key={event.id} className="ios-event-item" onClick={() => editEvent(event)}>
+                <div className="ios-event-color" style={{ background: getEventColor(idx) }} />
+                <div className="ios-event-content">
+                  <div className="ios-event-title">{event.title}</div>
+                  <div className="ios-event-time">{formatEventTime(event.date)}</div>
                 </div>
               </div>
-            ) : (
-              <>
-                <div className="sidebar-header">
-                  <h3>{selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h3>
-                  <span className="event-count">{getEventsForDate(selectedDate).length} events</span>
-                </div>
-                <div className="sidebar-events">
-                  {loading ? (
-                    <div className="events-empty">
-                      <div className="spinner-mini"></div>
-                      <p>Loading events...</p>
-                    </div>
-                  ) : getEventsForDate(selectedDate).length === 0 ? (
-                    <div className="events-empty">
-                      <Bell size={32} strokeWidth={1.5} />
-                      <p>No events scheduled</p>
-                      <button className="btn-add-event" onClick={() => {
-                        setEventForm(prev => ({ ...prev, date: selectedDate }));
-                        setIsCreating(true);
-                      }}>
-                        <Plus size={16} />
-                        <span>Add Event</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="events-list-modern">
-                      {getEventsForDate(selectedDate).map((event, eventIndex) => (
-                        <div key={event.id} className="event-item-modern" style={{ '--event-color': getEventColor(eventIndex) }}>
-                          <div className="event-time">{formatEventTime(event.date)}</div>
-                          <div className="event-content">
-                            <h4>{event.title}</h4>
-                            {event.location && (
-                              <p className="event-meta">
-                                <MapPin size={12} /> {event.location}
-                              </p>
-                            )}
-                            {event.duration && (
-                              <p className="event-meta">
-                                <Clock size={12} /> {event.duration}
-                              </p>
-                            )}
-                          </div>
-                          <div className="event-actions">
-                            <button onClick={() => editEvent(event)} className="btn-icon">
-                              <Edit2 size={14} />
-                            </button>
-                            <button onClick={() => deleteEvent(event.id)} className="btn-icon btn-delete">
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
+            ))}
           </div>
         )}
+
       </div>
+
+      {/* Floating Add Button */}
+      <button className="ios-add-button" onClick={() => {
+        const dateToUse = selectedDate || new Date();
+        setSelectedDate(dateToUse);
+        setEventForm(prev => ({ ...prev, date: dateToUse }));
+        setShowEventModal(true);
+      }}>
+        <Plus size={24} />
+      </button>
 
       {/* Context Menu for Right Click */}
       {contextMenuPosition.x > 0 && (
@@ -700,7 +745,7 @@ const Calendar = () => {
           }}
         >
           <button onClick={() => {
-            setIsCreating(true);
+            setShowEventModal(true);
             setContextMenuPosition({ x: 0, y: 0 });
           }}>
             <Plus size={16} />
@@ -709,113 +754,97 @@ const Calendar = () => {
         </div>
       )}
 
-      {/* Event Modal - Removed, using sidebar instead */}
-      {false && (
-        <div className="modal-overlay" onClick={() => setShowEventModal(false)}>
-          <div className="event-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{editingEvent ? 'Edit Event' : 'Add New Event'}</h3>
-              <button className="close-btn" onClick={() => {
-                setShowEventModal(false);
-                resetEventForm();
-              }}>
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="modal-body">
-              <div className="form-group">
-                <label>Event Title*</label>
-                <input
-                  type="text"
-                  value={eventForm.title}
-                  onChange={(e) => setEventForm(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Enter event title"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Date*</label>
-                  <input
-                    type="date"
-                    value={eventForm.date.toISOString().split('T')[0]}
-                    onChange={(e) => setEventForm(prev => ({ ...prev, date: new Date(e.target.value) }))}
-                    className="form-input"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Time*</label>
-                  <input
-                    type="time"
-                    value={eventForm.time}
-                    onChange={(e) => setEventForm(prev => ({ ...prev, time: e.target.value }))}
-                    className="form-input"
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Duration</label>
-                <input
-                  type="text"
-                  value={eventForm.duration}
-                  onChange={(e) => setEventForm(prev => ({ ...prev, duration: e.target.value }))}
-                  placeholder="e.g., 2 hours"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Location</label>
-                <input
-                  type="text"
-                  value={eventForm.location}
-                  onChange={(e) => setEventForm(prev => ({ ...prev, location: e.target.value }))}
-                  placeholder="Enter location"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Attendees</label>
-                <input
-                  type="text"
-                  value={eventForm.attendees}
-                  onChange={(e) => setEventForm(prev => ({ ...prev, attendees: e.target.value }))}
-                  placeholder="Enter attendees (comma separated)"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Notes</label>
-                <textarea
-                  value={eventForm.notes}
-                  onChange={(e) => setEventForm(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Additional notes..."
-                  className="form-input form-textarea"
-                  rows={3}
-                />
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button className="cancel-btn" onClick={() => {
+      {/* iOS Modal */}
+      {showEventModal && (
+        <div className="ios-modal-overlay" onClick={(e) => {
+          // Only close on overlay click for desktop
+          if (window.innerWidth > 768 && e.target === e.currentTarget) {
+            setShowEventModal(false);
+          }
+        }}>
+          <div className="ios-modal" onClick={e => e.stopPropagation()}>
+            <div className="ios-modal-header">
+              <button className="ios-modal-button" onClick={() => {
                 setShowEventModal(false);
                 resetEventForm();
               }}>
                 Cancel
               </button>
-              <button 
-                className="save-btn"
-                onClick={saveEvent}
-                disabled={!eventForm.title}
-              >
-                <Save size={16} />
-                {editingEvent ? 'Update Event' : 'Save Event'}
+              <div className="ios-modal-title">{editingEvent ? 'Edit Event' : 'New Event'}</div>
+              <button className="ios-modal-button bold" onClick={saveEvent} disabled={!eventForm.title}>
+                {editingEvent ? 'Save' : 'Add'}
               </button>
+            </div>
+            
+            <div className="ios-modal-body">
+              <div className="ios-form-group">
+                <label className="ios-form-label">Title</label>
+                <input
+                  type="text"
+                  value={eventForm.title}
+                  onChange={(e) => setEventForm(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Event title"
+                  className="ios-form-input"
+                  autoFocus
+                />
+              </div>
+
+              <div className="ios-form-row">
+                <div className="ios-form-group">
+                  <label className="ios-form-label">Date</label>
+                  <input
+                    type="date"
+                    value={eventForm.date.toISOString().split('T')[0]}
+                    onChange={(e) => setEventForm(prev => ({ ...prev, date: new Date(e.target.value) }))}
+                    className="ios-form-input"
+                  />
+                </div>
+                <div className="ios-form-group">
+                  <label className="ios-form-label">Time</label>
+                  <input
+                    type="time"
+                    value={eventForm.time}
+                    onChange={(e) => setEventForm(prev => ({ ...prev, time: e.target.value }))}
+                    className="ios-form-input"
+                  />
+                </div>
+              </div>
+
+              <div className="ios-form-group">
+                <label className="ios-form-label">Duration</label>
+                <select 
+                  value={eventForm.duration}
+                  onChange={(e) => setEventForm(prev => ({ ...prev, duration: e.target.value }))}
+                  className="ios-form-select"
+                >
+                  <option value="30 minutes">30 minutes</option>
+                  <option value="1 hour">1 hour</option>
+                  <option value="2 hours">2 hours</option>
+                  <option value="All day">All day</option>
+                </select>
+              </div>
+
+              <div className="ios-form-group">
+                <label className="ios-form-label">Location</label>
+                <input
+                  type="text"
+                  value={eventForm.location}
+                  onChange={(e) => setEventForm(prev => ({ ...prev, location: e.target.value }))}
+                  placeholder="Add location"
+                  className="ios-form-input"
+                />
+              </div>
+
+              <div className="ios-form-group">
+                <label className="ios-form-label">Notes</label>
+                <textarea
+                  value={eventForm.notes}
+                  onChange={(e) => setEventForm(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Add notes"
+                  className="ios-form-textarea"
+                  rows={3}
+                />
+              </div>
             </div>
           </div>
         </div>

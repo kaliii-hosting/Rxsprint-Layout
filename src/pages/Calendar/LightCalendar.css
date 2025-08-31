@@ -1,0 +1,783 @@
+/* Light Theme iOS Calendar - Optimized */
+
+:root {
+  /* Light theme colors */
+  --cal-bg: #ffffff;
+  --cal-surface: #f8f9fa;
+  --cal-card: #ffffff;
+  --cal-border: #e9ecef;
+  --cal-text: #212529;
+  --cal-text-secondary: #6c757d;
+  --cal-text-light: #adb5bd;
+  
+  /* Selection colors */
+  --cal-primary: #FF6900;
+  --cal-primary-light: rgba(255, 105, 0, 0.1);
+  --cal-selected: #FF6900;
+  --cal-today: #dc3545;
+  
+  /* Pale orange for date range */
+  --cal-range-bg: #fff5f0;
+  --cal-range-border: rgba(255, 105, 0, 0.2);
+  --cal-range-selected: #FF6900;
+  
+  /* Shadows */
+  --cal-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --cal-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --cal-shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Reset */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Main Container - Scrollable */
+.calendar-page {
+  display: flex;
+  flex-direction: column;
+  background: var(--cal-surface);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Compact Header Toolbar - All in One Row */
+.calendar-header-toolbar {
+  background: var(--cal-card);
+  border-bottom: 1px solid var(--cal-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: var(--cal-shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  gap: 1rem;
+  min-height: 56px;
+}
+
+/* Navigation Section */
+.header-nav-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.375rem;
+  background: var(--cal-surface);
+  border: 1px solid var(--cal-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--cal-primary);
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: var(--cal-primary-light);
+  border-color: var(--cal-primary);
+}
+
+.nav-btn:active {
+  transform: scale(0.95);
+}
+
+.month-display {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0 0.5rem;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.month-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cal-text);
+}
+
+.year-text {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--cal-text-secondary);
+}
+
+/* Date Range Section */
+.header-range-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.date-range-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--cal-range-bg);
+  border: 1px solid var(--cal-range-border);
+  border-radius: 0.375rem;
+}
+
+.range-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--cal-range-selected);
+}
+
+.range-dates {
+  font-size: 0.8125rem;
+  color: var(--cal-text-secondary);
+}
+
+.range-clear {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--cal-range-selected);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-left: 0.25rem;
+}
+
+.range-clear:hover {
+  opacity: 0.8;
+}
+
+.range-placeholder {
+  font-size: 0.8125rem;
+  color: var(--cal-text-light);
+  font-style: italic;
+}
+
+/* Actions Section */
+.header-actions-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--cal-border);
+  background: var(--cal-surface);
+  color: var(--cal-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+}
+
+.action-btn:hover {
+  background: var(--cal-primary-light);
+  border-color: var(--cal-primary);
+  color: var(--cal-primary);
+}
+
+.action-btn.add-btn {
+  background: var(--cal-primary);
+  color: white;
+  border-color: var(--cal-primary);
+}
+
+.action-btn.add-btn:hover {
+  background: var(--cal-range-selected);
+  border-color: var(--cal-range-selected);
+}
+
+.btn-text {
+  display: inline;
+}
+
+/* Calendar Container - Scrollable */
+.ios-calendar-container {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Calendar Grid - Compact for Desktop */
+.ios-calendar-grid {
+  background: var(--cal-card);
+  border-radius: 0.75rem;
+  box-shadow: var(--cal-shadow);
+  overflow: hidden;
+  margin: 0 auto 1rem;
+  max-width: 600px; /* Compact on desktop */
+}
+
+/* Weekdays */
+.ios-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--cal-surface);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--cal-border);
+}
+
+.ios-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--cal-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Days Grid */
+.ios-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0.5rem;
+  gap: 2px;
+}
+
+/* Day Cell */
+.ios-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  min-height: 40px;
+}
+
+.ios-day:hover {
+  background: var(--cal-surface);
+}
+
+.ios-day-number {
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: var(--cal-text);
+  position: relative;
+  z-index: 2;
+}
+
+/* Today */
+.ios-day.today .ios-day-number {
+  color: var(--cal-today);
+  font-weight: 600;
+}
+
+/* Selected */
+.ios-day.selected {
+  background: var(--cal-selected) !important;
+}
+
+.ios-day.selected .ios-day-number {
+  color: white;
+  font-weight: 500;
+}
+
+/* Date Range Highlighting with Pale Orange */
+.ios-day.in-range {
+  background: var(--cal-range-bg);
+  border-radius: 0;
+}
+
+.ios-day.range-start {
+  background: var(--cal-range-selected);
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.ios-day.range-start .ios-day-number {
+  color: white;
+  font-weight: 500;
+}
+
+.ios-day.range-end {
+  background: var(--cal-range-selected);
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.ios-day.range-end .ios-day-number {
+  color: white;
+  font-weight: 500;
+}
+
+.ios-day.range-start.range-end {
+  border-radius: 0.5rem;
+  background: var(--cal-range-selected);
+}
+
+/* Other month days */
+.ios-day.other-month .ios-day-number {
+  color: var(--cal-text-light);
+}
+
+/* Event dots */
+.ios-event-dots {
+  position: absolute;
+  bottom: 2px;
+  display: flex;
+  gap: 2px;
+}
+
+.ios-event-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--cal-primary);
+}
+
+.ios-day.selected .ios-event-dot {
+  background: white;
+}
+
+/* Events Section */
+.ios-events-section {
+  background: var(--cal-card);
+  border-radius: 0.75rem;
+  margin: 0 auto 1rem;
+  padding: 1rem;
+  box-shadow: var(--cal-shadow);
+  max-width: 600px;
+}
+
+.ios-events-header {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--cal-text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.ios-event-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--cal-border);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ios-event-item:hover {
+  background: var(--cal-surface);
+  margin: 0 -0.5rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: 0.375rem;
+}
+
+.ios-event-item:last-child {
+  border-bottom: none;
+}
+
+.ios-event-color {
+  width: 3px;
+  height: 32px;
+  border-radius: 1.5px;
+  margin-right: 0.75rem;
+  background: var(--cal-primary);
+}
+
+.ios-event-content {
+  flex: 1;
+}
+
+.ios-event-title {
+  font-size: 0.9375rem;
+  color: var(--cal-text);
+  font-weight: 500;
+}
+
+.ios-event-time {
+  font-size: 0.8125rem;
+  color: var(--cal-text-secondary);
+  margin-top: 0.125rem;
+}
+
+/* Floating Add Button */
+.ios-add-button {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--cal-primary);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--cal-shadow-lg);
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 50;
+}
+
+.ios-add-button:hover {
+  transform: scale(1.05);
+}
+
+.ios-add-button:active {
+  transform: scale(0.95);
+}
+
+/* Modal - Mobile Responsive */
+.ios-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.ios-modal {
+  background: var(--cal-card);
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--cal-shadow-lg);
+}
+
+/* Mobile Modal - Fill Content Area */
+@media (max-width: 768px) {
+  .ios-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    background: var(--cal-card);
+  }
+  
+  .ios-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-width: none;
+    max-height: none;
+    height: 100%;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .ios-modal-body {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+
+.ios-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid var(--cal-border);
+  background: var(--cal-surface);
+}
+
+.ios-modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--cal-text);
+  text-align: center;
+  flex: 1;
+}
+
+.ios-modal-button {
+  background: none;
+  border: none;
+  color: var(--cal-primary);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  font-weight: 500;
+  border-radius: 0.25rem;
+  transition: background 0.2s;
+}
+
+.ios-modal-button:hover {
+  background: var(--cal-primary-light);
+}
+
+.ios-modal-button:active {
+  opacity: 0.7;
+}
+
+.ios-modal-button.bold {
+  font-weight: 600;
+}
+
+.ios-modal-body {
+  padding: 1rem;
+}
+
+/* Form Styles */
+.ios-form-group {
+  margin-bottom: 1rem;
+}
+
+.ios-form-label {
+  font-size: 0.75rem;
+  color: var(--cal-text-secondary);
+  margin-bottom: 0.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  font-weight: 600;
+  display: block;
+}
+
+.ios-form-input,
+.ios-form-select,
+.ios-form-textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  background: var(--cal-surface);
+  border: 1px solid var(--cal-border);
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  color: var(--cal-text);
+  transition: all 0.2s;
+  -webkit-appearance: none;
+}
+
+.ios-form-input:focus,
+.ios-form-select:focus,
+.ios-form-textarea:focus {
+  outline: none;
+  border-color: var(--cal-primary);
+  background: white;
+  box-shadow: 0 0 0 3px var(--cal-primary-light);
+}
+
+.ios-form-textarea {
+  min-height: 80px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.ios-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* Desktop Optimizations */
+@media (min-width: 1024px) {
+  .ios-calendar-container {
+    padding: 2rem;
+  }
+  
+  .ios-calendar-grid {
+    max-width: 700px;
+  }
+  
+  .ios-events-section {
+    max-width: 700px;
+  }
+  
+  .ios-days-grid {
+    gap: 4px;
+    padding: 0.75rem;
+  }
+  
+  .ios-day {
+    min-height: 48px;
+  }
+  
+  .ios-day-number {
+    font-size: 1rem;
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .ios-calendar-container {
+    padding: 1.5rem;
+  }
+  
+  .ios-calendar-grid {
+    max-width: 650px;
+  }
+  
+  .ios-days-grid {
+    gap: 3px;
+  }
+  
+  .ios-day {
+    min-height: 44px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .calendar-header-toolbar {
+    padding: 0.5rem 0.75rem;
+    gap: 0.5rem;
+    min-height: 48px;
+  }
+  
+  .header-nav-section {
+    gap: 0.25rem;
+  }
+  
+  .nav-btn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .month-display {
+    padding: 0 0.25rem;
+    min-width: auto;
+  }
+  
+  .month-text {
+    font-size: 0.875rem;
+  }
+  
+  .year-text {
+    font-size: 0.875rem;
+  }
+  
+  .header-range-section {
+    flex: 1;
+  }
+  
+  .date-range-display {
+    padding: 0.25rem 0.5rem;
+    gap: 0.25rem;
+  }
+  
+  .range-text {
+    font-size: 0.75rem;
+  }
+  
+  .range-dates {
+    font-size: 0.7rem;
+    display: none; /* Hide dates on mobile to save space */
+  }
+  
+  .range-placeholder {
+    font-size: 0.7rem;
+  }
+  
+  .header-actions-section {
+    gap: 0.25rem;
+  }
+  
+  .action-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .action-btn.today-btn {
+    display: none; /* Hide Today button on mobile */
+  }
+  
+  .btn-text {
+    display: none; /* Hide text, show only icon */
+  }
+  
+  .ios-calendar-container {
+    padding: 0.75rem;
+  }
+  
+  .ios-calendar-grid {
+    max-width: 100%;
+  }
+  
+  .ios-days-grid {
+    gap: 1px;
+    padding: 0.375rem;
+  }
+  
+  .ios-day {
+    min-height: 36px;
+  }
+  
+  .ios-day-number {
+    font-size: 0.875rem;
+  }
+  
+  .ios-weekday {
+    font-size: 0.625rem;
+  }
+  
+  .ios-add-button {
+    width: 44px;
+    height: 44px;
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 375px) {
+  .ios-month-title,
+  .ios-year {
+    font-size: 1.125rem;
+  }
+  
+  .ios-day {
+    min-height: 32px;
+  }
+  
+  .ios-day-number {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Remove scrollbars on desktop when not needed */
+@media (min-width: 1024px) {
+  .ios-calendar-container::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .ios-calendar-container::-webkit-scrollbar-track {
+    background: var(--cal-surface);
+  }
+  
+  .ios-calendar-container::-webkit-scrollbar-thumb {
+    background: var(--cal-border);
+    border-radius: 3px;
+  }
+  
+  .ios-calendar-container::-webkit-scrollbar-thumb:hover {
+    background: var(--cal-text-light);
+  }
+}

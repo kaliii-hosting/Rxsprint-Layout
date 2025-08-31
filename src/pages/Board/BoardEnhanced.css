@@ -730,3 +730,38 @@
 .board-content[data-tool="eraser"] .board-canvas {
   cursor: grab;
 }
+
+/* Enhanced resize handle styling */
+.board-content[data-tool="resize"] .board-canvas:hover {
+  cursor: grab;
+}
+
+.board-content[data-tool="resize"] .board-canvas:active {
+  cursor: grabbing;
+}
+
+/* Screenshot selection styling improvements */
+.screenshot-selected {
+  filter: drop-shadow(0 0 8px rgba(0, 102, 255, 0.5));
+  transition: filter 0.2s ease;
+}
+
+.screenshot-hover {
+  filter: drop-shadow(0 0 4px rgba(0, 102, 255, 0.3));
+}
+
+/* Resize handle animation and feedback */
+@keyframes resize-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.resize-handle-active {
+  animation: resize-pulse 1s infinite;
+}

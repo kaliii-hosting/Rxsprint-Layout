@@ -279,10 +279,10 @@ const Board = () => {
           
           // Draw resize handles when resize tool is active
           if (currentTool === 'resize') {
-            const handleSize = 10;
+            const handleSize = 16; // Increased from 10 to 16
             ctx.fillStyle = '#0066ff';
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3; // Increased border width
             
             // Corner handles
             const handles = [
@@ -293,20 +293,58 @@ const Board = () => {
             ];
             
             handles.forEach(handle => {
-              // Draw white border first
-              ctx.strokeRect(
-                handle.x - handleSize / 2,
-                handle.y - handleSize / 2,
-                handleSize,
-                handleSize
+              // Draw larger, more prominent handles
+              ctx.save();
+              
+              // Draw white border (larger)
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(
+                handle.x - handleSize / 2 - 2,
+                handle.y - handleSize / 2 - 2,
+                handleSize + 4,
+                handleSize + 4
               );
-              // Then fill with blue
+              
+              // Draw main blue handle
+              ctx.fillStyle = '#0066ff';
               ctx.fillRect(
                 handle.x - handleSize / 2,
                 handle.y - handleSize / 2,
                 handleSize,
                 handleSize
               );
+              
+              // Add corner indicator lines for better visibility
+              ctx.strokeStyle = '#ffffff';
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              
+              // Draw corner indicators
+              const cornerSize = 6;
+              if (handle.x === screenshot.x && handle.y === screenshot.y) {
+                // Top-left corner
+                ctx.moveTo(handle.x - cornerSize, handle.y);
+                ctx.lineTo(handle.x, handle.y);
+                ctx.lineTo(handle.x, handle.y - cornerSize);
+              } else if (handle.x === screenshot.x + screenshot.width && handle.y === screenshot.y) {
+                // Top-right corner  
+                ctx.moveTo(handle.x + cornerSize, handle.y);
+                ctx.lineTo(handle.x, handle.y);
+                ctx.lineTo(handle.x, handle.y - cornerSize);
+              } else if (handle.x === screenshot.x && handle.y === screenshot.y + screenshot.height) {
+                // Bottom-left corner
+                ctx.moveTo(handle.x - cornerSize, handle.y);
+                ctx.lineTo(handle.x, handle.y);
+                ctx.lineTo(handle.x, handle.y + cornerSize);
+              } else {
+                // Bottom-right corner
+                ctx.moveTo(handle.x + cornerSize, handle.y);
+                ctx.lineTo(handle.x, handle.y);
+                ctx.lineTo(handle.x, handle.y + cornerSize);
+              }
+              ctx.stroke();
+              
+              ctx.restore();
             });
           } else if (currentTool === 'move' && selectedScreenshot?.id === screenshot.id) {
             // Show move cursor indicator
@@ -533,6 +571,8 @@ const Board = () => {
     const scaleY = canvas.height / rect.height;
     
     // Calculate position relative to canvas accounting for the scale and zoom
+    // NOTE: For handle detection, we want the raw canvas coordinates without zoom/pan
+    // since the handles are drawn in the transformed coordinate system
     const x = ((clientX - rect.left) * scaleX) / zoom - pan.x;
     const y = ((clientY - rect.top) * scaleY) / zoom - pan.y;
     
@@ -548,53 +588,111 @@ const Board = () => {
     const pos = getCanvasPosition(e);
     
     if (currentTool === 'move' || currentTool === 'resize') {
-      // Check if clicking on a screenshot
-      const clickedScreenshot = [...screenshots].reverse().find(s => 
-        pos.x >= s.x && 
-        pos.x <= s.x + s.width && 
-        pos.y >= s.y && 
-        pos.y <= s.y + s.height
-      );
+      let handleClicked = false;
       
-      if (clickedScreenshot) {
-        setSelectedScreenshot(clickedScreenshot);
+      // PRIORITY 1: If resize tool and screenshot is already selected, check handles FIRST
+      if (currentTool === 'resize' && selectedScreenshot) {
+        const handleDetectionSize = 50; // Even larger detection area
+        const handles = [
+          { type: 'nw', x: selectedScreenshot.x, y: selectedScreenshot.y },
+          { type: 'ne', x: selectedScreenshot.x + selectedScreenshot.width, y: selectedScreenshot.y },
+          { type: 'sw', x: selectedScreenshot.x, y: selectedScreenshot.y + selectedScreenshot.height },
+          { type: 'se', x: selectedScreenshot.x + selectedScreenshot.width, y: selectedScreenshot.y + selectedScreenshot.height }
+        ];
         
-        if (currentTool === 'move') {
-          setIsDragging(true);
-          setDragStart({
-            x: pos.x - clickedScreenshot.x,
-            y: pos.y - clickedScreenshot.y
-          });
-        } else if (currentTool === 'resize') {
-          // Determine which resize handle was clicked
-          const handleSize = 20;
-          const handles = [
-            { type: 'nw', x: clickedScreenshot.x, y: clickedScreenshot.y },
-            { type: 'ne', x: clickedScreenshot.x + clickedScreenshot.width, y: clickedScreenshot.y },
-            { type: 'sw', x: clickedScreenshot.x, y: clickedScreenshot.y + clickedScreenshot.height },
-            { type: 'se', x: clickedScreenshot.x + clickedScreenshot.width, y: clickedScreenshot.y + clickedScreenshot.height }
-          ];
-          
-          const clickedHandle = handles.find(h => 
-            Math.abs(pos.x - h.x) < handleSize && 
-            Math.abs(pos.y - h.y) < handleSize
-          );
-          
-          if (clickedHandle) {
-            setIsResizing(true);
-            setResizeHandle(clickedHandle.type);
-            setDragStart(pos);
+        // Find the closest handle within detection range
+        let closestHandle = null;
+        let closestDistance = Infinity;
+        
+        handles.forEach(h => {
+          const distance = Math.sqrt(Math.pow(pos.x - h.x, 2) + Math.pow(pos.y - h.y, 2));
+          if (distance < handleDetectionSize && distance < closestDistance) {
+            closestDistance = distance;
+            closestHandle = h;
           }
+        });
+        
+        if (closestHandle) {
+          handleClicked = true;
+          setIsResizing(true);
+          setResizeHandle(closestHandle.type);
+          setDragStart({
+            x: pos.x,
+            y: pos.y,
+            // Store original screenshot bounds for smooth resizing
+            originalX: selectedScreenshot.x,
+            originalY: selectedScreenshot.y,
+            originalWidth: selectedScreenshot.width,
+            originalHeight: selectedScreenshot.height
+          });
+          console.log('✅ RESIZE STARTED - Handle:', closestHandle.type, 'Distance:', closestDistance, 'Screenshot:', selectedScreenshot.id);
+        } else {
+          // Debug: Show distances to all handles
+          console.log('❌ NO HANDLE DETECTED - Click pos:', pos);
+          handles.forEach(h => {
+            const distance = Math.sqrt(Math.pow(pos.x - h.x, 2) + Math.pow(pos.y - h.y, 2));
+            console.log(`  ${h.type}: distance=${distance.toFixed(2)}, threshold=${handleDetectionSize}`);
+          });
         }
-      } else {
-        // Click outside - deselect
-        setSelectedScreenshot(null);
+      }
+      
+      // PRIORITY 2: If no handle was clicked, check for screenshot selection
+      if (!handleClicked) {
+        const clickedScreenshot = [...screenshots].reverse().find(s => 
+          pos.x >= s.x && 
+          pos.x <= s.x + s.width && 
+          pos.y >= s.y && 
+          pos.y <= s.y + s.height
+        );
+        
+        if (clickedScreenshot) {
+          setSelectedScreenshot(clickedScreenshot);
+          
+          if (currentTool === 'move') {
+            setIsDragging(true);
+            setDragStart({
+              x: pos.x - clickedScreenshot.x,
+              y: pos.y - clickedScreenshot.y
+            });
+          } else if (currentTool === 'resize') {
+            // For newly selected screenshots, check handles too
+            const handleDetectionSize = 40;
+            const handles = [
+              { type: 'nw', x: clickedScreenshot.x, y: clickedScreenshot.y },
+              { type: 'ne', x: clickedScreenshot.x + clickedScreenshot.width, y: clickedScreenshot.y },
+              { type: 'sw', x: clickedScreenshot.x, y: clickedScreenshot.y + clickedScreenshot.height },
+              { type: 'se', x: clickedScreenshot.x + clickedScreenshot.width, y: clickedScreenshot.y + clickedScreenshot.height }
+            ];
+            
+            const clickedHandle = handles.find(h => 
+              Math.abs(pos.x - h.x) < handleDetectionSize && 
+              Math.abs(pos.y - h.y) < handleDetectionSize
+            );
+            
+            if (clickedHandle) {
+              setIsResizing(true);
+              setResizeHandle(clickedHandle.type);
+              setDragStart({
+                x: pos.x,
+                y: pos.y,
+                originalX: clickedScreenshot.x,
+                originalY: clickedScreenshot.y,
+                originalWidth: clickedScreenshot.width,
+                originalHeight: clickedScreenshot.height
+              });
+              console.log('Handle clicked on new selection:', clickedHandle.type);
+            }
+          }
+        } else {
+          // Click outside - deselect
+          setSelectedScreenshot(null);
+        }
       }
     } else if (currentTool === 'pen' || currentTool === 'highlighter' || currentTool === 'eraser') {
       setIsDrawing(true);
       setCurrentPath([pos]);
     }
-  }, [currentTool, screenshots, getCanvasPosition]);
+  }, [currentTool, screenshots, selectedScreenshot, getCanvasPosition]);
 
   const handlePointerMove = useCallback((e) => {
     const pos = getCanvasPosition(e);
@@ -611,36 +709,40 @@ const Board = () => {
           ? { ...s, x: pos.x - dragStart.x, y: pos.y - dragStart.y }
           : s
       ));
-    } else if (isResizing && selectedScreenshot && resizeHandle) {
-      // Update screenshot size
+    } else if (isResizing && selectedScreenshot && resizeHandle && dragStart) {
+      // Smooth, responsive resize with better calculations
+      const deltaX = pos.x - dragStart.x;
+      const deltaY = pos.y - dragStart.y;
+      const minSize = 30; // Minimum size for screenshot
+      
       setScreenshots(prev => prev.map(s => {
         if (s.id !== selectedScreenshot.id) return s;
         
-        let newX = s.x;
-        let newY = s.y;
-        let newWidth = s.width;
-        let newHeight = s.height;
+        let newX = dragStart.originalX;
+        let newY = dragStart.originalY;
+        let newWidth = dragStart.originalWidth;
+        let newHeight = dragStart.originalHeight;
         
         switch (resizeHandle) {
-          case 'se':
-            newWidth = Math.max(50, pos.x - s.x);
-            newHeight = Math.max(50, pos.y - s.y);
+          case 'se': // Bottom-right handle
+            newWidth = Math.max(minSize, dragStart.originalWidth + deltaX);
+            newHeight = Math.max(minSize, dragStart.originalHeight + deltaY);
             break;
-          case 'sw':
-            newWidth = Math.max(50, s.x + s.width - pos.x);
-            newX = pos.x;
-            newHeight = Math.max(50, pos.y - s.y);
+          case 'sw': // Bottom-left handle  
+            newWidth = Math.max(minSize, dragStart.originalWidth - deltaX);
+            newHeight = Math.max(minSize, dragStart.originalHeight + deltaY);
+            newX = dragStart.originalX + (dragStart.originalWidth - newWidth);
             break;
-          case 'ne':
-            newWidth = Math.max(50, pos.x - s.x);
-            newHeight = Math.max(50, s.y + s.height - pos.y);
-            newY = pos.y;
+          case 'ne': // Top-right handle
+            newWidth = Math.max(minSize, dragStart.originalWidth + deltaX);
+            newHeight = Math.max(minSize, dragStart.originalHeight - deltaY);
+            newY = dragStart.originalY + (dragStart.originalHeight - newHeight);
             break;
-          case 'nw':
-            newWidth = Math.max(50, s.x + s.width - pos.x);
-            newHeight = Math.max(50, s.y + s.height - pos.y);
-            newX = pos.x;
-            newY = pos.y;
+          case 'nw': // Top-left handle
+            newWidth = Math.max(minSize, dragStart.originalWidth - deltaX);
+            newHeight = Math.max(minSize, dragStart.originalHeight - deltaY);
+            newX = dragStart.originalX + (dragStart.originalWidth - newWidth);
+            newY = dragStart.originalY + (dragStart.originalHeight - newHeight);
             break;
         }
         

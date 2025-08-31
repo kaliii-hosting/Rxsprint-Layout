@@ -391,8 +391,8 @@ const Phones = () => {
       <div className="content-area">
         {/* Contacts List */}
         {!showAddContact && (!selectedContact || deviceMode !== 'mobile') && (
-          <>
-            <div className={`contacts-list ${deviceMode}`}>
+          <div className={`contacts-list ${deviceMode}`}>
+            <div className="contacts-content">
               {loading ? (
                 <div className="loading-state">
                   <div className="spinner" />
@@ -448,7 +448,7 @@ const Phones = () => {
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
 
         {/* Contact View */}

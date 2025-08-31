@@ -1,0 +1,1169 @@
+/* Authentic Apple Notes Design - Exact Replica */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* iOS System Colors and Variables */
+:root {
+  /* Light Mode Colors - Exact iOS Colors */
+  --apple-bg-primary: #ffffff;
+  --apple-bg-secondary: #f2f2f7;
+  --apple-bg-tertiary: #e8e8ed;
+  --apple-sidebar-bg: #f5f5f5;
+  --apple-sidebar-hover: #e8e8ed;
+  --apple-folder-yellow: #f5c842;
+  --apple-separator: #d1d1d6;
+  --apple-separator-light: #e5e5ea;
+  --apple-text-primary: #000000;
+  --apple-text-secondary: #3c3c43;
+  --apple-text-tertiary: #8e8e93;
+  --apple-text-quaternary: #c7c7cc;
+  --apple-link: #007aff;
+  --apple-selection: #ffd83d;
+  --apple-selection-text: #000000;
+  --apple-toolbar-bg: rgba(246, 246, 246, 0.96);
+  --apple-search-bg: #e5e5e7;
+  
+  /* Dark Mode Colors */
+  --apple-dark-bg-primary: #1c1c1e;
+  --apple-dark-bg-secondary: #2c2c2e;
+  --apple-dark-sidebar-bg: #1c1c1e;
+  --apple-dark-text-primary: #ffffff;
+  --apple-dark-text-secondary: #ebebf5;
+  
+  /* Typography */
+  --apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --apple-font-size-xs: 11px;
+  --apple-font-size-sm: 12px;
+  --apple-font-size-md: 13px;
+  --apple-font-size-lg: 15px;
+  --apple-font-size-xl: 17px;
+  --apple-font-size-title: 24px;
+  
+  /* Spacing */
+  --apple-spacing-xs: 4px;
+  --apple-spacing-sm: 8px;
+  --apple-spacing-md: 12px;
+  --apple-spacing-lg: 16px;
+  --apple-spacing-xl: 20px;
+  
+  /* Layout Widths - Exact iOS Notes Dimensions */
+  --apple-sidebar-width: 260px;
+  --apple-notelist-width: 320px;
+  
+  /* Border Radius */
+  --apple-radius-sm: 4px;
+  --apple-radius-md: 6px;
+  --apple-radius-lg: 10px;
+  --apple-radius-xl: 12px;
+}
+
+/* Reset and Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Main Container - Three Column Layout */
+.apple-notes-container {
+  display: flex;
+  height: calc(100vh - 80px); /* Account for app header */
+  background: var(--apple-bg-primary);
+  font-family: var(--apple-font);
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+/* Column 1: Sidebar */
+.apple-sidebar {
+  width: var(--apple-sidebar-width);
+  background: var(--apple-sidebar-bg);
+  border-right: 1px solid var(--apple-separator-light);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Sidebar Header */
+.apple-sidebar-header {
+  padding: var(--apple-spacing-md) var(--apple-spacing-lg);
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--apple-separator-light);
+}
+
+.apple-sidebar-title {
+  font-size: var(--apple-font-size-xs);
+  font-weight: 600;
+  color: var(--apple-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Sidebar Folders */
+.apple-folders-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--apple-spacing-sm) 0;
+  scrollbar-width: thin;
+  min-height: 0;
+}
+
+.apple-folder-item {
+  display: flex;
+  align-items: center;
+  padding: var(--apple-spacing-xs) var(--apple-spacing-lg);
+  cursor: pointer;
+  transition: background 0.1s ease;
+  position: relative;
+}
+
+.apple-folder-item:hover {
+  background: var(--apple-sidebar-hover);
+}
+
+.apple-folder-item.active {
+  background: var(--apple-sidebar-hover);
+}
+
+.apple-folder-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--apple-folder-yellow);
+}
+
+.apple-folder-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: var(--apple-spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--apple-folder-yellow);
+  border-radius: var(--apple-radius-md);
+  font-size: 14px;
+}
+
+.apple-folder-name {
+  flex: 1;
+  font-size: var(--apple-font-size-md);
+  color: var(--apple-text-primary);
+  font-weight: 500;
+}
+
+.apple-folder-count {
+  font-size: var(--apple-font-size-md);
+  color: var(--apple-text-tertiary);
+  background: var(--apple-bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* New Folder Button - Fixed at Bottom */
+.apple-new-folder {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--apple-spacing-md) var(--apple-spacing-lg);
+  border-top: 1px solid var(--apple-separator-light);
+  background: var(--apple-sidebar-bg);
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-sm);
+  cursor: pointer;
+  color: var(--apple-text-tertiary);
+  font-size: var(--apple-font-size-md);
+  transition: color 0.1s ease;
+  z-index: 10;
+  margin-top: auto;
+}
+
+.apple-new-folder:hover {
+  color: var(--apple-text-secondary);
+}
+
+/* Column 2: Notes List */
+.apple-notes-list {
+  width: var(--apple-notelist-width);
+  background: var(--apple-bg-primary);
+  border-right: 1px solid var(--apple-separator-light);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Notes List Header */
+.apple-list-header {
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--apple-separator-light);
+  background: var(--apple-toolbar-bg);
+  backdrop-filter: blur(10px);
+}
+
+.apple-list-title {
+  font-size: var(--apple-font-size-lg);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+}
+
+.apple-view-toggle {
+  display: flex;
+  gap: var(--apple-spacing-xs);
+}
+
+.apple-view-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--apple-radius-md);
+  cursor: pointer;
+  color: var(--apple-text-secondary);
+  transition: all 0.1s ease;
+}
+
+.apple-view-btn:hover {
+  background: var(--apple-bg-tertiary);
+}
+
+.apple-view-btn.active {
+  background: var(--apple-bg-tertiary);
+  color: var(--apple-text-primary);
+}
+
+/* Search Bar */
+.apple-search-container {
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+  background: var(--apple-bg-secondary);
+}
+
+.apple-search-bar {
+  display: flex;
+  align-items: center;
+  background: var(--apple-search-bg);
+  border-radius: var(--apple-radius-md);
+  padding: var(--apple-spacing-xs) var(--apple-spacing-sm);
+  gap: var(--apple-spacing-xs);
+}
+
+.apple-search-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.5;
+}
+
+.apple-search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: var(--apple-font-size-md);
+  color: var(--apple-text-primary);
+  font-family: var(--apple-font);
+}
+
+.apple-search-input::placeholder {
+  color: var(--apple-text-tertiary);
+}
+
+/* Notes Items Container */
+.apple-notes-items {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--apple-spacing-xs) 0;
+  scrollbar-width: thin;
+}
+
+/* List View Note Item - iOS Exact Dimensions */
+.apple-note-item {
+  padding: 12px 16px;
+  min-height: 76px;
+  border-bottom: 0.5px solid var(--apple-separator-light);
+  cursor: pointer;
+  transition: background 0.1s ease;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.apple-note-item:hover {
+  background: var(--apple-bg-secondary);
+}
+
+.apple-note-item.selected {
+  background: var(--apple-selection);
+}
+
+.apple-note-item.selected * {
+  color: var(--apple-selection-text) !important;
+}
+
+/* Note Thumbnail - iOS Exact Size */
+.apple-note-thumbnail {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--apple-bg-tertiary);
+  object-fit: cover;
+  margin-top: 2px;
+}
+
+/* Note Content Preview in List */
+.apple-note-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.apple-note-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--apple-text-primary);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.apple-note-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-sm);
+  margin-bottom: 4px;
+}
+
+.apple-note-date {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-tertiary);
+}
+
+.apple-note-info {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-tertiary);
+}
+
+.apple-note-preview {
+  font-size: 13px;
+  color: var(--apple-text-secondary);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  opacity: 0.8;
+}
+
+/* Gallery View - iOS Grid */
+.apple-notes-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 12px;
+  padding: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  scrollbar-width: thin;
+}
+
+.apple-gallery-item {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.apple-gallery-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.apple-gallery-item.selected {
+  background: var(--apple-selection);
+}
+
+.apple-gallery-thumbnail {
+  width: 100%;
+  height: 145px;
+  object-fit: cover;
+  background: var(--apple-bg-tertiary);
+  border-radius: 12px 12px 0 0;
+}
+
+.apple-gallery-content {
+  padding: 10px 12px;
+  background: white;
+}
+
+.apple-gallery-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--apple-text-primary);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.apple-gallery-date {
+  font-size: 11px;
+  color: var(--apple-text-tertiary);
+  opacity: 0.7;
+}
+
+/* Column 3: Note Editor */
+.apple-note-editor {
+  flex: 1;
+  background: var(--apple-bg-primary);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Editor Toolbar */
+.apple-editor-toolbar {
+  display: flex;
+  align-items: center;
+  padding: var(--apple-spacing-sm) var(--apple-spacing-lg);
+  min-height: 52px;
+  border-bottom: 1px solid var(--apple-separator-light);
+  background: var(--apple-toolbar-bg);
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
+.apple-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-xs);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.apple-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-sm);
+}
+
+.apple-toolbar-center {
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-xs);
+}
+
+.apple-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-sm);
+}
+
+/* Toolbar Buttons */
+.apple-tool-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--apple-radius-md);
+  cursor: pointer;
+  color: var(--apple-text-secondary);
+  transition: all 0.1s ease;
+  position: relative;
+}
+
+.apple-tool-btn:hover {
+  background: var(--apple-bg-tertiary);
+  color: var(--apple-text-primary);
+}
+
+.apple-tool-btn.active {
+  background: var(--apple-bg-tertiary);
+  color: var(--apple-text-primary);
+}
+
+.apple-tool-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Text Format Button */
+.apple-text-format-btn {
+  padding: 4px 8px;
+  font-size: var(--apple-font-size-lg);
+  font-weight: 500;
+  min-width: 32px;
+}
+
+/* Divider */
+.apple-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--apple-separator-light);
+  margin: 0 var(--apple-spacing-xs);
+}
+
+/* Editor Content Area - Full Width Like iOS */
+.apple-editor-content {
+  flex: 1;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  scrollbar-width: thin;
+}
+
+/* Note Date/Time */
+.apple-note-datetime {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-tertiary);
+  text-align: center;
+  margin: var(--apple-spacing-lg) var(--apple-spacing-xl);
+  padding-bottom: var(--apple-spacing-md);
+}
+
+/* Note Title in Editor */
+.apple-editor-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--apple-text-primary);
+  border: none;
+  outline: none;
+  background: transparent;
+  margin: 0 var(--apple-spacing-xl) var(--apple-spacing-lg);
+  width: calc(100% - 40px);
+  font-family: var(--apple-font);
+  line-height: 1.2;
+}
+
+/* Banner Section - Integrated with iOS Design */
+.apple-banner-section {
+  background: var(--apple-bg-secondary);
+  border-radius: var(--apple-radius-lg);
+  padding: var(--apple-spacing-md);
+  margin: 0 var(--apple-spacing-xl) var(--apple-spacing-lg);
+  border: 1px solid var(--apple-separator-light);
+}
+
+.apple-banner-header {
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-sm);
+  margin-bottom: var(--apple-spacing-md);
+}
+
+.apple-banner-input-group {
+  display: flex;
+  gap: var(--apple-spacing-sm);
+  flex: 1;
+}
+
+.apple-banner-input {
+  flex: 1;
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+  border: 1px solid var(--apple-separator-light);
+  border-radius: var(--apple-radius-md);
+  font-size: var(--apple-font-size-md);
+  font-family: var(--apple-font);
+  background: var(--apple-bg-primary);
+  outline: none;
+}
+
+.apple-banner-input:focus {
+  border-color: var(--apple-link);
+}
+
+.apple-banner-add-btn {
+  padding: var(--apple-spacing-sm) var(--apple-spacing-lg);
+  background: var(--apple-link);
+  color: white;
+  border: none;
+  border-radius: var(--apple-radius-md);
+  font-size: var(--apple-font-size-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.1s ease;
+}
+
+.apple-banner-add-btn:hover {
+  opacity: 0.9;
+}
+
+.apple-banner-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Banner Color Dots */
+.apple-banner-colors {
+  display: flex;
+  gap: var(--apple-spacing-xs);
+}
+
+.apple-color-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.1s ease;
+}
+
+.apple-color-dot:hover {
+  transform: scale(1.1);
+}
+
+.apple-color-dot.selected {
+  border-color: var(--apple-text-primary);
+}
+
+/* Banner List */
+.apple-banner-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--apple-spacing-sm);
+}
+
+.apple-banner-item {
+  display: flex;
+  align-items: center;
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+  background: var(--apple-bg-primary);
+  border-radius: var(--apple-radius-md);
+  border-left: 3px solid var(--apple-link);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  gap: var(--apple-spacing-sm);
+}
+
+.apple-banner-item:hover {
+  transform: translateX(2px);
+}
+
+.apple-banner-item.done {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.apple-banner-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--apple-separator);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apple-banner-checkbox.checked {
+  background: var(--apple-link);
+  border-color: var(--apple-link);
+}
+
+.apple-banner-text {
+  flex: 1;
+  font-size: var(--apple-font-size-md);
+  color: var(--apple-text-primary);
+}
+
+/* Note Content - Full Width */
+.apple-note-content {
+  flex: 1;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--apple-text-primary);
+  outline: none;
+  min-height: 300px;
+  padding: 0 var(--apple-spacing-xl);
+}
+
+/* Empty State */
+.apple-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--apple-text-tertiary);
+  padding: var(--apple-spacing-xl);
+}
+
+.apple-empty-icon {
+  width: 64px;
+  height: 64px;
+  opacity: 0.3;
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.apple-empty-title {
+  font-size: var(--apple-font-size-xl);
+  font-weight: 600;
+  margin-bottom: var(--apple-spacing-sm);
+}
+
+.apple-empty-text {
+  font-size: var(--apple-font-size-md);
+  text-align: center;
+  max-width: 300px;
+}
+
+/* Banner Styles - Original Design */
+.banner-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.banner-controls {
+  margin-bottom: 20px;
+}
+
+.banner-input-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.banner-input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+  backdrop-filter: blur(10px);
+}
+
+.banner-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.add-banner-btn {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-banner-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.add-banner-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.banner-style-options {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.style-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.style-btn.active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.color-picker {
+  display: flex;
+  gap: 8px;
+  margin-left: 10px;
+}
+
+.color-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.color-btn:hover {
+  transform: scale(1.2);
+}
+
+.color-btn.selected {
+  border-color: white;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.banners-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.banner-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  border-left: 4px solid var(--banner-color, #007aff);
+  transition: all 0.3s ease;
+}
+
+.banner-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.banner-item.done {
+  opacity: 0.6;
+}
+
+.banner-item.done .banner-text {
+  text-decoration: line-through;
+}
+
+.banner-item.title-banner {
+  background: linear-gradient(90deg, rgba(175, 82, 222, 0.1), rgba(255, 255, 255, 0.95));
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.banner-item.callout-banner {
+  background: linear-gradient(90deg, rgba(255, 45, 85, 0.1), rgba(255, 255, 255, 0.95));
+  font-style: italic;
+}
+
+.banner-checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--banner-color, #007aff);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.banner-checkbox:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.banner-item.done .banner-checkbox {
+  background: var(--banner-color, #007aff);
+  color: white;
+}
+
+.banner-text {
+  flex: 1;
+  color: #333;
+  font-size: 14px;
+}
+
+.delete-banner-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.delete-banner-btn:hover {
+  background: rgba(255, 59, 48, 0.2);
+  transform: scale(1.1);
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+  .apple-notes-container {
+    position: relative;
+    height: calc(100vh - 70px); /* Account for mobile header height */
+    height: calc(100dvh - 70px); /* Dynamic viewport height for mobile */
+  }
+  
+  /* Show only one column at a time on mobile */
+  .apple-sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 30;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .apple-sidebar.mobile-visible {
+    transform: translateX(0);
+  }
+  
+  /* Keep new folder button visible in mobile */
+  .apple-sidebar.mobile-visible .apple-new-folder {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: var(--apple-sidebar-width);
+  }
+  
+  .apple-notes-list {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 20;
+  }
+  
+  .apple-notes-list.mobile-hidden {
+    transform: translateX(-100%);
+  }
+  
+  .apple-note-editor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+  }
+  
+  /* Mobile Navigation */
+  .apple-mobile-nav {
+    display: flex;
+    position: absolute;
+    top: var(--apple-spacing-md);
+    left: var(--apple-spacing-md);
+    z-index: 40;
+  }
+  
+  .apple-back-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--apple-bg-primary);
+    border: 1px solid var(--apple-separator-light);
+    border-radius: var(--apple-radius-md);
+    cursor: pointer;
+  }
+}
+
+/* Tablet Responsive Design */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .apple-sidebar {
+    width: 220px;
+    height: 100%;
+  }
+  
+  .apple-notes-list {
+    width: 320px;
+    height: 100%;
+  }
+  
+  .apple-note-editor {
+    height: 100%;
+  }
+  
+  .apple-notes-container {
+    height: calc(100vh - 70px); /* Account for tablet header */
+  }
+  
+  .apple-toolbar-group {
+    flex-wrap: wrap;
+  }
+}
+
+/* Desktop Enhancements */
+@media (min-width: 1025px) {
+  /* Smooth hover effects */
+  .apple-folder-item,
+  .apple-note-item,
+  .apple-tool-btn {
+    transition: all 0.2s ease;
+  }
+  
+  .apple-notes-container {
+    height: calc(100vh - 80px); /* Desktop header height */
+  }
+}
+
+/* Small Mobile Screens */
+@media (max-width: 480px) {
+  .apple-notes-container {
+    height: calc(100vh - 56px); /* Small mobile header height */
+    height: calc(100dvh - 56px);
+  }
+}
+
+/* Selection Styles */
+::selection {
+  background: var(--apple-selection);
+  color: var(--apple-selection-text);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--apple-text-quaternary);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--apple-text-tertiary);
+}
+
+/* Ensure scrollbars are always visible on hover */
+.apple-notes-items:hover::-webkit-scrollbar-thumb,
+.apple-notes-gallery:hover::-webkit-scrollbar-thumb,
+.apple-editor-content:hover::-webkit-scrollbar-thumb,
+.apple-folders-list:hover::-webkit-scrollbar-thumb {
+  background: var(--apple-text-tertiary);
+}
+
+/* Focus Styles */
+.apple-tool-btn:focus-visible,
+.apple-view-btn:focus-visible {
+  outline: 2px solid var(--apple-link);
+  outline-offset: 2px;
+}
+
+/* Loading State */
+.apple-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--apple-spacing-xl);
+}
+
+.apple-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--apple-separator-light);
+  border-top-color: var(--apple-link);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Note Images */
+.apple-note-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--apple-spacing-md);
+  margin: 0 var(--apple-spacing-xl) var(--apple-spacing-lg);
+}
+
+.apple-note-image-container {
+  position: relative;
+  border-radius: var(--apple-radius-lg);
+  overflow: hidden;
+}
+
+.apple-note-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--apple-radius-lg);
+}
+
+.apple-image-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.apple-image-remove:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Rich Text Editor in Notes */
+.apple-note-editor-field {
+  min-height: 400px;
+  font-size: 16px;
+  line-height: 1.6;
+  font-family: var(--apple-font);
+}

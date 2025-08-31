@@ -40,7 +40,7 @@
   width: 100%;
   max-width: 100%;
   margin: 0;
-  padding: 1rem;
+  padding: 0.5rem;
   padding-bottom: 6rem;
   display: flex;
   flex-direction: column;
@@ -51,22 +51,61 @@
 
 @media (min-width: 768px) {
   .pump-calculator-full-width {
-    padding: clamp(1rem, 2vw, 2rem);
-    gap: clamp(1rem, 2vw, 1.5rem);
+    padding: 0.75rem;
+    gap: 1rem;
   }
 }
 
 .calculator-section {
   width: 100%;
-  background: var(--bg-tertiary, white);
-  border: 1px solid var(--border-color, #e5e7eb);
+  background: transparent;
+  border: none;
   border-radius: 12px;
   margin-bottom: 1rem;
+  padding-top: 0.5rem;
   overflow: visible;
   transition: all 0.3s ease;
   animation: fadeInUp 0.5s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: none;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+}
+
+/* Combined section with subtle background */
+.calculator-section.combined-section {
+  background: white;
+  border: 1px solid var(--border-color, #e5e7eb);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding-top: 0;
+  overflow: visible !important;
+  z-index: auto;
+  position: relative;
+}
+
+/* Dose calculation header within combined section */
+.dose-calculation-header {
+  margin-top: 1rem !important;
+  position: relative;
+  z-index: 1;
+}
+
+.calculator-section:first-child .section-header {
+  margin-top: 0.75rem;
+}
+
+/* Ensure medication section has proper stacking context */
+.calculator-section.medication-setup-section {
+  z-index: 10;
+  position: relative;
+}
+
+/* Lower z-index for all other sections to prevent overlap with dropdown */
+.calculator-section.dose-calculation-section,
+.calculator-section.infusion-parameters-section,
+.calculator-section.results-section {
+  z-index: 1;
+  position: relative;
 }
 
 @media (min-width: 768px) {
@@ -83,16 +122,21 @@
   }
 }
 
-.section-header {
-  background: var(--bg-primary, #f8f9fa);
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-color, #e9ecef);
+.pump-calculator-container .section-header {
+  background: #FF6900 !important;
+  padding: 1rem 1.25rem !important;
+  border: none !important;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.5rem;
-  border-radius: 12px 12px 0 0;
-  color: var(--text-primary);
+  gap: 0.75rem;
+  border-radius: 12px !important;
+  color: white !important;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(255, 105, 0, 0.2);
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 /* Reset button in section header */
@@ -132,17 +176,17 @@
 }
 
 @media (min-width: 768px) {
-  .section-header {
-    padding: 1.25rem 1.5rem;
+  .pump-calculator-container .section-header {
+    padding: 1rem 1.25rem;
     gap: 0.75rem;
-    border-radius: 16px 16px 0 0;
+    border-radius: 12px;
   }
 }
 
-.section-header h3 {
-  font-size: 18px;
+.pump-calculator-container .section-header h3 {
+  font-size: 16px !important;
   font-weight: 600;
-  color: #2c3e50;
+  color: white !important;
   margin: 0;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -151,22 +195,18 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.section-header svg {
-  color: #ff6b35;
-}
-
-.section-header svg {
-  color: #ff6b35;
+.pump-calculator-container .section-header svg {
+  color: white !important;
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: 22px !important;
+  height: 22px !important;
 }
 
 /* Close section button */
 .close-section-btn {
-  background: none;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
-  color: #666666;
+  color: white;
   cursor: pointer;
   padding: 0.5rem;
   margin-left: auto;
@@ -174,17 +214,32 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .close-section-btn:hover {
-  background: #ffffff;
-  color: #000000;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 .close-section-btn svg {
   width: 20px;
   height: 20px;
+  color: white;
+}
+
+/* Custom steps header with close button */
+.custom-steps-header {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.custom-steps-header .close-section-btn {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 /* Section Content */
@@ -192,11 +247,13 @@
   padding: 20px;
   background: transparent;
   width: 100%;
-  overflow: visible;
+  overflow: visible !important;
   min-height: auto;
   height: auto;
   border-radius: 0 0 12px 12px;
   box-sizing: border-box;
+  position: relative;
+  z-index: 2;
 }
 
 .section-description {
@@ -213,12 +270,13 @@
   border-radius: 12px;
   padding: 1.25rem;
   position: relative;
-  overflow: visible;
+  overflow: visible !important;
   transition: all 0.3s ease;
   display: flex !important;
   flex-direction: column;
   gap: 1rem;
   visibility: visible !important;
+  z-index: auto;
 }
 
 /* Medication Selection Full Width - Restored */
@@ -227,13 +285,15 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  position: relative;
+  z-index: 100;
 }
 
 .medication-dropdown-wrapper {
   width: 100%;
   padding: 0 1rem;
   position: relative;
-  z-index: 100;
+  z-index: 99999;
   isolation: isolate;
 }
 
@@ -584,12 +644,13 @@
     border-radius: 12px;
   }
   
-  .section-header {
-    padding: 1rem;
+  .pump-calculator-container .section-header {
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
   }
   
-  .section-header h3 {
-    font-size: 1.125rem;
+  .pump-calculator-container .section-header h3 {
+    font-size: 16px;
   }
   
   .section-content {
@@ -785,6 +846,7 @@
   flex-direction: column;
   overflow: hidden;
   animation: slideDownDesktop 0.3s ease;
+  z-index: 2147483647; /* Maximum z-index value to ensure it's always on top */
 }
 
 @keyframes slideDownDesktop {
@@ -979,12 +1041,25 @@
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 10000;
+  z-index: 2147483647; /* Maximum z-index value */
   pointer-events: none;
 }
 
 .mega-menu-portal > * {
   pointer-events: auto;
+  z-index: 2147483647; /* Maximum z-index value */
+}
+
+/* Medication Dropdown Portal */
+.medication-dropdown-portal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 999999 !important;
+  background: rgba(0, 0, 0, 0.1);
+  pointer-events: auto !important;
 }
 
 /* Mega menu overlay */
@@ -1056,6 +1131,7 @@
     max-height: 90vh;
     border-radius: 20px 20px 0 0;
     animation: slideUpMobile 0.3s ease;
+    z-index: 2147483647; /* Maximum z-index value to ensure it's always on top */
   }
   
   @keyframes slideUpMobile {
@@ -1086,14 +1162,10 @@
     padding: 16px;
     position: relative;
     background: white;
-    position: sticky;
-    top: 0;
     z-index: 10;
   }
   
   .mega-menu-header {
-    position: sticky;
-    top: 0;
     z-index: 11;
     background: white;
     border-radius: 20px 20px 0 0;
@@ -1650,30 +1722,47 @@
   font-size: 0.875rem;
 }
 
-/* Parameters Divider */
+/* Parameters Divider - Same style as section headers */
 .parameters-divider {
   grid-column: 1 / -1;
-  margin: 1.5rem 0 0.5rem;
-  padding-top: 1.5rem;
-  border-top: 2px solid #d0d0d0;
+  background: #FF6900;
+  padding: 1rem 1.25rem;
+  border: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  border-radius: 12px;
+  color: white;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(255, 105, 0, 0.2);
+  position: relative;
+}
+
+/* Make parameters-divider inside dose-grid behave like section-header */
+.dose-grid .parameters-divider {
+  width: calc(100% + 2rem);
+  margin-left: -1rem;
+  margin-right: -1rem;
 }
 
 .parameters-divider h4 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  color: #2c3e50;
+  color: white;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0;
+  flex: 1;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .parameters-divider svg {
-  color: #ff6b35;
+  color: white;
   flex-shrink: 0;
+  width: 22px;
+  height: 22px;
 }
 
 /* Custom Infusion Steps Button */
@@ -1882,7 +1971,7 @@
   border: 2px solid rgba(255, 85, 0, 0.2);
 }
 
-.results-section .section-header {
+.pump-calculator-container .results-section .section-header {
   background: rgba(255, 85, 0, 0.1);
 }
 
@@ -2250,7 +2339,7 @@
     padding: 1rem;
   }
   
-  .section-header {
+  .pump-calculator-container .section-header {
     padding: 1rem;
   }
   
@@ -4517,26 +4606,26 @@
 /* Large Desktop (1920px+) */
 @media (min-width: 1920px) {
   .pump-calculator-full-width {
-    max-width: 1800px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 0;
   }
 }
 
 /* Desktop (1200px - 1919px) */
 @media (max-width: 1919px) {
   .pump-calculator-full-width {
-    padding: 2rem;
+    padding: 0.75rem;
   }
 }
 
 /* Small Desktop / Large Tablet (992px - 1199px) */
 @media (max-width: 1199px) {
   .pump-calculator-full-width {
-    padding: 1.5rem;
+    padding: 0.75rem;
   }
   
-  .section-header h3 {
-    font-size: 1.25rem;
+  .pump-calculator-container .section-header h3 {
+    font-size: 16px;
   }
   
   .setup-primary-row,
@@ -4560,7 +4649,7 @@
     margin-bottom: 1rem;
   }
   
-  .section-header {
+  .pump-calculator-container .section-header {
     padding: 1rem 1.25rem;
   }
   
@@ -4602,18 +4691,18 @@
     margin-bottom: 0.75rem;
   }
   
-  .section-header {
+  .pump-calculator-container .section-header {
     padding: 0.875rem 1rem;
     border-radius: 12px 12px 0 0;
   }
   
-  .section-header h3 {
-    font-size: 1.125rem;
+  .pump-calculator-container .section-header h3 {
+    font-size: 16px;
   }
   
-  .section-header svg {
-    width: 20px;
-    height: 20px;
+  .pump-calculator-container .section-header svg {
+    width: 22px;
+    height: 22px;
   }
   
   .section-content {
@@ -4772,13 +4861,13 @@
     border-radius: 10px;
   }
   
-  .section-header {
+  .pump-calculator-container .section-header {
     padding: 0.75rem;
     gap: 0.5rem;
   }
   
-  .section-header h3 {
-    font-size: 1rem;
+  .pump-calculator-container .section-header h3 {
+    font-size: 16px;
   }
   
   .section-content {
@@ -4843,7 +4932,7 @@
     gap: 0.5rem;
   }
   
-  .section-header {
+  .pump-calculator-container .section-header {
     padding: 0.5rem 1rem;
   }
   
@@ -6360,13 +6449,13 @@ button.professional-action-btn.calculate-custom-btn {
     border-radius: 8px;
   }
   
-  .section-header {
+  .pump-calculator-container .section-header {
     padding: 0.75rem;
     gap: 0.5rem;
   }
   
-  .section-header h3 {
-    font-size: 1rem;
+  .pump-calculator-container .section-header h3 {
+    font-size: 16px;
   }
   
   .section-content {
@@ -7529,13 +7618,13 @@ button.professional-action-btn.calculate-custom-btn {
     overflow: visible !important;
   }
   
-  .section-header {
+  .pump-calculator-container .section-header {
     padding: 0.75rem;
     display: flex !important;
   }
   
-  .section-header h3 {
-    font-size: 0.875rem;
+  .pump-calculator-container .section-header h3 {
+    font-size: 16px;
   }
   
   .section-content {
@@ -7763,12 +7852,12 @@ button.professional-action-btn.calculate-custom-btn {
     border-radius: 8px;
   }
   
-  .section-header {
+  .pump-calculator-container .section-header {
     padding: 0.75rem;
   }
   
-  .section-header h3 {
-    font-size: 1rem;
+  .pump-calculator-container .section-header h3 {
+    font-size: 16px;
   }
   
   .section-content {
@@ -9253,8 +9342,8 @@ button.professional-action-btn.calculate-custom-btn {
   background: #ffffff;
   border: 1px solid #d0d0d0;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 9999999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 999999;
   max-height: 400px;
   overflow-y: auto;
   animation: dropdownFadeIn 0.2s ease;
@@ -9262,8 +9351,7 @@ button.professional-action-btn.calculate-custom-btn {
 }
 
 .medication-search-wrapper {
-  position: sticky;
-  top: 0;
+  position: relative;
   background: #ffffff;
   padding: 12px;
   border-bottom: 1px solid #d0d0d0;
@@ -9393,6 +9481,40 @@ button.professional-action-btn.calculate-custom-btn {
   background: #f3e5f5;
   color: #6a1b9a;
   border: 1px solid #ba68c8;
+}
+
+/* Mobile responsive tags - convert to icons only */
+@media (max-width: 768px) {
+  .medication-tag {
+    padding: 4px;
+    min-width: 24px;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .medication-tag::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    display: block;
+  }
+  
+  /* Multiple vials icon */
+  .medication-tag.vial-tag::before {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231565c0' stroke-width='2'%3E%3Crect x='3' y='3' width='7' height='18' rx='1'/%3E%3Crect x='14' y='8' width='7' height='13' rx='1'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+  }
+  
+  /* Special dosing icon */
+  .medication-tag.dosing-tag::before {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236a1b9a' stroke-width='2'%3E%3Cpath d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+  }
+  
+  /* Hide text on mobile */
+  .medication-tag span {
+    display: none;
+  }
 }
 
 /* Dark theme medication dropdown */
@@ -9610,7 +9732,7 @@ button.professional-action-btn.calculate-custom-btn {
 
 /* Force medication dropdown to be on top when open */
 .medication-dropdown-wrapper:has(.medication-dropdown-menu) {
-  z-index: 9999999 \!important;
+  z-index: 9999999 !important;
 }
 
 /* Specific fix for patient weight card to prevent KG unit from overlapping dropdown */
@@ -9634,13 +9756,33 @@ button.professional-action-btn.calculate-custom-btn {
 
 /* Ensure medication dropdown menu is always on top of all other elements */
 .medication-dropdown-wrapper.dropdown-open {
-  z-index: 102 !important;
+  z-index: 999999 !important;
   position: relative !important;
 }
 
 .medication-dropdown-wrapper.dropdown-open .medication-dropdown-menu {
-  z-index: 103 !important;
+  z-index: 9999999 !important;
+  position: absolute !important;
   /* Use the original position: absolute */
+}
+
+/* Ensure dropdown appears above dose calculation section */
+.medication-dropdown-wrapper.dropdown-open ~ * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Force dose calculation header to be below dropdown */
+.pump-calculator-container .dose-calculation-header {
+  z-index: 1 !important;
+  position: relative !important;
+}
+
+/* When dropdown is open, ensure it's above the dose calculation section */
+.section-content:has(.medication-dropdown-wrapper.dropdown-open) ~ .dose-calculation-header,
+.section-content:has(.medication-dropdown-wrapper.dropdown-open) ~ .section-content {
+  z-index: 1 !important;
+  position: relative !important;
 }
 
 /* Override any z-index on dose units and ensure they stay below */
@@ -10571,13 +10713,13 @@ input[value="removed-from-vial"] + label,
   box-shadow: var(--shadow-md, 0 4px 6px rgba(0, 0, 0, 0.3));
 }
 
-[data-theme="dark"] .section-header {
+[data-theme="dark"] .pump-calculator-container .section-header {
   background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
   border-bottom-color: var(--border-color, #2a2a2a);
 }
 
-[data-theme="dark"] .section-header h3,
-[data-theme="dark"] .section-header h4 {
+[data-theme="dark"] .pump-calculator-container .section-header h3,
+[data-theme="dark"] .pump-calculator-container .section-header h4 {
   color: var(--text-primary, #ffffff);
 }
 
@@ -10863,7 +11005,7 @@ input[value="removed-from-vial"] + label,
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-[data-theme="dark"] .section-header {
+[data-theme="dark"] .pump-calculator-container .section-header {
   background: var(--bg-primary, #0f0f0f);
   border-bottom-color: var(--border-color, #2a2a2a);
   color: var(--text-primary, #ffffff);
@@ -11654,4 +11796,29 @@ input[value="removed-from-vial"] + label,
   font-size: 14px;
   margin-top: 16px;
   font-weight: 500;
+}
+
+
+/* CRITICAL FIX: Ensure medication dropdown always appears above all content */
+.medication-dropdown-wrapper {
+  z-index: 1000 !important;
+  position: relative !important;
+}
+
+.medication-dropdown-wrapper.dropdown-open {
+  z-index: 100000 !important;
+}
+
+.medication-dropdown-menu {
+  z-index: 2147483647 !important; /* Maximum z-index */
+  position: absolute !important;
+  background: white !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Push down all content below the dropdown */
+.pump-calculator-container .dose-calculation-header,
+.pump-calculator-container .dose-calculation-header * {
+  z-index: 1 !important;
+  position: relative !important;
 }

@@ -24,7 +24,6 @@ export const SearchProvider = ({ children }) => {
   const [bookmarks, setBookmarks] = useState([]);
   // Shop products state removed
   const [notes, setNotes] = useState([]);
-  const [workflowSections, setWorkflowSections] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -38,7 +37,6 @@ export const SearchProvider = ({ children }) => {
     // Only load medications - remove other data sources
     // loadBookmarks();
     // loadNotes();
-    // loadWorkflowSections();
   }, []);
 
   const loadMedications = async () => {
@@ -204,22 +202,6 @@ export const SearchProvider = ({ children }) => {
     }
   };
 
-  const loadWorkflowSections = () => {
-    // Define workflow sections statically as they're not stored in a database
-    const sections = [
-      { id: 'pre-procedure', title: 'Pre-Procedure', description: 'Patient assessment and preparation steps' },
-      { id: 'assessment', title: 'Patient Assessment', description: 'Initial patient evaluation and vital signs' },
-      { id: 'vascular-access', title: 'Vascular Access', description: 'IV insertion and access management' },
-      { id: 'medication-prep', title: 'Medication Preparation', description: 'Drug calculation and preparation procedures' },
-      { id: 'infusion-setup', title: 'Infusion Setup', description: 'Pump programming and setup instructions' },
-      { id: 'during-infusion', title: 'During Infusion', description: 'Monitoring and management during therapy' },
-      { id: 'post-infusion', title: 'Post-Infusion', description: 'Completion and documentation procedures' },
-      { id: 'documentation', title: 'Documentation', description: 'Record keeping and reporting requirements' },
-      { id: 'emergency', title: 'Emergency Protocols', description: 'Emergency response and troubleshooting' }
-    ];
-    
-    setWorkflowSections(sections);
-  };
 
   // Generate search suggestions for 1-3 letter queries
   const generateSuggestions = (query) => {
@@ -325,7 +307,6 @@ export const SearchProvider = ({ children }) => {
     const bookmarkResults = [];
     const shopResults = [];
     const noteResults = [];
-    const workflowResults = [];
 
     // Combine results and limit to 20 (only medications)
     const combinedResults = [
@@ -338,7 +319,7 @@ export const SearchProvider = ({ children }) => {
     setShowDropdown(combinedResults.length > 0);
   };
 
-  // Navigate to medication, bookmark, shop product, note, or workflow section
+  // Navigate to medication, bookmark, shop product, or note
   const navigateToMedication = (item) => {
     try {
       setShowDropdown(false);
@@ -369,14 +350,6 @@ export const SearchProvider = ({ children }) => {
             state: { 
               selectedNoteId: item.id,
               openNote: true 
-            } 
-          });
-        } else if (item.resultType === 'workflow') {
-          // Navigate to workflow page with selected section
-          navigate('/workflow', { 
-            state: { 
-              selectedSectionId: item.id,
-              scrollToSection: true 
             } 
           });
         } else if (item.resultType === 'haeMedication') {
@@ -437,8 +410,7 @@ export const SearchProvider = ({ children }) => {
       loadScdMedications,
       loadBookmarks,
       // loadShopProducts removed,
-      loadNotes,
-      loadWorkflowSections
+      loadNotes
     }}>
       {children}
     </SearchContext.Provider>

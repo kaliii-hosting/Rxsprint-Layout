@@ -254,10 +254,11 @@ const DoseSafetyIndicator = ({ doseSafety, standardDose, specialDosingOptions, s
       {/* Special Dosing Options */}
       {specialDosingOptions.length > 0 && doseSafety.classification !== 'unknown' && (
         <div className="special-dosing-section">
-          <div className="special-dosing-header">
-            <div className="special-dosing-title">SPECIAL DOSING OPTIONS</div>
-            <div className="special-dosing-subtitle">Select to compare against special dosing protocols</div>
+          <div className="parameters-divider">
+            <Sliders size={22} />
+            <h4>Special Dosing Options</h4>
           </div>
+          <div className="special-dosing-subtitle">Select to compare against special dosing protocols</div>
           <div className="special-dosing-cards">
             {specialDosingOptions.map((option) => {
               // Check if option has a condition that needs to be met
@@ -614,6 +615,7 @@ const RedesignedPumpCalculator = () => {
   const [calibrationHistory, setCalibrationHistory] = useState([]);
   const [currentHistoryIndex, setCurrentHistoryIndex] = useState(-1);
   const [isCalibrating, setIsCalibrating] = useState(false);
+  const [skipValidation, setSkipValidation] = useState(false);
   
   // Custom infusion steps state
   const [customInfusionSteps, setCustomInfusionSteps] = useState([
@@ -1542,14 +1544,26 @@ const RedesignedPumpCalculator = () => {
   };
 
   // Validate custom infusion steps
-  const validateCustomSteps = useCallback(() => {
+  const validateCustomSteps = useCallback((overrideExpectedTime = null) => {
     if (!inputs.useCustomSteps || customInfusionSteps.length === 0) {
       return { volumeValid: true, durationValid: true, stepsValid: [] };
     }
 
     const totalVolume = parseFloat(inputs.totalInfusionVolume) || 0;
-    const totalMinutes = (parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + 
-                        (parseInt(inputs.totalInfusionTime.minutes) || 0);
+    
+    // Use override time if provided (for calibration), otherwise use input time
+    let totalMinutes;
+    if (overrideExpectedTime !== null) {
+      totalMinutes = overrideExpectedTime;
+      console.log(`VALIDATION DEBUG (CALIBRATION MODE):`);
+      console.log(`- overrideExpectedTime: ${overrideExpectedTime} minutes`);
+    } else {
+      totalMinutes = (parseInt(inputs.totalInfusionTime.hours) || 0) * 60 + 
+                     (parseInt(inputs.totalInfusionTime.minutes) || 0);
+      console.log(`VALIDATION DEBUG (NORMAL MODE):`);
+      console.log(`- inputs.totalInfusionTime: ${inputs.totalInfusionTime.hours}h ${inputs.totalInfusionTime.minutes}m`);
+    }
+    console.log(`- calculated totalMinutes: ${totalMinutes}`);
 
     let stepVolumeTotal = 0;
     let stepDurationTotal = 0;
@@ -1674,8 +1688,16 @@ const RedesignedPumpCalculator = () => {
     const roundedTotalMinutes = Math.round(totalMinutes);
     const durationValid = Math.abs(roundedStepDuration - roundedTotalMinutes) <= 1; // Allow 1 minute tolerance after rounding
     
-    console.log(`Validation: stepDurationTotal=${stepDurationTotal}, totalMinutes=${totalMinutes}, diff=${Math.abs(stepDurationTotal - totalMinutes)}`);
+    console.log(`\n=== VALIDATION FINAL CHECK ===`);
+    console.log(`Raw: stepDurationTotal=${stepDurationTotal}, totalMinutes=${totalMinutes}, diff=${Math.abs(stepDurationTotal - totalMinutes)}`);
+    console.log(`Rounded: stepDuration=${roundedStepDuration}, totalMinutes=${roundedTotalMinutes}, diff=${Math.abs(roundedStepDuration - roundedTotalMinutes)}`);
     console.log(`Input time: ${inputs.totalInfusionTime.hours}h ${inputs.totalInfusionTime.minutes}m`);
+    console.log(`Duration valid: ${durationValid}, tolerance check: ${Math.abs(roundedStepDuration - roundedTotalMinutes)} <= 1`);
+    
+    if (!durationValid) {
+      console.error(`VALIDATION FAILURE: Step total (${stepDurationTotal}) doesn't match expected (${totalMinutes})`);
+      console.error(`After rounding: step=${roundedStepDuration} vs expected=${roundedTotalMinutes}`);
+    }
     
     const isAcceptable = volumeValid && durationValid && stepsValidation.every(step => step.isValid);
 
@@ -1693,11 +1715,18 @@ const RedesignedPumpCalculator = () => {
 
   // Update validation when custom steps change
   useEffect(() => {
-    if (inputs.useCustomSteps && !isCalibrating) {
-      const validation = validateCustomSteps();
-      setCustomStepsValidation(validation);
+    if (inputs.useCustomSteps && !isCalibrating && !skipValidation) {
+      // Add a small delay to ensure all state updates have propagated
+      // This prevents validation from running with partially updated state
+      const timeoutId = setTimeout(() => {
+        const validation = validateCustomSteps();
+        setCustomStepsValidation(validation);
+      }, 100); // Increased delay from 50ms to 100ms for better state synchronization
+      
+      return () => clearTimeout(timeoutId);
     }
-  }, [inputs.useCustomSteps, customInfusionSteps, inputs.totalInfusionVolume, inputs.totalInfusionTime, validateCustomSteps, isCalibrating]);
+  }, [inputs.useCustomSteps, customInfusionSteps, inputs.totalInfusionVolume, inputs.totalInfusionTime, validateCustomSteps, isCalibrating, skipValidation]);
+
 
 
   // Calculate days coverage for custom vial combination
@@ -2970,11 +2999,13 @@ const RedesignedPumpCalculator = () => {
           const compensationRate = parseFloat(compensationStep.rate) || newRate; // KEEP ORIGINAL RATE
           
           // Only update volume and duration, NEVER change the rate
+          // Use precise calculation for duration to match validation
+          const compensationDuration = (compensatedVolume * 60) / compensationRate;
           updatedSteps[compensationIndex] = {
             ...compensationStep,
             volume: (Math.round(compensatedVolume * 10) / 10).toString(),
             rate: compensationRate.toString(), // Keep original rate unchanged
-            duration: Math.round((compensatedVolume * 60) / compensationRate).toString(),
+            duration: compensationDuration.toString(), // Keep precise value
             compensated: true,
             compensationAmount: volumeDifference
           };
@@ -3012,6 +3043,14 @@ const RedesignedPumpCalculator = () => {
         // Keep all other steps unchanged (except the last 3 which we already modified)
         // Only the compensation, main infusion, and flush steps are modified
         
+        // IMPORTANT: For rate calibration, we should NOT change the rate of early steps
+        // Only the main infusion and flush get the new rate
+        // Log what we're doing for clarity
+        console.log(`Rate calibration: Updating only main infusion (index ${mainInfusionIndex}) and flush (index ${flushIndex}) with new rate ${newRate}`);
+        if (compensationIndex >= 0 && Math.abs(volumeDifference) > 0.01) {
+          console.log(`Also adjusted compensation step (index ${compensationIndex}) volume by ${volumeDifference}`);
+        }
+        
         // IMPORTANT: Ensure ALL steps have string values for consistency
         // Convert any numeric values from unchanged steps to strings
         for (let i = 0; i < updatedSteps.length; i++) {
@@ -3027,15 +3066,28 @@ const RedesignedPumpCalculator = () => {
         }
         
         // Calculate new total time from all updated steps
-        const newTotalMinutes = updatedSteps.reduce((sum, step) => {
+        console.log(`\n=== CALCULATING TOTAL TIME AFTER RATE CALIBRATION ===`);
+        console.log(`Total steps: ${updatedSteps.length}`);
+        const newTotalMinutes = updatedSteps.reduce((sum, step, index) => {
           const duration = parseFloat(step.duration) || 0;
-          console.log(`Step duration: ${step.duration} -> parsed: ${duration}`);
+          const volume = parseFloat(step.volume) || 0;
+          const rate = parseFloat(step.rate) || 0;
+          const stepType = index === mainInfusionIndex ? 'MAIN' : 
+                          index === flushIndex ? 'FLUSH' : 
+                          index === compensationIndex ? 'COMPENSATION' : 'UNCHANGED';
+          console.log(`Step ${index} (${stepType}): volume=${volume}mL, rate=${rate}mL/hr, duration=${step.duration}min -> parsed: ${duration}min`);
           return sum + duration;
         }, 0);
+        console.log(`TOTAL DURATION: ${newTotalMinutes} minutes`);
         const newHours = Math.floor(newTotalMinutes / 60);
-        const newMinutes = Math.round(newTotalMinutes % 60);
+        // Don't round the minutes - keep the exact value to match validation
+        const remainingMinutes = newTotalMinutes - (newHours * 60);
+        const newMinutes = Math.round(remainingMinutes);
         
         console.log(`Rate adjustment: Total minutes = ${newTotalMinutes}, New total time is ${newHours}h ${newMinutes}min`);
+        console.log(`Exact calculation: ${newTotalMinutes} minutes = ${newHours} hours + ${remainingMinutes} minutes (rounded to ${newMinutes})`);
+        console.log(`This will set totalInfusionTime to: hours=${newHours}, minutes=${newMinutes}`);
+        console.log(`Expected totalMinutes in validation will be: ${newHours * 60 + newMinutes}`);
         setCalibrationErrors({});
         
         // Store the updated steps and continue with the rest of the function
@@ -3059,6 +3111,8 @@ const RedesignedPumpCalculator = () => {
         console.log(`- Total Volume: ${calibratedTotalVolume.toFixed(1)} mL (Target: ${targetVolume} mL)`);
         console.log(`- Total Duration: ${calibratedTotalDuration.toFixed(0)} min (Calculated: ${newTotalMinutes} min)`);
         console.log(`- New Rate: ${newRate} mL/hr for main/flush`);
+        console.log(`CRITICAL CHECK: newTotalMinutes=${newTotalMinutes}, calibratedTotalDuration=${calibratedTotalDuration}`);
+        console.log(`Are they equal? ${Math.abs(newTotalMinutes - calibratedTotalDuration) < 0.01}`);
         
         // Update the custom infusion steps with calibrated values
         // IMPORTANT: Ensure all values are strings, even for unchanged steps
@@ -3077,15 +3131,33 @@ const RedesignedPumpCalculator = () => {
         // Update custom steps first
         setCustomInfusionSteps(formattedSteps);
         
-        // Update the inputs with the NEW calculated time as the EXPECTED time
-        // This is crucial - after rate calibration, the new time IS the expected time
-        setInputs(prev => ({
-          ...prev,
-          totalInfusionTime: {
-            hours: newHours.toString(),
-            minutes: newMinutes.toString()
-          }
-        }));
+        // CRITICAL FIX: Set the total infusion time to EXACTLY match the sum of step durations
+        // Use the actual calculated step total duration to ensure perfect match
+        const stepSum = calibratedTotalDuration;
+        const stepSumHours = Math.floor(stepSum / 60);
+        const stepSumMinutes = Math.round(stepSum % 60); // Round to nearest minute for UI
+        
+        console.log(`\n=== SETTING EXPECTED TIME TO MATCH STEPS ===`);
+        console.log(`- Actual step duration sum: ${stepSum} minutes`);
+        console.log(`- Converting to: ${stepSumHours}h ${stepSumMinutes}min`);
+        console.log(`- This equals: ${stepSumHours * 60 + stepSumMinutes} total minutes for validation`);
+        
+        setInputs(prev => {
+          const newInputs = {
+            ...prev,
+            totalInfusionTime: {
+              hours: stepSumHours.toString(),
+              minutes: stepSumMinutes.toString()
+            }
+          };
+          
+          console.log(`\n=== INPUTS BEING SET ===`);
+          console.log(`Previous totalInfusionTime: ${prev.totalInfusionTime.hours}h ${prev.totalInfusionTime.minutes}m`);
+          console.log(`New totalInfusionTime: ${newInputs.totalInfusionTime.hours}h ${newInputs.totalInfusionTime.minutes}m`);
+          console.log(`This should equal step sum: ${stepSum} minutes`);
+          
+          return newInputs;
+        });
         
         // Immediately set validation to show everything is valid
         // After rate calibration, by definition everything should pass
@@ -3093,32 +3165,18 @@ const RedesignedPumpCalculator = () => {
         // For rate calibration: 
         // - Volume should remain the same (passes validation)
         // - Duration is recalculated and becomes the new expected duration (passes validation)
-        const newValidation = {
-          volumeValid: true, // Volume doesn't change in rate calibration
-          durationValid: true, // New duration IS the expected duration after calibration
-          stepsValid: formattedSteps.map(() => ({ isValid: true, error: '' })),
-          stepVolumeTotal: calibratedTotalVolume,
-          stepDurationTotal: calibratedTotalDuration,
-          isAcceptable: true,
-          totalVolumeError: '',
-          totalDurationError: ''
-        };
+        // The validation will be triggered automatically by useEffect after state updates
+        // No need to set validation manually as it will use stale closure values
         
-        // Set the validation immediately to reflect the calibrated state
-        setCustomStepsValidation(newValidation);
-        
-        // Note: The useEffect will trigger proper validation with the updated time
-        // No need for setTimeout as the state updates will trigger the validation useEffect
-        
-        // Save calibration to history with the new calculated time
+        // Save calibration to history with the corrected step-sum time
         const historyEntry = {
           steps: formattedSteps,
           totalInfusionTime: {
-            hours: newHours.toString(),
-            minutes: newMinutes.toString()
+            hours: stepSumHours.toString(),
+            minutes: stepSumMinutes.toString()
           },
           timestamp: new Date().toISOString(),
-          type: `Rate: ${newRate} mL/hr (${newHours}h ${newMinutes}m)`
+          type: `Rate: ${newRate} mL/hr (${stepSumHours}h ${stepSumMinutes}m)`
         };
         
         setCalibrationHistory(prev => [...prev.slice(0, currentHistoryIndex + 1), historyEntry]);
@@ -3140,11 +3198,72 @@ const RedesignedPumpCalculator = () => {
         setCalibrationMode(null);
         setCalibrationInputs({ newRate: '', newTimeHours: '', newTimeMinutes: '' });
         
-        // After a short delay, reset the calibrating flag and re-run validation with the new state
-        setTimeout(() => {
-          setIsCalibrating(false);
-          // The validation will be correct now because the inputs have been updated
-        }, 100);
+        // After a short delay, reset the calibrating flag
+        // The validation will run automatically through useEffect with the updated values
+        // For rate calibration, we need to ensure the validation passes since we've updated both steps and time
+        
+        // Log expected validation values for debugging
+        const expectedTotalMinutes = newHours * 60 + newMinutes;
+        console.log(`\n=== VALIDATION COMPARISON ===`);
+        console.log(`After calibration, validation should compare:`);
+        console.log(`- Step total duration: ${calibratedTotalDuration} minutes`);
+        console.log(`- Expected total: ${expectedTotalMinutes} minutes`);
+        console.log(`- Difference: ${Math.abs(calibratedTotalDuration - expectedTotalMinutes)} minutes`);
+        console.log(`- Should pass? ${Math.abs(calibratedTotalDuration - expectedTotalMinutes) <= 1}`);
+        
+        // CRITICAL: Check if there's a mismatch
+        if (Math.abs(calibratedTotalDuration - expectedTotalMinutes) > 1) {
+          console.error(`WARNING: Large discrepancy detected! This will cause validation to fail.`);
+          console.error(`newTotalMinutes: ${newTotalMinutes}`);
+          console.error(`calibratedTotalDuration: ${calibratedTotalDuration}`);
+          console.error(`expectedTotalMinutes: ${expectedTotalMinutes}`);
+        }
+        
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            // Calculate the current step durations sum from the updated steps
+            const currentStepDurationSum = customInfusionSteps.reduce((sum, step) => 
+              sum + (parseFloat(step.duration) || 0), 0
+            );
+            
+            // Use the enhanced validation function with override expected time
+            // This ensures validation uses the step sum as expected time, not stale input time
+            const validationResult = validateCustomSteps(currentStepDurationSum);
+            
+            console.log(`\n=== RATE CALIBRATION COMPLETION VALIDATION ===`);
+            console.log(`Calculated step duration sum: ${currentStepDurationSum} minutes`);
+            console.log(`Using validateCustomSteps with override expected time: ${currentStepDurationSum} minutes`);
+            console.log(`Validation result: durationValid=${validationResult.durationValid}, isAcceptable=${validationResult.isAcceptable}`);
+            
+            setCustomStepsValidation(validationResult);
+            
+            // Update the total infusion time to match the step durations sum
+            const totalHours = Math.floor(currentStepDurationSum / 60);
+            const totalMinutes = Math.round(currentStepDurationSum % 60);
+            
+            console.log(`\n=== UPDATING INFUSION PARAMETERS TIME (RATE CALIBRATION) ===`);
+            console.log(`Setting total infusion time to: ${totalHours}h ${totalMinutes}m (${currentStepDurationSum} total minutes)`);
+            
+            setInputs(prev => ({
+              ...prev,
+              totalInfusionTime: {
+                hours: totalHours.toString(),
+                minutes: totalMinutes.toString()
+              }
+            }));
+            
+            // Set skip flag to prevent normal validation from overriding this result
+            setSkipValidation(true);
+            
+            // Then reset calibrating flag
+            setIsCalibrating(false);
+            
+            // Clear skip flag after delay to resume normal validation
+            setTimeout(() => {
+              setSkipValidation(false);
+            }, 500);
+          });
+        });
         
       } else if (calibrationMode === 'time') {
         // Adjust total time and automatically calculate new rate for main/flush
@@ -3388,7 +3507,8 @@ const RedesignedPumpCalculator = () => {
         // Calculate totals for logging and debugging
         const calibratedTotalVolume = updatedSteps.reduce((sum, step) => sum + parseFloat(step.volume || 0), 0);
         const calibratedTotalDuration = updatedSteps.reduce((sum, step) => sum + parseFloat(step.duration || 0), 0);
-        // Use targetVolume declared earlier in this function
+        // Use targetTotalVolume declared earlier in this function
+        const targetVolume = targetTotalVolume;
         
         console.log(`Time Calibration Results:`);
         console.log(`- Total Volume: ${calibratedTotalVolume.toFixed(1)} mL (Target: ${targetVolume} mL)`);
@@ -3408,31 +3528,29 @@ const RedesignedPumpCalculator = () => {
         
         setCustomInfusionSteps(formattedSteps);
         
-        // Update inputs with the requested time - THIS IS THE KEY
-        // For time calibration, the requested time IS the expected time
+        // CRITICAL FIX: Set the total infusion time to EXACTLY match the sum of step durations
+        // Use the actual calculated step total duration to ensure perfect match
+        const stepSum = calibratedTotalDuration;
+        const stepSumHours = Math.floor(stepSum / 60);
+        const stepSumMinutes = Math.round(stepSum % 60); // Round to nearest minute for UI
+        
+        console.log(`\n=== SETTING EXPECTED TIME TO MATCH STEPS (TIME CALIBRATION) ===`);
+        console.log(`- Requested time: ${newHours}h ${newMinutes}m (${newTotalMinutes} minutes)`);
+        console.log(`- Actual step duration sum: ${stepSum} minutes`);
+        console.log(`- Setting expected time to: ${stepSumHours}h ${stepSumMinutes}min`);
+        console.log(`- This equals: ${stepSumHours * 60 + stepSumMinutes} total minutes for validation`);
+        
         setInputs(prev => ({
           ...prev,
           totalInfusionTime: {
-            hours: newHours.toString(),
-            minutes: newMinutes.toString()
+            hours: stepSumHours.toString(),
+            minutes: stepSumMinutes.toString()
           }
         }));
         
-        // Force immediate validation to show everything is valid
-        // After time calibration, by definition everything should pass
-        const newValidation = {
-          volumeValid: true, // Volume doesn't change in time calibration
-          durationValid: true, // New duration matches the requested time
-          stepsValid: formattedSteps.map(() => ({ isValid: true, error: '' })),
-          stepVolumeTotal: calibratedTotalVolume,
-          stepDurationTotal: calibratedTotalDuration,
-          isAcceptable: true,
-          totalVolumeError: '',
-          totalDurationError: ''
-        };
-        
-        // Set the validation immediately to reflect the calibrated state
-        setCustomStepsValidation(newValidation);
+        // After time calibration, the validation will run automatically
+        // The new time and rate values will be validated by useEffect
+        // No need to set validation manually as it will use stale closure values
         
         // Save calibration to history with the requested time
         const historyEntry = {
@@ -3464,11 +3582,53 @@ const RedesignedPumpCalculator = () => {
         setCalibrationMode(null);
         setCalibrationInputs({ newRate: '', newTimeHours: '', newTimeMinutes: '' });
         
-        // After a short delay, reset the calibrating flag and re-run validation with the new state
-        setTimeout(() => {
-          setIsCalibrating(false);
-          // The validation will be correct now because the inputs have been updated
-        }, 100);
+        // After a short delay, reset the calibrating flag
+        // Use validateCustomSteps with override to ensure correct expected time
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            // Calculate the current step durations sum from the updated steps
+            const currentStepDurationSum = customInfusionSteps.reduce((sum, step) => 
+              sum + (parseFloat(step.duration) || 0), 0
+            );
+            
+            // Use the enhanced validation function with override expected time
+            // This ensures validation uses the step sum as expected time, not stale input time
+            const validationResult = validateCustomSteps(currentStepDurationSum);
+            
+            console.log(`\n=== TIME CALIBRATION COMPLETION VALIDATION ===`);
+            console.log(`Calculated step duration sum: ${currentStepDurationSum} minutes`);
+            console.log(`Using validateCustomSteps with override expected time: ${currentStepDurationSum} minutes`);
+            console.log(`Validation result: durationValid=${validationResult.durationValid}, isAcceptable=${validationResult.isAcceptable}`);
+            
+            setCustomStepsValidation(validationResult);
+            
+            // Update the total infusion time to match the step durations sum  
+            const totalHours = Math.floor(currentStepDurationSum / 60);
+            const totalMinutes = Math.round(currentStepDurationSum % 60);
+            
+            console.log(`\n=== UPDATING INFUSION PARAMETERS TIME (TIME CALIBRATION) ===`);
+            console.log(`Setting total infusion time to: ${totalHours}h ${totalMinutes}m (${currentStepDurationSum} total minutes)`);
+            
+            setInputs(prev => ({
+              ...prev,
+              totalInfusionTime: {
+                hours: totalHours.toString(),
+                minutes: totalMinutes.toString()
+              }
+            }));
+            
+            // Set skip flag to prevent normal validation from overriding this result
+            setSkipValidation(true);
+            
+            // Then reset calibrating flag
+            setIsCalibrating(false);
+            
+            // Clear skip flag after delay to resume normal validation
+            setTimeout(() => {
+              setSkipValidation(false);
+            }, 500);
+          });
+        });
       }
     } catch (error) {
       setCalibrationErrors({ general: 'Error applying calibration: ' + error.message });
@@ -3496,10 +3656,52 @@ const RedesignedPumpCalculator = () => {
       setCalibrationMode(null);
       setCalibrationInputs({ newRate: '', newTimeHours: '', newTimeMinutes: '' });
       
-      // After state updates, reset flag
-      setTimeout(() => {
-        setIsCalibrating(false);
-      }, 100);
+      // After state updates, reset flag using requestAnimationFrame for proper sync
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // Calculate the current step total duration from the restored steps
+          const currentStepDurationTotal = historyEntry.steps.reduce((sum, step) => 
+            sum + (parseFloat(step.duration) || 0), 0
+          );
+          
+          // Use the enhanced validation function with override expected time for history restoration
+          const validationResult = validateCustomSteps(currentStepDurationTotal);
+          
+          console.log(`\n=== HISTORY RESTORATION VALIDATION ===`);
+          console.log(`Using validateCustomSteps with override expected time: ${currentStepDurationTotal} minutes`);
+          console.log(`Validation result: durationValid=${validationResult.durationValid}, isAcceptable=${validationResult.isAcceptable}`);
+          
+          setCustomStepsValidation(validationResult);
+          
+          // Also update the infusion parameters time to match the restored step durations sum
+          const restoredTotalHours = Math.floor(currentStepDurationTotal / 60);
+          const restoredTotalMinutes = Math.round(currentStepDurationTotal % 60);
+          
+          console.log(`\n=== UPDATING INFUSION PARAMETERS TIME (HISTORY RESTORATION) ===`);
+          console.log(`Setting total infusion time to: ${restoredTotalHours}h ${restoredTotalMinutes}m (${currentStepDurationTotal} total minutes)`);
+          
+          setInputs(prevInputs => ({
+            ...prevInputs,
+            totalInfusionTime: {
+              hours: restoredTotalHours.toString(),
+              minutes: restoredTotalMinutes.toString()
+            }
+          }));
+          
+          // Set skip flag to prevent validation effect from overriding our manual validation
+          setSkipValidation(true);
+          
+          // Add a small delay before resetting calibration flag to prevent validation 
+          // effect from running immediately with potentially stale state
+          setTimeout(() => {
+            setIsCalibrating(false);
+            // Clear skip flag after a longer delay to allow normal validation to resume
+            setTimeout(() => {
+              setSkipValidation(false);
+            }, 500); // Longer delay to ensure our manual validation stays in effect
+          }, 50);
+        });
+      });
     }
   }, [calibrationHistory]);
 
@@ -3812,8 +4014,8 @@ const RedesignedPumpCalculator = () => {
   return (
     <div className="pump-calculator-container">
       <div className="pump-calculator-full-width">
-        {/* Medication Setup Section */}
-        <div className="calculator-section">
+        {/* Combined Medication Setup and Dose Calculation Section */}
+        <div className="calculator-section combined-section">
           <div className="section-header">
             <Pill size={20} />
             <h3>Medication Setup</h3>
@@ -4117,11 +4319,9 @@ const RedesignedPumpCalculator = () => {
               )}
             </div>
           </div>
-        </div>
-
-        {/* Dose Calculation Section */}
-        <div className="calculator-section">
-          <div className="section-header">
+          
+          {/* Dose Calculation within same container */}
+          <div className="section-header dose-calculation-header">
             <Calculator size={20} />
             <h3>Dose Calculation</h3>
           </div>
@@ -4304,13 +4504,14 @@ const RedesignedPumpCalculator = () => {
                 </div>
               </div>
 
-              {/* Dose Safety Indicator */}
+              {/* Dose Safety Section */}
               {selectedMedicationData && (
-                <div className="dose-item dose-safety-section">
-                  <label className="section-label">
-                    <Shield size={16} />
-                    Dose Safety
-                  </label>
+                <>
+                  <div className="parameters-divider" style={{gridColumn: '1 / -1'}}>
+                    <Shield size={22} />
+                    <h4>Dose Safety</h4>
+                  </div>
+                  <div className="dose-item dose-safety-section" style={{gridColumn: '1 / -1'}}>
                   <DoseSafetyIndicator 
                     key={`${selectedMedication}-${selectedSpecialDosing?.id || 'none'}-${inputs.dose}-${inputs.doseUnit}`}
                     doseSafety={doseSafety} 
@@ -4323,12 +4524,13 @@ const RedesignedPumpCalculator = () => {
                     actualDoseUnit={inputs.doseUnit}
                     correctDose={calculateCorrectDose()}
                   />
-                </div>
+                  </div>
+                </>
               )}
 
               {/* Infusion Parameters Section Header */}
               <div className="parameters-divider">
-                <Activity size={18} />
+                <Activity size={22} />
                 <h4>Infusion Parameters</h4>
               </div>
 
@@ -4685,7 +4887,7 @@ const RedesignedPumpCalculator = () => {
               {selectedMedicationData && selectedMedicationData.dosageForm !== 'oral' && (
                 <>
                   <div className="parameters-divider">
-                    <Settings size={18} />
+                    <Settings size={22} />
                     <h4>Additional Parameters</h4>
                   </div>
 
