@@ -94,12 +94,8 @@ const Phones = () => {
              contact.company?.toLowerCase().includes(searchLower);
     });
 
-    if (selectedLetter) {
-      filtered = filtered.filter(contact => {
-        const nameToUse = contact.name || contact.firstName || '#';
-        return nameToUse[0].toUpperCase() === selectedLetter;
-      });
-    }
+    // Don't filter by selected letter - we want to show all contacts
+    // selectedLetter is only used for scrolling
 
     const grouped = {};
     filtered.forEach(contact => {
@@ -112,7 +108,7 @@ const Phones = () => {
     });
 
     return grouped;
-  }, [contacts, searchQuery, selectedLetter]);
+  }, [contacts, searchQuery]); // Removed selectedLetter dependency
 
   // Handle image upload
   const handleImageUpload = async (e) => {
@@ -236,6 +232,34 @@ const Phones = () => {
     }
   };
 
+  // Scroll to alphabet section
+  const scrollToLetter = (letter) => {
+    const section = document.getElementById(`section-${letter}`);
+    if (!section) return;
+
+    // Determine the scrollable container
+    let container = null;
+    if (deviceMode === 'mobile') {
+      container = document.querySelector('.contacts-list.mobile');
+    } else {
+      container = document.querySelector('.contacts-scroll');
+    }
+    
+    if (!container) {
+      container = document.querySelector('.contacts-content') || 
+                  document.querySelector('.contacts-list');
+    }
+
+    if (container && section) {
+      // Use scrollIntoView with block: 'start' for consistent behavior
+      section.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
+      });
+    }
+  };
+
   return (
     <div className={`phones-page ${deviceMode}`}>
       {/* Mobile Header */}
@@ -286,7 +310,6 @@ const Phones = () => {
           ) : (
             // Main Contacts List Header
             <>
-              <h1 className="ios-title">Contacts</h1>
               <button 
                 className="ios-add-btn"
                 onClick={() => {
@@ -306,6 +329,8 @@ const Phones = () => {
               >
                 <Plus size={22} />
               </button>
+              <h1 className="ios-title">Contacts</h1>
+              <span className="ios-contact-count">{contacts.length}</span>
             </>
           )}
         </div>
@@ -316,14 +341,14 @@ const Phones = () => {
         <div className="desktop-header">
           <div className="header-left">
             <h1 className="page-title">Contacts</h1>
-            <span className="contact-count">{contacts.length}</span>
+            <span className="contact-count-badge">{contacts.length}</span>
           </div>
           <div className="header-center">
             <div className="search-container">
               <Search size={16} className="search-icon" />
               <input
                 type="text"
-                placeholder="Search"
+                placeholder="Search contacts"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="search-input"
@@ -370,7 +395,7 @@ const Phones = () => {
             <Search size={16} className="search-icon" />
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search contacts"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="ios-search-input"
@@ -433,19 +458,24 @@ const Phones = () => {
             {/* Alphabet Navigation */}
             {Object.keys(groupedContacts).length > 0 && (
               <div className="alphabet-navigation">
-                {'ABCDEFGHIJKLMNOPQRSTUVWXYZ#'.split('').map(letter => (
-                  <div
-                    key={letter}
-                    className={`alphabet-letter ${groupedContacts[letter] ? '' : 'disabled'}`}
-                    onClick={() => {
-                      if (groupedContacts[letter]) {
-                        document.getElementById(`section-${letter}`)?.scrollIntoView({ behavior: 'smooth' });
-                      }
-                    }}
-                  >
-                    {letter}
-                  </div>
-                ))}
+                <div className="alphabet-letters-container">
+                  {'ABCDEFGHIJKLMNOPQRSTUVWXYZ#'.split('').map(letter => (
+                    <div
+                      key={letter}
+                      className={`alphabet-letter ${groupedContacts[letter] ? '' : 'disabled'} ${selectedLetter === letter ? 'active' : ''}`}
+                      onClick={() => {
+                        if (groupedContacts[letter]) {
+                          // Set active state for visual feedback
+                          setSelectedLetter(letter);
+                          // Scroll to the letter section
+                          scrollToLetter(letter);
+                        }
+                      }}
+                    >
+                      {letter}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

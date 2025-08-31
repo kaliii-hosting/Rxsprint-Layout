@@ -58,6 +58,23 @@
   white-space: nowrap;
 }
 
+/* Mobile contact count badge */
+.ios-contact-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #34C759;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  white-space: nowrap;
+  margin-right: 16px; /* Same spacing as add button */
+}
+
 .ios-nav-btn {
   background: none;
   border: none;
@@ -98,7 +115,8 @@
   background: none;
   border: none;
   color: var(--link-color, #007AFF);
-  padding: 0 16px;
+  padding: 0 0 0 16px;
+  margin-right: auto; /* Push everything else to the right */
   height: 44px;
   display: flex;
   align-items: center;
@@ -122,8 +140,9 @@
 
 .header-left {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .page-title {
@@ -139,9 +158,27 @@
   font-weight: 400;
 }
 
+/* Contact count badge - Green circular badge */
+.contact-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #34C759;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .header-center {
   flex: 1;
   max-width: 400px;
+  margin: 0 16px;
 }
 
 .search-container {
@@ -151,26 +188,36 @@
 
 .search-input {
   width: 100%;
-  padding: 6px 28px;
+  height: 32px;
+  padding: 4px 30px;
   background: var(--search-bg, #f0f0f0);
   border: none;
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: 20px;
+  font-size: 14px;
   color: var(--text-primary, #000);
   outline: none;
+  transition: all 0.2s ease;
 }
 
 .search-input:focus {
   background: var(--search-focus, #e8e8e8);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary, #8e8e93);
+  font-size: 14px;
 }
 
 .search-icon {
   position: absolute;
-  left: 8px;
+  left: 10px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-secondary, #8e8e93);
   pointer-events: none;
+  width: 16px;
+  height: 16px;
 }
 
 .clear-btn {
@@ -218,6 +265,7 @@
   padding: 8px 16px;
   background: var(--search-container-bg, #f8f8f8);
   border-bottom: 0.5px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  position: relative;
 }
 
 .ios-search-bar {
@@ -227,17 +275,24 @@
 
 .ios-search-input {
   width: 100%;
-  padding: 7px 28px;
+  height: 36px;
+  padding: 6px 30px;
   background: var(--search-bg, rgba(142, 142, 147, 0.12));
   border: none;
-  border-radius: 10px;
-  font-size: 17px;
+  border-radius: 18px;
+  font-size: 16px;
   color: var(--text-primary, #000);
   outline: none;
+  transition: all 0.2s ease;
+}
+
+.ios-search-input:focus {
+  background: var(--search-focus, rgba(142, 142, 147, 0.2));
 }
 
 .ios-search-input::placeholder {
   color: var(--text-secondary, #8e8e93);
+  font-size: 16px;
 }
 
 /* ============= Content Area ============= */
@@ -247,40 +302,58 @@
   overflow: hidden;
   background: var(--content-bg, #ffffff);
   position: relative;
+  height: 100%;
 }
 
 /* ============= Contacts List ============= */
 .contacts-list {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
   display: flex;
+  position: relative;
+  height: 100%;
+  scroll-behavior: smooth; /* Add smooth scrolling */
 }
 
 .contacts-list.mobile {
   width: 100%;
+  position: relative;
+  overflow-y: auto; /* Allow scrolling on mobile */
 }
 
 .contacts-list.tablet {
   width: 350px;
   border-right: 1px solid var(--border-color, #e1e1e6);
+  position: relative;
 }
 
 .contacts-list.desktop {
   width: 300px;
   border-right: 1px solid var(--border-color, #e1e1e6);
+  position: relative;
 }
 
 /* Contacts Content Area */
 .contacts-content {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  scroll-behavior: smooth;
 }
 
 .contacts-scroll {
+  flex: 1;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Loading State */
@@ -334,6 +407,7 @@
 /* Contact Sections */
 .contact-section {
   padding: 0;
+  scroll-margin-top: 0;
 }
 
 .section-header {
@@ -347,6 +421,7 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  scroll-margin-top: 0;
 }
 
 /* Contact Row */
@@ -741,106 +816,178 @@
 
 /* Alphabet Navigation */
 .alphabet-navigation {
-  width: 1.25rem;
-  min-width: 16px;
-  max-width: 32px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  align-items: center;
+  width: 30px;
+  flex-shrink: 0;
   background: var(--content-bg, #ffffff);
   border-left: 0.5px solid var(--border-color, #e1e1e6);
-  padding: 0.25rem 0;
-  flex-shrink: 0;
+  padding: 0;
+  box-sizing: border-box;
   height: 100%;
+  position: relative;
   overflow: hidden;
 }
 
+.alphabet-letters-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 5px 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.alphabet-letters-container::-webkit-scrollbar {
+  display: none;
+}
+
 .alphabet-letter {
-  font-size: 0.6rem;
+  font-size: 11px;
   font-weight: 500;
-  color: #007AFF;
+  color: #8e8e93; /* Grey color for default state */
   cursor: pointer;
   text-align: center;
-  line-height: 1;
-  transition: opacity 0.2s;
+  line-height: 1.2;
+  transition: color 0.2s, opacity 0.2s;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 1;
-  min-height: 0.8rem;
-  max-height: 2rem;
-  overflow: hidden;
+  flex: 0 0 auto;
+  min-height: calc((100vh - 200px) / 27);
+  padding: 1px 0;
+}
+
+.alphabet-letter:hover:not(.disabled):not(.active) {
+  color: #6c6c70; /* Darker grey on hover */
 }
 
 .alphabet-letter:active {
   opacity: 0.6;
 }
 
+.alphabet-letter.active {
+  color: #FF6900; /* Orange color for active state */
+  font-weight: 600;
+}
+
 .alphabet-letter.disabled {
-  color: #c7c7cc;
+  color: #d1d1d6; /* Light grey for disabled */
   cursor: default;
+  opacity: 0.5;
 }
 
 /* Mobile responsive adjustments */
 @media (max-width: 480px) {
   .alphabet-navigation {
-    width: 1rem;
-    min-width: 14px;
-    padding: 0.2rem 0;
+    width: 25px;
+  }
+  
+  .alphabet-letters-container {
+    padding: 3px 1px;
   }
   
   .alphabet-letter {
-    font-size: 0.55rem;
-    min-height: 0.7rem;
-    max-height: 1.5rem;
+    font-size: 9px;
+    font-weight: 600;
+    min-height: calc((100vh - 150px) / 27);
+    padding: 0.5px 0;
+  }
+}
+
+/* Handle 4-digit numbers on very small screens */
+@media (max-width: 360px) {
+  .ios-contact-count {
+    font-size: 10px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+  }
+}
+
+/* Extra small mobile screens */
+@media (max-width: 380px) {
+  .alphabet-navigation {
+    width: 22px;
+  }
+  
+  .alphabet-letters-container {
+    padding: 2px 1px;
+  }
+  
+  .alphabet-letter {
+    font-size: 8px;
+    font-weight: 700;
+    min-height: calc((100vh - 140px) / 27);
+  }
+}
+
+/* Very short mobile screens (height constraint) */
+@media (max-height: 600px) and (max-width: 480px) {
+  .alphabet-letters-container {
+    padding: 1px;
+  }
+  
+  .alphabet-letter {
+    font-size: 7px;
+    min-height: calc((100vh - 120px) / 27);
+    padding: 0;
   }
 }
 
 /* Tablet adjustments */
 @media (min-width: 481px) and (max-width: 768px) {
   .alphabet-navigation {
-    width: 1.2rem;
-    min-width: 16px;
-    padding: 0.3rem 0;
+    width: 26px;
+  }
+  
+  .alphabet-letters-container {
+    padding: 4px 1px;
   }
   
   .alphabet-letter {
-    font-size: 0.58rem;
-    min-height: 0.75rem;
-    max-height: 1.8rem;
+    font-size: 10px;
+    font-weight: 550;
+    min-height: calc((100vh - 160px) / 27);
   }
 }
 
 /* Desktop adjustments */
 @media (min-width: 769px) {
   .alphabet-navigation {
-    width: 1.5rem;
-    min-width: 20px;
-    max-width: 40px;
-    padding: 0.3rem 0;
+    width: 28px;
+  }
+  
+  .alphabet-letters-container {
+    padding: 5px 2px;
   }
   
   .alphabet-letter {
-    font-size: 0.65rem;
-    min-height: 0.9rem;
-    max-height: 2.2rem;
+    font-size: 11px;
+    min-height: calc((100vh - 180px) / 27);
+    padding: 1px 0;
   }
 }
 
 /* Ensure letters stay visible at high zoom levels */
 @media (min-width: 1200px) {
   .alphabet-navigation {
-    width: 1.8rem;
-    min-width: 24px;
-    max-width: 48px;
+    width: 30px;
+  }
+  
+  .alphabet-letters-container {
+    padding: 6px 2px;
   }
   
   .alphabet-letter {
-    font-size: 0.7rem;
-    min-height: 1rem;
-    max-height: 2.5rem;
+    font-size: 12px;
+    min-height: calc((100vh - 200px) / 27);
+    padding: 1px 0;
   }
 }
 
@@ -853,6 +1000,22 @@
   .contact-view.tablet,
   .contact-view.desktop {
     display: none;
+  }
+  
+  /* Mobile adjustments for 4-digit contact counts */
+  .ios-contact-count {
+    margin-right: 12px;
+  }
+  
+  /* Smaller search on mobile */
+  .search-input {
+    height: 28px;
+    font-size: 13px;
+    padding: 3px 28px;
+  }
+  
+  .contacts-content {
+    padding-right: 0;
   }
 }
 
