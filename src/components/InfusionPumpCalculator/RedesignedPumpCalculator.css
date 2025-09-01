@@ -41,7 +41,7 @@
   max-width: 100%;
   margin: 0;
   padding: 0.5rem;
-  padding-bottom: 6rem;
+  padding-bottom: 15rem !important; /* Much larger bottom padding for toolbar spacing */
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -2296,22 +2296,37 @@
   font-size: 1rem;
 }
 
-/* Scrollbar Styling */
-.pump-calculator-container::-webkit-scrollbar {
-  width: 8px;
-}
+/* Desktop Scrollbar Styling - Visible on Right Side */
+@media (min-width: 769px) {
+  .pump-calculator-container {
+    overflow-y: scroll !important;
+    scrollbar-width: thin;
+    scrollbar-color: #ff5500 #f0f0f0;
+  }
 
-.pump-calculator-container::-webkit-scrollbar-track {
-  background: #ffffff;
-}
+  .pump-calculator-container::-webkit-scrollbar {
+    width: 12px;
+    background: transparent;
+  }
 
-.pump-calculator-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 85, 0, 0.1);
-  border-radius: 4px;
-}
+  .pump-calculator-container::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 6px;
+  }
 
-.pump-calculator-container::-webkit-scrollbar-thumb:hover {
-  background: #ff5500;
+  .pump-calculator-container::-webkit-scrollbar-thumb {
+    background: #ff5500;
+    border-radius: 6px;
+    border: 2px solid #f0f0f0;
+  }
+
+  .pump-calculator-container::-webkit-scrollbar-thumb:hover {
+    background: #e04800;
+  }
+
+  .pump-calculator-container::-webkit-scrollbar-thumb:active {
+    background: #cc4000;
+  }
 }
 
 /* Responsive Design */
@@ -2547,20 +2562,25 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 16px;
-  font-size: 0.75rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
   font-weight: 600;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
 }
 
 .validation-indicator.valid {
-  background: rgba(16, 185, 129, 0.1);
+  background: #ffffff;
   color: #10b981;
+  border-color: #10b981;
 }
 
 .validation-indicator.invalid {
-  background: rgba(239, 68, 68, 0.1);
+  background: #ffffff;
   color: #ef4444;
+  border-color: #ef4444;
 }
 
 .custom-steps-container {
@@ -5445,6 +5465,693 @@ button.professional-action-btn.calculate-custom-btn {
   .btn-icon-wrapper svg {
     width: 18px;
     height: 18px;
+  }
+}
+
+/* Single Row Pump Action Toolbar */
+.pump-action-toolbar-single-row {
+  width: 100%;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 24px 0 300px 0 !important; /* Extreme bottom spacing to prevent edge touching */
+  box-sizing: border-box;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center; /* Center all content */
+  flex-wrap: nowrap;
+  overflow-x: auto; /* Allow horizontal scroll if needed */
+}
+
+/* Individual Toolbar Buttons - Larger Size */
+.pump-toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 44px; /* Ensure good touch target */
+}
+
+.pump-toolbar-button:hover:not(:disabled):not(.disabled) {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.pump-toolbar-button svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Reset Button - Red */
+.pump-toolbar-button.reset-button {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.pump-toolbar-button.reset-button:hover:not(:disabled) {
+  background: #c82333;
+  border-color: #bd2130;
+}
+
+/* Active Button State */
+.pump-toolbar-button.active-button {
+  background: #e6f3ff;
+  border-color: #0066cc;
+  color: #0066cc;
+}
+
+/* Disabled State */
+.pump-toolbar-button.disabled,
+.pump-toolbar-button:disabled {
+  background: #f8f8f8;
+  color: #999;
+  border-color: #ddd;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.pump-toolbar-button.disabled:hover,
+.pump-toolbar-button:disabled:hover {
+  background: #f8f8f8;
+  border-color: #ddd;
+}
+
+/* Toolbar Divider */
+.toolbar-divider {
+  width: 1px;
+  height: 28px;
+  background: #d5d5d5;
+  margin: 0 0.25rem;
+  flex-shrink: 0;
+}
+
+/* Toggle Group for Rate/Time */
+.toolbar-toggle-group {
+  display: inline-flex;
+  background: #ffffff;
+  border: 1px solid #d5d5d5;
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.toolbar-toggle-btn {
+  padding: 0.375rem 0.875rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #666666;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.toolbar-toggle-btn:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.toolbar-toggle-btn.active {
+  background: white;
+  color: #333333;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Input Group in Toolbar */
+.toolbar-input-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.toolbar-input {
+  padding: 0.425rem 0.625rem;
+  border: 1px solid #d5d5d5;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  background: white;
+  color: #333333;
+  width: 100px;
+  transition: all 0.15s ease;
+}
+
+.toolbar-input:focus {
+  outline: none;
+  border-color: #999999;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.toolbar-input::placeholder {
+  color: #999999;
+}
+
+.toolbar-input.time-input {
+  width: 60px;
+}
+
+.toolbar-time-separator {
+  color: #666666;
+  font-weight: 500;
+  margin: 0 -0.125rem;
+}
+
+/* Apply Button in Toolbar */
+.toolbar-apply-btn {
+  padding: 0.425rem 0.875rem;
+  background: #4a4a4a;
+  color: white;
+  border: 1px solid #4a4a4a;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.toolbar-apply-btn:hover:not(:disabled) {
+  background: #1a1a1a;
+}
+
+.toolbar-apply-btn:active:not(:disabled) {
+  background: #000000;
+  transform: translateY(1px);
+}
+
+.toolbar-apply-btn:disabled {
+  background: #cccccc;
+  color: #999999;
+  cursor: not-allowed;
+}
+
+/* Error Message in Toolbar */
+.toolbar-error-message {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #fff5f5;
+  border: 1px solid #ffdddd;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: #cc0000;
+  margin-top: 0.5rem;
+}
+
+.toolbar-error-message svg {
+  flex-shrink: 0;
+}
+
+/* Calibration Section */
+.toolbar-calibration-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #ddd;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Calibration Toggle Buttons */
+.calibration-toggle {
+  display: inline-flex;
+  background: #f0f0f0;
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.calibration-mode-btn {
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.calibration-mode-btn:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.calibration-mode-btn.active {
+  background: white;
+  color: #333;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Calibration Input Group */
+.calibration-inputs {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calibration-field {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  background: white;
+  color: #333;
+  width: 90px;
+  transition: all 0.15s ease;
+}
+
+.calibration-field:focus {
+  outline: none;
+  border-color: #666;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.calibration-field.time-field {
+  width: 50px;
+}
+
+.time-separator {
+  color: #666;
+  font-weight: 500;
+}
+
+/* Calibration Apply Button */
+.calibration-apply {
+  padding: 6px 12px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.calibration-apply:hover:not(:disabled) {
+  background: #000;
+}
+
+.calibration-apply:disabled {
+  background: #ccc;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Inline Calibration Controls (in same toolbar row) - Larger Size */
+.toolbar-inline-calibration-toggle {
+  display: inline-flex;
+  background: #e8e8e8;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 3px;
+  flex-shrink: 0;
+  min-height: 44px;
+  align-items: center;
+}
+
+.inline-calibration-mode-btn {
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+.inline-calibration-mode-btn:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.inline-calibration-mode-btn.active,
+.toolbar-inline-calibration-toggle .inline-calibration-mode-btn.active,
+button.inline-calibration-mode-btn.active {
+  background: white !important;
+  color: #ff6900 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  font-weight: 600 !important;
+  border: 1px solid #ff6900 !important;
+  -webkit-text-fill-color: #ff6900 !important;
+}
+
+/* Inline Calibration Input Fields - Larger Size */
+.inline-calibration-field {
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  background: white;
+  color: #333;
+  width: 120px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.inline-calibration-field:focus {
+  outline: none;
+  border-color: #666;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.inline-calibration-field.time-field {
+  width: 80px;
+}
+
+.inline-time-separator {
+  color: #666;
+  font-weight: 500;
+  font-size: 16px;
+  margin: 0 4px;
+}
+
+/* Inline Calibration Apply Button - Larger Size */
+.inline-calibration-apply {
+  padding: 12px 20px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 44px;
+}
+
+.inline-calibration-apply:hover:not(:disabled) {
+  background: #000;
+}
+
+.inline-calibration-apply:disabled {
+  background: #ccc;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Modern Calibration Panel */
+.calibration-panel-modern {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.calibration-header-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.calibration-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.calibration-title svg {
+  color: #7c3aed;
+}
+
+/* Toggle Container */
+.calibration-toggle-container {
+  display: inline-flex;
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 0.25rem;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.calibration-toggle-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.calibration-toggle-option:hover:not(.active) {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
+.calibration-toggle-option.active {
+  background: white;
+  color: #1f2937;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.calibration-toggle-option svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Input Section */
+.calibration-input-section {
+  margin-top: 1rem;
+}
+
+.calibration-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.calibration-input-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.calibration-input-group.time-inputs {
+  gap: 1rem;
+}
+
+.calibration-input {
+  flex: 1;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.calibration-input:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.calibration-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Time Input Wrapper */
+.time-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.time-input {
+  width: 80px;
+}
+
+.time-unit {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* Apply Button */
+.calibration-apply-btn {
+  padding: 0.625rem 1.5rem;
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.calibration-apply-btn:hover:not(:disabled) {
+  background: #6d28d9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(124, 58, 237, 0.25);
+}
+
+.calibration-apply-btn:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Error Message */
+.calibration-error {
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Dropdown for History */
+.calibration-history-dropdown {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.calibration-history-dropdown:hover {
+  border-color: #7c3aed;
+}
+
+.calibration-history-dropdown:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Responsive Design for Toolbar */
+@media (max-width: 1024px) {
+  .action-toolbar-modern {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .action-toolbar-modern::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  .action-toolbar-modern::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+  }
+  
+  .action-toolbar-modern::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-radius: 3px;
+  }
+}
+
+@media (max-width: 768px) {
+  .action-toolbar-modern {
+    gap: 0.5rem;
+    padding: 0.75rem;
+    flex-wrap: wrap;
+  }
+  
+  .toolbar-btn {
+    padding: 0.425rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .toolbar-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .toolbar-divider {
+    width: 100%;
+    height: 1px;
+    margin: 0.5rem 0;
+  }
+  
+  .toolbar-toggle-group,
+  .toolbar-input-group {
+    width: 100%;
+  }
+  
+  .toolbar-input {
+    flex: 1;
+  }
+  
+  .toolbar-input.time-input {
+    width: auto;
+    flex: 0 0 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-toolbar-modern {
+    padding: 0.5rem;
+    gap: 0.375rem;
+  }
+  
+  .toolbar-btn {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
+    justify-content: center;
+    padding: 0.5rem 0.5rem;
+  }
+  
+  .toolbar-btn span {
+    font-size: 0.7rem;
+  }
+  
+  .toolbar-input-group {
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  
+  .toolbar-apply-btn {
+    width: 100%;
   }
 }
 
