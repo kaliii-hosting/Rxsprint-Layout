@@ -1,16 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access to workflow collection for authenticated users
-    match /workflow/{document=**} {
-      allow read, write: if request.auth != null;
-    }
-    
-    // Allow read/write access to workflow_chunks collection for authenticated users
-    match /workflow_chunks/{document=**} {
-      allow read, write: if request.auth != null;
-    }
-    
     // Allow read/write access to medications collection for authenticated users
     match /medications/{document=**} {
       allow read, write: if request.auth != null;

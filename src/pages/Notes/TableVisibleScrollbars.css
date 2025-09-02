@@ -16,11 +16,11 @@
 .ProseMirror .tableWrapper,
 .tiptap-editor .tableWrapper,
 .rich-text-editor .tableWrapper {
-  overflow: scroll !important; /* Force scrollbars to always show */
-  overflow-x: scroll !important;
-  overflow-y: scroll !important;
+  overflow-x: auto !important; /* Show horizontal scrollbar when needed */
+  overflow-y: visible !important; /* No vertical scrollbar */
   max-width: 100% !important;
-  max-height: 500px !important; /* Limit height to trigger vertical scroll */
+  height: auto !important;
+  max-height: none !important; /* Remove height limit */
   border: 2px solid #e0e0e0 !important;
   border-radius: 8px !important;
   padding: 0 !important;
@@ -31,13 +31,15 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
 
-/* Wrapper div for tables to ensure scrolling */
+/* Wrapper div for tables to ensure horizontal scrolling only */
 .tableWrapper,
 .table-wrapper,
 .table-with-copy {
   display: block !important;
-  overflow: scroll !important; /* Always show scrollbars */
-  max-height: 500px !important;
+  overflow-x: auto !important; /* Horizontal scrollbar when needed */
+  overflow-y: visible !important; /* No vertical scrollbar */
+  height: auto !important;
+  max-height: none !important; /* Remove height limit */
   max-width: 100% !important;
   position: relative !important;
 }
@@ -173,8 +175,10 @@
 .inline-revo-container,
 .inline-table-editor,
 .revo-grid {
-  overflow: scroll !important;
-  max-height: 500px !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  height: auto !important;
+  max-height: none !important;
   border: 2px solid #e0e0e0 !important;
   border-radius: 8px !important;
   margin: 1rem 0 !important;
@@ -264,9 +268,8 @@ html body .note-content-wrapper .tableWrapper,
 html body .note-content-edit-area .tableWrapper,
 html body .note-content table,
 html body .ProseMirror .tableWrapper {
-  overflow: scroll !important;
-  overflow-x: scroll !important;
-  overflow-y: scroll !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
 }
 
 /* Force scrollbar visibility even if content fits */
@@ -278,14 +281,18 @@ html body .tableWrapper {
 /* Ensure edit mode tables have scrollbars */
 html body .notes-page.editing-mode .tableWrapper,
 html body .notes-page.editing-mode table {
-  overflow: scroll !important;
-  max-height: 500px !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  height: auto !important;
+  max-height: none !important;
 }
 
 /* Fix for view mode tables */
 html body .note-view-content table,
 html body .note-view-content .tableWrapper {
-  overflow: scroll !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
   display: block !important;
-  max-height: 500px !important;
+  height: auto !important;
+  max-height: none !important;
 }

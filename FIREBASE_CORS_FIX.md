@@ -3,7 +3,7 @@
 ## Problem
 The production website `https://rxsprint.com` is getting CORS errors when trying to access Firebase Storage:
 ```
-Access to XMLHttpRequest at 'https://firebasestorage.googleapis.com/v0/b/cvse-32388.appspot.com/o/workflow-content%2F...' from origin 'https://rxsprint.com' has been blocked by CORS policy
+Access to XMLHttpRequest at 'https://firebasestorage.googleapis.com/v0/b/cvse-32388.appspot.com/o/notes%2F...' from origin 'https://rxsprint.com' has been blocked by CORS policy
 ```
 
 ## Solution 1: Set CORS via Google Cloud Console (RECOMMENDED)
@@ -63,16 +63,16 @@ gsutil cors get gs://cvse-32388.appspot.com
 
 ## Solution 3: Alternative Code Fix (If CORS can't be set)
 
-If you can't set CORS, update your workflow component to use the Firebase SDK directly instead of HTTP requests:
+If you can't set CORS, update your component to use the Firebase SDK directly instead of HTTP requests:
 
-### Update the workflow data access code:
+### Update the data access code:
 
 ```javascript
 // Instead of using fetch/XMLHttpRequest, use Firebase SDK:
 import { getStorage, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
 
 const storage = getStorage();
-const storageRef = ref(storage, `workflow-content/${userId}/workflow-data.json`);
+const storageRef = ref(storage, `notes/${userId}/data.json`);
 
 // This approach bypasses CORS issues
 try {
@@ -106,7 +106,7 @@ curl -H "Origin: https://rxsprint.com" \
      -H "Access-Control-Request-Method: GET" \
      -H "Access-Control-Request-Headers: X-Requested-With" \
      -X OPTIONS \
-     "https://firebasestorage.googleapis.com/v0/b/cvse-32388.appspot.com/o/workflow-content%2Ftest"
+     "https://firebasestorage.googleapis.com/v0/b/cvse-32388.appspot.com/o/notes%2Ftest"
 ```
 
 The response should include `Access-Control-Allow-Origin: https://rxsprint.com`.

@@ -1,16 +1,18 @@
 /* Title Banner Styles */
 
 /* Full-width title banner container */
-.content-banner-item.title-banner {
+.content-banner-item.title-banner,
+.ProseMirror .content-banner-item.title-banner,
+.tiptap-editor .content-banner-item.title-banner {
   width: 100% !important;
   max-width: 100% !important;
   display: block !important;
   padding: 1.2rem 1.5rem !important;
   margin: 0.5rem 0 !important;
-  background: #FFD4A3 !important; /* Yellowish salmon color */
+  background: linear-gradient(135deg, #FFD4A3 0%, #FFBB7D 100%) !important; /* Vibrant yellowish salmon gradient */
   border: none !important;
-  border-radius: 4px !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 183, 77, 0.25) !important;
   cursor: default !important;
   position: relative !important;
   text-align: left !important;
@@ -27,7 +29,9 @@
 }
 
 /* Title banner text styling */
-.content-banner-item.title-banner .banner-text {
+.content-banner-item.title-banner .banner-text,
+.ProseMirror .content-banner-item.title-banner .banner-text,
+.tiptap-editor .content-banner-item.title-banner .banner-text {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
@@ -45,9 +49,9 @@
 
 /* Title banner hover effect - subtle */
 .content-banner-item.title-banner:hover {
-  transform: none !important;
-  background: #FFCC99 !important; /* Slightly lighter salmon on hover */
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px) !important;
+  background: linear-gradient(135deg, #FFBB7D 0%, #FFA652 100%) !important; /* Slightly darker on hover */
+  box-shadow: 0 4px 12px rgba(255, 183, 77, 0.35) !important;
 }
 
 /* No copy functionality for titles */

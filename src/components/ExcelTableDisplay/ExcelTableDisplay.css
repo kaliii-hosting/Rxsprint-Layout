@@ -1,0 +1,280 @@
+/* Excel Table Display - Optimized for readability and horizontal scrolling */
+
+.excel-table-container {
+  width: 100%;
+  margin: 16px 0;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Table Info Bar */
+.table-info-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 12px;
+  color: #666;
+}
+
+.table-size {
+  font-weight: 600;
+  color: #333;
+}
+
+.edit-hint {
+  font-style: italic;
+  color: #999;
+}
+
+/* Table Scroll Wrapper - HORIZONTAL ONLY */
+.table-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible; /* No vertical scroll */
+  position: relative;
+  background: white;
+}
+
+/* Custom Scrollbar for horizontal scrolling */
+.table-scroll-wrapper::-webkit-scrollbar {
+  height: 12px;
+  background: #f0f0f0;
+}
+
+.table-scroll-wrapper::-webkit-scrollbar-thumb {
+  background: #FF6900;
+  border-radius: 6px;
+  border: 2px solid #f0f0f0;
+}
+
+.table-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #ff5500;
+}
+
+.table-scroll-wrapper::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+/* Excel Table Styles - Readable font sizes */
+.excel-table-display {
+  width: auto;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px; /* Readable base font size */
+  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Table Headers */
+.excel-table-display thead th {
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #333;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 2px solid #dee2e6;
+  border-right: 1px solid #dee2e6;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: nowrap;
+  min-width: 100px;
+}
+
+.excel-table-display thead th:last-child {
+  border-right: none;
+}
+
+/* Table Cells */
+.excel-table-display tbody td {
+  padding: 10px 16px;
+  font-size: 14px; /* Ensure readable font size */
+  color: #212529;
+  background: white;
+  border-bottom: 1px solid #e9ecef;
+  border-right: 1px solid #e9ecef;
+  white-space: nowrap;
+  min-width: 100px;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.excel-table-display tbody td:last-child {
+  border-right: none;
+}
+
+/* Zebra striping for better readability */
+.excel-table-display tbody tr:nth-child(even) td {
+  background: #f8f9fa;
+}
+
+/* Hover effect */
+.excel-table-display tbody tr:hover td {
+  background: #fff8f0;
+  transition: background 0.2s ease;
+}
+
+/* Cell Content */
+.cell-content {
+  width: 100%;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* Editable cells */
+.excel-table-display td.editing,
+.excel-table-display th.editing {
+  padding: 0;
+  background: #fff3cd;
+  box-shadow: inset 0 0 0 2px #FF6900;
+}
+
+/* Cell Editor Input */
+.cell-editor {
+  width: 100%;
+  min-width: 100px;
+  padding: 10px 16px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: inherit;
+  background: transparent;
+  color: #212529;
+}
+
+/* Focus indicator */
+.excel-table-display td:focus,
+.excel-table-display th:focus {
+  outline: 2px solid #FF6900;
+  outline-offset: -2px;
+}
+
+/* Clickable cells in edit mode */
+.excel-table-container:not(.read-only) .excel-table-display td,
+.excel-table-container:not(.read-only) .excel-table-display th {
+  cursor: cell;
+}
+
+.excel-table-container:not(.read-only) .excel-table-display td:hover,
+.excel-table-container:not(.read-only) .excel-table-display th:hover {
+  background: #fff8f0;
+}
+
+/* Empty table state */
+.empty-table {
+  padding: 40px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+/* HTML Table Wrapper (for raw HTML tables) */
+.table-html-wrapper {
+  overflow-x: auto;
+  overflow-y: visible;
+  width: 100%;
+}
+
+.table-html-wrapper table {
+  width: auto;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table-html-wrapper th,
+.table-html-wrapper td {
+  padding: 10px 16px;
+  border: 1px solid #dee2e6;
+  text-align: left;
+  white-space: nowrap;
+  min-width: 100px;
+  font-size: 14px;
+}
+
+.table-html-wrapper th {
+  background: #f8f9fa;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .excel-table-display {
+    font-size: 13px;
+  }
+  
+  .excel-table-display thead th,
+  .excel-table-display tbody td {
+    padding: 8px 12px;
+    font-size: 13px;
+    min-width: 80px;
+  }
+  
+  .table-info-bar {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+}
+
+/* Large tables optimization */
+.excel-table-display.large-table {
+  /* For tables with many columns */
+  table-layout: fixed;
+}
+
+.excel-table-display.large-table th,
+.excel-table-display.large-table td {
+  min-width: 120px;
+  max-width: 300px;
+}
+
+/* Column resize handle (future enhancement) */
+.column-resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  background: transparent;
+}
+
+.column-resize-handle:hover {
+  background: #FF6900;
+  opacity: 0.5;
+}
+
+/* Print styles */
+@media print {
+  .excel-table-container {
+    border: none;
+    page-break-inside: avoid;
+  }
+  
+  .table-scroll-wrapper {
+    overflow: visible;
+  }
+  
+  .excel-table-display {
+    font-size: 10pt;
+  }
+  
+  .table-info-bar {
+    display: none;
+  }
+}

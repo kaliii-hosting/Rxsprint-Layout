@@ -1,0 +1,177 @@
+/* Excel Table Styles for Notes Page */
+
+/* Add padding to the editor content area when tables are present */
+.note-content-edit-area .ProseMirror,
+.note-content .ProseMirror {
+  padding: 1rem 2rem !important;
+}
+
+/* Table wrapper - horizontal scroll only, no vertical scroll */
+.note-content-edit-area .ProseMirror .tableWrapper,
+.note-content .ProseMirror .tableWrapper {
+  overflow-x: auto !important;
+  overflow-y: visible !important; /* Show all rows, no vertical scroll */
+  margin: 1rem 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: auto !important; /* Auto height to show all content */
+  max-height: none !important; /* Remove height restriction */
+  max-width: 100% !important;
+  position: relative !important;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+}
+
+/* Remove vertical scrollbar, keep horizontal */
+.note-content-edit-area .ProseMirror .tableWrapper::-webkit-scrollbar:vertical,
+.note-content .ProseMirror .tableWrapper::-webkit-scrollbar:vertical {
+  width: 0 !important;
+  display: none !important;
+}
+
+/* Style horizontal scrollbar */
+.note-content-edit-area .ProseMirror .tableWrapper::-webkit-scrollbar:horizontal,
+.note-content .ProseMirror .tableWrapper::-webkit-scrollbar:horizontal {
+  height: 12px !important;
+  display: block !important;
+}
+
+.note-content-edit-area .ProseMirror .tableWrapper::-webkit-scrollbar-thumb,
+.note-content .ProseMirror .tableWrapper::-webkit-scrollbar-thumb {
+  background: #FF6900 !important;
+  border-radius: 6px !important;
+}
+
+.note-content-edit-area .ProseMirror .tableWrapper::-webkit-scrollbar-track,
+.note-content .ProseMirror .tableWrapper::-webkit-scrollbar-track {
+  background: var(--bg-tertiary) !important;
+  border-radius: 6px !important;
+}
+
+/* Table styles with text wrapping */
+.note-content-edit-area .ProseMirror table,
+.note-content .ProseMirror table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  table-layout: fixed !important; /* Fixed layout for better text wrapping */
+  margin: 0 !important;
+}
+
+/* Table cells with text wrapping */
+.note-content-edit-area .ProseMirror table th,
+.note-content-edit-area .ProseMirror table td,
+.note-content .ProseMirror table th,
+.note-content .ProseMirror table td {
+  border: 1px solid var(--border-color) !important;
+  padding: 10px 12px !important;
+  text-align: left !important;
+  min-width: 100px !important;
+  max-width: 300px !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  white-space: normal !important; /* Enable text wrapping */
+  overflow-wrap: break-word !important;
+  vertical-align: top !important;
+  position: relative !important;
+}
+
+/* Header cells */
+.note-content-edit-area .ProseMirror table th,
+.note-content .ProseMirror table th {
+  background: linear-gradient(135deg, #f5f5f5 0%, #ebebeb 100%) !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+  font-size: 0.95rem !important;
+}
+
+/* Alternating row colors */
+.note-content-edit-area .ProseMirror table tr:nth-child(even),
+.note-content .ProseMirror table tr:nth-child(even) {
+  background: rgba(255, 105, 0, 0.03) !important;
+}
+
+/* Hover effect */
+.note-content-edit-area .ProseMirror table tr:hover,
+.note-content .ProseMirror table tr:hover {
+  background: rgba(255, 105, 0, 0.08) !important;
+}
+
+/* Selected cell */
+.note-content-edit-area .ProseMirror table .selectedCell,
+.note-content .ProseMirror table .selectedCell {
+  background: rgba(255, 105, 0, 0.15) !important;
+  outline: 2px solid #FF6900 !important;
+}
+
+/* Ensure tables don't overflow the container */
+.note-content-edit-area,
+.note-content {
+  overflow-x: hidden !important;
+  padding: 0 1rem !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .note-content-edit-area .ProseMirror,
+  .note-content .ProseMirror {
+    padding: 0.5rem 1rem !important;
+  }
+  
+  .note-content-edit-area .ProseMirror table th,
+  .note-content-edit-area .ProseMirror table td,
+  .note-content .ProseMirror table th,
+  .note-content .ProseMirror table td {
+    padding: 8px 10px !important;
+    min-width: 80px !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+/* Dark theme support */
+[data-theme="dark"] .note-content-edit-area .ProseMirror table th,
+[data-theme="dark"] .note-content .ProseMirror table th {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .note-content-edit-area .ProseMirror table td,
+[data-theme="dark"] .note-content .ProseMirror table td {
+  border-color: #444 !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .note-content-edit-area .ProseMirror table tr:nth-child(even),
+[data-theme="dark"] .note-content .ProseMirror table tr:nth-child(even) {
+  background: rgba(255, 105, 0, 0.05) !important;
+}
+
+[data-theme="dark"] .note-content-edit-area .ProseMirror table tr:hover,
+[data-theme="dark"] .note-content .ProseMirror table tr:hover {
+  background: rgba(255, 105, 0, 0.1) !important;
+}
+
+/* Override any conflicting styles from RichTextEditor */
+.note-content-edit-area .ProseMirror:has(table),
+.note-content .ProseMirror:has(table) {
+  padding: 1rem 2rem !important; /* Keep padding even with tables */
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.note-content-edit-area .ProseMirror:has(.tableWrapper),
+.note-content .ProseMirror:has(.tableWrapper) {
+  padding: 1rem 2rem !important; /* Keep padding */
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* Ensure proper spacing around tables */
+.note-content-edit-area .ProseMirror > .tableWrapper,
+.note-content .ProseMirror > .tableWrapper {
+  position: relative !important;
+  height: auto !important; /* Auto height for all content */
+  width: calc(100% - 4rem) !important; /* Account for padding */
+  margin: 1rem 2rem !important; /* Side margins */
+  padding: 0 !important;
+}

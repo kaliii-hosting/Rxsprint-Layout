@@ -104,7 +104,7 @@
 /* Editor Content Container */
 .editor-content {
   flex: 1;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible for proper scrolling */
   position: relative;
   display: flex;
   flex-direction: column;
@@ -128,24 +128,25 @@
   overflow-x: hidden;
 }
 
-/* Full-page display when table is present */
+/* Table display - allow natural flow */
 .ProseMirror:has(table) {
-  padding: 0 !important;
-  height: 100%;
-  overflow: hidden;
+  /* Tables flow naturally within the content */
+  padding: 20px; /* Keep normal padding */
+  height: auto;
+  overflow: visible;
 }
 
 .ProseMirror:has(.tableWrapper) {
-  padding: 0 !important;
-  overflow: hidden !important;
-  height: 100% !important;
+  padding: 20px; /* Keep normal padding */
+  overflow: visible !important;
+  height: auto !important;
 }
 
 .ProseMirror > .tableWrapper {
   position: relative !important;
-  height: calc(100vh - 200px) !important;
+  height: auto !important; /* Auto height for natural flow */
   width: 100% !important;
-  margin: 0 !important;
+  margin: 1rem 0 !important; /* Normal margins for tables */
   padding: 0 !important;
 }
 
@@ -282,13 +283,13 @@
 /* Table wrapper for scroll */
 .ProseMirror .tableWrapper {
   overflow-x: auto !important;
-  overflow-y: auto !important;
-  margin: 0 !important;
+  overflow-y: visible !important; /* Show all rows, no vertical scroll */
+  margin: 1rem 0 !important;
   padding: 0 !important;
   width: 100% !important;
-  height: 100% !important;
+  height: auto !important; /* Auto height for content */
   max-width: 100% !important;
-  max-height: calc(100vh - 200px) !important;
+  max-height: none !important; /* Remove height restriction */
   -webkit-overflow-scrolling: touch;
   position: relative;
   display: block;

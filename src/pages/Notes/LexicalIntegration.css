@@ -1,0 +1,253 @@
+/* ================================================
+   LEXICAL EDITOR INTEGRATION WITH NOTES PAGE
+   Ensures proper spacing and scrolling with banners
+   ================================================ */
+
+/* Main editor container in notes page */
+.note-content-edit-area .note-lexical-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 250px);
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Editor wrapper with proper scrolling */
+.note-content-edit-area .lexical-editor-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Main scrollable content area */
+.note-content-edit-area .lexical-editor-container {
+  flex: 1;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  background: var(--bg-secondary);
+}
+
+/* Content area with padding */
+.note-content-edit-area .lexical-editor-content {
+  padding: 2rem;
+  padding-bottom: 10rem !important; /* Large bottom padding for scrolling past tables */
+  min-height: 100%;
+}
+
+/* Ensure tables don't break layout */
+.note-content-edit-area .lexical-table-wrapper {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  max-width: 100%;
+}
+
+/* Custom scrollbar for editor */
+.note-content-edit-area .lexical-editor-container::-webkit-scrollbar {
+  width: 12px;
+}
+
+.note-content-edit-area .lexical-editor-container::-webkit-scrollbar-track {
+  background: var(--bg-tertiary, #f5f5f5);
+  border-radius: 6px;
+}
+
+.note-content-edit-area .lexical-editor-container::-webkit-scrollbar-thumb {
+  background: #FF6900;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.note-content-edit-area .lexical-editor-container::-webkit-scrollbar-thumb:hover {
+  background: #ff7a1a;
+}
+
+/* Firefox scrollbar */
+.note-content-edit-area .lexical-editor-container {
+  scrollbar-width: thin;
+  scrollbar-color: #FF6900 var(--bg-tertiary);
+}
+
+/* View mode styling */
+.note-content .lexical-viewer {
+  padding: 2rem;
+  padding-bottom: 8rem;
+  background: var(--bg-secondary);
+  min-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+/* Banner spacing when present */
+.note-content-edit-area:has(.content-banners-container) .note-lexical-editor {
+  margin-top: 0; /* Banners provide spacing */
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .note-content-edit-area .lexical-editor-content {
+    padding: 1.5rem;
+    padding-bottom: 8rem !important;
+  }
+  
+  .note-content .lexical-viewer {
+    padding: 1.5rem;
+    padding-bottom: 6rem;
+  }
+  
+  .note-content-edit-area .note-lexical-editor {
+    min-height: calc(100vh - 200px);
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .note-content-edit-area .lexical-editor-content {
+    padding: 1rem;
+    padding-bottom: 6rem !important;
+  }
+  
+  .note-content .lexical-viewer {
+    padding: 1rem;
+    padding-bottom: 5rem;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1200px) {
+  .note-content-edit-area .lexical-editor-content {
+    padding: 3rem;
+    padding-bottom: 12rem !important;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .note-content .lexical-viewer {
+    padding: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+/* Ensure proper focus behavior */
+.note-lexical-editor .ContentEditable__root:focus {
+  outline: none;
+}
+
+/* Table specific styling in notes */
+.note-lexical-editor table {
+  margin: 1.5rem 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.note-lexical-editor .table-cell-action-button-container {
+  z-index: 10; /* Ensure table controls are above content */
+}
+
+/* Placeholder styling */
+.note-lexical-editor .ContentEditable__root[data-lexical-empty="true"]:before {
+  content: attr(data-placeholder);
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Image styling in notes */
+.note-lexical-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Code block styling */
+.note-lexical-editor pre {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+/* List styling */
+.note-lexical-editor ul,
+.note-lexical-editor ol {
+  padding-left: 2rem;
+  margin: 1rem 0;
+}
+
+.note-lexical-editor li {
+  margin: 0.5rem 0;
+}
+
+/* Blockquote styling */
+.note-lexical-editor blockquote {
+  border-left: 4px solid #FF6900;
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Link styling */
+.note-lexical-editor a {
+  color: #FF6900;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.note-lexical-editor a:hover {
+  border-bottom-color: #FF6900;
+}
+
+/* Heading styles */
+.note-lexical-editor h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 1.5rem 0 1rem;
+  color: var(--text-primary);
+}
+
+.note-lexical-editor h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.75rem;
+  color: var(--text-primary);
+}
+
+.note-lexical-editor h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+  color: var(--text-primary);
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .note-lexical-editor {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .note-lexical-editor table {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .note-lexical-editor th {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .note-lexical-editor td {
+  border-color: var(--border-color);
+}
+
+/* END OF LEXICAL INTEGRATION CSS */

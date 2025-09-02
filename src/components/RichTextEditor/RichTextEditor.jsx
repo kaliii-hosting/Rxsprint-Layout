@@ -6,6 +6,7 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
+// BannerNode removed - banners are now displayed separately above the editor
 import { 
   Bold, 
   Italic, 
@@ -105,6 +106,12 @@ const RichTextEditor = React.forwardRef(({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Expose editor instance to parent
+  React.useImperativeHandle(ref, () => ({
+    editor,
+    container: editorContainerRef.current
+  }), [editor]);
+
   // Update editor content when value changes externally
   useEffect(() => {
     if (editor && isReady && value !== editor.getHTML() && !editor.isFocused) {
@@ -139,36 +146,18 @@ const RichTextEditor = React.forwardRef(({
 
   // Handle paste events for images and tables
   useEffect(() => {
-    if (!editor) return;
-
-    const { view } = editor;
-    if (!view) return;
+    if (!editor || !isReady) return;
 
     const handlePaste = (event) => {
       const clipboardData = event.clipboardData || window.clipboardData;
+      if (!clipboardData) return;
       
-      // Check for images first
-      if (onImageUpload) {
-        const items = Array.from(clipboardData?.items || []);
-        const imageItem = items.find(item => item.type.startsWith('image/'));
-        
-        if (imageItem) {
-          event.preventDefault();
-          const blob = imageItem.getAsFile();
-          if (blob) {
-            onImageUpload(blob).then(url => {
-              if (url) {
-                editor.chain().focus().setImage({ src: url }).run();
-              }
-            });
-          }
-          return true;
-        }
-      }
-      
-      // Check for Excel/table data
+      // Get clipboard data
       const plainText = clipboardData.getData('text/plain');
       const htmlData = clipboardData.getData('text/html');
+      
+      // FIRST: Check for Excel/table data (before checking for images)
+      // Excel copies both HTML table and image, we want the table not the image
       
       // Check if we have HTML table data (from Excel or other sources)
       if (htmlData && (htmlData.includes('<table') || htmlData.includes('<TABLE'))) {
@@ -225,6 +214,70 @@ const RichTextEditor = React.forwardRef(({
         return true;
       }
       
+      // Check if it's tab-separated data (plain text table from Excel)
+      if (plainText && plainText.includes('\t')) {
+        event.preventDefault();
+        
+        // Convert tab-separated data to HTML table
+        const rows = plainText.trim().split('\n');
+        let html = '<table><tbody>';
+        
+        rows.forEach((row, rowIndex) => {
+          const cells = row.split('\t');
+          html += '<tr>';
+          
+          cells.forEach(cell => {
+            const tag = rowIndex === 0 ? 'th' : 'td';
+            const cellContent = cell.trim().replace(/"/g, '&quot;');
+            html += `<${tag}>${cellContent}</${tag}>`;
+          });
+          
+          html += '</tr>';
+        });
+        
+        html += '</tbody></table>';
+        
+        // Insert the table
+        editor.chain().focus().insertContent(html, {
+          parseOptions: {
+            preserveWhitespace: false
+          }
+        }).run();
+        return true;
+      }
+      
+      // NOW check for images (only if it's not a table)
+      if (onImageUpload && clipboardData) {
+        const items = Array.from(clipboardData.items || []);
+        const imageItem = items.find(item => item.type && item.type.startsWith('image/'));
+        
+        if (imageItem) {
+          event.preventDefault();
+          event.stopPropagation();
+          const blob = imageItem.getAsFile();
+          if (blob) {
+            console.log('Pasting image, size:', blob.size, 'type:', blob.type);
+            Promise.resolve(onImageUpload(blob, true))
+              .then(url => {
+                if (url) {
+                  console.log('Image uploaded, inserting into editor:', url);
+                  editor.chain().focus().setImage({ src: url }).run();
+                } else {
+                  console.warn('No URL returned from image upload');
+                }
+              })
+              .catch(err => {
+                console.error('Failed to upload pasted image:', err);
+                // Don't show alert for CORS errors, they're expected in development
+                if (!err.message?.includes('CORS')) {
+                  alert('Failed to upload image. Please try again.');
+                }
+              });
+          }
+          return true;
+        }
+      }
+      
       // Handle plain text with line breaks (preserve formatting)
       if (plainText && !htmlData) {
         event.preventDefault();
@@ -276,12 +329,16 @@ const RichTextEditor = React.forwardRef(({
     };
 
     // Add paste listener to the editor's DOM element
-    view.dom.addEventListener('paste', handlePaste);
+    const editorDom = editor.view?.dom || editorContainerRef.current?.querySelector('.ProseMirror');
     
-    return () => {
-      view.dom.removeEventListener('paste', handlePaste);
-    };
-  }, [editor, onImageUpload]);
+    if (editorDom) {
+      editorDom.addEventListener('paste', handlePaste, true);
+      
+      return () => {
+        editorDom.removeEventListener('paste', handlePaste, true);
+      };
+    }
+  }, [editor, onImageUpload, isReady]);
 
   if (!editor || !isReady) {
     return (

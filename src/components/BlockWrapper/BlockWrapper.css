@@ -1,0 +1,573 @@
+/* Block Wrapper Styles - Visual hierarchy and controls */
+.block-wrapper {
+  position: relative;
+  margin: 12px 0;
+  padding: 8px 8px 8px 48px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  background: transparent;
+  min-height: 40px;
+}
+
+.block-wrapper:first-child {
+  margin-top: 0;
+}
+
+.block-wrapper:last-child {
+  margin-bottom: 0;
+}
+
+/* Hover and Focus States */
+.block-wrapper:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.block-wrapper.focused {
+  outline: 2px solid #FF6900;
+  outline-offset: 2px;
+  background: rgba(255, 105, 0, 0.03);
+}
+
+.block-wrapper.selected {
+  background: rgba(255, 105, 0, 0.08);
+  outline: 2px solid #FF6900;
+}
+
+/* Block Controls Container */
+.block-controls {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+}
+
+.block-wrapper:hover .block-controls,
+.block-wrapper.focused .block-controls {
+  opacity: 1;
+}
+
+/* Drag Handle */
+.block-handle {
+  cursor: grab;
+  padding: 4px 2px;
+  background: transparent;
+  border: none;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.block-handle:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #333;
+}
+
+.block-handle:active {
+  cursor: grabbing;
+}
+
+/* Block Type Indicator */
+.block-type-indicator {
+  font-size: 10px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 4px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+  margin-left: 4px;
+  display: none;
+}
+
+.block-wrapper:hover .block-type-indicator {
+  display: inline-block;
+}
+
+/* Quick Actions */
+.block-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border-radius: 4px;
+  padding: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Action Buttons */
+.block-action-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.block-action-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #333;
+}
+
+.block-action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.block-action-btn.block-delete:hover {
+  background: rgba(255, 0, 0, 0.1);
+  color: #ff0000;
+}
+
+/* Dropdown Menu */
+.block-menu-container {
+  position: relative;
+}
+
+.block-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 150px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.block-dropdown-menu button {
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #333;
+  transition: background 0.2s ease;
+}
+
+.block-dropdown-menu button:hover {
+  background: #f5f5f5;
+}
+
+.block-dropdown-menu .delete-option {
+  color: #ff0000;
+}
+
+.block-dropdown-menu .delete-option:hover {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.menu-separator {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 4px 0;
+}
+
+/* Block Order Indicator */
+.block-order-indicator {
+  position: absolute;
+  left: -24px;
+  top: 8px;
+  font-size: 10px;
+  color: #999;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 6px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.block-wrapper:hover .block-order-indicator,
+.block-wrapper.focused .block-order-indicator {
+  opacity: 1;
+}
+
+/* Block Content */
+.block-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Focus Ring */
+.focus-ring {
+  position: absolute;
+  inset: -2px;
+  border: 2px solid #FF6900;
+  border-radius: 6px;
+  pointer-events: none;
+  animation: focusPulse 2s infinite;
+  opacity: 0;
+}
+
+.block-wrapper.focused .focus-ring {
+  opacity: 1;
+}
+
+@keyframes focusPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+/* Selection Checkbox */
+.block-select {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+/* Drag and Drop States */
+.block-wrapper.dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+}
+
+.block-wrapper.drag-over {
+  background: rgba(255, 105, 0, 0.1);
+}
+
+.block-wrapper.drop-before::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #FF6900;
+  animation: dropIndicator 0.3s ease;
+}
+
+.block-wrapper.drop-after::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #FF6900;
+  animation: dropIndicator 0.3s ease;
+}
+
+@keyframes dropIndicator {
+  from { opacity: 0; transform: scaleX(0); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+
+/* Block Type Specific Styles */
+.block-wrapper.text-block {
+  padding-left: 48px;
+}
+
+.block-wrapper.table-block {
+  padding: 12px 8px 12px 48px;
+  background: rgba(0, 0, 0, 0.01);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.block-wrapper.image-block {
+  padding: 12px 8px 12px 48px;
+}
+
+.block-wrapper.banner-block,
+.block-wrapper.callout-block,
+.block-wrapper.title-block {
+  padding: 8px 8px 8px 48px;
+}
+
+/* Block Color Variants */
+.block-wrapper.block-color-blue .block-content {
+  border-left: 3px solid #2196F3;
+  padding-left: 12px;
+}
+
+.block-wrapper.block-color-orange .block-content {
+  border-left: 3px solid #FF6900;
+  padding-left: 12px;
+}
+
+.block-wrapper.block-color-green .block-content {
+  border-left: 3px solid #4CAF50;
+  padding-left: 12px;
+}
+
+.block-wrapper.block-color-grey .block-content {
+  border-left: 3px solid #9E9E9E;
+  padding-left: 12px;
+}
+
+.block-wrapper.block-color-callout .block-content {
+  background: linear-gradient(90deg, #FF6900 0%, #FFB800 100%);
+  padding: 12px;
+  border-radius: 4px;
+  color: white;
+}
+
+.block-wrapper.block-color-title .block-content {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #FF6900;
+}
+
+/* Editing State */
+.block-wrapper.editing {
+  background: rgba(255, 105, 0, 0.05);
+  outline: 2px dashed #FF6900;
+}
+
+.block-wrapper.editing .block-controls {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .block-wrapper {
+    padding-left: 36px;
+    margin: 8px 0;
+  }
+  
+  .block-controls {
+    left: 0;
+  }
+  
+  .block-quick-actions {
+    right: 4px;
+    padding: 1px;
+  }
+  
+  .block-action-btn {
+    padding: 3px;
+  }
+  
+  .block-type-indicator {
+    display: none !important;
+  }
+  
+  .block-order-indicator {
+    display: none;
+  }
+}
+
+/* Animation for smooth transitions */
+.blocks-container {
+  animation: reorder 0.3s ease;
+}
+
+@keyframes reorder {
+  from { 
+    opacity: 0.8;
+    transform: translateY(2px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Context Menu Styles */
+.block-context-menu {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 150px;
+  overflow: hidden;
+  z-index: 10000;
+}
+
+.context-menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #333;
+  transition: background 0.2s ease;
+}
+
+.context-menu-item:hover {
+  background: #f5f5f5;
+}
+
+.context-menu-separator {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 4px 0;
+}
+
+/* Notification Styles */
+.block-notification,
+.simple-notification {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+}
+
+/* Undo Notification */
+.undo-notification {
+  animation: slideUp 0.3s ease;
+}
+
+.undo-notification .notif-undo-btn {
+  background: #FF6900;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s ease;
+}
+
+.undo-notification .notif-undo-btn:hover {
+  background: #ff5500;
+}
+
+/* Delete Confirmation Dialog */
+.delete-confirm-dialog .dialog-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.2s ease;
+}
+
+.delete-confirm-dialog .dialog-content {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: scaleIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.dialog-title {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.dialog-message {
+  margin: 0 0 20px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.dialog-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.dialog-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dialog-btn-cancel {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.dialog-btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.dialog-btn-confirm {
+  background: #ff0000;
+  color: white;
+}
+
+.dialog-btn-confirm:hover {
+  background: #dd0000;
+}

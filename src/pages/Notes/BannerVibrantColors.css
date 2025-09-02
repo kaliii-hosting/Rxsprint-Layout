@@ -1,0 +1,365 @@
+/* ============================================
+   VIBRANT BANNER COLORS - EXACT FROM COMMIT 76d2eae
+   THIS FILE MUST BE LOADED LAST TO OVERRIDE ALL OTHER STYLES
+   DO NOT MODIFY - THESE ARE THE EXACT WORKING STYLES
+   ============================================ */
+
+/* CRITICAL: Import Dongle font */
+@import url('https://fonts.googleapis.com/css2?family=Dongle:wght@400&display=swap');
+
+/* ============================================
+   BASE BANNER STYLES - VIBRANT BLUE GRADIENT
+   ============================================ */
+.content-banner-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 0.75rem 1.25rem !important;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  color: white !important;
+  font-family: 'Dongle', sans-serif !important;
+  font-size: 1.75rem !important;
+  font-weight: 400 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
+  margin: 0.25rem !important;
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  line-height: 1.2 !important;
+  text-transform: none !important;
+  letter-spacing: 0.03em !important;
+  min-height: auto !important;
+  text-align: left !important;
+}
+
+.content-banner-item:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35) !important;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+}
+
+/* ============================================
+   ORANGE BANNER - NEW LINE
+   ============================================ */
+.content-banner-item.new-line {
+  background: linear-gradient(135deg, #CB6015 0%, #A04E11 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(203, 96, 21, 0.25) !important;
+}
+
+.content-banner-item.new-line:hover {
+  background: linear-gradient(135deg, #A04E11 0%, #803C0D 100%) !important;
+  box-shadow: 0 8px 20px rgba(203, 96, 21, 0.35) !important;
+}
+
+/* ============================================
+   GREEN BANNER - DONE WITH NEON GLOW
+   ============================================ */
+.content-banner-item.done {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%) !important;
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2) !important;
+  border: 1px solid rgba(0, 255, 136, 0.3) !important;
+  animation: neonGlow 2s ease-in-out infinite alternate !important;
+}
+
+@keyframes neonGlow {
+  from {
+    box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2);
+  }
+  to {
+    box-shadow: 0 4px 30px rgba(0, 255, 136, 0.6), 0 0 60px rgba(0, 255, 136, 0.3);
+  }
+}
+
+.content-banner-item.done:hover {
+  background: linear-gradient(135deg, #00cc6a 0%, #00aa55 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 30px rgba(0, 255, 136, 0.5), 0 0 60px rgba(0, 255, 136, 0.3) !important;
+}
+
+.content-banner-item.done .banner-text {
+  color: #003d1f !important;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5) !important;
+}
+
+.content-banner-item.done .done-icon {
+  color: #003d1f !important;
+  filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.8)) !important;
+}
+
+/* ============================================
+   GREY BANNER
+   ============================================ */
+.content-banner-item.grey {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.25) !important;
+}
+
+.content-banner-item.grey:hover {
+  background: linear-gradient(135deg, #475569 0%, #334155 100%) !important;
+  box-shadow: 0 6px 16px rgba(100, 116, 139, 0.35) !important;
+}
+
+.content-banner-item.grey .banner-text {
+  color: white !important;
+}
+
+/* ============================================
+   PURPLE BANNER - COPIED STATE
+   ============================================ */
+.content-banner-item.copied {
+  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%) !important;
+  box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4), 0 0 30px rgba(147, 51, 234, 0.2) !important;
+  animation: purpleGlow 0.5s ease !important;
+}
+
+@keyframes purpleGlow {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(147, 51, 234, 0.25);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 6px 25px rgba(147, 51, 234, 0.5), 0 0 40px rgba(147, 51, 234, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4), 0 0 30px rgba(147, 51, 234, 0.2);
+  }
+}
+
+.content-banner-item.copied .banner-text {
+  color: white !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ============================================
+   BANNER TEXT STYLES
+   ============================================ */
+.content-banner-item .banner-text {
+  color: white !important;
+  font-family: 'Dongle', sans-serif !important;
+  font-size: 1.75rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.03em !important;
+  line-height: 1.2 !important;
+  white-space: pre-wrap !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ============================================
+   BANNER ICONS
+   ============================================ */
+.content-banner-item .banner-icon {
+  display: flex !important;
+  align-items: center !important;
+  opacity: 0.9 !important;
+}
+
+.content-banner-item .copy-icon,
+.content-banner-item .copied-icon {
+  color: white !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* ============================================
+   REMOVE BUTTON
+   ============================================ */
+.content-banner-item .remove-banner-btn.inline {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  backdrop-filter: blur(4px) !important;
+  margin-left: 0.5rem !important;
+  padding: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  flex-shrink: 0 !important;
+  border: none !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.content-banner-item .remove-banner-btn.inline:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.1) !important;
+}
+
+.content-banner-item.done .remove-banner-btn.inline {
+  background: rgba(0, 77, 42, 0.2) !important;
+  color: #003d1f !important;
+}
+
+.content-banner-item.done .remove-banner-btn.inline:hover {
+  background: rgba(0, 77, 42, 0.3) !important;
+}
+
+/* ============================================
+   TITLE BANNER - YELLOWISH SALMON
+   ============================================ */
+.content-banner-item.title-banner {
+  width: 100% !important;
+  display: block !important;
+  padding: 1.2rem 1.5rem !important;
+  background: linear-gradient(135deg, #FFD4A3 0%, #FFBB7D 100%) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 183, 77, 0.25) !important;
+  margin: 0.75rem 0 !important;
+  cursor: default !important;
+  box-sizing: border-box !important;
+}
+
+.content-banner-item.title-banner:hover {
+  background: linear-gradient(135deg, #FFBB7D 0%, #FFA652 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(255, 183, 77, 0.35) !important;
+}
+
+.content-banner-item.title-banner .banner-text {
+  color: #8B4513 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  text-shadow: none !important;
+}
+
+/* ============================================
+   CALLOUT BANNER - ORANGE BORDER
+   ============================================ */
+.content-banner-item.callout-banner {
+  width: 100% !important;
+  display: block !important;
+  padding: 1.25rem 1.75rem !important;
+  background: linear-gradient(135deg, #FFF8F3 0%, #FFF5ED 100%) !important;
+  border-left: 5px solid #FF6900 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 3px 12px rgba(255, 105, 0, 0.12) !important;
+  margin: 0.75rem 0 !important;
+  cursor: default !important;
+  box-sizing: border-box !important;
+}
+
+.content-banner-item.callout-banner:hover {
+  transform: none !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08) !important;
+}
+
+.content-banner-item.callout-banner .banner-text {
+  color: #424242 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  line-height: 1.6 !important;
+  text-shadow: none !important;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .content-banner-item {
+    font-size: 1.5rem !important;
+    padding: 0.625rem 1rem !important;
+  }
+  
+  .content-banner-item .banner-text {
+    font-size: 1.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-banner-item {
+    font-size: 1.375rem !important;
+    padding: 0.5rem 0.875rem !important;
+  }
+  
+  .content-banner-item .banner-text {
+    font-size: 1.375rem !important;
+  }
+}
+
+/* ============================================
+   MAXIMUM SPECIFICITY OVERRIDES
+   FORCE THESE STYLES ON ALL CONTEXTS
+   ============================================ */
+body .notes-page .content-banner-item,
+body .content-banners-container .content-banner-item,
+body .banner-line-wrapper .content-banner-item,
+body .note-content .content-banner-item,
+body .note-content-edit-area .content-banner-item,
+body .ProseMirror .content-banner-item,
+body .tiptap-editor .content-banner-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 0.75rem 1.25rem !important;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  color: white !important;
+  font-family: 'Dongle', sans-serif !important;
+  font-size: 1.75rem !important;
+  font-weight: 400 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Force specific banner colors */
+body .content-banner-item.new-line,
+body .notes-page .content-banner-item.new-line {
+  background: linear-gradient(135deg, #CB6015 0%, #A04E11 100%) !important;
+  box-shadow: 0 4px 12px rgba(203, 96, 21, 0.25) !important;
+  color: white !important;
+}
+
+body .content-banner-item.done,
+body .notes-page .content-banner-item.done {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%) !important;
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2) !important;
+  border: 1px solid rgba(0, 255, 136, 0.3) !important;
+}
+
+body .content-banner-item.grey,
+body .notes-page .content-banner-item.grey {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.25) !important;
+  color: white !important;
+}
+
+body .content-banner-item.grey .banner-text {
+  color: white !important;
+}
+
+body .content-banner-item.title-banner,
+body .notes-page .content-banner-item.title-banner {
+  width: 100% !important;
+  display: block !important;
+  background: linear-gradient(135deg, #FFD4A3 0%, #FFBB7D 100%) !important;
+  margin: 0.75rem 0 !important;
+  box-sizing: border-box !important;
+}
+
+body .content-banner-item.callout-banner,
+body .notes-page .content-banner-item.callout-banner {
+  width: 100% !important;
+  display: block !important;
+  background: linear-gradient(135deg, #FFF8F3 0%, #FFF5ED 100%) !important;
+  border-left: 5px solid #FF6900 !important;
+  margin: 0.75rem 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* END OF FILE - DO NOT ADD ANY MORE STYLES */

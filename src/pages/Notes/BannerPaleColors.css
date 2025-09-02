@@ -1,265 +1,172 @@
-/* Pale, Calm Banner Color Scheme */
+/* Vibrant Banner Color Scheme - Restored from commit 76d2eae */
 
-/* Blue Banner - Soft Pale Blue */
-.content-banner-item {
-  background: #E3F2FD !important; /* Pale blue background */
-  color: #1565C0 !important; /* Darker blue text for contrast */
-  border: 1px solid #BBDEFB !important; /* Subtle border */
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1) !important;
+/* Blue Banner - Vibrant Blue Gradient (default) */
+.content-banner-item:not(.new-line):not(.done):not(.grey):not(.title-banner):not(.callout-banner),
+.content-banner-item.banner-blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
 }
 
-.content-banner-item:hover {
-  background: #BBDEFB !important; /* Slightly darker on hover */
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15) !important;
+.content-banner-item:not(.new-line):not(.done):not(.grey):not(.title-banner):not(.callout-banner):hover,
+.content-banner-item.banner-blue:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
 }
 
-/* Orange/Peach Banner - Soft Pale Peach */
+/* Orange Banner - Vibrant Orange Gradient */
 .content-banner-item.new-line {
-  background: #FFE4D1 !important; /* Pale peach background */
-  color: #BF6516 !important; /* Darker orange/brown text */
-  border: 1px solid #FFCCAA !important;
-  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1) !important;
+  background: linear-gradient(135deg, #CB6015 0%, #A04E11 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(203, 96, 21, 0.25) !important;
 }
 
 .content-banner-item.new-line:hover {
-  background: #FFCCAA !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.15) !important;
+  background: linear-gradient(135deg, #A04E11 0%, #803C0D 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(203, 96, 21, 0.35) !important;
 }
 
-/* Green Banner - NEW Soft Pale Green (for done state) */
+/* Green Banner - Neon Green with Glow Animation */
 .content-banner-item.done {
-  background: #E8F5E9 !important; /* Pale mint green */
-  color: #2E7D32 !important; /* Dark green text */
-  border: 1px solid #C8E6C9 !important;
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1) !important;
-  animation: none !important; /* Remove glow animation for calm design */
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%) !important;
+  color: #004d2a !important; /* Dark green text for contrast */
+  border: 1px solid rgba(0, 255, 136, 0.3) !important;
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2) !important;
+  animation: neonGlow 2s ease-in-out infinite alternate !important;
+}
+
+@keyframes neonGlow {
+  0% {
+    box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2);
+  }
+  100% {
+    box-shadow: 0 4px 30px rgba(0, 255, 136, 0.6), 0 0 60px rgba(0, 255, 136, 0.3);
+  }
 }
 
 .content-banner-item.done:hover {
-  background: #C8E6C9 !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15) !important;
+  background: linear-gradient(135deg, #00ff99 0%, #00dd7a 100%) !important;
+  transform: translateY(-2px);
 }
 
-/* Purple Banner - Soft Pale Purple (when copied) */
+/* Grey Banner - Stylish Grey Gradient */
+.content-banner-item.grey {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.25) !important;
+}
+
+.content-banner-item.grey:hover {
+  background: linear-gradient(135deg, #475569 0%, #334155 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(100, 116, 139, 0.35) !important;
+}
+
+/* Purple Banner - Vibrant Purple (when copied) */
 .content-banner-item.copied {
-  background: #F3E5F5 !important; /* Pale lavender */
-  color: #6A1B9A !important; /* Dark purple text */
-  border: 1px solid #E1BEE7 !important;
-  box-shadow: 0 2px 8px rgba(156, 39, 176, 0.1) !important;
-  animation: gentlePulse 0.5s ease !important;
+  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4), 0 0 30px rgba(147, 51, 234, 0.2) !important;
+  animation: copiedPulse 0.6s ease !important;
 }
 
-@keyframes gentlePulse {
+@keyframes copiedPulse {
   0% {
     transform: scale(1);
-    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.1);
+    box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4);
   }
   50% {
-    transform: scale(1.01);
-    box-shadow: 0 3px 10px rgba(156, 39, 176, 0.15);
+    transform: scale(1.02);
+    box-shadow: 0 6px 30px rgba(147, 51, 234, 0.5);
   }
   100% {
     transform: scale(1);
-    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.1);
+    box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4);
   }
 }
 
-/* Banner Text Colors */
+/* Banner Text Colors - White for contrast on vibrant backgrounds */
 .content-banner-item .banner-text {
-  color: inherit !important;
-  text-shadow: none !important; /* Remove text shadow for cleaner look */
+  color: white !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
 }
 
 .content-banner-item.done .banner-text {
-  color: #2E7D32 !important;
+  color: #004d2a !important; /* Dark green for neon green background */
   text-shadow: none !important;
 }
 
-.content-banner-item.new-line .banner-text {
-  color: #BF6516 !important;
+.content-banner-item.grey .banner-text {
+  color: white !important;
 }
 
 .content-banner-item.copied .banner-text {
-  color: #6A1B9A !important;
+  color: white !important;
 }
 
 /* Banner Icons - Match text colors */
 .content-banner-item .banner-icon {
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .content-banner-item .copy-icon {
-  color: #1565C0 !important;
+  color: white !important;
 }
 
 .content-banner-item.done .done-icon {
-  color: #2E7D32 !important;
-  filter: none !important; /* Remove glow effect */
+  color: #004d2a !important;
+  filter: drop-shadow(0 0 3px rgba(0, 255, 136, 0.5)) !important;
 }
 
-.content-banner-item.new-line .banner-icon {
-  color: #BF6516 !important;
+.content-banner-item.copied .copied-icon {
+  color: white !important;
 }
 
-/* Remove button with subtle styling */
+/* Remove button colors */
 .content-banner-item .remove-banner-btn.inline {
-  background: rgba(0, 0, 0, 0.05) !important;
-  color: inherit !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  backdrop-filter: blur(4px);
 }
 
 .content-banner-item .remove-banner-btn.inline:hover {
-  background: rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.1);
 }
 
-/* Card Banner Pills - Pale colors */
-.card-banner-pill {
-  background: #E3F2FD !important;
-  color: #1565C0 !important;
-  border: 1px solid #BBDEFB !important;
+.content-banner-item.done .remove-banner-btn.inline {
+  background: rgba(0, 77, 42, 0.2) !important;
+  color: #004d2a !important;
 }
 
-.card-banner-pill.orange {
-  background: #FFE4D1 !important;
-  color: #BF6516 !important;
-  border: 1px solid #FFCCAA !important;
+.content-banner-item.done .remove-banner-btn.inline:hover {
+  background: rgba(0, 77, 42, 0.3) !important;
 }
 
-.card-banner-pill.done {
-  background: #E8F5E9 !important;
-  color: #2E7D32 !important;
-  border: 1px solid #C8E6C9 !important;
+/* Dongle Font for all banners */
+.content-banner-item {
+  font-family: 'Dongle', sans-serif !important;
+  font-size: 1.75rem !important;
+  font-weight: 400 !important;
 }
 
-/* Add Banner Button - Soft style */
-.add-banner-btn {
-  background: #FFF3E0 !important; /* Pale orange for action button */
-  color: #E65100 !important;
-  border: 1px solid #FFE0B2 !important;
-  box-shadow: 0 2px 8px rgba(255, 111, 0, 0.1) !important;
-}
-
-.add-banner-btn:hover {
-  background: #FFE0B2 !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 111, 0, 0.15) !important;
-}
-
-/* Banner Toggle Buttons - Pale style */
-.banner-toggle-btn {
-  background: #F5F5F5 !important;
-  color: #616161 !important;
-  border: 1px solid #E0E0E0 !important;
-}
-
-.banner-toggle-btn:hover {
-  background: #EEEEEE !important;
-}
-
-/* Blue color toggle button */
-.banner-color-toggle-btn.blue {
-  background: #E3F2FD !important;
-  color: #1565C0 !important;
-  border: 1px solid #BBDEFB !important;
-}
-
-/* Orange color toggle button */
-.banner-color-toggle-btn.orange {
-  background: #FFE4D1 !important;
-  color: #BF6516 !important;
-  border: 1px solid #FFCCAA !important;
-}
-
-/* NEW: Green color toggle button */
-.banner-color-toggle-btn.green {
-  background: #E8F5E9 !important;
-  color: #2E7D32 !important;
-  border: 1px solid #C8E6C9 !important;
-}
-
-/* Banner Input Field - Soft styling */
-.banner-input {
-  background: #FAFAFA !important;
-  border: 2px solid #E0E0E0 !important;
-  color: #424242 !important;
-}
-
-.banner-input:focus {
-  border-color: #90CAF9 !important; /* Pale blue on focus */
-  background: #FFFFFF !important;
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1) !important;
-}
-
-/* Banner input placeholder */
-.banner-input::placeholder {
-  color: #9E9E9E !important;
-  opacity: 0.7;
-}
-
-/* Context Menu - Soft styling */
-.banner-context-menu {
-  background: #FFFFFF !important;
-  border: 1px solid #E0E0E0 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-}
-
-.context-menu-item {
-  color: #424242 !important;
-}
-
-.context-menu-item:hover {
-  background: #F5F5F5 !important;
-}
-
-/* Note Context Menu */
-.note-context-menu {
-  background: #FFFFFF !important;
-  border: 1px solid #E0E0E0 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Ensure all banner variations use the pale colors */
-.content-banner-item,
-.content-banner-item.blue {
-  background: #E3F2FD !important;
-  color: #1565C0 !important;
-}
-
-/* Mobile responsiveness - maintain pale colors */
+/* Mobile responsive adjustments */
 @media (max-width: 768px) {
-  .content-banner-item,
-  .content-banner-item.blue {
-    background: #E3F2FD !important;
-    color: #1565C0 !important;
-  }
-  
-  .content-banner-item.new-line {
-    background: #FFE4D1 !important;
-    color: #BF6516 !important;
-  }
-  
-  .content-banner-item.done {
-    background: #E8F5E9 !important;
-    color: #2E7D32 !important;
+  .content-banner-item {
+    font-size: 1.5rem !important;
+    padding: 0.625rem 1rem !important;
   }
 }
 
 @media (max-width: 480px) {
-  .content-banner-item,
-  .content-banner-item.blue {
-    background: #E3F2FD !important;
-    color: #1565C0 !important;
-  }
-  
-  .content-banner-item.new-line {
-    background: #FFE4D1 !important;
-    color: #BF6516 !important;
-  }
-  
-  .content-banner-item.done {
-    background: #E8F5E9 !important;
-    color: #2E7D32 !important;
+  .content-banner-item {
+    font-size: 1.375rem !important;
+    padding: 0.5rem 0.875rem !important;
   }
 }

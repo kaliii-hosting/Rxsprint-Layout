@@ -4,20 +4,20 @@
    RESET AND FORCE SCROLLBARS
    ======================================== */
 
-/* Force ALL tables to have scrollbars */
+/* Force ALL tables to have horizontal scrollbar only */
 * table,
 table {
   display: block !important;
-  overflow: scroll !important; /* Use scroll instead of auto to force scrollbars */
-  overflow-x: scroll !important;
-  overflow-y: scroll !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
   max-width: 100% !important;
-  max-height: 500px !important;
+  height: auto !important;
+  max-height: none !important;
   margin: 1rem 0 !important;
   position: relative !important;
 }
 
-/* Force tables to be block elements for scrolling */
+/* Force tables to show all rows with horizontal scroll only */
 .note-content table,
 .note-view-content table,
 .note-content-wrapper table,
@@ -27,11 +27,11 @@ table {
 .rich-text-editor table,
 .ql-editor table {
   display: block !important;
-  overflow: auto !important;
   overflow-x: auto !important;
-  overflow-y: auto !important;
+  overflow-y: visible !important;
   max-width: calc(100% - 4px) !important;
-  max-height: 500px !important;
+  height: auto !important;
+  max-height: none !important;
   border: 2px solid #e0e0e0 !important;
   border-radius: 6px !important;
   background: white !important;
@@ -45,9 +45,11 @@ table {
 .table-wrapper,
 .table-with-copy {
   display: block !important;
-  overflow: auto !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
   max-width: 100% !important;
-  max-height: 500px !important;
+  height: auto !important;
+  max-height: none !important;
   border: 2px solid #e0e0e0 !important;
   border-radius: 6px !important;
   margin: 1.5rem 0 !important;
@@ -72,19 +74,22 @@ table > thead {
    FORCE SCROLLBAR VISIBILITY
    ======================================== */
 
-/* Use overflow: scroll to ALWAYS show scrollbars */
+/* Use overflow-x: auto for horizontal scrollbar only */
 .note-content table,
 .note-view-content table,
 .note-content-wrapper table {
-  overflow: scroll !important; /* Forces scrollbars to always be visible */
+  overflow-x: auto !important;
+  overflow-y: visible !important;
 }
 
 /* For viewer mode specifically */
 .note-view-content table,
 .note-content:not(.note-content-edit-area) table {
-  overflow: scroll !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
   display: block !important;
-  max-height: 500px !important;
+  height: auto !important;
+  max-height: none !important;
   max-width: 100% !important;
 }
 
@@ -92,20 +97,32 @@ table > thead {
    WEBKIT SCROLLBAR STYLING (Chrome/Safari)
    ======================================== */
 
-/* Style all table scrollbars */
-table::-webkit-scrollbar,
-.tableWrapper::-webkit-scrollbar,
-.table-wrapper::-webkit-scrollbar,
-.table-with-copy::-webkit-scrollbar,
-.note-content table::-webkit-scrollbar,
-.note-view-content table::-webkit-scrollbar,
-.note-content-wrapper table::-webkit-scrollbar,
-.note-content-edit-area table::-webkit-scrollbar {
-  width: 16px !important;
-  height: 16px !important;
+/* Style horizontal scrollbar only */
+table::-webkit-scrollbar:horizontal,
+.tableWrapper::-webkit-scrollbar:horizontal,
+.table-wrapper::-webkit-scrollbar:horizontal,
+.table-with-copy::-webkit-scrollbar:horizontal,
+.note-content table::-webkit-scrollbar:horizontal,
+.note-view-content table::-webkit-scrollbar:horizontal,
+.note-content-wrapper table::-webkit-scrollbar:horizontal,
+.note-content-edit-area table::-webkit-scrollbar:horizontal {
+  height: 12px !important;
   background-color: #f5f5f5 !important;
   display: block !important;
   visibility: visible !important;
+}
+
+/* Hide vertical scrollbar */
+table::-webkit-scrollbar:vertical,
+.tableWrapper::-webkit-scrollbar:vertical,
+.table-wrapper::-webkit-scrollbar:vertical,
+.table-with-copy::-webkit-scrollbar:vertical,
+.note-content table::-webkit-scrollbar:vertical,
+.note-view-content table::-webkit-scrollbar:vertical,
+.note-content-wrapper table::-webkit-scrollbar:vertical,
+.note-content-edit-area table::-webkit-scrollbar:vertical {
+  width: 0 !important;
+  display: none !important;
 }
 
 /* Scrollbar track */
@@ -219,8 +236,10 @@ th {
 .note-content:not(.note-content-edit-area) table,
 .note-content-wrapper:not(.editing) table {
   display: block !important;
-  overflow: scroll !important; /* Force scrollbars */
-  max-height: 500px !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  height: auto !important;
+  max-height: none !important;
   max-width: calc(100% - 4px) !important;
   border: 2px solid #e0e0e0 !important;
   margin: 1.5rem 0 !important;
@@ -237,8 +256,10 @@ th {
 .tiptap-editor table,
 .ql-editor table {
   display: block !important;
-  overflow: scroll !important; /* Force scrollbars */
-  max-height: 500px !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  height: auto !important;
+  max-height: none !important;
   max-width: calc(100% - 4px) !important;
 }
 
@@ -248,8 +269,10 @@ th {
 
 .inline-revo-container,
 .inline-table-editor {
-  overflow: scroll !important;
-  max-height: 500px !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  height: auto !important;
+  max-height: none !important;
   border: 2px solid #e0e0e0 !important;
   border-radius: 6px !important;
   margin: 1rem 0 !important;
@@ -266,7 +289,8 @@ th {
   .table-wrapper,
   .note-content table,
   .note-view-content table {
-    max-height: 400px !important;
+    height: auto !important;
+    max-height: none !important;
     font-size: 0.9rem !important;
   }
   
@@ -288,7 +312,8 @@ th {
   .table-wrapper,
   .note-content table,
   .note-view-content table {
-    max-height: 300px !important;
+    height: auto !important;
+    max-height: none !important;
     font-size: 0.85rem !important;
   }
   
@@ -343,31 +368,35 @@ html body .notes-page .note-content-edit-area table,
 html body .notes-page .ProseMirror table,
 html body .notes-page .tiptap-editor table {
   display: block !important;
-  overflow: scroll !important;
-  max-height: 500px !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  height: auto !important;
+  max-height: none !important;
   max-width: 100% !important;
 }
 
-/* Force scrollbars even for small content */
+/* Allow tables to show all content */
 html body table {
-  min-height: 100px !important;
-  overflow: scroll !important;
+  min-height: auto !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
 }
 
-/* Ensure viewer mode gets scrollbars */
+/* Ensure viewer mode gets horizontal scrollbar only */
 html body .note-view-content table,
 html body .note-content:not(.note-content-edit-area) table {
   display: block !important;
-  overflow: scroll !important;
-  overflow-x: scroll !important;
-  overflow-y: scroll !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
 }
 
 /* Fix for any table without wrapper */
 html body table:not(.wrapped) {
   display: block !important;
-  overflow: scroll !important;
-  max-height: 500px !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  height: auto !important;
+  max-height: none !important;
   max-width: 100% !important;
   border: 2px solid #e0e0e0 !important;
   border-radius: 6px !important;

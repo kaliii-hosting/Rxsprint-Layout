@@ -209,6 +209,12 @@ const NoteGenerator = () => {
         return newSet;
       });
     }
+    
+    // Clear edited note to enable dynamic updating
+    // This ensures the note regenerates with new field values
+    if (editedNote) {
+      setEditedNote('');
+    }
   };
 
   // Render three-way switch toggle component with drag support

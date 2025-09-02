@@ -1,0 +1,384 @@
+/* Simple Lexical Editor - Light Theme */
+
+.simple-lexical-editor {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 400px;
+}
+
+/* Toolbar Styles */
+.toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.toolbar-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: #333333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toolbar-item:hover:not(:disabled) {
+  background: #e9ecef;
+  border-color: #dee2e6;
+}
+
+.toolbar-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toolbar-item.active {
+  background: #FF6900;
+  color: white;
+  border-color: #FF6900;
+}
+
+.toolbar-item.active:hover {
+  background: #ff7a1a;
+  border-color: #ff7a1a;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: #dee2e6;
+  margin: 0 4px;
+}
+
+/* Editor Content Area */
+.editor-inner {
+  flex: 1;
+  position: relative;
+  background: white;
+  overflow: auto;
+}
+
+.editor-input {
+  min-height: 100%;
+  padding: 20px;
+  outline: none;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333333;
+}
+
+.editor-input:focus {
+  outline: none;
+}
+
+/* Placeholder */
+.editor-placeholder {
+  color: #999999;
+  overflow: hidden;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Text Styles */
+.editor-paragraph {
+  margin: 0 0 1em 0;
+  position: relative;
+}
+
+.editor-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.editor-heading-h1 {
+  font-size: 2em;
+  font-weight: 700;
+  margin: 0.67em 0;
+  color: #1a1a1a;
+}
+
+.editor-heading-h2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin: 0.83em 0;
+  color: #1a1a1a;
+}
+
+.editor-heading-h3 {
+  font-size: 1.17em;
+  font-weight: 600;
+  margin: 1em 0;
+  color: #1a1a1a;
+}
+
+.editor-quote {
+  margin: 1em 0;
+  padding-left: 1.5em;
+  border-left: 4px solid #FF6900;
+  color: #666666;
+  font-style: italic;
+}
+
+.editor-code {
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 1em;
+  margin: 1em 0;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9em;
+  overflow-x: auto;
+  color: #333333;
+}
+
+/* List Styles */
+.editor-list-ol {
+  padding-left: 1.5em;
+  margin: 1em 0;
+  list-style-type: decimal;
+}
+
+.editor-list-ul {
+  padding-left: 1.5em;
+  margin: 1em 0;
+  list-style-type: disc;
+}
+
+.editor-listitem {
+  margin: 0.5em 0;
+}
+
+.editor-nested-listitem {
+  list-style-type: none;
+}
+
+/* Table Styles */
+.editor-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  border: 1px solid #dee2e6;
+}
+
+.editor-table-cell,
+.editor-table-cell-header {
+  border: 1px solid #dee2e6;
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.editor-table-cell-header {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Text Format Styles */
+.editor-text-bold {
+  font-weight: bold;
+}
+
+.editor-text-italic {
+  font-style: italic;
+}
+
+.editor-text-underline {
+  text-decoration: underline;
+}
+
+.editor-text-strikethrough {
+  text-decoration: line-through;
+}
+
+.editor-text-code {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #d63384;
+}
+
+/* Link Styles */
+.editor-link {
+  color: #FF6900;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.editor-link:hover {
+  border-bottom-color: #FF6900;
+}
+
+/* Image Styles */
+.editor-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em 0;
+  border-radius: 4px;
+}
+
+/* Alignment */
+.left {
+  text-align: left;
+}
+
+.center {
+  text-align: center;
+}
+
+.right {
+  text-align: right;
+}
+
+.justify {
+  text-align: justify;
+}
+
+/* Selection */
+.editor-input ::selection {
+  background: rgba(255, 105, 0, 0.2);
+}
+
+.editor-input ::-moz-selection {
+  background: rgba(255, 105, 0, 0.2);
+}
+
+/* Scrollbar */
+.editor-inner::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.editor-inner::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+.editor-inner::-webkit-scrollbar-thumb {
+  background: #FF6900;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.editor-inner::-webkit-scrollbar-thumb:hover {
+  background: #ff7a1a;
+}
+
+/* Firefox */
+.editor-inner {
+  scrollbar-width: thin;
+  scrollbar-color: #FF6900 #f5f5f5;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .toolbar {
+    padding: 6px 8px;
+  }
+  
+  .toolbar-item {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .toolbar-item svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .editor-input {
+    padding: 16px;
+    font-size: 15px;
+  }
+}
+
+/* Read-only mode */
+.simple-lexical-editor.read-only .editor-input {
+  cursor: default;
+}
+
+.simple-lexical-editor.read-only .toolbar {
+  display: none;
+}
+
+/* Focus styles for accessibility */
+.toolbar-item:focus-visible {
+  outline: 2px solid #FF6900;
+  outline-offset: 2px;
+}
+
+/* Ensure proper line breaks */
+.editor-input p:empty:before {
+  content: '\200B'; /* Zero-width space */
+}
+
+/* Fix for vertical typing issue */
+.editor-input div[data-lexical-decorator="true"] {
+  display: inline-block;
+}
+
+/* Ensure horizontal text flow */
+.editor-input {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: normal;
+}
+
+/* Table overflow handling */
+.editor-table-wrapper {
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.editor-table-wrapper table {
+  min-width: 100%;
+}
+
+/* Ensure content doesn't stick to edges */
+.editor-inner {
+  padding-bottom: 100px; /* Space at bottom for continuous editing */
+}
+
+/* Integration with Notes page */
+.note-lexical-editor .simple-lexical-editor {
+  border: none;
+  border-radius: 0;
+}
+
+.note-content-edit-area .simple-lexical-editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-content-edit-area .editor-container {
+  flex: 1;
+  min-height: calc(100vh - 300px);
+}

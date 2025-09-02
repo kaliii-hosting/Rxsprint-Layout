@@ -25,7 +25,7 @@ export async function testFirebaseStorage() {
     console.log('Test data:', jsonString);
     
     // Create a reference
-    const testRef = ref(storage, 'workflow-content/test/test-file.json');
+    const testRef = ref(storage, 'notes/test/test-file.json');
     console.log('Storage reference created:', testRef.fullPath);
     
     // Try to upload
@@ -68,7 +68,7 @@ export async function testFirebaseStorage() {
     
     if (error.code === 'storage/unauthorized') {
       console.error('⚠️ Storage rules may need to be updated to allow access');
-      console.error('⚠️ Make sure workflow-content path is allowed in storage.rules');
+      console.error('⚠️ Make sure notes path is allowed in storage.rules');
     }
     
     if (error.code === 'storage/unknown') {

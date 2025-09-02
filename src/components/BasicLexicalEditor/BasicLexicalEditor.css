@@ -1,0 +1,312 @@
+/* Basic Lexical Editor - Clean Light Theme */
+
+.basic-lexical-editor {
+  width: 100%;
+  min-height: 400px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.editor-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 400px;
+}
+
+/* Toolbar */
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: #333333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toolbar-button:hover:not(:disabled) {
+  background: #e9ecef;
+  border-color: #dee2e6;
+}
+
+.toolbar-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toolbar-button.active {
+  background: #FF6900;
+  color: white;
+  border-color: #FF6900;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: #dee2e6;
+  margin: 0 4px;
+  display: inline-block;
+}
+
+/* Editor Container */
+.editor-container {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  background: white;
+}
+
+/* Content Editable Area - CRITICAL FIX FOR VERTICAL TEXT */
+.editor-content {
+  min-height: 100%;
+  padding: 20px;
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333333;
+  /* Fix for vertical text */
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+.editor-content:focus {
+  outline: none;
+}
+
+/* Placeholder */
+.editor-content[data-lexical-empty="true"]:before {
+  content: attr(data-placeholder);
+  position: absolute;
+  color: #999999;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* PARAGRAPH STYLES - CRITICAL FIX */
+.editor-paragraph {
+  margin: 0 0 0.5em 0;
+  min-height: 1em;
+  /* Ensure inline text flow */
+  display: block !important;
+  white-space: pre-wrap !important;
+  word-break: normal !important;
+}
+
+.editor-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+/* Ensure all text nodes display inline */
+.editor-content span {
+  display: inline !important;
+}
+
+/* Text Formatting */
+.editor-bold {
+  font-weight: bold;
+}
+
+.editor-italic {
+  font-style: italic;
+}
+
+.editor-underline {
+  text-decoration: underline;
+}
+
+.editor-strikethrough {
+  text-decoration: line-through;
+}
+
+.editor-code {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.9em;
+  color: #d63384;
+}
+
+/* Headings */
+.editor-h1 {
+  font-size: 2em;
+  font-weight: 700;
+  margin: 0.67em 0;
+  color: #1a1a1a;
+  display: block;
+}
+
+.editor-h2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin: 0.83em 0;
+  color: #1a1a1a;
+  display: block;
+}
+
+.editor-h3 {
+  font-size: 1.17em;
+  font-weight: 600;
+  margin: 1em 0;
+  color: #1a1a1a;
+  display: block;
+}
+
+/* Quote */
+.editor-quote {
+  margin: 1em 0;
+  padding-left: 1.5em;
+  border-left: 4px solid #FF6900;
+  color: #666666;
+  font-style: italic;
+  display: block;
+}
+
+/* Lists */
+.editor-ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+.editor-ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+.editor-li {
+  margin: 0.5em 0;
+  display: list-item;
+}
+
+/* Tables */
+.editor-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  table-layout: auto;
+}
+
+.editor-table-cell,
+.editor-table-cell-header {
+  border: 1px solid #dee2e6;
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+  min-width: 50px;
+}
+
+.editor-table-cell-header {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+/* Table wrapper for scrolling */
+.tableWrapper {
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+/* Scrollbar */
+.editor-container::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.editor-container::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+.editor-container::-webkit-scrollbar-thumb {
+  background: #FF6900;
+  border-radius: 6px;
+}
+
+.editor-container::-webkit-scrollbar-thumb:hover {
+  background: #ff7a1a;
+}
+
+/* Bottom padding for scrolling */
+.editor-content {
+  padding-bottom: 100px !important;
+}
+
+/* Read-only mode */
+.basic-lexical-editor.read-only .editor-toolbar {
+  display: none;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .toolbar-button {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .toolbar-button svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .editor-content {
+    padding: 16px;
+    font-size: 15px;
+  }
+}
+
+/* Integration with Notes page */
+.note-lexical-editor .basic-lexical-editor {
+  border: none;
+  border-radius: 0;
+  height: 100%;
+}
+
+.note-content-edit-area .basic-lexical-editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.note-content-edit-area .editor-shell {
+  flex: 1;
+  min-height: calc(100vh - 300px);
+}
+
+/* CRITICAL: Ensure proper text flow */
+.ContentEditable__root {
+  min-height: 100%;
+  outline: none;
+}
+
+.ContentEditable__root p {
+  margin: 0 0 0.5em 0;
+  display: block !important;
+}
+
+/* Fix Lexical's internal spans */
+.ContentEditable__root span[data-lexical-text="true"] {
+  display: inline !important;
+  white-space: pre-wrap !important;
+}

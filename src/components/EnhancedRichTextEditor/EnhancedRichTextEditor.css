@@ -1,0 +1,61 @@
+/* Enhanced Rich Text Editor Styles */
+.enhanced-editor {
+  position: relative;
+  width: 100%;
+}
+
+.enhanced-editor-content {
+  min-height: 100px;
+}
+
+.enhanced-editor-content .ProseMirror {
+  min-height: inherit;
+  padding: 12px;
+  outline: none;
+}
+
+.enhanced-editor-content .ProseMirror:focus {
+  /* Focus handled by block wrapper */
+}
+
+.enhanced-editor-content .ProseMirror p {
+  margin: 0 0 1em;
+}
+
+.enhanced-editor-content .ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+/* Table styles within editor */
+.enhanced-editor-content .ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.enhanced-editor-content .ProseMirror th,
+.enhanced-editor-content .ProseMirror td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.enhanced-editor-content .ProseMirror th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+/* Image styles within editor */
+.enhanced-editor-content .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em 0;
+}
+
+/* Loading state */
+.editor-loading {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}

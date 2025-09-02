@@ -38,11 +38,11 @@ export async function debugFirebaseConnection() {
       console.log('✅ Storage initialized');
       console.log('Bucket:', storage.app.options.storageBucket);
       
-      // Try to list files in workflow-content
-      const listRef = ref(storage, 'workflow-content/');
+      // Try to list files in notes
+      const listRef = ref(storage, 'notes/');
       try {
         const listResult = await listAll(listRef);
-        console.log('Files in workflow-content:', listResult.items.length);
+        console.log('Files in notes:', listResult.items.length);
         listResult.items.forEach(item => {
           console.log('  -', item.fullPath);
         });
@@ -52,7 +52,7 @@ export async function debugFirebaseConnection() {
           console.log('⚠️ Cannot list files - unauthorized. Trying direct upload test...');
           
           // Try a simple upload
-          const testRef = ref(storage, 'workflow-content/debug-test.txt');
+          const testRef = ref(storage, 'notes/debug-test.txt');
           try {
             await uploadString(testRef, 'Debug test at ' + new Date().toISOString());
             console.log('✅ Direct upload successful!');

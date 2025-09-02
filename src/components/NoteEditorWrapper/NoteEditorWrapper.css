@@ -1,0 +1,44 @@
+/* Note Editor Wrapper Styles */
+.note-editor-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Mode Toggle Button (Development Only) */
+.mode-toggle-btn {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  padding: 6px 12px;
+  background: #FF6900;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.2s ease;
+}
+
+.mode-toggle-btn:hover {
+  background: #ff5500;
+}
+
+/* Loading State */
+.editor-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Mode Indicators */
+.note-editor-wrapper.block-mode {
+  /* Block mode specific styles */
+}
+
+.note-editor-wrapper.classic-mode {
+  /* Classic mode specific styles */
+}

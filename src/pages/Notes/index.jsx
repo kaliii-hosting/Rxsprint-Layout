@@ -15,6 +15,9 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
+// import LexicalEditor from '../../components/LexicalEditor/LexicalEditor';
+// import SimpleLexicalEditor from '../../components/SimpleLexicalEditor/SimpleLexicalEditor';
+// import BasicLexicalEditor from '../../components/BasicLexicalEditor/BasicLexicalEditor';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './Notes.css';
@@ -40,7 +43,14 @@ import './TableContentFlow.css';
 import './TableViewerStyles.css';
 import './TableVisibleScrollbars.css';
 import './TableScrollbarFix.css'; // Enhanced scrollbar fix
-import './EditorPaddingFix.css'; // Must be last to override all other styles
+import './EditorPaddingFix.css';
+import './NotesTableStyles.css'; // Excel table styles with padding and text wrapping
+import './StreamlinedLayout.css'; // Streamlined layout fixes for spacing and scrolling
+import './LexicalIntegration.css'; // Lexical editor integration styles
+import './BannerMultilineSupport.css'; // Multi-line text support for banners
+// CRITICAL: BannerVibrantColors.css must be imported LAST to override all other styles
+// This file contains the EXACT banner designs from commit 76d2eae
+import './BannerVibrantColors.css';
 import NoteDeleteConfirmPopup from '../../components/NoteDeleteConfirmPopup/NoteDeleteConfirmPopup';
 import AddConfirmPopup from '../../components/AddConfirmPopup/AddConfirmPopup';
 import NoteEditConfirmPopup from '../../components/NoteEditConfirmPopup/NoteEditConfirmPopup';
@@ -48,6 +58,41 @@ import InlineTableEditor from '../../components/InlineTableEditor/InlineTableEdi
 
 const Notes = () => {
   const { theme } = useTheme();
+  
+  // Add keyframe animations for banner glow effects
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes neonGlow {
+        from {
+          box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2);
+        }
+        to {
+          box-shadow: 0 4px 30px rgba(0, 255, 136, 0.6), 0 0 60px rgba(0, 255, 136, 0.3);
+        }
+      }
+      
+      @keyframes purpleGlow {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 4px 12px rgba(147, 51, 234, 0.25);
+        }
+        50% {
+          transform: scale(1.02);
+          box-shadow: 0 6px 25px rgba(147, 51, 234, 0.5), 0 0 40px rgba(147, 51, 234, 0.3);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4), 0 0 30px rgba(147, 51, 234, 0.2);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
   const location = useLocation();
   const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
@@ -96,6 +141,9 @@ const Notes = () => {
   
   // Add confirmation state
   const [showAddPopup, setShowAddPopup] = useState(false);
+  
+  // Banner add confirmation state
+  const [showAddBannerPopup, setShowAddBannerPopup] = useState(false);
   
   // Edit confirmation state
   const [showEditPopup, setShowEditPopup] = useState(false);
@@ -206,6 +254,65 @@ const Notes = () => {
     setBannerLineBreak(false);
   };
 
+  const handleCreateBanner = () => {
+    if (!newBannerText.trim()) return;
+    // Show the banner add confirmation popup first
+    setShowAddBannerPopup(true);
+  };
+
+  // Handle in-editor banner creation - NO passcode protection
+  const handleCreateBannerDirectly = () => {
+    if (!newBannerText.trim()) return;
+    // Directly add the banner without passcode popup
+    addBannerDirectly();
+  };
+
+  // Handle toolbar "Add Banner" button - creates new note and shows passcode popup
+  const handleToolbarAddBanner = () => {
+    // Show the banner add confirmation popup first
+    setShowAddBannerPopup(true);
+  };
+
+  // Handle confirmation from AddConfirmPopup for banners
+  const handleAddBannerConfirm = () => {
+    setShowAddBannerPopup(false);
+    
+    // Check if we need to create a new note (toolbar button) or just add banner (in-editor)
+    if (!selectedNote && !isCreating) {
+      // Toolbar "Add Banner" button - create new note first
+      handleToolbarAddBannerDirectly();
+    } else {
+      // In-editor banner creation - just add the banner
+      addBannerDirectly();
+    }
+  };
+
+  // Create new note and focus banner input (after passcode confirmation)
+  const handleToolbarAddBannerDirectly = () => {
+    setIsCreating(true);
+    setIsEditing(true);
+    setSelectedNote(null);
+    setFormData({
+      title: 'New Note',
+      content: '',
+      starred: false,
+      images: [],
+      banners: []
+    });
+    // Reset line tracking for new note
+    setCurrentLineNumber(0);
+    setBannerLineBreak(false);
+    setBannerColor('blue');
+    setIsTitleMode(false);
+    setIsCalloutMode(false);
+    // Activate banner field after creating note
+    setTimeout(() => {
+      if (bannerInputRef.current) {
+        bannerInputRef.current.focus();
+      }
+    }, 100);
+  };
+
   const handleSelectNote = (note) => {
     setSelectedNote(note);
     // Ensure banners have isDone property for backward compatibility
@@ -248,11 +355,12 @@ const Notes = () => {
     // Get the current editor content and replace RevoGrid containers with updated HTML
     let finalContent = formData.content;
     if (editorRef.current) {
-      const editorContent = editorRef.current.querySelector('.ProseMirror') || 
-                          editorRef.current.querySelector('.ql-editor') || 
-                          editorRef.current;
+      const editorContainer = editorRef.current?.container || editorRef.current;
+      const editorContent = (editorContainer?.querySelector ? editorContainer.querySelector('.ProseMirror') : null) || 
+                          (editorContainer?.querySelector ? editorContainer.querySelector('.ql-editor') : null) || 
+                          null;
       
-      if (editorContent) {
+      if (editorContent && editorContent.cloneNode) {
         // Clone the content to avoid modifying the actual editor
         const contentClone = editorContent.cloneNode(true);
         
@@ -276,6 +384,9 @@ const Notes = () => {
         
         // Use the modified content for saving
         finalContent = contentClone.innerHTML;
+      } else if (editorRef.current?.editor) {
+        // If we have a TipTap editor instance, get HTML directly from it
+        finalContent = editorRef.current.editor.getHTML();
       }
     }
 
@@ -411,21 +522,26 @@ const Notes = () => {
   // Upload image to Firebase Storage
   const uploadImage = async (file, isScreenshot = false) => {
     if (!storage) {
+      console.error('Storage service not available');
       alert('Storage service not available');
       return null;
     }
     
     setUploadingImage(true);
     try {
-      // Create a unique filename
+      // Create a unique filename with simpler approach
       const timestamp = Date.now();
-      const fileExtension = file.type.split('/')[1] || 'png';
+      const randomStr = Math.random().toString(36).substring(2, 8);
+      const fileExtension = file.type?.split('/')[1] || 'png';
       const baseName = isScreenshot ? 'screenshot' : (file.name?.split('.')[0] || 'image');
-      const fileName = `notes/${timestamp}_${baseName}.${fileExtension}`;
+      const fileName = `notes/${timestamp}-${randomStr}-${baseName}.${fileExtension}`;
+      
+      console.log('Uploading file:', fileName, 'Type:', file.type, 'Size:', file.size);
       
       // Set metadata for better organization
       const metadata = {
         contentType: file.type || 'image/png',
+        cacheControl: 'public, max-age=3600',
         customMetadata: {
           uploadedAt: new Date().toISOString(),
           isScreenshot: isScreenshot.toString()
@@ -437,16 +553,14 @@ const Notes = () => {
       const snapshot = await uploadBytes(storageRef, file, metadata);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
+      console.log('Upload successful, URL:', downloadURL);
+      
       // Also store image URL in images array for reference
       const newImages = [...(formData.images || []), downloadURL];
       setFormData(prev => ({ ...prev, images: newImages }));
       
-      // Auto-save after image upload if editing existing note
-      if (!isCreating && selectedNote) {
-        setTimeout(() => {
-          handleSave();
-        }, 500);
-      }
+      // Don't auto-save - just update the content without closing the editor
+      // The user can save manually when they're done editing
       
       return downloadURL;
       
@@ -469,15 +583,24 @@ const Notes = () => {
     if ((isEditing || isCreating) && editorRef.current) {
       // Wait for editor to render and content to load
       const setupEditors = () => {
-        const editorContent = editorRef.current.querySelector('.ProseMirror') || 
-                            editorRef.current.querySelector('.ql-editor') || 
-                            editorRef.current.querySelector('.tiptap-editor') ||
-                            editorRef.current;
-        
-        if (!editorContent) {
-          setTimeout(setupEditors, 200);
-          return;
-        }
+        try {
+          const editorContainer = editorRef.current?.container || editorRef.current;
+          
+          // Only proceed if we have a valid container with querySelector
+          if (!editorContainer || typeof editorContainer.querySelector !== 'function') {
+            setTimeout(setupEditors, 200);
+            return;
+          }
+          
+          const editorContent = editorContainer.querySelector('.ProseMirror') || 
+                              editorContainer.querySelector('.ql-editor') || 
+                              editorContainer.querySelector('.tiptap-editor');
+          
+          // Ensure editorContent is a valid DOM element
+          if (!editorContent || typeof editorContent.querySelectorAll !== 'function') {
+            setTimeout(setupEditors, 200);
+            return;
+          }
         
         // Find all tables in the editor
         const tables = editorContent.querySelectorAll('table:not([data-revo-replaced])');
@@ -514,6 +637,11 @@ const Notes = () => {
         
         if (newEditors.length > 0) {
           setInlineTableEditors(newEditors);
+        }
+        } catch (error) {
+          console.error('Error setting up table editors:', error);
+          // Retry after a delay if there was an error
+          setTimeout(setupEditors, 500);
         }
       };
       
@@ -1060,10 +1188,11 @@ const Notes = () => {
       
       // Force update the editor content
       if (editorRef.current) {
-        const editor = editorRef.current.editor || window.editor;
+        const editor = editorRef.current?.editor || window.editor;
         if (editor && editor.commands) {
           // For TipTap editor
-          const editorElement = editorRef.current.querySelector('.ProseMirror');
+          const editorContainer = editorRef.current?.container || editorRef.current;
+          const editorElement = editorContainer?.querySelector ? editorContainer.querySelector('.ProseMirror') : null;
           if (editorElement) {
             // Get the updated HTML
             const updatedHtml = editorElement.innerHTML;
@@ -1072,11 +1201,12 @@ const Notes = () => {
           }
         } else {
           // For regular content editable
-          const editorContent = editorRef.current.querySelector('.ProseMirror') || 
-                              editorRef.current.querySelector('.ql-editor') || 
-                              editorRef.current.querySelector('.tiptap-editor') ||
-                              editorRef.current.querySelector('.note-content-edit-area') ||
-                              editorRef.current;
+          const editorContainer = editorRef.current?.container || editorRef.current;
+          const editorContent = (editorContainer?.querySelector ? editorContainer.querySelector('.ProseMirror') : null) || 
+                              (editorContainer?.querySelector ? editorContainer.querySelector('.ql-editor') : null) || 
+                              (editorContainer?.querySelector ? editorContainer.querySelector('.tiptap-editor') : null) ||
+                              (editorContainer?.querySelector ? editorContainer.querySelector('.note-content-edit-area') : null) ||
+                              editorContainer;
           
           if (editorContent) {
             // Trigger input event to notify React
@@ -1120,10 +1250,11 @@ const Notes = () => {
       
       // Force update the editor content
       if (editorRef.current) {
-        const editor = editorRef.current.editor || window.editor;
+        const editor = editorRef.current?.editor || window.editor;
         if (editor && editor.commands) {
           // For TipTap editor
-          const editorElement = editorRef.current.querySelector('.ProseMirror');
+          const editorContainer = editorRef.current?.container || editorRef.current;
+          const editorElement = editorContainer?.querySelector ? editorContainer.querySelector('.ProseMirror') : null;
           if (editorElement) {
             // Get the updated HTML
             const updatedHtml = editorElement.innerHTML;
@@ -1132,11 +1263,12 @@ const Notes = () => {
           }
         } else {
           // For regular content editable
-          const editorContent = editorRef.current.querySelector('.ProseMirror') || 
-                              editorRef.current.querySelector('.ql-editor') || 
-                              editorRef.current.querySelector('.tiptap-editor') ||
-                              editorRef.current.querySelector('.note-content-edit-area') ||
-                              editorRef.current;
+          const editorContainer = editorRef.current?.container || editorRef.current;
+          const editorContent = (editorContainer?.querySelector ? editorContainer.querySelector('.ProseMirror') : null) || 
+                              (editorContainer?.querySelector ? editorContainer.querySelector('.ql-editor') : null) || 
+                              (editorContainer?.querySelector ? editorContainer.querySelector('.tiptap-editor') : null) ||
+                              (editorContainer?.querySelector ? editorContainer.querySelector('.note-content-edit-area') : null) ||
+                              editorContainer;
           
           if (editorContent) {
             // Trigger input event to notify React
@@ -1330,6 +1462,28 @@ const Notes = () => {
     }
   }, [noteContextMenu.visible, contextMenu.visible, tableContextMenu.visible]);
 
+  // Handle paste events globally for better screenshot capture
+  useEffect(() => {
+    const handleGlobalPaste = async (e) => {
+      // Only handle if we're editing/creating and target is within the editor
+      if (!(isEditing || isCreating)) return;
+      
+      const isInEditor = e.target.closest('.note-editor, .ProseMirror, .rich-text-editor');
+      if (!isInEditor) return;
+
+      const items = Array.from(e.clipboardData?.items || []);
+      const imageItem = items.find(item => item.type && item.type.indexOf('image') !== -1);
+      
+      if (imageItem) {
+        console.log('Global paste: Detected image in clipboard');
+        // Let the RichTextEditor handle it, but log for debugging
+      }
+    };
+
+    document.addEventListener('paste', handleGlobalPaste, true);
+    return () => document.removeEventListener('paste', handleGlobalPaste, true);
+  }, [isEditing, isCreating]);
+
   // Handle drag and drop
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -1389,53 +1543,29 @@ const Notes = () => {
     }
   };
 
-  // Add a new banner
-  const addBanner = async () => {
+  // Add a new banner directly (after passcode confirmation)
+  const addBannerDirectly = async () => {
     if (!newBannerText.trim()) return;
     
+    // Add banner to formData for persistence
     const newBanner = {
       id: Date.now().toString(),
-      text: newBannerText.trim(),
+      text: newBannerText, // Keep original text with line breaks
       createdAt: new Date(),
-      newLine: bannerLineBreak,  // This applies to ALL banner types and colors
-      color: isCalloutMode ? 'callout' : isTitleMode ? 'title' : bannerColor,  // 'blue', 'orange', 'green', 'grey', 'title', or 'callout'
-      isTitle: isTitleMode,  // Track if this is a title banner
-      isCallout: isCalloutMode,  // Track if this is a callout banner
-      isDone: bannerColor === 'green' ? false : false  // Track if banner is marked as done (green banners can also use line toggle)
+      newLine: bannerLineBreak,
+      color: isCalloutMode ? 'callout' : isTitleMode ? 'title' : bannerColor,
+      isTitle: isTitleMode,
+      isCallout: isCalloutMode,
+      isDone: bannerColor === 'green'
     };
     
-    // Insert banner directly into editor content at cursor position instead of separate array
-    if (editorRef.current?.editor) {
-      const editor = editorRef.current.editor;
-      
-      // Create banner HTML that will be embedded in the content
-      const bannerClass = isCalloutMode ? 'callout-banner' : 
-                         isTitleMode ? 'title-banner' : 
-                         bannerColor === 'orange' ? 'new-line' : 
-                         bannerColor === 'green' ? 'done' : 
-                         bannerColor === 'grey' ? 'grey' : 'banner-blue';
-      
-      const bannerHtml = `<div class="content-banner-item ${bannerClass}" data-banner-id="${newBanner.id}" data-banner-color="${newBanner.color}">
-        <span class="banner-text">${newBanner.text}</span>
-        <div class="banner-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="m5 5 6 6m4 0 6 6m-6-6 6-6m-6 6-6 6"></path>
-          </svg>
-        </div>
-      </div>`;
-      
-      // Insert at current cursor position
-      editor.chain().focus().insertContent(bannerHtml).run();
-    } else {
-      // Fallback to old method if editor not available
-      const updatedBanners = [...(formData.banners || []), newBanner];
-      setFormData({ ...formData, banners: updatedBanners });
-    }
+    setFormData(prev => ({
+      ...prev,
+      banners: [...(prev.banners || []), newBanner]
+    }));
     
-    // Clear the input after adding banner
+    // Clear the input
     setNewBannerText('');
-    setShowBannerInput(false);
     
     // Focus the input field again for quick multiple banner creation
     setTimeout(() => {
@@ -1443,21 +1573,6 @@ const Notes = () => {
         bannerInputRef.current.focus();
       }
     }, 100);
-    
-    // Auto-save content to Firebase if editing existing note (banner is now part of content)
-    if (selectedNote && !isCreating && editorRef.current?.editor) {
-      try {
-        const noteRef = doc(db, 'notes', selectedNote.id);
-        const updatedContent = editorRef.current.editor.getHTML();
-        await updateDoc(noteRef, {
-          content: updatedContent,
-          updatedAt: serverTimestamp()
-        });
-      } catch (error) {
-        console.error('Error adding banner:', error);
-        alert('Failed to add banner. Please try again.');
-      }
-    }
   };
 
   // Remove a banner
@@ -2713,30 +2828,7 @@ const Notes = () => {
               </button>
               <button 
                 className="tool-button"
-                onClick={() => {
-                  setIsCreating(true);
-                  setIsEditing(true);
-                  setSelectedNote(null);
-                  setFormData({
-                    title: 'New Note',
-                    content: '',
-                    starred: false,
-                    images: [],
-                    banners: []
-                  });
-                  // Reset line tracking for new note
-                  setCurrentLineNumber(0);
-                  setBannerLineBreak(false);
-                  setBannerColor('blue');
-                  setIsTitleMode(false);
-                  setIsCalloutMode(false);
-                  // Activate banner field after creating note
-                  setTimeout(() => {
-                    if (bannerInputRef.current) {
-                      bannerInputRef.current.focus();
-                    }
-                  }, 100);
-                }}
+                onClick={handleToolbarAddBanner}
                 title="Add Banner"
               >
                 <Tag size={deviceMode === 'mobile' ? 18 : 20} />
@@ -2776,7 +2868,7 @@ const Notes = () => {
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' && !e.shiftKey && newBannerText.trim()) {
                                 e.preventDefault();
-                                addBanner();
+                                handleCreateBannerDirectly();
                               }
                               // Allow Shift+Enter for new lines
                             }}
@@ -2799,7 +2891,7 @@ const Notes = () => {
                             className={`filter-style-btn ${!isTitleMode && !isCalloutMode ? 'active' : ''}`}
                             onClick={() => {
                               if (newBannerText.trim()) {
-                                addBanner();
+                                handleCreateBannerDirectly();
                               } else {
                                 setIsTitleMode(false);
                                 setIsCalloutMode(false);
@@ -2880,7 +2972,7 @@ const Notes = () => {
                             className="banner-submit-btn"
                             onClick={() => {
                               if (newBannerText.trim()) {
-                                addBanner();
+                                handleCreateBannerDirectly();
                               }
                             }}
                             disabled={!newBannerText.trim()}
@@ -2894,81 +2986,124 @@ const Notes = () => {
                     </div>
 
                     <div className="note-content-edit-area">
-                      {/* Display banners in content area during edit mode - identical to viewer */}
+                      {/* Display banners above the editor */}
                       {formData.banners && formData.banners.length > 0 && (
                         <div className="content-banners-container edit-mode">
-                          {(() => {
-                            // Group banners by line breaks
-                            const bannerGroups = [];
-                            let currentGroup = [];
-                            
-                            formData.banners.forEach((banner, index) => {
-                              if (banner.newLine && index > 0 && currentGroup.length > 0) {
-                                bannerGroups.push(currentGroup);
-                                currentGroup = [];
-                              }
-                              currentGroup.push(banner);
-                            });
-                            if (currentGroup.length > 0) {
-                              bannerGroups.push(currentGroup);
-                            }
-                            
-                            return bannerGroups.map((group, groupIndex) => (
-                              <div key={`group-${groupIndex}`} className="banner-line-wrapper">
-                                {group.map((banner) => (
-                                  <React.Fragment key={banner.id}>
-                                    {editingBannerId === banner.id ? (
-                                      <div className="banner-edit-wrapper">
-                                        <input
-                                          type="text"
-                                          className="banner-edit-input"
-                                          value={editingBannerText}
-                                          onChange={(e) => setEditingBannerText(e.target.value)}
-                                          onKeyPress={(e) => {
-                                            if (e.key === 'Enter') {
-                                              saveEditedBanner(banner.id);
-                                            }
-                                          }}
-                                          autoFocus
-                                        />
-                                        <button
-                                          className="banner-edit-btn save"
-                                          onClick={() => saveEditedBanner(banner.id)}
-                                          title="Save"
-                                        >
-                                          <Check size={16} />
-                                        </button>
-                                        <button
-                                          className="banner-edit-btn cancel"
-                                          onClick={cancelEditingBanner}
-                                          title="Cancel"
-                                        >
-                                          <X size={16} />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <div 
-                                        className={`content-banner-item ${
-                                          banner.isCallout || banner.color === 'callout' ? 'callout-banner' :
-                                          banner.isTitle || banner.color === 'title' ? 'title-banner' :
-                                          banner.color === 'orange' || banner.isOrange ? 'new-line' : 
-                                          banner.color === 'green' ? 'done' : 
-                                          banner.color === 'grey' ? 'grey' : ''
-                                        } ${banner.isDone ? 'done' : ''}`}
-                                        onContextMenu={(e) => handleContextMenu(e, banner.id)}
-                                      >
-                                        <span className="banner-text" style={{ whiteSpace: 'pre-wrap' }}>{banner.text}</span>
-                                      </div>
-                                    )}
-                                  </React.Fragment>
-                                ))}
-                              </div>
-                            ));
-                          })()}
+                          {formData.banners.map((banner) => (
+                            <div 
+                              key={banner.id}
+                              className={`content-banner-item ${
+                                banner.isCallout || banner.color === 'callout' ? 'callout-banner' :
+                                banner.isTitle || banner.color === 'title' ? 'title-banner' :
+                                banner.color === 'orange' ? 'new-line' : 
+                                banner.color === 'green' || banner.isDone ? 'done' : 
+                                banner.color === 'grey' ? 'grey' : ''
+                              }`}
+                              style={{
+                                display: (banner.isCallout || banner.isTitle) ? 'block' : 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.75rem',
+                                padding: banner.isCallout ? '1.25rem 1.75rem' : banner.isTitle ? '1.2rem 1.5rem' : '0.75rem 1.25rem',
+                                background: 
+                                  copiedBannerId === banner.id ? 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' :
+                                  banner.isCallout ? 'linear-gradient(135deg, #FFF8F3 0%, #FFF5ED 100%)' :
+                                  banner.isTitle ? 'linear-gradient(135deg, #FFD4A3 0%, #FFBB7D 100%)' :
+                                  banner.color === 'orange' ? 'linear-gradient(135deg, #CB6015 0%, #A04E11 100%)' :
+                                  (banner.color === 'green' || banner.isDone) ? 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)' :
+                                  banner.color === 'grey' ? 'linear-gradient(135deg, #64748b 0%, #475569 100%)' :
+                                  'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                borderLeft: banner.isCallout ? '5px solid #FF6900' : 'none',
+                                border: (banner.color === 'green' || banner.isDone) && copiedBannerId !== banner.id ? '1px solid rgba(0, 255, 136, 0.3)' : banner.isCallout ? undefined : 'none',
+                                borderRadius: banner.isCallout ? '8px' : banner.isTitle ? '6px' : '10px',
+                                color: 
+                                  copiedBannerId === banner.id ? 'white' :
+                                  banner.isCallout ? '#424242' :
+                                  banner.isTitle ? '#8B4513' :
+                                  (banner.color === 'green' || banner.isDone) ? '#003d1f' :
+                                  'white',
+                                fontFamily: banner.isCallout || banner.isTitle ? 
+                                  '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' : 
+                                  '"Dongle", sans-serif',
+                                fontSize: banner.isCallout ? '1rem' : banner.isTitle ? '0.875rem' : '1.75rem',
+                                fontWeight: banner.isTitle ? '500' : '400',
+                                textTransform: banner.isTitle ? 'uppercase' : 'none',
+                                letterSpacing: banner.isTitle ? '0.5px' : '0.03em',
+                                cursor: banner.isCallout || banner.isTitle ? 'default' : 'pointer',
+                                boxShadow: 
+                                  copiedBannerId === banner.id ? '0 4px 20px rgba(147, 51, 234, 0.4), 0 0 30px rgba(147, 51, 234, 0.2)' :
+                                  banner.isCallout ? '0 3px 12px rgba(255, 105, 0, 0.12)' :
+                                  banner.isTitle ? '0 3px 10px rgba(255, 183, 77, 0.25)' :
+                                  (banner.color === 'green' || banner.isDone) ? '0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2)' :
+                                  banner.color === 'orange' ? '0 4px 12px rgba(203, 96, 21, 0.25)' :
+                                  banner.color === 'grey' ? '0 4px 12px rgba(100, 116, 139, 0.25)' :
+                                  '0 4px 12px rgba(59, 130, 246, 0.25)',
+                                margin: banner.isCallout || banner.isTitle ? '0.75rem 0' : '0.25rem 0.5rem',
+                                width: banner.isCallout || banner.isTitle ? '100%' : 'auto',
+                                boxSizing: 'border-box',
+                                transition: 'all 0.2s ease',
+                                animation: (banner.color === 'green' || banner.isDone) && copiedBannerId !== banner.id ? 'neonGlow 2s ease-in-out infinite alternate' : 
+                                           copiedBannerId === banner.id ? 'purpleGlow 0.5s ease' : 'none',
+                                position: 'relative'
+                              }}
+                              onClick={() => {
+                                if (!banner.isTitle && !banner.isCallout) {
+                                  copyBannerToClipboard(banner);
+                                }
+                              }}
+                              onContextMenu={(e) => handleContextMenu(e, banner.id)}
+                            >
+                              <span className="banner-text" style={{ 
+                                color: copiedBannerId === banner.id ? 'white' :
+                                       banner.isCallout ? '#424242' :
+                                       banner.isTitle ? '#8B4513' :
+                                       (banner.color === 'green' || banner.isDone) ? '#003d1f' :
+                                       'white',
+                                whiteSpace: 'pre-wrap',
+                                fontFamily: banner.isCallout || banner.isTitle ? 
+                                  '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' : 
+                                  '"Dongle", sans-serif',
+                                fontSize: banner.isCallout ? '1rem' : banner.isTitle ? '0.875rem' : '1.75rem',
+                                fontWeight: banner.isTitle ? '500' : '400',
+                                textTransform: banner.isTitle ? 'uppercase' : 'none',
+                                letterSpacing: banner.isTitle ? '0.5px' : '0.03em'
+                              }}>{banner.text}</span>
+                              {!banner.isTitle && !banner.isCallout && (
+                                <div className="banner-icon" style={{ marginLeft: 'auto', opacity: 0.9 }}>
+                                  {copiedBannerId === banner.id ? (
+                                    <Check size={18} style={{ color: 'inherit' }} />
+                                  ) : banner.isDone ? (
+                                    <CheckCircle size={18} style={{ color: 'inherit' }} />
+                                  ) : (
+                                    <Copy size={18} style={{ color: 'inherit' }} />
+                                  )}
+                                </div>
+                              )}
+                              <button
+                                className="remove-banner-btn inline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeBanner(banner.id);
+                                }}
+                                style={{
+                                  background: 'rgba(255, 255, 255, 0.2)',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  padding: '2px 6px',
+                                  marginLeft: '8px',
+                                  cursor: 'pointer',
+                                  color: 'inherit',
+                                  position: 'absolute',
+                                  right: '8px',
+                                  top: '50%',
+                                  transform: 'translateY(-50%)'
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
                         </div>
                       )}
-
-
                       
                       <RichTextEditor
                         ref={editorRef}
@@ -2978,7 +3113,7 @@ const Notes = () => {
                         }}
                         placeholder="Start typing your note or paste Excel data..."
                         onImageUpload={uploadImage}
-                        hideToolbar={true}
+                        hideToolbar={false}
                       />
                     </div>
                     {uploadingImage && (
@@ -3015,17 +3150,35 @@ const Notes = () => {
                                 <React.Fragment key={banner.id}>
                             {editingBannerId === banner.id ? (
                               <div className="banner-edit-wrapper">
-                                <input
-                                  type="text"
+                                <textarea
                                   className="banner-edit-input"
                                   value={editingBannerText}
-                                  onChange={(e) => setEditingBannerText(e.target.value)}
-                                  onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
+                                  onChange={(e) => {
+                                    setEditingBannerText(e.target.value);
+                                    // Auto-resize textarea
+                                    e.target.style.height = 'auto';
+                                    e.target.style.height = e.target.scrollHeight + 'px';
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                      e.preventDefault();
                                       saveEditedBanner(banner.id);
                                     }
+                                    // Allow Shift+Enter for new lines
+                                  }}
+                                  rows={1}
+                                  style={{
+                                    resize: 'vertical',
+                                    minHeight: '38px',
+                                    overflow: 'hidden',
+                                    lineHeight: '1.5'
                                   }}
                                   autoFocus
+                                  onFocus={(e) => {
+                                    // Auto-resize on focus
+                                    e.target.style.height = 'auto';
+                                    e.target.style.height = e.target.scrollHeight + 'px';
+                                  }}
                                 />
                                 <button
                                   className="banner-edit-btn save"
@@ -3051,6 +3204,50 @@ const Notes = () => {
                                   banner.color === 'green' ? 'done' : 
                                   banner.color === 'grey' ? 'grey' : ''
                                 } ${banner.isDone ? 'done' : ''} ${copiedBannerId === banner.id ? 'copied' : ''}`}
+                                style={{
+                                  display: (banner.isCallout || banner.isTitle) ? 'block' : 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.75rem',
+                                  padding: banner.isCallout ? '1.25rem 1.75rem' : banner.isTitle ? '1.2rem 1.5rem' : '0.75rem 1.25rem',
+                                  background: 
+                                    copiedBannerId === banner.id ? 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' :
+                                    banner.isCallout ? 'linear-gradient(135deg, #FFF8F3 0%, #FFF5ED 100%)' :
+                                    banner.isTitle ? 'linear-gradient(135deg, #FFD4A3 0%, #FFBB7D 100%)' :
+                                    banner.color === 'orange' ? 'linear-gradient(135deg, #CB6015 0%, #A04E11 100%)' :
+                                    banner.color === 'green' || banner.isDone ? 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)' :
+                                    banner.color === 'grey' ? 'linear-gradient(135deg, #64748b 0%, #475569 100%)' :
+                                    'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                  borderLeft: banner.isCallout ? '5px solid #FF6900' : 'none',
+                                  border: (banner.color === 'green' || banner.isDone) && copiedBannerId !== banner.id ? '1px solid rgba(0, 255, 136, 0.3)' : 'none',
+                                  borderRadius: banner.isCallout ? '8px' : banner.isTitle ? '6px' : '10px',
+                                  color: 
+                                    copiedBannerId === banner.id ? 'white' :
+                                    banner.isCallout ? '#424242' :
+                                    banner.isTitle ? '#8B4513' :
+                                    (banner.color === 'green' || banner.isDone) ? '#003d1f' :
+                                    'white',
+                                  fontFamily: banner.isCallout || banner.isTitle ? 
+                                    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' : 
+                                    '"Dongle", sans-serif',
+                                  fontSize: banner.isCallout ? '1rem' : banner.isTitle ? '0.875rem' : '1.75rem',
+                                  fontWeight: banner.isTitle ? '500' : '400',
+                                  textTransform: banner.isTitle ? 'uppercase' : 'none',
+                                  letterSpacing: banner.isTitle ? '0.5px' : '0.03em',
+                                  cursor: banner.isCallout || banner.isTitle ? 'default' : 'pointer',
+                                  boxShadow: 
+                                    copiedBannerId === banner.id ? '0 4px 20px rgba(147, 51, 234, 0.4), 0 0 30px rgba(147, 51, 234, 0.2)' :
+                                    banner.isCallout ? '0 3px 12px rgba(255, 105, 0, 0.12)' :
+                                    banner.isTitle ? '0 3px 10px rgba(255, 183, 77, 0.25)' :
+                                    (banner.color === 'green' || banner.isDone) ? '0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2)' :
+                                    banner.color === 'orange' ? '0 4px 12px rgba(203, 96, 21, 0.25)' :
+                                    banner.color === 'grey' ? '0 4px 12px rgba(100, 116, 139, 0.25)' :
+                                    '0 4px 12px rgba(59, 130, 246, 0.25)',
+                                  margin: banner.isCallout || banner.isTitle ? '0.5rem 0' : '0.25rem',
+                                  width: banner.isCallout || banner.isTitle ? '100%' : 'auto',
+                                  transition: 'all 0.2s ease',
+                                  animation: (banner.color === 'green' || banner.isDone) && copiedBannerId !== banner.id ? 'neonGlow 2s ease-in-out infinite alternate' : 
+                                             copiedBannerId === banner.id ? 'purpleGlow 0.5s ease' : 'none'
+                                }}
                                 onClick={() => !isLongPress && !banner.isTitle && !banner.isCallout && copyBannerToClipboard(banner)}
                                 onContextMenu={(e) => handleContextMenu(e, banner.id)}
                                 onTouchStart={() => handleTouchStart(banner.id)}
@@ -3058,7 +3255,21 @@ const Notes = () => {
                                 onTouchMove={handleTouchMove}
                                 title="Click to copy, right-click for options"
                               >
-                                <span className="banner-text" style={{ whiteSpace: 'pre-wrap' }}>{banner.text}</span>
+                                <span className="banner-text" style={{ 
+                                  color: copiedBannerId === banner.id ? 'white' :
+                                         banner.isCallout ? '#424242' :
+                                         banner.isTitle ? '#8B4513' :
+                                         (banner.color === 'green' || banner.isDone) ? '#003d1f' :
+                                         'white',
+                                  whiteSpace: 'pre-wrap',
+                                  fontFamily: banner.isCallout || banner.isTitle ? 
+                                    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' : 
+                                    '"Dongle", sans-serif',
+                                  fontSize: banner.isCallout ? '1rem' : banner.isTitle ? '0.875rem' : '1.75rem',
+                                  fontWeight: banner.isTitle ? '500' : '400',
+                                  textTransform: banner.isTitle ? 'uppercase' : 'none',
+                                  letterSpacing: banner.isTitle ? '0.5px' : '0.03em'
+                                }}>{banner.text}</span>
                                 <div className="banner-icon">
                                   {copiedBannerId === banner.id ? (
                                     <Check size={18} className="copied-icon" />
@@ -3144,6 +3355,24 @@ const Notes = () => {
                         }}
                       >
                         <h3 className="modern-note-title">{note.title || 'Untitled'}</h3>
+                        {/* Display image thumbnail if available */}
+                        {note.images && note.images.length > 0 && (
+                          <div className="note-card-image-preview">
+                            <img 
+                              src={note.images[0]} 
+                              alt="Note preview" 
+                              className="card-thumbnail-image"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                            {note.images.length > 1 && (
+                              <div className="more-images-indicator">
+                                +{note.images.length - 1} more
+                              </div>
+                            )}
+                          </div>
+                        )}
                         <div className="banner-content">
                           {/* Show banner pills if note has banners */}
                           {note.banners && note.banners.length > 0 && (
@@ -3168,17 +3397,11 @@ const Notes = () => {
                               )}
                             </div>
                           )}
-                          {contentPreview && (
+                          {contentPreview && !note.images?.length && (
                             <p className="modern-note-preview">{contentPreview}</p>
                           )}
                         </div>
                         <div className="modern-note-footer">
-                          <span className="modern-note-date">
-                            {formatDate(note.updatedAt)}
-                          </span>
-                          {note.images && note.images.length > 0 && (
-                            <ImageIcon size={14} className="modern-note-icon" />
-                          )}
                           {note.starred && (
                             <div className="modern-note-star">
                               <Star size={16} fill="currentColor" />
@@ -3372,6 +3595,14 @@ const Notes = () => {
         itemType="note"
         onConfirm={handleAddConfirm}
         onCancel={() => setShowAddPopup(false)}
+      />
+      
+      {/* Add Banner Confirmation Popup */}
+      <AddConfirmPopup
+        isOpen={showAddBannerPopup}
+        itemType="banner"
+        onConfirm={handleAddBannerConfirm}
+        onCancel={() => setShowAddBannerPopup(false)}
       />
       
       {/* Edit Confirmation Popup */}

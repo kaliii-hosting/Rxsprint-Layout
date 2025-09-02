@@ -1562,6 +1562,39 @@ const RedesignedPumpCalculator = () => {
     });
   };
 
+  // Calculate current volume total - Sum of all actual and calculated volumes
+  // Independent calculation that includes the "Until Complete" calculated volume
+  const currentStepVolumeTotal = (() => {
+    let total = 0;
+    
+    // First, calculate what the "Until Complete" volume would be independently
+    // This matches what the UI shows for that step
+    const totalInfusionVolume = parseFloat(inputs.totalInfusionVolume) || 0;
+    
+    customInfusionSteps.forEach((step, index) => {
+      const isUntilComplete = index === customInfusionSteps.length - 2 && customInfusionSteps.length > 1;
+      
+      if (isUntilComplete) {
+        // For "Until Complete" step, calculate its volume as Total - Sum of all other steps
+        // This is independent of validation, just matching what the UI shows
+        if (totalInfusionVolume > 0) {
+          const otherStepsSum = customInfusionSteps
+            .filter((_, i) => i !== index)
+            .reduce((s, st) => s + (parseFloat(st.volume) || 0), 0);
+          const untilCompleteVolume = Math.max(0, totalInfusionVolume - otherStepsSum);
+          total += untilCompleteVolume;
+        }
+        // If no total set, this step contributes 0
+      } else {
+        // For all other steps, use their entered volume
+        const volume = parseFloat(step.volume) || 0;
+        total += volume;
+      }
+    });
+    
+    return total;
+  })();
+
   // Validate custom infusion steps
   const validateCustomSteps = useCallback((overrideExpectedTime = null) => {
     if (!inputs.useCustomSteps || customInfusionSteps.length === 0) {
@@ -1726,6 +1759,23 @@ const RedesignedPumpCalculator = () => {
       stepsValidation.push(stepValid);
     });
 
+    // Calculate actual step volume total for the banner (sum of all actual step volumes)
+    // This is independent of validation and shows the real-time sum
+    const actualStepVolumeTotal = customInfusionSteps.reduce((sum, step, index) => {
+      const isUntilComplete = index === customInfusionSteps.length - 2 && customInfusionSteps.length > 1;
+      let stepVolume = parseFloat(step.volume) || 0;
+      
+      // For "Until complete" steps, use the calculated volume from validation
+      if (isUntilComplete) {
+        const stepValidation = stepsValidation.find(v => v.id === step.id);
+        if (stepValidation && stepValidation.calculatedVolume) {
+          stepVolume = stepValidation.calculatedVolume;
+        }
+      }
+      
+      return sum + stepVolume;
+    }, 0);
+    
     // Validate totals
     const volumeValid = Math.abs(stepVolumeTotal - totalVolume) < 0.1;
     // Round both values before comparing to avoid floating point issues  
@@ -1750,7 +1800,7 @@ const RedesignedPumpCalculator = () => {
       volumeValid,
       durationValid,
       stepsValid: stepsValidation,
-      stepVolumeTotal,
+      stepVolumeTotal: actualStepVolumeTotal, // Use the real-time calculated total for banner
       stepDurationTotal,
       isAcceptable,
       totalVolumeError: !volumeValid ? `Total: ${stepVolumeTotal.toFixed(1)} mL (Expected: ${totalVolume} mL)` : '',
@@ -3642,6 +3692,7 @@ const RedesignedPumpCalculator = () => {
             // Mark steps as calibrated and store the expected duration
             setStepsHaveBeenCalibrated(true);
             setCalibratedExpectedDuration(currentStepDurationSum);
+            calibratedDurationRef.current = currentStepDurationSum;
             
             console.log(`\n=== STORING CALIBRATED EXPECTED DURATION (TIME) ===`);
             console.log(`Stored duration for future validations: ${currentStepDurationSum} minutes`);
@@ -5096,29 +5147,15 @@ const RedesignedPumpCalculator = () => {
             <div className="section-header">
               <Activity size={20} />
               <h3>Custom Infusion Steps</h3>
-              <button 
-                className="close-section-btn"
-                onClick={() => handleInputChange('useCustomSteps', false)}
-                title="Close custom infusion steps"
-              >
-                <X size={20} />
-              </button>
               <div className="custom-steps-validation">
-                {customStepsValidation.volumeValid ? (
-                  <div className="validation-indicator valid">
-                    <Check size={16} />
-                    <span>VOLUME: {(customStepsValidation.stepVolumeTotal || 0).toFixed(1)} ML</span>
-                  </div>
-                ) : (
-                  <div className="validation-indicator invalid">
-                    <X size={16} />
-                    <span>VOLUME: {(customStepsValidation.stepVolumeTotal || 0).toFixed(1)} ML</span>
-                  </div>
-                )}
+                <div className="validation-indicator" style={{ backgroundColor: '#4a90e2' }}>
+                  <Droplets size={16} />
+                  <span>CURRENT VOLUME: {currentStepVolumeTotal.toFixed(1)} ML</span>
+                </div>
                 {customStepsValidation.durationValid ? (
                   <div className="validation-indicator valid">
-                    <Check size={16} />
-                    <span>Duration: {(() => {
+                    <Clock size={16} />
+                    <span>DURATION: {(() => {
                       const totalMins = customStepsValidation.stepDurationTotal || 0;
                       const hours = Math.floor(totalMins / 60);
                       const mins = Math.round(totalMins % 60);
@@ -5127,8 +5164,8 @@ const RedesignedPumpCalculator = () => {
                   </div>
                 ) : (
                   <div className="validation-indicator invalid">
-                    <X size={16} />
-                    <span>Duration: {(() => {
+                    <Clock size={16} />
+                    <span>DURATION: {(() => {
                       const totalMins = customStepsValidation.stepDurationTotal || 0;
                       const hours = Math.floor(totalMins / 60);
                       const mins = Math.round(totalMins % 60);
@@ -6232,6 +6269,9 @@ const RedesignedPumpCalculator = () => {
         )}
 
         {/* Removed old AI Adjustment Modal - now using inline calibration fields */}
+        
+        {/* Spacer to ensure bottom spacing */}
+        <div style={{ height: '80px', minHeight: '80px', width: '100%' }}></div>
       </div>
     </div>
   );
