@@ -8,42 +8,31 @@ class DailyMedService {
     
     // Environment-aware API configuration
     this.isDevelopment = import.meta.env.DEV || process.env.NODE_ENV === 'development';
-    this.proxyUrl = this.isDevelopment 
-      ? '/api/dailymed' // Use Vite proxy in development
-      : 'https://dailymed.nlm.nih.gov/dailymed'; // Direct API calls in production
+    
+    // Always use proxy to avoid CORS issues
+    // In development: Vite proxy handles it
+    // In production: Netlify functions handle it
+    this.proxyUrl = '/api/dailymed';
     
     this.cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
     
     console.log(`DailyMed Service initialized: ${this.isDevelopment ? 'Development' : 'Production'} mode`);
-    console.log(`Using API URL: ${this.proxyUrl}`);
+    console.log(`Using API URL: ${this.proxyUrl} (proxied)`);
   }
 
   /**
-   * Enhanced fetch wrapper with error handling and CORS support
+   * Enhanced fetch wrapper with error handling
    */
   async safeFetch(url, options = {}) {
     console.log(`🌐 Making API request: ${url}`);
     
     try {
-      // Add default headers for production CORS and JSON handling
-      const defaultHeaders = {
-        'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json',
-      };
-
-      // In production, add additional headers for DailyMed API
-      if (!this.isDevelopment) {
-        defaultHeaders['Origin'] = window.location.origin;
-        defaultHeaders['Referer'] = window.location.href;
-        defaultHeaders['User-Agent'] = navigator.userAgent || 'RxSprint/1.0';
-      }
-
+      // Simple headers since we're using proxy
       const fetchOptions = {
         method: 'GET',
-        mode: this.isDevelopment ? 'same-origin' : 'cors',
-        credentials: this.isDevelopment ? 'same-origin' : 'omit',
         headers: {
-          ...defaultHeaders,
+          'Accept': 'application/json, text/plain, */*',
+          'Content-Type': 'application/json',
           ...options.headers
         },
         ...options

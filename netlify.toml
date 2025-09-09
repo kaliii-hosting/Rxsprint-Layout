@@ -9,10 +9,22 @@
 [functions]
   node_bundler = "esbuild"
 
-# API redirect endpoint
+# API redirect endpoints
 [[redirects]]
   from = "/api/embed"
   to = "/.netlify/functions/embed"
+  status = 200
+
+# DailyMed API proxy
+[[redirects]]
+  from = "/api/dailymed/*"
+  to = "/.netlify/functions/dailymed-proxy?path=:splat"
+  status = 200
+
+# DailyMed Image proxy
+[[redirects]]
+  from = "/api/dailymed-image"
+  to = "/.netlify/functions/dailymed-image"
   status = 200
 
 # SPA fallback
