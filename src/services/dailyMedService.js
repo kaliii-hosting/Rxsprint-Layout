@@ -5,8 +5,96 @@ import splImageExtractor from './splImageExtractor.js';
 class DailyMedService {
   constructor() {
     this.baseUrl = 'https://dailymed.nlm.nih.gov/dailymed';
-    this.proxyUrl = '/api/dailymed';
+    
+    // Environment-aware API configuration
+    this.isDevelopment = import.meta.env.DEV || process.env.NODE_ENV === 'development';
+    this.proxyUrl = this.isDevelopment 
+      ? '/api/dailymed' // Use Vite proxy in development
+      : 'https://dailymed.nlm.nih.gov/dailymed'; // Direct API calls in production
+    
     this.cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
+    
+    console.log(`DailyMed Service initialized: ${this.isDevelopment ? 'Development' : 'Production'} mode`);
+    console.log(`Using API URL: ${this.proxyUrl}`);
+  }
+
+  /**
+   * Enhanced fetch wrapper with error handling and CORS support
+   */
+  async safeFetch(url, options = {}) {
+    console.log(`🌐 Making API request: ${url}`);
+    
+    try {
+      // Add default headers for production CORS and JSON handling
+      const defaultHeaders = {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+      };
+
+      // In production, add additional headers for DailyMed API
+      if (!this.isDevelopment) {
+        defaultHeaders['Origin'] = window.location.origin;
+        defaultHeaders['Referer'] = window.location.href;
+        defaultHeaders['User-Agent'] = navigator.userAgent || 'RxSprint/1.0';
+      }
+
+      const fetchOptions = {
+        method: 'GET',
+        mode: this.isDevelopment ? 'same-origin' : 'cors',
+        credentials: this.isDevelopment ? 'same-origin' : 'omit',
+        headers: {
+          ...defaultHeaders,
+          ...options.headers
+        },
+        ...options
+      };
+
+      const response = await fetch(url, fetchOptions);
+      
+      // Check if response is actually HTML (error page) instead of JSON
+      const contentType = response.headers.get('content-type') || '';
+      console.log(`📄 Response Content-Type: ${contentType}`);
+      
+      if (!response.ok) {
+        console.error(`❌ HTTP Error ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      // Verify we're getting JSON content
+      if (!contentType.includes('application/json') && !contentType.includes('text/json')) {
+        console.warn(`⚠️ Unexpected content type: ${contentType}`);
+        
+        // Try to read response as text to see what we got
+        const responseText = await response.text();
+        console.error('❌ Non-JSON response received:', responseText.substring(0, 200));
+        
+        // If we got HTML, it's likely an error page
+        if (responseText.includes('<!DOCTYPE') || responseText.includes('<html')) {
+          throw new Error('Server returned HTML instead of JSON - API endpoint may not exist');
+        }
+        
+        // Try to parse as JSON anyway
+        try {
+          return JSON.parse(responseText);
+        } catch (parseError) {
+          throw new Error(`Invalid JSON response: ${parseError.message}`);
+        }
+      }
+
+      const data = await response.json();
+      console.log(`✅ API request successful: ${url}`);
+      return data;
+      
+    } catch (error) {
+      console.error(`💥 API request failed: ${url}`, error);
+      
+      // Re-throw with more context
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        throw new Error(`Network error: Unable to reach ${this.isDevelopment ? 'proxy server' : 'DailyMed API'}. ${this.isDevelopment ? 'Check if dev server is running.' : 'Check internet connection.'}`);
+      }
+      
+      throw error;
+    }
   }
 
   // Clear all DailyMed cache
@@ -154,15 +242,7 @@ class DailyMedService {
       const url = `${this.proxyUrl}/services/v2/spls.json?drug_name=${encodeURIComponent(searchTerm)}&pagesize=8`;
       console.log('📡 Autocomplete URL:', url);
       
-      const response = await fetch(url);
-      console.log('📡 Response status:', response.status);
-      
-      if (!response.ok) {
-        console.warn('❌ Autocomplete fetch failed:', response.status, response.statusText);
-        return [];
-      }
-      
-      const data = await response.json();
+      const data = await this.safeFetch(url);
       console.log('📋 Raw API response structure:', {
         hasData: !!data.data,
         dataLength: data.data?.length || 0,
@@ -229,12 +309,7 @@ class DailyMedService {
       }
       console.log('Searching medications:', url);
       
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Search failed with status ${response.status}`);
-      }
-      
-      const data = await response.json();
+      const data = await this.safeFetch(url);
       const results = [];
       
       if (data.data && data.data.length > 0) {
@@ -275,16 +350,14 @@ class DailyMedService {
   // Get package image URL for search results
   async getPackageImage(setId) {
     try {
-      // Use proxy to avoid CORS issues
-      const mediaUrl = `/api/dailymed/services/v2/spls/${setId}/media.json`;
-      const response = await fetch(mediaUrl);
+      // Use environment-aware URL for media fetching
+      const mediaUrl = `${this.proxyUrl}/services/v2/spls/${setId}/media.json`;
+      const mediaData = await this.safeFetch(mediaUrl);
       
-      if (!response.ok) {
-        console.warn(`Failed to fetch package image for ${setId}:`, response.status);
+      if (!mediaData) {
+        console.warn(`Failed to fetch package image for ${setId}`);
         return null;
       }
-      
-      const mediaData = await response.json();
       console.log('📦 Package image API response for', setId, ':', mediaData);
       
       // FIX: API returns data.media, not data.data
@@ -484,17 +557,15 @@ class DailyMedService {
   // Fetch media images from the media.json endpoint
   async fetchMediaImages(setId) {
     try {
-      // Use proxy to avoid CORS issues
-      const mediaUrl = `/api/dailymed/services/v2/spls/${setId}/media.json`;
+      // Use environment-aware URL for media fetching
+      const mediaUrl = `${this.proxyUrl}/services/v2/spls/${setId}/media.json`;
       console.log('🖼️  Fetching media images from:', mediaUrl);
       
-      const response = await fetch(mediaUrl);
-      if (!response.ok) {
-        console.warn('❌ Media fetch failed:', response.status, response.statusText);
+      const responseData = await this.safeFetch(mediaUrl);
+      if (!responseData) {
+        console.warn('❌ Media fetch failed for setId:', setId);
         return [];
       }
-      
-      const responseData = await response.json();
       console.log('📋 Raw media API response:', responseData);
       
       const images = [];
@@ -2129,13 +2200,8 @@ class DailyMedService {
       const jsonUrl = `${this.proxyUrl}/services/v2/spls.json?setid=${setId}`;
       console.log('Fetching JSON fallback from:', jsonUrl);
       
-      const response = await fetch(jsonUrl);
-      if (!response.ok) {
-        throw new Error(`JSON fetch failed with status ${response.status}`);
-      }
-      
-      const data = await response.json();
-      if (!data.data || data.data.length === 0) {
+      const data = await this.safeFetch(jsonUrl);
+      if (!data || !data.data || data.data.length === 0) {
         throw new Error('No data found in JSON response');
       }
       
@@ -2352,11 +2418,9 @@ class DailyMedService {
   async getNDCCodes(setId) {
     try {
       const url = `${this.proxyUrl}/services/v2/spls/${setId}/ndcs.json`;
-      const response = await fetch(url);
+      const data = await this.safeFetch(url);
       
-      if (!response.ok) return [];
-      
-      const data = await response.json();
+      if (!data) return [];
       const packages = [];
       
       // Check if data.data exists and is an array
@@ -2398,13 +2462,11 @@ class DailyMedService {
       const url = `${this.proxyUrl}/services/v2/spls/${setId}/rxnorms.json`;
       console.log('Fetching RxNorm mappings from:', url);
       
-      const response = await fetch(url);
-      if (!response.ok) {
-        console.warn('RxNorm fetch failed:', response.status);
+      const data = await this.safeFetch(url);
+      if (!data) {
+        console.warn('RxNorm fetch failed for setId:', setId);
         return null;
       }
-      
-      const data = await response.json();
       const rxNormConcepts = [];
       
       // Parse RxNorm data structure
@@ -2519,10 +2581,9 @@ class DailyMedService {
   async getDrugClasses() {
     try {
       const url = `${this.proxyUrl}/services/v2/drugclasses.json`;
-      const response = await fetch(url);
-      if (!response.ok) return [];
+      const data = await this.safeFetch(url);
+      if (!data) return [];
       
-      const data = await response.json();
       return data.data || [];
     } catch (error) {
       console.error('Error fetching drug classes:', error);
@@ -2534,10 +2595,9 @@ class DailyMedService {
   async getAllRxCuis() {
     try {
       const url = `${this.proxyUrl}/services/v2/rxcuis.json`;
-      const response = await fetch(url);
-      if (!response.ok) return [];
+      const data = await this.safeFetch(url);
+      if (!data) return [];
       
-      const data = await response.json();
       return data.data || [];
     } catch (error) {
       console.error('Error fetching RxCUIs:', error);
@@ -2549,10 +2609,9 @@ class DailyMedService {
   async getAllNdcCodes() {
     try {
       const url = `${this.proxyUrl}/services/v2/ndcs.json`;
-      const response = await fetch(url);
-      if (!response.ok) return [];
+      const data = await this.safeFetch(url);
+      if (!data) return [];
       
-      const data = await response.json();
       return data.data || [];
     } catch (error) {
       console.error('Error fetching NDC codes:', error);
@@ -2588,10 +2647,9 @@ class DailyMedService {
   async getProductConcepts() {
     try {
       const url = `${this.proxyUrl}/services/v2/product_concepts.json`;
-      const response = await fetch(url);
-      if (!response.ok) return [];
+      const data = await this.safeFetch(url);
+      if (!data) return [];
       
-      const data = await response.json();
       return data.data || [];
     } catch (error) {
       console.error('Error fetching product concepts:', error);
@@ -2603,10 +2661,9 @@ class DailyMedService {
   async getUnits() {
     try {
       const url = `${this.proxyUrl}/services/v2/units.json`;
-      const response = await fetch(url);
-      if (!response.ok) return [];
+      const data = await this.safeFetch(url);
+      if (!data) return [];
       
-      const data = await response.json();
       return data.data || [];
     } catch (error) {
       console.error('Error fetching units:', error);
@@ -2618,10 +2675,9 @@ class DailyMedService {
   async searchByDrugClass(drugClass, limit = 25) {
     try {
       const url = `${this.proxyUrl}/services/v2/spls.json?drug_class=${encodeURIComponent(drugClass)}&pagesize=${limit}`;
-      const response = await fetch(url);
-      if (!response.ok) return { results: [], count: 0 };
+      const data = await this.safeFetch(url);
+      if (!data) return { results: [], count: 0 };
       
-      const data = await response.json();
       return this.processMedicationSearchResults(data);
     } catch (error) {
       console.error('Error searching by drug class:', error);
@@ -2633,10 +2689,9 @@ class DailyMedService {
   async searchByRxCui(rxcui) {
     try {
       const url = `${this.proxyUrl}/services/v2/spls.json?rxcui=${rxcui}`;
-      const response = await fetch(url);
-      if (!response.ok) return { results: [], count: 0 };
+      const data = await this.safeFetch(url);
+      if (!data) return { results: [], count: 0 };
       
-      const data = await response.json();
       return this.processMedicationSearchResults(data);
     } catch (error) {
       console.error('Error searching by RxCUI:', error);

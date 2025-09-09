@@ -211,7 +211,7 @@ function processRenderMultiMedia(html, setId, mediaImages) {
 }
 
 /**
- * Build proxy image URL
+ * Build proxy image URL (environment-aware)
  */
 function buildProxyImageUrl(imageName, setId) {
   if (!imageName || !setId) {
@@ -222,10 +222,20 @@ function buildProxyImageUrl(imageName, setId) {
   // Clean the image name
   const cleanName = imageName.trim();
   
-  // Build the proxy URL
-  const url = `/api/dailymed-image?name=${encodeURIComponent(cleanName)}&id=${setId}`;
+  // Environment-aware URL building
+  const isDevelopment = import.meta.env.DEV || process.env.NODE_ENV === 'development';
   
-  console.log(`🔗 Built proxy URL: ${cleanName} -> ${url}`);
+  let url;
+  if (isDevelopment) {
+    // Use local proxy in development
+    url = `/api/dailymed-image?name=${encodeURIComponent(cleanName)}&id=${setId}`;
+  } else {
+    // Use direct DailyMed API in production
+    const cleanNameForAPI = cleanName.replace(/\.(jpg|jpeg|png|gif)$/i, '');
+    url = `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanNameForAPI)}&setid=${setId}`;
+  }
+  
+  console.log(`🔗 Built ${isDevelopment ? 'proxy' : 'direct'} URL: ${cleanName} -> ${url}`);
   return url;
 }
 

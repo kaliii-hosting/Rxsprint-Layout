@@ -77,7 +77,20 @@ const Counsel = () => {
       setSearchResults(results);
     } catch (error) {
       console.error('Search error:', error);
-      setSearchResults(null);
+      
+      // Show user-friendly error message
+      const errorMessage = error.message.includes('HTML instead of JSON') 
+        ? 'Search service temporarily unavailable. Please try again later.'
+        : error.message.includes('Network error')
+        ? 'Unable to connect to search service. Please check your internet connection.'
+        : 'Search failed. Please try again.';
+      
+      // Set error state (you may want to add an error state)
+      setSearchResults({ 
+        results: [], 
+        count: 0, 
+        error: errorMessage 
+      });
     } finally {
       setIsSearching(false);
     }
@@ -669,8 +682,20 @@ const Counsel = () => {
         {/* Search Results - DailyMed Style */}
         {searchResults && !selectedMedication && (
           <div className="search-results-container">
-            <div className="results-list">
-              {searchResults.results && searchResults.results.map((med, idx) => (
+            {searchResults.error ? (
+              <div className="error-state">
+                <AlertCircle size={48} />
+                <p>{searchResults.error}</p>
+                <button 
+                  className="retry-button"
+                  onClick={() => searchQuery && performSearch(searchQuery)}
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : (
+              <div className="results-list">
+                {searchResults.results && searchResults.results.map((med, idx) => (
                 <div key={idx} className="med-result-item">
                   <div className="med-image-container">
                     {med.imageUrl ? (
@@ -726,7 +751,8 @@ const Counsel = () => {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
