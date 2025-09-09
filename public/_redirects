@@ -1,2 +1,2 @@
+/api/dailymed/* https://dailymed.nlm.nih.gov/dailymed/:splat 200!
 /* /index.html 200
-/api/dailymed/* https://dailymed.nlm.nih.gov/dailymed/:splat 200
