@@ -84,7 +84,7 @@ function updateImageSources(html, setId, mediaImages) {
     if (dataIdMatch && dataIdMatch[1]) {
       imageName = dataIdMatch[1];
       console.log(`📋 Using data-image-id: ${imageName}`);
-    } else if (srcMatch && srcMatch[1] && !srcMatch[1].startsWith('/api/dailymed-image')) {
+    } else if (srcMatch && srcMatch[1] && !srcMatch[1].startsWith('https://dailymed.nlm.nih.gov/dailymed/image.cfm')) {
       // Extract filename from existing src
       const filename = srcMatch[1].split('/').pop().split('?')[0];
       if (filename && filename !== '') {
@@ -94,7 +94,7 @@ function updateImageSources(html, setId, mediaImages) {
     }
     
     // Skip if no image name found or already processed
-    if (!imageName || srcMatch && srcMatch[1].startsWith('/api/dailymed-image')) {
+    if (!imageName || srcMatch && srcMatch[1].startsWith('https://dailymed.nlm.nih.gov/dailymed/image.cfm')) {
       return match;
     }
     
@@ -222,10 +222,10 @@ function buildProxyImageUrl(imageName, setId) {
   // Clean the image name
   const cleanName = imageName.trim();
   
-  // Always use proxy to avoid CORS issues
-  // In development: Vite proxy handles it
-  // In production: Netlify functions handle it
-  const url = `/api/dailymed-image?name=${encodeURIComponent(cleanName)}&id=${setId}`;
+  // Use direct DailyMed image API URL
+  // Remove file extension as DailyMed API doesn't need it
+  const cleanNameForAPI = cleanName.replace(/\.(jpg|jpeg|png|gif)$/i, '');
+  const url = `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanNameForAPI)}&setid=${setId}`;
   
   console.log(`🔗 Built proxy URL: ${cleanName} -> ${url}`);
   return url;

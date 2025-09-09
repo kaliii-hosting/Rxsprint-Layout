@@ -450,7 +450,8 @@ class SPLParser {
   processEmbeddedImages(html, setId) {
     // Replace image placeholders with actual URLs
     html = html.replace(/data-image-id="([^"]+)"/g, (match, imageId) => {
-      const imageUrl = `/api/dailymed-image?name=${encodeURIComponent(imageId)}&setid=${setId}`;
+      const cleanImageId = imageId.replace(/\.(jpg|jpeg|png|gif)$/i, '');
+      const imageUrl = `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanImageId)}&setid=${setId}`;
       return `src="${imageUrl}" data-image-id="${imageId}"`;
     });
     
@@ -546,7 +547,7 @@ class SPLParser {
           const imageData = {
             id: id || mediaRef,
             ref: mediaRef.replace('.jpg', '').replace('.png', ''),
-            url: `/api/dailymed-image?name=${encodeURIComponent(mediaRef)}&setid=${setId}`,
+            url: `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(mediaRef.replace(/\.(jpg|jpeg|png|gif)$/i, ''))}&setid=${setId}`,
             caption: media.querySelector('text')?.textContent || ''
           };
           

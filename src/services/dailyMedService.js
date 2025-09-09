@@ -9,10 +9,9 @@ class DailyMedService {
     // Environment-aware API configuration
     this.isDevelopment = import.meta.env.DEV || process.env.NODE_ENV === 'development';
     
-    // Always use proxy to avoid CORS issues
-    // In development: Vite proxy handles it
-    // In production: Netlify functions handle it
-    this.proxyUrl = '/api/dailymed';
+    // Use direct DailyMed API URL for production
+    // This fixes the issue with Netlify returning HTML instead of JSON
+    this.proxyUrl = 'https://dailymed.nlm.nih.gov/dailymed';
     
     this.cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
     
@@ -574,17 +573,17 @@ class DailyMedService {
             let primaryUrl = item.url;
             if (!primaryUrl || !primaryUrl.startsWith('http')) {
               // If no valid URL, construct it using our proxy with 'id' parameter
-              primaryUrl = `/api/dailymed-image?name=${encodeURIComponent(item.name)}&id=${setId}`;
+              const cleanName = item.name.replace(/\.(jpg|jpeg|png|gif)$/i, '');
+              primaryUrl = `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanName)}&setid=${setId}`;
             }
             
             // Create fallback URLs as backup - USE PROXY ONLY with 'id' parameter
+            const cleanName = item.name.replace(/\.(jpg|jpeg|png|gif)$/i, '');
             const fallbackUrls = [
-              // Primary: Proxy through our server with id parameter
-              `/api/dailymed-image?name=${encodeURIComponent(item.name)}&id=${setId}`,
-              // Fallback 1: Proxy without id
-              `/api/dailymed-image?name=${encodeURIComponent(item.name)}`,
-              // Fallback 2: Try with .jpg extension through proxy
-              `/api/dailymed-image?name=${encodeURIComponent(item.name.replace(/\.(jpg|jpeg|png|gif)$/i, '.jpg'))}&id=${setId}`
+              // Primary: Direct DailyMed API
+              `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanName)}&setid=${setId}`,
+              // Fallback: Try without cleaning
+              `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(item.name)}&setid=${setId}`
             ];
             
             images.push({
@@ -1595,26 +1594,26 @@ class DailyMedService {
             // Use proxy URL to avoid CORS
             if (mediaImage.url && mediaImage.url.startsWith('http')) {
               // If it's already a full URL, use proxy
-              imageUrl = `/api/dailymed-image?name=${encodeURIComponent(mediaImage.name)}&id=${setId}`;
+              const cleanName = mediaImage.name.replace(/\.(jpg|jpeg|png|gif)$/i, '');
+              imageUrl = `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanName)}&setid=${setId}`;
             } else if (mediaImage.url) {
               // If it's a relative path, use proxy
-              imageUrl = `/api/dailymed-image?name=${encodeURIComponent(mediaImage.name)}&id=${setId}`;
+              const cleanName = mediaImage.name.replace(/\.(jpg|jpeg|png|gif)$/i, '');
+              imageUrl = `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanName)}&setid=${setId}`;
             } else {
               // Fallback to proxy with just the name
-              imageUrl = `/api/dailymed-image?name=${encodeURIComponent(mediaImage.name)}&id=${setId}`;
+              const cleanName = mediaImage.name.replace(/\.(jpg|jpeg|png|gif)$/i, '');
+              imageUrl = `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanName)}&setid=${setId}`;
             }
             console.log('Found matching media image:', mediaImage.name, '-> Using proxy URL:', imageUrl);
           } else {
             // Multiple fallback strategies for images
+            const cleanName = imageName.replace(/\.(jpg|jpeg|png|gif)$/i, '');
             const possibleUrls = [
-              // Strategy 1: Proxy through our server with setid
-              `/api/dailymed-image?name=${encodeURIComponent(imageName)}&id=${setId}`,
-              // Strategy 2: Proxy without setid
-              `/api/dailymed-image?name=${encodeURIComponent(imageName)}`,
-              // Strategy 3: Try with .jpg extension through proxy
-              `/api/dailymed-image?name=${encodeURIComponent(imageName.replace(/\.(jpg|jpeg|png|gif)$/i, '.jpg'))}&id=${setId}`,
-              // Strategy 4: Try without extension
-              `/api/dailymed-image?name=${encodeURIComponent(imageName.replace(/\.[^.]+$/, ''))}&id=${setId}`
+              // Strategy 1: Direct DailyMed API with cleaned name
+              `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanName)}&setid=${setId}`,
+              // Strategy 2: Try with original name
+              `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(imageName)}&setid=${setId}`
             ];
             
             imageUrl = possibleUrls[0]; // Start with the most reliable
@@ -1627,13 +1626,12 @@ class DailyMedService {
           const imageClass = isInstructionsSection ? 'dm-image instruction-image' : 'dm-image';
           
           // Create multiple fallback URLs for robust image loading - USE PROXY
+          const cleanName = imageName.replace(/\.(jpg|jpeg|png|gif)$/i, '');
           const fallbackUrls = [
-            // Primary: Proxy through our server with setid
-            `/api/dailymed-image?name=${encodeURIComponent(imageName)}&id=${setId}`,
-            // Fallback 1: Proxy without setid
-            `/api/dailymed-image?name=${encodeURIComponent(imageName)}`,
-            // Fallback 2: Proxy with .jpg extension if missing
-            `/api/dailymed-image?name=${encodeURIComponent(imageName.includes('.') ? imageName : imageName + '.jpg')}&id=${setId}`
+            // Primary: Direct DailyMed API
+            `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanName)}&setid=${setId}`,
+            // Fallback: Try with original name
+            `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(imageName)}&setid=${setId}`
           ];
 
           // Start with first fallback if media image URL failed
@@ -1748,7 +1746,8 @@ class DailyMedService {
           
           if (mediaImage) {
             // Use proxy URL to avoid CORS
-            imageUrl = `/api/dailymed-image?name=${encodeURIComponent(mediaImage.name)}&id=${setId}`;
+            const cleanName = mediaImage.name.replace(/\.(jpg|jpeg|png|gif)$/i, '');
+            imageUrl = `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanName)}&setid=${setId}`;
             console.log('Found matching observationMedia image:', mediaImage.name, '-> Using proxy URL:', imageUrl);
           } else {
             // Fallback to DailyMed image URL via proxy
@@ -1757,7 +1756,8 @@ class DailyMedService {
             if (!imageFileName.match(/\.(jpg|jpeg|png|gif)$/i)) {
               imageFileName += '.jpg'; // Default to jpg
             }
-            imageUrl = `/api/dailymed/image.cfm?setid=${setId}&name=${encodeURIComponent(imageFileName)}`;
+            const cleanFileName = imageFileName.replace(/\.(jpg|jpeg|png|gif)$/i, '');
+            imageUrl = `https://dailymed.nlm.nih.gov/dailymed/image.cfm?setid=${setId}&name=${encodeURIComponent(cleanFileName)}`;
             console.log('Using fallback proxy URL for observationMedia:', imageUrl);
           }
           
