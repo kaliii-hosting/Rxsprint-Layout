@@ -61,7 +61,7 @@ export async function processInstructionsHTML(html, setId, mediaImages = []) {
   // Fetch the actual media list from DailyMed to get correct MM mappings
   let actualMediaList = mediaImages;
   try {
-    const mediaResponse = await fetch(`https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/${setId}/media.json`);
+    const mediaResponse = await fetch(`/api/dailymed/services/v2/spls/${setId}/media.json`);
     if (mediaResponse.ok) {
       const mediaData = await mediaResponse.json();
       actualMediaList = mediaData.data?.media || mediaImages;
@@ -309,7 +309,7 @@ function fixAllImageReferences(html, mediaImages, setId) {
   // Pattern 1: Fix existing img tags with any src
   html = html.replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, (match, src) => {
     // Skip if already properly formatted
-    if (src.startsWith('https://dailymed.nlm.nih.gov/dailymed/image.cfm')) {
+    if (src.startsWith('/api/dailymed-image')) {
       return match;
     }
     
@@ -402,8 +402,7 @@ function buildImageUrl(name, setId) {
   }
   
   // Build the proxy URL (using 'id' parameter to match proxy configuration)
-  const cleanNameForAPI = cleanName.replace(/\.(jpg|jpeg|png|gif)$/i, '');
-  const url = `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanNameForAPI)}&setid=${setId}`;
+  const url = `/api/dailymed-image?name=${encodeURIComponent(cleanName)}&id=${setId}`;
   console.log(`🔗 Built image URL: ${name} -> ${url}`);
   
   return url;
@@ -418,7 +417,7 @@ function fixMalformedImageUrls(html, setId, mediaImages) {
     /<img([^>]*?)src=["']([^"']+)["']([^>]*?)>/gi,
     (match, before, src, after) => {
       // Skip if already properly formatted
-      if (src.startsWith('https://dailymed.nlm.nih.gov/dailymed/image.cfm') || src.startsWith('http') || src.startsWith('data:')) {
+      if (src.startsWith('/api/dailymed-image') || src.startsWith('http') || src.startsWith('data:')) {
         return match;
       }
       
@@ -620,7 +619,7 @@ function finalImageCleanup(html, setId, mediaImages) {
     let validSrc = src2;
     if (!src2 || src2.length === 0) {
       validSrc = src1;
-    } else if (src1 && src1.startsWith('https://dailymed.nlm.nih.gov/dailymed/image.cfm') && !src2.startsWith('https://dailymed.nlm.nih.gov/dailymed/image.cfm')) {
+    } else if (src1 && src1.startsWith('/api/dailymed-image') && !src2.startsWith('/api/dailymed-image')) {
       validSrc = src1; // Prefer already processed URLs
     }
     
@@ -722,7 +721,7 @@ function ensureProperImageUrls(html, setId, mediaImages) {
     /<img([^>]*?)src=["']([^"']+)["']([^>]*?)>/gi,
     (match, before, src, after) => {
       // Skip if already properly formatted
-      if (src.startsWith('https://dailymed.nlm.nih.gov/dailymed/image.cfm') || src.startsWith('http') || src.startsWith('data:')) {
+      if (src.startsWith('/api/dailymed-image') || src.startsWith('http') || src.startsWith('data:')) {
         return match;
       }
       

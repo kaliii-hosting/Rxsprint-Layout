@@ -131,7 +131,7 @@ class SPLImageExtractor {
           registry[id] = {
             id: id,
             ref: cleanRef,
-            url: `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanRef.replace(/\.(jpg|jpeg|png|gif)$/i, ''))}&setid=${setId}`,
+            url: `/api/dailymed-image?name=${encodeURIComponent(cleanRef)}&setid=${setId}`,
             caption: media.querySelector('text')?.textContent || '',
             originalRef: mediaRef,
             usedInSections: [] // Track which sections reference this image
@@ -266,7 +266,7 @@ class SPLImageExtractor {
         images.push({
           id: cleanRef,
           ref: cleanRef,
-          url: registryImage?.url || `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanRef.replace(/\.(jpg|jpeg|png|gif)$/i, ''))}&setid=${setId}`,
+          url: registryImage?.url || `/api/dailymed-image?name=${encodeURIComponent(cleanRef)}&setid=${setId}`,
           caption: caption || registryImage?.caption || '',
           type: 'renderMultiMedia',
           source: 'section'
@@ -299,7 +299,7 @@ class SPLImageExtractor {
             images.push({
               id: id || cleanRef,
               ref: cleanRef,
-              url: `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${encodeURIComponent(cleanRef.replace(/\.(jpg|jpeg|png|gif)$/i, ''))}&setid=${setId}`,
+              url: `/api/dailymed-image?name=${encodeURIComponent(cleanRef)}&setid=${setId}`,
               caption: caption,
               type: 'observationMedia',
               source: 'text'

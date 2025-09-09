@@ -120,16 +120,17 @@ function extractDosageFormFromTitle(title) {
  * Create display-ready image object with fallback URLs
  */
 export function createImageObject(imageData, setId) {
-  const baseUrl = 'https://dailymed.nlm.nih.gov/dailymed/image.cfm';
+  const baseUrl = '/api/dailymed-image';
   
   // Generate multiple fallback URLs with different parameters
   const fallbacks = [];
   const imageName = imageData.ref || imageData.id;
   
-  // Try different URL formats - DailyMed API doesn't need file extensions
-  const cleanName = imageName.replace(/\.(jpg|jpeg|png|gif)$/i, '');
-  fallbacks.push(`${baseUrl}?name=${encodeURIComponent(cleanName)}&setid=${setId}`);
-  fallbacks.push(`${baseUrl}?setid=${setId}&name=${encodeURIComponent(cleanName)}`);
+  // Try different URL formats through proxy
+  fallbacks.push(`${baseUrl}?name=${encodeURIComponent(imageName)}&setid=${setId}`);
+  fallbacks.push(`${baseUrl}?name=${encodeURIComponent(imageName + '.jpg')}&setid=${setId}`);
+  fallbacks.push(`${baseUrl}?name=${encodeURIComponent(imageName + '.png')}&setid=${setId}`);
+  fallbacks.push(`${baseUrl}?setid=${setId}&name=${encodeURIComponent(imageName)}`);
   
   return {
     id: imageData.id,
