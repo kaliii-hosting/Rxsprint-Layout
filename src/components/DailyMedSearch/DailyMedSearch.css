@@ -1,0 +1,254 @@
+/* DailyMed Search Component Styles */
+
+.dailymed-search {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.dailymed-search .search-container {
+  position: relative;
+  width: 100%;
+}
+
+.dailymed-search .search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 12px;
+  padding: 0 16px;
+  height: 48px;
+  transition: all 0.2s ease;
+}
+
+.dailymed-search.dark .search-input-wrapper {
+  background: var(--dark-card-bg, #1e1e1e);
+  border-color: var(--dark-border, #333333);
+}
+
+.dailymed-search .search-input-wrapper:focus-within {
+  border-color: var(--primary-color, #007AFF);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.dailymed-search .search-icon {
+  color: var(--text-secondary, #6c757d);
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.dailymed-search .search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  color: var(--text-primary, #000000);
+  outline: none;
+  padding: 0;
+}
+
+.dailymed-search.dark .search-input {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-search .search-input::placeholder {
+  color: var(--text-secondary, #6c757d);
+}
+
+.dailymed-search .search-loader {
+  margin-left: 12px;
+  color: var(--primary-color, #007AFF);
+}
+
+.dailymed-search .search-loader.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.dailymed-search .clear-button,
+.dailymed-search .filter-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  margin-left: 8px;
+  cursor: pointer;
+  color: var(--text-secondary, #6c757d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.dailymed-search .clear-button:hover,
+.dailymed-search .filter-button:hover {
+  background: var(--hover-bg, rgba(0, 0, 0, 0.05));
+  color: var(--text-primary, #000000);
+}
+
+.dailymed-search.dark .clear-button:hover,
+.dailymed-search.dark .filter-button:hover {
+  background: var(--dark-hover-bg, rgba(255, 255, 255, 0.1));
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-search .filter-button.active {
+  color: var(--primary-color, #007AFF);
+  background: rgba(0, 122, 255, 0.1);
+}
+
+/* Suggestions Dropdown */
+.dailymed-search .suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.dailymed-search.dark .suggestions-dropdown {
+  background: var(--dark-card-bg, #1e1e1e);
+  border-color: var(--dark-border, #333333);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dailymed-search .suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  color: var(--text-primary, #000000);
+}
+
+.dailymed-search.dark .suggestion-item {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-search .suggestion-item:hover {
+  background: var(--hover-bg, rgba(0, 0, 0, 0.05));
+}
+
+.dailymed-search.dark .suggestion-item:hover {
+  background: var(--dark-hover-bg, rgba(255, 255, 255, 0.1));
+}
+
+.dailymed-search .suggestion-item:not(:last-child) {
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.dailymed-search.dark .suggestion-item:not(:last-child) {
+  border-bottom-color: var(--dark-border, #333333);
+}
+
+.dailymed-search .suggestion-icon {
+  margin-right: 8px;
+  color: var(--text-secondary, #6c757d);
+}
+
+/* Filters Section */
+.dailymed-search .filters-section {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  animation: slideDown 0.3s ease;
+}
+
+.dailymed-search.dark .filters-section {
+  background: var(--dark-card-bg, #1e1e1e);
+  border-color: var(--dark-border, #333333);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dailymed-search .filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dailymed-search .filter-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary, #6c757d);
+}
+
+.dailymed-search .filter-input,
+.dailymed-search .filter-select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  background: var(--input-bg, #ffffff);
+  color: var(--text-primary, #000000);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.dailymed-search.dark .filter-input,
+.dailymed-search.dark .filter-select {
+  background: var(--dark-input-bg, #2a2a2a);
+  border-color: var(--dark-border, #333333);
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-search .filter-input:focus,
+.dailymed-search .filter-select:focus {
+  outline: none;
+  border-color: var(--primary-color, #007AFF);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dailymed-search .search-input-wrapper {
+    height: 44px;
+    padding: 0 12px;
+  }
+
+  .dailymed-search .search-input {
+    font-size: 15px;
+  }
+
+  .dailymed-search .filters-section {
+    grid-template-columns: 1fr;
+  }
+
+  .dailymed-search .suggestion-item {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dailymed-search .search-input-wrapper {
+    height: 40px;
+  }
+
+  .dailymed-search .search-input {
+    font-size: 14px;
+  }
+}

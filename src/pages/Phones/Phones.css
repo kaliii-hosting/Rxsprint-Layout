@@ -242,7 +242,9 @@
   background: var(--text-secondary-hover, #a8a8ac);
 }
 
-.add-btn {
+.add-btn,
+.save-btn,
+.cancel-btn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -256,8 +258,37 @@
   transition: background 0.2s;
 }
 
+.save-btn {
+  background: #007AFF;
+  color: white;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #0051D5;
+}
+
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: transparent;
+  color: var(--text-secondary, #8e8e93);
+  border: 1px solid var(--border-color, #e1e1e6);
+}
+
+.cancel-btn:hover {
+  background: var(--button-hover, #e0e0e0);
+}
+
 .add-btn:hover {
   background: var(--button-hover, #e0e0e0);
+}
+
+.header-right {
+  display: flex;
+  gap: 8px;
 }
 
 /* ============= iOS Search Bar ============= */
@@ -799,10 +830,65 @@
   color: var(--danger, #FF3B30);
   cursor: pointer;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .delete-contact-btn:active {
   background: var(--row-active, #d1d1d6);
+}
+
+/* Form Action Buttons for Desktop/Tablet */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.form-save-btn {
+  flex: 1;
+  padding: 12px 20px;
+  background: #007AFF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.form-save-btn:hover:not(:disabled) {
+  background: #0051D5;
+}
+
+.form-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-actions .delete-contact-btn {
+  flex: 1;
+  padding: 12px 20px;
+  background: #FF3B30;
+  color: white;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.form-actions .delete-contact-btn:hover {
+  background: #D70015;
+}
+
+.form-actions .delete-contact-btn:active {
+  background: #C00000;
 }
 
 /* ============= Utilities ============= */

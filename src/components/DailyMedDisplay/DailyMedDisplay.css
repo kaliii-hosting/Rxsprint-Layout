@@ -1,0 +1,515 @@
+/* DailyMed Display Component Styles */
+
+.dailymed-display {
+  background: #f5f5f5;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: #333;
+}
+
+/* Header */
+.dm-header {
+  background: white;
+  border-bottom: 1px solid #ddd;
+  padding: 15px 20px;
+  position: relative;
+}
+
+.dm-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dm-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #003d7a;
+  margin: 0;
+}
+
+.dm-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+  padding: 5px 10px;
+}
+
+.dm-close-btn:hover {
+  color: #000;
+}
+
+.dm-ndc-info,
+.dm-packager {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+}
+
+.dm-ndc-info strong,
+.dm-packager strong {
+  color: #333;
+}
+
+/* Content Wrapper */
+.dm-content-wrapper {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  min-height: calc(100vh - 100px);
+}
+
+/* Sidebar */
+.dm-sidebar {
+  width: 200px;
+  background: #e8f4f8;
+  padding: 15px;
+  border-right: 1px solid #d0d0d0;
+}
+
+.dm-sidebar-section {
+  margin-bottom: 20px;
+  background: white;
+  border: 1px solid #b8d4e3;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dm-sidebar-title {
+  background: linear-gradient(to bottom, #5ba3c7, #4a8fb5);
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 5px 8px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* Package Photos */
+.dm-package-photos {
+  display: flex;
+  padding: 8px;
+  gap: 8px;
+}
+
+.dm-photo-thumb {
+  width: 75px;
+  height: 75px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  position: relative;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dm-photo-thumb img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.dm-photo-expand {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border-radius: 2px;
+}
+
+.dm-view-more-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  background: #f0f0f0;
+  border: none;
+  width: 100%;
+  font-size: 11px;
+  cursor: pointer;
+  color: #003d7a;
+}
+
+.dm-view-more-btn:hover {
+  background: #e0e0e0;
+}
+
+/* Safety Section */
+.dm-safety .dm-sidebar-title {
+  background: linear-gradient(to bottom, #ffa500, #ff8c00);
+}
+
+/* Sidebar Links */
+.dm-sidebar-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dm-sidebar-links li {
+  padding: 6px 8px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 11px;
+}
+
+.dm-sidebar-links li:last-child {
+  border-bottom: none;
+}
+
+.dm-sidebar-links a {
+  color: #003d7a;
+  text-decoration: none;
+}
+
+.dm-sidebar-links a:hover {
+  text-decoration: underline;
+}
+
+.dm-expandable {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: #003d7a;
+}
+
+.dm-new {
+  background: #ff0000;
+  color: white;
+  font-size: 9px;
+  padding: 1px 3px;
+  border-radius: 2px;
+  font-weight: bold;
+}
+
+/* Main Content */
+.dm-main-content {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Drug Label Information Header */
+.dm-label-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #003d7a;
+}
+
+.dm-label-header h2 {
+  color: #003d7a;
+  font-size: 16px;
+  margin: 0 0 8px 0;
+}
+
+.dm-updated {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.dm-disclaimer {
+  font-size: 11px;
+  color: #666;
+}
+
+.dm-disclaimer a {
+  color: #003d7a;
+}
+
+/* Navigation Tabs */
+.dm-nav-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.dm-nav-tab {
+  padding: 8px 12px;
+  background: #ffa500;
+  border: none;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.dm-nav-tab:hover {
+  background: #ff8c00;
+}
+
+.dm-nav-tab.active {
+  background: #003d7a;
+}
+
+.dm-official {
+  background: #5ba3c7;
+}
+
+.dm-official:hover {
+  background: #4a8fb5;
+}
+
+/* View All Sections */
+.dm-view-all {
+  margin-bottom: 15px;
+}
+
+.dm-view-all-btn {
+  color: #003d7a;
+  background: none;
+  border: none;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.dm-view-all-btn:hover {
+  color: #002855;
+}
+
+/* Sections */
+.dm-sections {
+  background: white;
+}
+
+.dm-section {
+  border: 1px solid #d0d0d0;
+  margin-bottom: 10px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dm-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: #f0f0f0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  color: #003d7a;
+  margin: 0;
+  user-select: none;
+}
+
+.dm-section-header:hover {
+  background: #e8e8e8;
+}
+
+.dm-section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: #ffa500;
+  border-radius: 50%;
+  color: white;
+  flex-shrink: 0;
+}
+
+.dm-warning-icon {
+  color: #ff0000;
+}
+
+.dm-what-is-this {
+  font-size: 10px;
+  color: #666;
+  font-weight: normal;
+  margin-left: auto;
+}
+
+/* Boxed Warning */
+.dm-boxed-warning .dm-section-header {
+  background: #ffeeee;
+  border-left: 4px solid #ff0000;
+}
+
+.dm-warning-content {
+  background: #fff9f9;
+  border: 1px solid #ffcccc;
+  padding: 15px;
+  margin: 10px;
+  border-radius: 3px;
+}
+
+.dm-section-content {
+  padding: 15px;
+  line-height: 1.5;
+}
+
+.dm-section-content h4,
+.dm-section-content h5 {
+  color: #003d7a;
+  margin: 15px 0 10px 0;
+  font-size: 13px;
+}
+
+.dm-section-content p {
+  margin: 10px 0;
+}
+
+.dm-section-content ul,
+.dm-section-content ol {
+  margin: 10px 0 10px 20px;
+}
+
+.dm-section-content li {
+  margin: 5px 0;
+}
+
+.dm-section-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+}
+
+.dm-section-content th,
+.dm-section-content td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.dm-section-content th {
+  background: #f0f0f0;
+  font-weight: bold;
+}
+
+/* Instructions for Use */
+.dm-ifu-section {
+  background: #f9f9f9;
+}
+
+.dm-ifu-list {
+  padding: 0;
+}
+
+.dm-ifu-item {
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 10px;
+}
+
+.dm-ifu-item:last-child {
+  border-bottom: none;
+}
+
+.dm-ifu-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  color: #003d7a;
+  margin: 0 0 10px 0;
+}
+
+.dm-ifu-header:hover {
+  background: #f8f8f8;
+}
+
+.dm-ifu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: #5ba3c7;
+  border-radius: 50%;
+  color: white;
+  flex-shrink: 0;
+}
+
+.dm-ifu-content {
+  padding: 0 10px 10px 10px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  margin-top: -5px;
+}
+
+/* IFU Images and Steps */
+.dm-ifu-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  padding: 5px;
+  background: white;
+}
+
+.dm-ifu-content .step-container {
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.dm-ifu-content .step-title {
+  color: #003d7a;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dm-ifu-content .step-number {
+  background: #ffa500;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dm-content-wrapper {
+    flex-direction: column;
+  }
+  
+  .dm-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #d0d0d0;
+  }
+  
+  .dm-nav-tabs {
+    flex-direction: column;
+  }
+  
+  .dm-nav-tab {
+    width: 100%;
+  }
+}

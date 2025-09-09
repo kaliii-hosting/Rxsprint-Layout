@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit2, Trash2, Plus, Upload, Grid, FileSpreadsheet, CheckCircle, AlertCircle, Download, Droplet, Package, Pill, Beaker, Save, RefreshCw, Filter, ChevronDown, FileText, Table, List } from 'lucide-react';
+import { Edit2, Trash2, Plus, Upload, Grid, FileSpreadsheet, CheckCircle, AlertCircle, Download, Droplet, Package, Pill, Beaker, Save, RefreshCw, Filter, ChevronDown, FileText, Table, List, Search as SearchIcon } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, getDoc, writeBatch } from 'firebase/firestore';
 import { storage, firestore } from '../../config/firebase';
@@ -20,6 +20,7 @@ import ExcelOptionsPopup from '../../components/ExcelOptionsPopup/ExcelOptionsPo
 import { generateMedicationCode } from '../../utils/medicationCode';
 import { useLocation } from 'react-router-dom';
 import { useSearch } from '../../contexts/SearchContext';
+import { useMedications } from '../../contexts/MedicationContext';
 import './Medications.css';
 
 const Medications = () => {
@@ -27,8 +28,13 @@ const Medications = () => {
   const [haeMedications, setHaeMedications] = useState([]);
   const [scdMedications, setScdMedications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [medicationType, setMedicationType] = useState('lyso'); // 'lyso', 'hae', or 'scd'
+  const [medicationType, setMedicationType] = useState('lyso'); // 'lyso', 'hae', 'scd'
   const [deviceMode, setDeviceMode] = useState('desktop'); // For responsive toolbar
+  
+  // DailyMed state
+  const { dailyMedResults, searchingDailyMed } = useMedications();
+  const [dailyMedSearchResults, setDailyMedSearchResults] = useState(null);
+  const [dailyMedCurrentPage, setDailyMedCurrentPage] = useState(1);
 
   const [selectAll, setSelectAll] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null); // 'uploading', 'success', 'error'
@@ -1647,7 +1653,8 @@ const Medications = () => {
             </div>
 
             {/* Actions Section */}
-            <div className="toolbar-section actions">
+            {(
+              <div className="toolbar-section actions">
               <button 
                 className="tool-button"
                 onClick={() => handleCreateMedication()}
@@ -1700,8 +1707,10 @@ const Medications = () => {
                 </button>
               )}
             </div>
+            )}
           </div>
           
+          {(
           <div className="medications-content fullscreen">
         {loading ? (
           <div className="loading-state">
@@ -1874,6 +1883,7 @@ const Medications = () => {
             </table>
         )}
           </div>
+          )}
         </>
       )}
 

@@ -1,0 +1,1 @@
+- the counsel page is intended to be dailymed intergation

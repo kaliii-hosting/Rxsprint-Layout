@@ -1,0 +1,658 @@
+/* DailyMed Product View Styles - Exact Replica */
+.dailymed-product-view {
+  background: white;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.dailymed-product-view.dark {
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+/* Header */
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #003d7a;
+  margin-bottom: 20px;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #0066cc;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.back-button:hover {
+  color: #004080;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  background: #003d7a;
+  color: white;
+  border: none;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.action-button:hover {
+  background: #002850;
+}
+
+/* Product Title Section */
+.product-title-section {
+  margin-bottom: 25px;
+}
+
+.product-main-title {
+  font-size: 24px;
+  margin: 0 0 10px 0;
+  color: #003d7a;
+}
+
+.brand {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.generic {
+  font-style: italic;
+  font-weight: normal;
+  color: #666;
+}
+
+.dosage-form {
+  color: #666;
+  font-weight: normal;
+}
+
+.labeler {
+  font-size: 14px;
+  color: #666;
+  margin: 5px 0;
+}
+
+/* Navigation Tabs */
+.product-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #003d7a;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 20px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-bottom: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin-right: 2px;
+}
+
+.tab:hover {
+  background: #e8e8e8;
+}
+
+.tab.active {
+  background: white;
+  color: #003d7a;
+  border-top: 3px solid #003d7a;
+  border-left: 1px solid #003d7a;
+  border-right: 1px solid #003d7a;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: #666;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #003d7a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Tab Content */
+.tab-content {
+  padding: 20px 0;
+}
+
+/* Boxed Warning */
+.boxed-warning {
+  border: 3px solid #000;
+  padding: 15px;
+  margin-bottom: 20px;
+  background: #fff;
+}
+
+.warning-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.warning-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.warning-content {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Quick Info Grid */
+.quick-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.info-card {
+  border: 1px solid #ddd;
+  padding: 15px;
+  background: #f9f9f9;
+}
+
+.info-card h4 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #003d7a;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+.info-card dl {
+  margin: 0;
+}
+
+.info-card dt {
+  font-weight: bold;
+  font-size: 13px;
+  color: #333;
+  margin-top: 10px;
+}
+
+.info-card dd {
+  margin: 3px 0 0 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.monospace {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+/* Full width info card */
+.dm-info-card.full-width {
+  grid-column: 1 / -1;
+}
+
+/* RxNorm Table */
+.dm-rxnorm-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.dm-rxnorm-table thead {
+  background-color: #f5f5f5;
+}
+
+.dm-rxnorm-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+}
+
+.dm-rxnorm-table td {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #666;
+  border-bottom: 1px solid #eee;
+}
+
+.dm-rxnorm-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Pharmacologic Class */
+.dm-pharm-class-item {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.dm-pharm-class-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.dm-pharm-class-item dt {
+  font-weight: 600;
+  color: #003d7a;
+  margin-bottom: 4px;
+}
+
+.dm-pharm-class-item dd {
+  margin-left: 0;
+  color: #333;
+  font-size: 14px;
+}
+
+/* Overview Images */
+.overview-images {
+  margin-top: 30px;
+}
+
+.overview-images h3 {
+  font-size: 16px;
+  color: #003d7a;
+  margin-bottom: 15px;
+}
+
+.image-gallery-preview {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.gallery-thumb {
+  width: 120px;
+  height: 120px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+}
+
+.gallery-thumb img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.no-image-thumb {
+  color: #999;
+  font-size: 12px;
+  text-align: center;
+}
+
+.view-all-images {
+  padding: 8px 16px;
+  background: #003d7a;
+  color: white;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.view-all-images:hover {
+  background: #002850;
+}
+
+/* Label Sections */
+.label-section {
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: #f5f5f5;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.section-header:hover {
+  background: #e8e8e8;
+}
+
+.section-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-icon-title h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: bold;
+  color: #003d7a;
+}
+
+.section-content {
+  padding: 15px;
+  background: white;
+  border-top: 1px solid #ddd;
+}
+
+.section-text {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: #333;
+}
+
+.no-sections {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+}
+
+/* Packaging Tab */
+.packages-table {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+.packages-table table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ddd;
+}
+
+.packages-table th {
+  background: #003d7a;
+  color: white;
+  padding: 10px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.packages-table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  font-size: 13px;
+}
+
+.packages-table tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.ndc-code {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+}
+
+.no-packages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: #999;
+}
+
+/* Products Section */
+.products-section {
+  margin-top: 40px;
+}
+
+.products-section h3 {
+  font-size: 16px;
+  color: #003d7a;
+  margin-bottom: 15px;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.product-card {
+  border: 1px solid #ddd;
+  padding: 15px;
+  background: #f9f9f9;
+}
+
+.product-card h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #003d7a;
+}
+
+.product-card dl {
+  margin: 0;
+}
+
+.product-card dt {
+  font-weight: bold;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.product-card dd {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: #666;
+}
+
+/* Images Tab */
+.main-image-viewer {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.main-image-viewer img {
+  max-width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  border: 1px solid #ddd;
+  padding: 10px;
+  background: white;
+}
+
+.no-main-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #999;
+  font-size: 16px;
+}
+
+.image-caption {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+}
+
+.image-thumbnails {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.thumbnail {
+  width: 100px;
+  height: 100px;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+}
+
+.thumbnail.selected {
+  border-color: #003d7a;
+  border-width: 3px;
+}
+
+.thumbnail img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.no-thumb {
+  color: #999;
+  font-size: 11px;
+}
+
+.no-images {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: #999;
+}
+
+/* Footer */
+.product-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  gap: 20px;
+}
+
+/* Dark Theme */
+.dailymed-product-view.dark .product-header {
+  border-bottom-color: #0066cc;
+}
+
+.dailymed-product-view.dark .product-main-title {
+  color: #4da6ff;
+}
+
+.dailymed-product-view.dark .tab {
+  background: #2a2a2a;
+  border-color: #444;
+  color: #ccc;
+}
+
+.dailymed-product-view.dark .tab.active {
+  background: #1a1a1a;
+  color: #4da6ff;
+  border-color: #0066cc;
+}
+
+.dailymed-product-view.dark .info-card {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+.dailymed-product-view.dark .info-card h4 {
+  color: #4da6ff;
+  border-color: #444;
+}
+
+.dailymed-product-view.dark .info-card dt {
+  color: #e0e0e0;
+}
+
+.dailymed-product-view.dark .info-card dd {
+  color: #aaa;
+}
+
+.dailymed-product-view.dark .label-section {
+  border-color: #444;
+}
+
+.dailymed-product-view.dark .section-header {
+  background: #2a2a2a;
+}
+
+.dailymed-product-view.dark .section-header:hover {
+  background: #333;
+}
+
+.dailymed-product-view.dark .section-content {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+.dailymed-product-view.dark .section-text {
+  color: #e0e0e0;
+}
+
+.dailymed-product-view.dark .packages-table th {
+  background: #0066cc;
+}
+
+.dailymed-product-view.dark .packages-table td {
+  border-color: #444;
+}
+
+.dailymed-product-view.dark .packages-table tr:nth-child(even) {
+  background: #252525;
+}
+
+.dailymed-product-view.dark .product-card {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+.dailymed-product-view.dark .product-footer {
+  border-color: #444;
+  color: #aaa;
+}

@@ -1,0 +1,2839 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+.counsel-page {
+  min-height: 100vh;
+  height: 100vh;
+  padding: 0;
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #ffffff;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.counsel-page.dark {
+  background: var(--bg-secondary-dark, #1a1a1a);
+  color: #ffffff;
+}
+
+/* Grid background pattern */
+.counsel-page::before {
+  --size: 40px;
+  --line: rgba(0, 0, 0, 0.02);
+  content: '';
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  background: linear-gradient(
+        90deg,
+        var(--line) 1px,
+        transparent 1px var(--size)
+      )
+      50% 50% / var(--size) var(--size),
+    linear-gradient(var(--line) 1px, transparent 1px var(--size)) 50% 50% /
+      var(--size) var(--size);
+  mask: linear-gradient(-25deg, transparent 30%, white);
+  top: 0;
+  left: 0;
+  transform-style: flat;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.counsel-page.dark::before {
+  --line: rgba(255, 255, 255, 0.02);
+}
+
+/* Board-style Toolbar matching Medications page */
+.board-toolbar {
+  background: var(--card-background, #ffffff);
+  border-bottom: 1px solid var(--border-color, #e1e4e8);
+  padding: 0.75rem 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  overflow: visible !important;
+  position: relative;
+  z-index: 100;
+  margin: 0;
+}
+
+.dark .board-toolbar {
+  background: #2a2a2a;
+  border-bottom-color: #444;
+}
+
+/* Toolbar Title */
+.toolbar-title {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  min-width: 180px;
+}
+
+/* Toolbar Search */
+.toolbar-search {
+  flex: 1 1 auto;
+  max-width: 500px;
+  margin: 0 auto;
+  min-width: 0;
+}
+
+/* Toolbar Section */
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toolbar-section.actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+  white-space: nowrap;
+  z-index: 10;
+  position: relative;
+}
+
+/* Desktop Mode */
+.board-toolbar-desktop {
+  flex-wrap: nowrap;
+}
+
+.board-toolbar-desktop .toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Tablet Mode */
+.board-toolbar-tablet {
+  padding: 0.625rem 0.875rem;
+}
+
+.board-toolbar-tablet .tool-button {
+  padding: 0.5rem;
+}
+
+/* Mobile Mode */
+.board-toolbar-mobile {
+  padding: 0.5rem 0.75rem;
+  gap: 0.5rem;
+}
+
+.board-toolbar-mobile .toolbar-section {
+  gap: 0.25rem;
+}
+
+.board-toolbar-mobile .tool-button {
+  padding: 0.375rem;
+  min-width: 36px;
+  height: 36px;
+}
+
+
+/* Tool Button Styles - Exact match with Medications page */
+.tool-button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary, #24292e);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tool-button:hover {
+  background: var(--hover-background, #f3f4f6);
+  border-color: var(--border-color, #d0d7de);
+}
+
+.tool-button:active {
+  background: var(--active-background, #eaeef2);
+}
+
+.tool-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tool-button.accent {
+  background: var(--accent-color, #0969da);
+  color: white;
+  border-color: var(--accent-color, #0969da);
+}
+
+.tool-button.accent:hover:not(:disabled) {
+  background: var(--accent-hover, #0860ca);
+  border-color: var(--accent-hover, #0860ca);
+}
+
+/* Dark mode support */
+.dark .tool-button {
+  color: #e1e4e8;
+}
+
+.dark .tool-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #444;
+}
+
+.dark .tool-button.accent {
+  background: #1f6feb;
+  border-color: #1f6feb;
+}
+
+.dark .tool-button.accent:hover:not(:disabled) {
+  background: #388bfd;
+  border-color: #388bfd;
+}
+
+/* Board toolbar specific button styles */
+.board-toolbar .tool-button {
+  position: relative;
+}
+
+/* Remove old counsel-specific button styling - now uses standard tool-button */
+
+/* Ensure tooltips (title attribute) show properly */
+.board-toolbar .tool-button[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 5px;
+  padding: 5px 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  border-radius: 4px;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.board-toolbar .tool-button[title] {
+  position: relative;
+}
+
+/* Counsel page specific button styling - grey background, no hover effects */
+.counsel-page .tool-button {
+  background: var(--hover-background, #f3f4f6);
+  border-color: var(--border-color, #d0d7de);
+}
+
+.counsel-page .tool-button:hover {
+  background: var(--hover-background, #f3f4f6);
+  border-color: var(--border-color, #d0d7de);
+  transform: none;
+  box-shadow: none;
+}
+
+.counsel-page .tool-button:active {
+  background: var(--hover-background, #f3f4f6);
+  border-color: var(--border-color, #d0d7de);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Dark mode support */
+.dark .counsel-page .tool-button {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #444;
+}
+
+.dark .counsel-page .tool-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #444;
+}
+
+.dark .counsel-page .tool-button:active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #444;
+}
+
+/* Page Title */
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary, #24292e);
+  white-space: nowrap;
+}
+
+.dark .page-title {
+  color: #e0e0e0;
+}
+
+.counsel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  width: 100%;
+  margin: 0;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+  max-height: calc(100vh - 60px);
+}
+
+/* Search Container - removed since search is now in header */
+
+.counsel-input {
+  --icon-size: 20px;
+  position: relative;
+  width: 100%;
+  height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.counsel-input svg {
+  position: absolute;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  top: 50%;
+  left: 0.5rem;
+  transform: translateY(-50%);
+  overflow: visible;
+  color: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.counsel-input svg path {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.counsel-input:is(:hover, :focus-within) svg path {
+  animation: pop 0.5s var(--d);
+}
+
+.counsel-input svg path:nth-of-type(1) { --d: 0.24s; --r: 20deg; --s: 1.5; }
+.counsel-input svg path:nth-of-type(2) { --d: 0.12s; --r: 10deg; --s: 1.4;}
+.counsel-input svg path:nth-of-type(3) { --d: 0s; --r: 0deg; --s: 1.25; }
+
+@keyframes pop {
+  50% { scale: var(--s, 1); rotate: var(--r, 0deg); }
+}
+
+.counsel-search-input {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075);
+  font-family: 'Inter', inherit;
+  width: 100%;
+  height: 100%;
+  padding: 0.625rem 1rem 0.625rem calc(0.5rem + var(--icon-size) + 0.375rem);
+  font-size: 0.9rem;
+  background: var(--bg-secondary, #f6f8fa);
+  border: 1px solid var(--border-color, #e1e4e8);
+  border-radius: 22px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.dark .counsel-search-input {
+  background: #1a1a1a;
+  border-color: #444;
+  color: #ffffff;
+}
+
+.counsel-search-input::placeholder {
+  color: var(--text-tertiary, #6a737d);
+}
+
+.dark .counsel-search-input::placeholder {
+  color: #999;
+}
+
+.counsel-search-input:focus {
+  background: var(--bg-primary, #ffffff);
+  border-color: var(--border-focus, #0969da);
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+}
+
+.dark .counsel-search-input:focus {
+  background: #2a2a2a;
+  border-color: #0969da;
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.2);
+}
+
+
+/* Loading indicator */
+.search-loader {
+  position: absolute;
+  top: 50%;
+  right: 2rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dark .counsel-input svg {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+
+.dark .search-loader {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Autocomplete Dropdown - Medical Enterprise Style */
+.suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  max-height: 350px;
+  overflow-y: auto;
+  z-index: 99999;
+  animation: slideDown 0.15s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dark .suggestions-dropdown {
+  background: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 14px;
+  font-weight: 400;
+  color: #374151;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border-bottom: 1px solid #f3f4f6;
+  position: relative;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+  border-radius: 0 0 5px 5px;
+}
+
+.suggestion-item:first-child {
+  border-radius: 5px 5px 0 0;
+}
+
+.suggestion-item:hover {
+  background: #f8fafc;
+  color: #1f2937;
+}
+
+.suggestion-item.selected {
+  background: #eff6ff;
+  color: #1e40af;
+  border-left: 3px solid #3b82f6;
+  padding-left: 13px;
+}
+
+.suggestion-item.selected::before {
+  content: '';
+  position: absolute;
+  right: 12px;
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 50%;
+}
+
+.dark .suggestion-item {
+  color: #e5e7eb;
+  border-bottom-color: #374151;
+}
+
+.dark .suggestion-item:hover {
+  background: #374151;
+  color: #f9fafb;
+}
+
+.dark .suggestion-item.selected {
+  background: #1e3a8a;
+  color: #bfdbfe;
+  border-left-color: #60a5fa;
+}
+
+.dark .suggestion-item.selected::before {
+  background: #60a5fa;
+}
+
+/* Suggestion header */
+.suggestions-header {
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dark .suggestions-header {
+  background: #374151;
+  color: #9ca3af;
+  border-bottom-color: #4b5563;
+}
+
+/* Loading state */
+.suggestion-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.dark .suggestion-loading {
+  color: #9ca3af;
+}
+
+/* No results state */
+.suggestion-no-results {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.dark .suggestion-no-results {
+  color: #9ca3af;
+}
+
+/* Scrollbar styling for dropdown */
+.suggestions-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark .suggestions-dropdown::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.dark .suggestions-dropdown::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.dark .suggestions-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .counsel-page {
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .counsel-content {
+    max-height: calc(100vh - 70px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .suggestions-dropdown {
+    max-height: 250px;
+    border-width: 1px;
+    z-index: 999999;
+    position: fixed;
+    width: calc(100% - 2rem);
+    left: 1rem;
+    right: 1rem;
+    top: 120px;
+  }
+  
+  .suggestion-item {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+  
+  .suggestion-item:hover,
+  .suggestion-item.selected {
+    padding-left: 20px;
+  }
+  
+  .medication-details {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+  
+  .sections-container {
+    height: auto;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 480px) {
+  .counsel-page {
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .counsel-content {
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 0.5rem;
+  }
+  
+  .suggestions-dropdown {
+    max-height: 200px;
+    left: 0.5rem;
+    right: 0.5rem;
+    top: 110px;
+    position: fixed;
+    z-index: 999999;
+  }
+  
+  .suggestion-item {
+    padding: 16px;
+    font-size: 16px;
+  }
+  
+  .search-results-container {
+    padding: 1rem 0.5rem;
+  }
+  
+  .medication-details {
+    padding: 1rem 0.5rem;
+    height: auto;
+    overflow: visible;
+  }
+}
+
+.suggestion-item svg {
+  width: 14px;
+  height: 14px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+/* Search Results - DailyMed Style */
+.search-results-container {
+  margin-top: 2rem;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0;
+}
+
+/* Brand names in search results */
+.dosage-group h3,
+.med-info h3,
+.result-card .brand-name,
+.med-result-item h3 {
+  color: #CB6015 !important;
+  font-weight: 600;
+}
+
+.results-list {
+  padding: 0;
+}
+
+.med-result-item {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: white;
+  transition: background 0.2s;
+}
+
+.med-result-item:hover {
+  background: #f9f9f9;
+}
+
+.med-result-item:last-child {
+  border-bottom: none;
+}
+
+.med-image-container {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  border: 1px solid #ddd;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.med-package-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.med-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+}
+
+.med-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.med-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: normal;
+}
+
+.med-title a {
+  color: #0066cc;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.med-title a:hover {
+  color: #0052a3;
+}
+
+.med-generic {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+}
+
+.ndc-info {
+  margin: 8px 0;
+  font-size: 13px;
+  color: #333;
+}
+
+.ndc-info strong {
+  font-weight: bold;
+}
+
+.ndc-info a {
+  color: #0066cc;
+  text-decoration: underline;
+}
+
+.med-packager {
+  margin: 8px 0;
+  font-size: 13px;
+  color: #333;
+}
+
+.view-more-btn {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: #CB6015;
+  color: white !important;
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.view-more-btn:hover {
+  background: #B55413;
+}
+
+.view-more-btn::before {
+  content: '+';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background: white;
+  color: #CB6015;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 16px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.dosage-form-card {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.dark .dosage-form-card {
+  background: #2a2a2a;
+  border-color: #3a3a3a;
+}
+
+.dosage-form-card:hover {
+  border-color: #0066cc;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.15);
+  transform: none;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-bottom: 2px solid #0066cc;
+}
+
+.dark .form-header {
+  background: #1f1f1f;
+  border-color: #3a3a3a;
+}
+
+.form-header h3 {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #003d7a;
+  text-transform: capitalize;
+}
+
+.dark .form-header h3 {
+  color: #e0e0e0;
+}
+
+.form-header .count {
+  font-size: 0.85rem;
+  color: #666;
+  background: #e0e0e0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+}
+
+.dark .form-header .count {
+  background: #333;
+  color: #999;
+}
+
+.form-thumbnail {
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.form-thumbnail svg {
+  color: #0066cc;
+}
+
+.form-icon {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+.form-medications {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.medication-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.medication-item:last-child {
+  border-bottom: none;
+}
+
+.medication-item:hover {
+  background: #f0f7ff;
+  padding-left: 1.25rem;
+}
+
+.medication-item .expand-icon {
+  color: #666;
+  transition: transform 0.2s;
+}
+
+.medication-item:hover .expand-icon {
+  transform: translateX(3px);
+}
+
+.dark .medication-item:hover {
+  background: #333;
+}
+
+.med-thumbnail {
+  width: 48px;
+  height: 48px;
+  background: #f0f7ff;
+  border: 1px solid #d0e4ff;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dark .med-thumbnail {
+  background: #1f1f1f;
+  border-color: #333;
+}
+
+.med-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.med-info h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  color: #0066cc;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+}
+
+.med-info .generic-name {
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+  margin: 0.125rem 0;
+}
+
+.med-info .labeler {
+  font-size: 0.8rem;
+  color: #999;
+  margin: 0;
+}
+
+.dark .med-info h4 {
+  color: #e0e0e0;
+}
+
+.med-info p {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dark .med-info p {
+  color: #999;
+}
+
+/* Medication Details */
+.medication-details {
+  margin-top: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 1.5rem;
+}
+
+.back-button:hover {
+  background: #f8f9fa;
+  border-color: #003d7a;
+  color: #003d7a;
+}
+
+.dark .back-button {
+  border-color: #3a3a3a;
+  color: #999;
+}
+
+.dark .back-button:hover {
+  background: #2a2a2a;
+  border-color: #666;
+  color: #e0e0e0;
+}
+
+.details-header {
+  margin-bottom: 0;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.dark .details-header {
+  border-color: #3a3a3a;
+}
+
+.details-header h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0 0 0.5rem 0;
+  color: #000;
+  font-family: Arial, sans-serif;
+  text-transform: uppercase;
+}
+
+.dark .details-header h2 {
+  color: #e0e0e0;
+}
+
+.generic-name {
+  font-size: 1rem;
+  color: #495057;
+  margin: 0 0 0.25rem 0;
+  font-weight: 400;
+}
+
+.labeler {
+  font-size: 0.95rem;
+  color: #999;
+  margin: 0;
+}
+
+/* Sections */
+.sections-container {
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+  background: #ffffff;
+  box-shadow: none;
+  padding: 0;
+}
+
+.dark .sections-container {
+  background: #1f1f1f;
+  border-color: #3a3a3a;
+}
+
+.section-item {
+  margin-bottom: 0;
+  background: white;
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.dark .section-item {
+  border-color: #3a3a3a;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2rem;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid #e0e0e0;
+  font-weight: normal;
+  margin-bottom: 0;
+}
+
+.section-header:hover {
+  background: #f8f9fa;
+}
+
+.dark .section-header {
+  background: #2a2a2a;
+}
+
+.dark .section-header:hover {
+  background: #333;
+}
+
+.section-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.section-icon {
+  width: 24px;
+  height: 24px;
+  background: #ff8c00;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.section-title-wrapper h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  font-family: Arial, sans-serif;
+}
+
+.dark .section-title-wrapper h3 {
+  color: #e0e0e0;
+}
+
+.section-content {
+  padding: 2rem;
+  background: white;
+  border: none;
+  margin-top: 0;
+  max-height: none;
+  overflow: visible !important;
+  word-wrap: break-word;
+  word-break: normal;
+}
+
+.dark .section-content {
+  background: #1a1a1a;
+}
+
+/* Section Text Styling - Match DailyMed Exactly */
+.section-text {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #333;
+  text-align: left;
+}
+
+.dark .section-text {
+  color: #d0d0d0;
+}
+
+/* Section text formatting - paragraphs and headers */
+.section-text p {
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.section-text p:last-child {
+  border-bottom: none;
+}
+
+.section-text h1,
+.section-text h2,
+.section-text h3,
+.section-text h4 {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.section-text h1 { font-size: 18px; }
+.section-text h2 { font-size: 16px; }
+.section-text h3 { font-size: 14px; }
+.section-text h4 { font-size: 13px; }
+
+/* Ensure all images are displayed */
+.section-text img {
+  display: block !important;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Fix for renderMultiMedia images */
+.section-text figure {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.section-text figure img {
+  display: block !important;
+  margin: 0 auto;
+}
+
+/* Instructions Images - Special Styling */
+.instructions-text.with-images {
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+/* Processed instruction images from DailyMed */
+.instruction-image {
+  display: block !important;
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 1.5rem auto !important;
+  border: 1px solid #ddd !important;
+  background: #f9f9f9;
+  padding: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.instruction-figure {
+  display: block !important;
+  margin: 2rem auto !important;
+  text-align: center !important;
+  max-width: 600px !important;
+}
+
+/* Ensure images load properly */
+.instruction-image[src*="/api/dailymed-image"] {
+  min-height: 100px;
+  background: #f0f0f0 url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIwIDJMMjUgMTBIMTVMMjAgMloiIGZpbGw9IiNjY2MiLz4KPHBhdGggZD0iTTEwIDEwSDE1VjMwSDEwVjEwWiIgZmlsbD0iI2NjYyIvPgo8cGF0aCBkPSJNMjUgMTBIMzBWMzBIMjVWMTBaIiBmaWxsPSIjY2NjIi8+CjxwYXRoIGQ9Ik0xNSAzMEgyNVYzNUgxNVYzMFoiIGZpbGw9IiNjY2MiLz4KPC9zdmc+') center no-repeat;
+  background-size: 40px 40px;
+}
+
+.instruction-image[src*="/api/dailymed-image"]:not([src=""]) {
+  background: #ffffff;
+}
+
+/* Ensure Instructions for Use content is fully visible */
+.section-text[class*="instruction"] {
+  overflow: visible !important;
+  width: 100%;
+}
+
+.section-text[class*="instruction"] * {
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Ensure all instruction and figure images are visible */
+.dm-figure,
+.instruction-figure,
+.figure {
+  display: block !important;
+  margin: 1.5rem auto;
+  text-align: center;
+  page-break-inside: avoid;
+  min-height: 200px;
+  position: relative;
+}
+
+/* Show placeholder for missing images */
+.dm-figure img[src=""],
+.instruction-figure img[src=""],
+.figure img[src=""],
+.dm-figure img:not([src]),
+.instruction-figure img:not([src]),
+.figure img:not([src]) {
+  display: block !important;
+  width: 100%;
+  min-height: 200px;
+  background: #f5f5f5;
+  border: 2px dashed #ccc;
+  position: relative;
+}
+
+.dm-figure img[src=""]:before,
+.instruction-figure img[src=""]:before,
+.figure img[src=""]:before {
+  content: "Figure loading...";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #999;
+  font-size: 14px;
+}
+
+.dm-image,
+.instruction-image,
+.dm-figure img,
+.instruction-figure img,
+.figure img {
+  display: block !important;
+  max-width: 100%;
+  height: auto !important;
+  margin: 0 auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.dm-figure-caption,
+.figure-caption {
+  font-size: 12px;
+  color: #666;
+  margin-top: 0.5rem;
+  font-style: italic;
+  text-align: center;
+}
+
+/* DailyMed Tables Styling */
+.dm-table,
+.section-text table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 13px;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.dm-table thead,
+.section-text table thead {
+  background: #f5f5f5;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.dm-table th,
+.dm-table td,
+.section-text table th,
+.section-text table td {
+  padding: 10px 12px;
+  text-align: left;
+  border: 1px solid #e0e0e0;
+  vertical-align: top;
+}
+
+.dm-table tbody tr:nth-child(even),
+.section-text table tbody tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.dm-table tbody tr:hover,
+.section-text table tbody tr:hover {
+  background: #f0f7ff;
+}
+
+/* Lists in sections */
+.section-text ul,
+.section-text ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+  line-height: 1.8;
+}
+
+.section-text li {
+  margin: 0.5rem 0;
+  padding-left: 0.25rem;
+}
+
+/* Nested lists */
+.section-text ul ul,
+.section-text ol ol,
+.section-text ul ol,
+.section-text ol ul {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Special formatting for subsections */
+.section-text .subsection {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-left: 3px solid #0066cc;
+  border-radius: 4px;
+}
+
+.section-text .subsection h3 {
+  font-size: 14px;
+  margin-top: 0;
+}
+
+/* Warning boxes and special content */
+.section-text .warning,
+.section-text .dm-warning {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+.section-text .warning::before,
+.section-text .dm-warning::before {
+  content: "⚠️ ";
+  font-weight: bold;
+}
+
+/* Code and preformatted text */
+.section-text pre,
+.section-text code {
+  font-family: 'Courier New', monospace;
+  background: #f5f5f5;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.section-text pre {
+  padding: 1rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.section-text p,
+.dm-paragraph {
+  margin: 10px 0;
+  color: #000;
+  font-size: 13px;
+  line-height: 1.6;
+  font-family: Arial, sans-serif;
+  text-align: left;
+}
+
+.section-text h3,
+.section-text h4 {
+  color: #000;
+  margin: 12px 0 8px 0;
+  font-weight: bold;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+}
+
+.dark .section-text h3,
+.dark .section-text h4 {
+  color: #8bb8e8;
+}
+
+/* Tables in sections - DailyMed exact style */
+.section-text table,
+.dm-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 12px;
+  font-family: Arial, sans-serif;
+  background: white;
+  border: 1px solid #000;
+}
+
+.section-text th,
+.section-text td,
+.dm-table th,
+.dm-table td {
+  border: 1px solid #000;
+  padding: 4px 6px;
+}
+
+.section-text th,
+.dm-table th {
+  background: #e6e6e6;
+  color: #000;
+  text-align: left;
+  font-weight: bold;
+  font-size: 12px;
+  vertical-align: top;
+  text-transform: none;
+}
+
+.section-text td,
+.dm-table td {
+  vertical-align: top;
+  background: white;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #000;
+}
+
+/* No alternating row colors in DailyMed style */
+.section-text tbody tr td,
+.dm-table tbody tr td {
+  background: white;
+}
+
+.dark .section-text table,
+.dark .section-text th,
+.dark .section-text td {
+  border-color: #555;
+}
+
+.dark .section-text th {
+  background: #2a3f5f;
+  color: #e0e0e0;
+}
+
+.dark .section-text td {
+  background: #1a1a1a;
+}
+
+.dark .section-text tbody tr:nth-child(odd) td {
+  background: #242424;
+}
+
+/* Lists in sections */
+.section-text ul,
+.section-text ol,
+.dm-list {
+  margin: 8px 0 8px 20px;
+  padding: 0;
+  color: #000;
+}
+
+.section-text li,
+.dm-list li {
+  margin: 5px 0;
+  line-height: 1.6;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  color: #000;
+}
+
+/* Images in sections - DailyMed style */
+.section-text .dm-figure {
+  margin: 20px auto;
+  text-align: center;
+  max-width: 100%;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.section-text .dm-image {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #000;
+  display: block;
+  margin: 0 auto;
+  background: white;
+}
+
+.section-text .dm-figure-caption,
+.dm-figure-caption {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #000;
+  font-style: normal;
+  font-family: Arial, sans-serif;
+  line-height: 1.4;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Loading and Error States */
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.error-message {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+
+.error-message p {
+  margin: 5px 0;
+  color: #856404;
+}
+
+.loading-state p,
+.error-state p {
+  margin-top: 1rem;
+  color: #333;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.dark .loading-state p,
+.dark .error-state p {
+  color: #999;
+}
+
+/* Suggestions Section */
+.counsel-suggestions {
+  margin-top: 3rem;
+}
+
+.counsel-suggestions h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #003d7a;
+}
+
+.dark .counsel-suggestions h3 {
+  color: #e0e0e0;
+}
+
+.suggestion-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.suggestion-card {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dark .suggestion-card {
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+}
+
+.suggestion-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.suggestion-card span {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Boxed Warning - DailyMed exact style */
+.section-text .dm-boxed-warning,
+.boxed-warning,
+.boxed-section {
+  border: 2px solid #000;
+  background: #fff;
+  margin: 15px 0;
+  padding: 10px;
+}
+
+.boxed-section-title {
+  font-weight: bold;
+  font-size: 13px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  background: #f0f0f0;
+  padding: 5px 10px;
+  margin: -10px -10px 10px -10px;
+}
+
+.section-text .dm-subsection {
+  margin: 15px 0;
+  padding-left: 20px;
+}
+
+.section-text .dm-subsection-title {
+  font-weight: bold;
+  font-size: 13px;
+  color: #003d7a;
+  margin: 12px 0 8px 0;
+}
+
+.dark .section-text .dm-subsection-title {
+  color: #8bb8e8;
+}
+
+.section-text .dm-emphasis {
+  font-weight: bold;
+  color: #003d7a;
+}
+
+.dark .section-text .dm-emphasis {
+  color: #8bb8e8;
+}
+
+/* Instructions for Use section - DailyMed exact styling */
+.instructions-container {
+  background: white;
+  padding: 0;
+}
+
+.instructions-text {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #000;
+}
+
+/* Dosage form tabs for instructions */
+.dosage-forms-tabs {
+  margin-bottom: 20px;
+}
+
+.dosage-form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #0066cc;
+  flex-wrap: wrap;
+}
+
+.dosage-form-btn {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  color: #333;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.dosage-form-btn:hover {
+  background: #e0e0e0;
+}
+
+.dosage-form-btn.active {
+  background: #0066cc;
+  color: white;
+  border-color: #0066cc;
+}
+
+.dosage-form-content {
+  padding: 15px 0;
+}
+
+/* Enhanced instruction images and step-by-step diagrams */
+.instructions-text .dm-figure,
+.instructions-text .instruction-figure,
+.section-text .dm-figure.instruction-figure {
+  margin: 25px auto;
+  text-align: center;
+  max-width: 600px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.instructions-text .dm-image,
+.instructions-text .instruction-image,
+.section-text .dm-image.instruction-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border: 1px solid #000;
+  background: white;
+}
+
+/* Special styling for pen/syringe diagrams */
+.instruction-figure img[alt*="pen"],
+.instruction-figure img[alt*="syringe"],
+.instruction-figure img[alt*="needle"],
+.instruction-figure img[alt*="step"] {
+  max-width: 400px;
+}
+
+/* Step indicators in instructions */
+.instruction-step {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f9f9f9;
+  border-left: 4px solid #0066cc;
+}
+
+.instruction-step p:first-child {
+  font-weight: bold;
+  color: #0066cc;
+  font-size: 14px;
+}
+
+/* Instruction lists */
+.instruction-list {
+  margin: 15px 0 15px 30px;
+  font-size: 13px;
+}
+
+.instruction-list li {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+/* Instruction tables */
+.instruction-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 12px;
+  background: white;
+}
+
+.instruction-table th,
+.instruction-table td {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.instruction-table th {
+  background: #e6e6e6;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Multi-form instructions container */
+.instructions-multi-form {
+  margin-top: 15px;
+}
+
+.dosage-form-instructions {
+  padding: 20px 0;
+  border-top: 2px solid #ddd;
+}
+
+.dosage-form-instructions:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.dosage-form-instructions h3 {
+  background: #0066cc;
+  color: white;
+  padding: 8px 15px;
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Highlight important warnings in instructions */
+.instructions-text .highlight {
+  background: #fff3cd;
+  padding: 2px 4px;
+  border: 1px solid #ffc107;
+}
+
+.instructions-text h3,
+.instructions-text h4 {
+  background: #e6e6e6;
+  border: 1px solid #000;
+  padding: 5px 10px;
+  margin: 15px 0 10px 0;
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.instructions-text .step-box {
+  border: 1px solid #000;
+  margin: 15px 0;
+  padding: 10px;
+  background: white;
+}
+
+.instructions-text .step-number {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #000;
+  color: white;
+  text-align: center;
+  line-height: 24px;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.instructions-text .warning-box {
+  border: 2px solid #000;
+  background: #fff3cd;
+  padding: 10px;
+  margin: 15px 0;
+}
+
+.instructions-text .warning-box strong {
+  text-transform: uppercase;
+}
+
+/* Instructions section tables */
+.instructions-text table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 12px;
+}
+
+.instructions-text th,
+.instructions-text td {
+  border: 1px solid #000;
+  padding: 5px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.instructions-text th {
+  background: #e6e6e6;
+  font-weight: bold;
+}
+
+/* Instructions images and diagrams - DailyMed style */
+.instructions-text .dm-figure,
+.section-text[class*="instructions"] .dm-figure,
+.instruction-figure,
+.dm-figure.instruction-figure,
+.section-text .dm-figure,
+.instructions-text figure {
+  margin: 25px auto;
+  text-align: center;
+  max-width: 600px;
+  padding: 0;
+  background: transparent;
+  clear: both;
+  display: block !important;
+}
+
+.instructions-text .dm-image,
+.section-text[class*="instructions"] .dm-image,
+.instruction-image,
+.dm-image.instruction-image,
+.section-text .dm-image,
+.instructions-text img,
+.section-text img[class*="instruction"],
+.section-text .instruction-figure img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #000;
+  display: block !important;
+  margin: 0 auto;
+  background: white;
+  visibility: visible !important;
+}
+
+.instructions-text .dm-figure-caption,
+.section-text[class*="instructions"] .dm-figure-caption,
+.dm-figure-caption {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  color: #000;
+  font-family: Arial, sans-serif;
+}
+
+/* Figure references and links */
+.figure-reference {
+  color: #0066cc;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.figure-reference:hover {
+  color: #0052a3;
+}
+
+.figure-ref {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Instruction steps with numbers */
+.instruction-step {
+  margin: 20px 0;
+  padding-left: 40px;
+  position: relative;
+}
+
+.instruction-step .step-number {
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+  color: #003d7a;
+}
+
+/* Warning boxes in instructions */
+.warning-box {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  padding: 12px;
+  margin: 15px 0;
+}
+
+.warning-box strong {
+  color: #856404;
+}
+
+/* Ensure images with errors are still visible */
+.dm-figure img[onerror] {
+  min-height: 200px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Handle multiple instruction formats */
+.instructions-text.with-images {
+  position: relative;
+}
+
+.instructions-text.with-images img {
+  cursor: zoom-in;
+}
+
+/* Dark mode adjustments */
+.dark .instruction-figure img,
+.dark .dm-figure.instruction-figure img {
+  border-color: #555;
+  background: #f9f9f9;
+}
+
+.dark .figure-reference {
+  color: #4da3ff;
+}
+
+.dark .figure-ref {
+  color: #ccc;
+}
+
+.dark .instruction-step .step-number {
+  color: #4da3ff;
+}
+
+.dark .warning-box {
+  background: #3d3100;
+  border-color: #a68500;
+}
+
+.dark .warning-box strong {
+  color: #ffc107;
+}
+
+/* Diagram boxes for injection sites */
+.instructions-text .diagram-box {
+  border: 1px solid #000;
+  padding: 15px;
+  margin: 20px 0;
+  background: #f9f9f9;
+}
+
+.instructions-text .diagram-title {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+/* Product images section */
+.product-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.product-image-item {
+  text-align: center;
+  border: 1px solid #ddd;
+  padding: 10px;
+  background: #f9f9f9;
+}
+
+.product-image-item img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #000;
+}
+
+.product-image-title {
+  font-size: 11px;
+  margin-top: 8px;
+  color: #333;
+}
+
+.dark .section-text .dm-instructions-section {
+  background: #1a2940;
+  border-color: #4a90e2;
+}
+
+.section-text .dm-instructions-title {
+  color: #003d7a;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 15px 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #4a90e2;
+}
+
+.dark .section-text .dm-instructions-title {
+  color: #8bb8e8;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .board-toolbar {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .toolbar-title {
+    flex: 1 1 100%;
+    min-width: auto;
+  }
+  
+  .toolbar-search {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+  
+  .toolbar-section.actions {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .counsel-page {
+    padding: 0;
+  }
+  
+  /* Board toolbar responsive for tablet/mobile */
+  .board-toolbar {
+    padding: 0.5rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+  }
+  
+  .toolbar-title {
+    display: none; /* Hide title on mobile to save space */
+  }
+  
+  .toolbar-search {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+  
+  .toolbar-section.actions {
+    flex: 0 0 auto;
+    gap: 0.25rem;
+  }
+  
+  
+  .toolbar-search {
+    width: 100%;
+  }
+  
+  .toolbar-section.actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .page-title {
+    font-size: 1.125rem;
+  }
+  
+  .counsel-input {
+    --icon-size: 20px;
+  }
+  
+  .counsel-search-input {
+    padding: 0.425rem 1rem 0.425rem calc(0.425rem + var(--icon-size) + 0.25rem);
+    font-size: 0.813rem;
+  }
+
+  .counsel-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .dosage-forms-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .suggestion-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .counsel-search-input {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem 0.75rem calc(0.875rem + var(--icon-size) + 0.5rem);
+  }
+
+  .section-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .section-content {
+    padding: 1rem;
+  }
+}
+
+/* Official Label Buttons */
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.medication-info {
+  flex: 1;
+  min-width: 300px;
+}
+
+.official-label-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.official-label-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  border: 1px solid;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.official-label-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.official-label-btn.primary {
+  background: #003d7a;
+  color: white;
+  border-color: #003d7a;
+}
+
+.official-label-btn.primary:hover {
+  background: #002855;
+  border-color: #002855;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 61, 122, 0.3);
+}
+
+.official-label-btn.secondary {
+  background: white;
+  color: #003d7a;
+  border-color: #003d7a;
+}
+
+.official-label-btn.secondary:hover {
+  background: #f0f6ff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 61, 122, 0.2);
+}
+
+.official-label-btn.tertiary {
+  background: transparent;
+  color: #666;
+  border-color: #ddd;
+}
+
+.official-label-btn.tertiary:hover {
+  background: #f5f5f5;
+  color: #333;
+  border-color: #999;
+}
+
+.dark .official-label-btn.primary {
+  background: #4a90e2;
+  border-color: #4a90e2;
+}
+
+.dark .official-label-btn.primary:hover {
+  background: #357abd;
+  border-color: #357abd;
+}
+
+.dark .official-label-btn.secondary {
+  background: #2a2a2a;
+  color: #4a90e2;
+  border-color: #4a90e2;
+}
+
+.dark .official-label-btn.secondary:hover {
+  background: #333;
+}
+
+.dark .official-label-btn.tertiary {
+  color: #999;
+  border-color: #444;
+}
+
+.dark .official-label-btn.tertiary:hover {
+  background: #333;
+  color: #ccc;
+  border-color: #666;
+}
+
+@media (max-width: 1024px) {
+  .header-content {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .official-label-buttons {
+    width: 100%;
+  }
+  
+  .official-label-btn {
+    flex: 1;
+    justify-content: center;
+    min-width: 150px;
+  }
+  
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+/* Enhanced Medication Images with Categorization */
+.medication-images-section {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.image-category {
+  padding: 15px;
+  background: #f8f9fa;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.image-category:hover {
+  background: #f1f3f4;
+  border-color: #dee2e6;
+}
+
+.category-title {
+  margin: 0 0 15px 0;
+  color: #2c3e50;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid #dee2e6;
+  padding-bottom: 8px;
+}
+
+.package-images .category-title {
+  color: #007bff;
+  border-bottom-color: #007bff;
+}
+
+.instruction-images .category-title {
+  color: #28a745;
+  border-bottom-color: #28a745;
+}
+
+.label-images .category-title {
+  color: #6f42c1;
+  border-bottom-color: #6f42c1;
+}
+
+.other-images .category-title {
+  color: #fd7e14;
+  border-bottom-color: #fd7e14;
+}
+
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.image-item {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.image-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.image-item img {
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  transition: transform 0.2s ease;
+}
+
+.image-item:hover img {
+  transform: scale(1.02);
+}
+
+.image-name {
+  font-size: 12px;
+  color: #6c757d;
+  margin: 0;
+  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.image-type-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.package-image .image-type-badge {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.instruction-image .image-type-badge {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.label-image .image-type-badge {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.unknown-image .image-type-badge {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* Enhanced hover effects for different image types */
+.package-image:hover {
+  border-left: 4px solid #007bff;
+}
+
+.instruction-image:hover {
+  border-left: 4px solid #28a745;
+}
+
+.label-image:hover {
+  border-left: 4px solid #6f42c1;
+}
+
+.unknown-image:hover {
+  border-left: 4px solid #fd7e14;
+}
+
+/* Fallback for old class names */
+.medication-images {
+  margin: 20px 0;
+  padding: 15px;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.medication-images h3 {
+  margin: 0 0 15px 0;
+  color: #2c3e50;
+  font-size: 18px;
+}
+
+.product-image-item {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  transition: box-shadow 0.2s ease;
+}
+
+.product-image-item:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.product-image-item img {
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.product-image-item .image-name {
+  font-size: 12px;
+  color: #6c757d;
+  margin: 0;
+  word-break: break-word;
+}
+
+/* Table of Contents Styles */
+.table-of-contents {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+}
+
+.dark .table-of-contents {
+  background: #2d3748;
+  border-color: #4a5568;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  columns: 2;
+  column-gap: 30px;
+}
+
+.toc-list li {
+  margin: 8px 0;
+  break-inside: avoid;
+}
+
+.toc-link {
+  color: #0066cc;
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1.4;
+  display: block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.toc-link:hover {
+  background: rgba(0, 102, 204, 0.1);
+  text-decoration: underline;
+}
+
+.dark .toc-link {
+  color: #63b3ed;
+}
+
+.dark .toc-link:hover {
+  background: rgba(99, 179, 237, 0.1);
+}
+
+/* Mobile Responsive Fixes */
+@media (max-width: 1024px) {
+  /* Tablet styles */
+  .counsel-page {
+    padding: 0;
+    min-height: 100vh;
+    height: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .counsel-content {
+    padding: 0;
+    height: auto;
+    min-height: calc(100vh - 120px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .medication-details {
+    height: auto;
+    min-height: 400px;
+    overflow: visible;
+  }
+  
+  .sections-container {
+    height: auto;
+    overflow: visible;
+  }
+  
+  .toc-list {
+    columns: 1;
+  }
+  
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Mobile styles */
+  .counsel-page {
+    padding: 0;
+    min-height: 100vh;
+    height: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+  }
+  
+  .counsel-header {
+    margin-bottom: 1rem;
+  }
+  
+  .counsel-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .counsel-content {
+    padding: 0;
+    height: auto;
+    min-height: calc(100vh - 100px);
+    overflow: visible;
+    position: relative;
+  }
+  
+  .search-container {
+    margin-bottom: 1rem;
+  }
+  
+  .medication-details {
+    height: auto;
+    min-height: 300px;
+    overflow: visible;
+    position: relative;
+  }
+  
+  .medication-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .sections-container {
+    height: auto;
+    overflow: visible;
+    position: relative;
+    padding: 0;
+  }
+  
+  .section-item {
+    margin-bottom: 1rem;
+  }
+  
+  .section-header {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .section-content {
+    padding: 16px;
+  }
+  
+  .toc-list {
+    columns: 1;
+  }
+  
+  .table-of-contents {
+    padding: 15px;
+    margin: 12px 0;
+  }
+  
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+  }
+  
+  .product-image-item img {
+    max-height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Small mobile styles */
+  .counsel-page {
+    padding: 0;
+  }
+  
+  .board-toolbar {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .board-toolbar-mobile {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .toolbar-section {
+    gap: 0.25rem;
+  }
+  
+  .toolbar-section.title-section {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  .page-title {
+    font-size: 1rem;
+  }
+  
+  .counsel-input {
+    --icon-size: 16px;
+  }
+  
+  .counsel-search-input {
+    font-size: 0.75rem;
+    padding: 0.375rem 1rem 0.375rem calc(0.375rem + var(--icon-size) + 0.25rem);
+  }
+  
+  
+  .search-loader {
+    right: 1.5rem;
+  }
+  
+  .counsel-page .tool-button {
+    padding: 0.375rem;
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+  
+  /* Keep button icons visible on mobile (no text to hide since buttons are icon-only) */
+  
+  .counsel-header h1 {
+    font-size: 1.25rem;
+  }
+  
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 6px;
+  }
+  
+  .product-image-item img {
+    max-height: 80px;
+  }
+  
+  .section-header {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  .section-content {
+    padding: 12px;
+  }
+  
+  .table-of-contents {
+    padding: 12px;
+  }
+}
+
+/* Fix for iOS Safari scrolling */
+@supports (-webkit-overflow-scrolling: touch) {
+  .counsel-page {
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0);
+  }
+  
+  .counsel-content {
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0);
+  }
+}

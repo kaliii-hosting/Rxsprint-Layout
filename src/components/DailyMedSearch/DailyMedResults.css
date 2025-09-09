@@ -1,0 +1,720 @@
+/* DailyMed Results Component Styles */
+
+.dailymed-results {
+  width: 100%;
+}
+
+/* Error State */
+.dailymed-results.error .error-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  color: var(--danger-color, #ef4444);
+}
+
+.dailymed-results.dark.error .error-message {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Empty State */
+.dailymed-results.empty .empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-secondary, #6c757d);
+}
+
+.dailymed-results.empty .empty-state h3 {
+  margin: 16px 0 8px;
+  color: var(--text-primary, #000000);
+}
+
+.dailymed-results.dark.empty .empty-state h3 {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+/* Results Header */
+.dailymed-results .results-header {
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.dailymed-results.dark .results-header {
+  border-bottom-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .results-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary, #000000);
+}
+
+.dailymed-results.dark .results-title {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+/* Results List */
+.dailymed-results .results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Medication Card */
+.dailymed-results .medication-card {
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.dailymed-results .medication-card.expanded {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dailymed-results.dark .medication-card {
+  background: var(--dark-card-bg, #1e1e1e);
+  border-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .medication-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dailymed-results.dark .medication-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Card Header */
+.dailymed-results .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dailymed-results .card-header-info {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.dailymed-results.dark .card-header-info {
+  border-bottom-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .card-title-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.dailymed-results .medication-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #000000);
+  margin-bottom: 4px;
+}
+
+.dailymed-results.dark .medication-title {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-results .generic-name {
+  font-size: 14px;
+  color: var(--text-secondary, #6c757d);
+  margin-bottom: 8px;
+}
+
+.dailymed-results .card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.dailymed-results .meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-secondary, #6c757d);
+}
+
+.dailymed-results .meta-item svg {
+  flex-shrink: 0;
+}
+
+.dailymed-results .expand-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--text-secondary, #6c757d);
+  transition: color 0.2s ease;
+}
+
+.dailymed-results .expand-button:hover {
+  color: var(--primary-color, #007AFF);
+}
+
+/* Quick Info Section */
+.dailymed-results .card-quick-info {
+  padding: 0 16px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dailymed-results .info-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.dailymed-results .info-label {
+  color: var(--text-secondary, #6c757d);
+  font-weight: 500;
+}
+
+.dailymed-results .info-value {
+  color: var(--text-primary, #000000);
+}
+
+.dailymed-results.dark .info-value {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-results .status-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  background: var(--success-bg, #10b981);
+  color: white;
+}
+
+.dailymed-results .status-badge.prescription {
+  background: var(--primary-color, #007AFF);
+}
+
+.dailymed-results .status-badge.discontinued {
+  background: var(--danger-color, #ef4444);
+}
+
+/* Action Buttons */
+.dailymed-results .card-actions {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  display: flex;
+  gap: 12px;
+}
+
+.dailymed-results.dark .card-actions {
+  border-bottom-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .import-button,
+.dailymed-results .view-source-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.dailymed-results .import-button {
+  background: var(--primary-color, #007AFF);
+  color: white;
+  border: none;
+  width: 100%;
+  justify-content: center;
+}
+
+.dailymed-results .import-button:hover:not(:disabled) {
+  background: var(--primary-hover, #0051D5);
+}
+
+.dailymed-results .import-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dailymed-results .view-source-button {
+  background: transparent;
+  color: var(--primary-color, #007AFF);
+  border: 1px solid var(--primary-color, #007AFF);
+}
+
+.dailymed-results .view-source-button:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+/* Medication Sections */
+.dailymed-results .medication-sections {
+  padding: 0;
+}
+
+.dailymed-results .medication-section {
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.dailymed-results.dark .medication-section {
+  border-bottom-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .medication-section:last-child {
+  border-bottom: none;
+}
+
+.dailymed-results .section-toggle {
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+}
+
+.dailymed-results .section-toggle:hover {
+  background: var(--hover-bg, rgba(0, 0, 0, 0.02));
+}
+
+.dailymed-results.dark .section-toggle:hover {
+  background: var(--dark-hover-bg, rgba(255, 255, 255, 0.05));
+}
+
+.dailymed-results .section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #000000);
+  text-transform: uppercase;
+}
+
+.dailymed-results.dark .section-title {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-results .section-content {
+  padding: 16px;
+  background: var(--bg-secondary, #fafafa);
+  border-top: 1px solid var(--border-color, #e0e0e0);
+}
+
+.dailymed-results.dark .section-content {
+  background: var(--dark-bg-secondary, #1a1a1a);
+  border-top-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .section-text {
+  color: var(--text-primary, #000000);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  font-size: 14px;
+}
+
+.dailymed-results.dark .section-text {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+/* Expanded Content */
+.dailymed-results .card-expanded {
+  border-top: 1px solid var(--border-color, #e0e0e0);
+  padding: 16px;
+  animation: slideDown 0.3s ease;
+}
+
+.dailymed-results.dark .card-expanded {
+  border-top-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .loading-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  color: var(--text-secondary, #6c757d);
+}
+
+.dailymed-results .details-error {
+  padding: 16px;
+  text-align: center;
+  color: var(--danger-color, #ef4444);
+}
+
+/* RxNorm Section */
+.dailymed-results .rxnorm-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.dailymed-results.dark .rxnorm-section {
+  border-bottom-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .rxnorm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.dailymed-results .rxnorm-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px;
+  background: var(--bg-light, #f8f9fa);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.dailymed-results.dark .rxnorm-item {
+  background: var(--dark-card-bg, #1e1e1e);
+}
+
+.dailymed-results .rxnorm-cui {
+  font-weight: 600;
+  color: var(--primary-color, #003d7a);
+  min-width: 100px;
+}
+
+.dailymed-results .rxnorm-name {
+  flex: 1;
+  color: var(--text-primary, #333333);
+}
+
+.dailymed-results .rxnorm-type {
+  padding: 2px 8px;
+  background: var(--primary-color, #003d7a);
+  color: white;
+  border-radius: 3px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+/* Pharmacologic Class Section */
+.dailymed-results .pharm-class-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.dailymed-results.dark .pharm-class-section {
+  border-bottom-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .pharm-class-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.dailymed-results .pharm-class-item {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: var(--bg-light, #f8f9fa);
+  border-radius: 4px;
+}
+
+.dailymed-results.dark .pharm-class-item {
+  background: var(--dark-card-bg, #1e1e1e);
+}
+
+.dailymed-results .pharm-class-type {
+  font-weight: 600;
+  color: var(--primary-color, #003d7a);
+  min-width: 120px;
+}
+
+.dailymed-results .pharm-class-name {
+  color: var(--text-primary, #333333);
+  font-size: 14px;
+}
+
+/* Images Section */
+.dailymed-results .medication-images-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.dailymed-results.dark .medication-images-section {
+  border-bottom-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .images-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  max-width: 600px;
+}
+
+.dailymed-results .image-container {
+  position: relative;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #ffffff;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+}
+
+.dailymed-results.dark .image-container {
+  border-color: var(--dark-border, #333333);
+  background: var(--dark-card-bg, #1e1e1e);
+}
+
+.dailymed-results .image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.dailymed-results .no-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--text-secondary, #6c757d);
+  font-size: 11px;
+  text-align: center;
+  padding: 8px;
+  background: var(--bg-secondary, #f5f5f5);
+}
+
+.dailymed-results.dark .no-image-placeholder {
+  background: var(--dark-bg-secondary, #2a2a2a);
+}
+
+/* Package Information */
+.dailymed-results .package-info-section,
+.dailymed-results .package-info {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  background: var(--bg-secondary, #f9f9f9);
+}
+
+.dailymed-results.dark .package-info {
+  border-top-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #000000);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dailymed-results .section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #000000);
+  margin-bottom: 12px;
+}
+
+.dailymed-results.dark .section-title {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-results .package-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dailymed-results .package-item {
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--text-primary, #000000);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dailymed-results .package-item:last-child {
+  border-bottom: none;
+}
+
+.dailymed-results.dark .package-item {
+  background: var(--dark-bg-secondary, #2a2a2a);
+}
+
+.dailymed-results .package-description {
+  color: var(--text-primary, #000000);
+}
+
+.dailymed-results.dark .package-description {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-results .package-ndc {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--primary-color, #007AFF);
+  margin-right: 8px;
+}
+
+/* Spinner */
+.dailymed-results .spinner,
+.dailymed-results .spinner-small {
+  border: 2px solid var(--border-color, #e0e0e0);
+  border-top-color: var(--primary-color, #007AFF);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.dailymed-results .spinner {
+  width: 32px;
+  height: 32px;
+}
+
+.dailymed-results .spinner-small {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+}
+
+/* Medication Metadata */
+.dailymed-results .medication-metadata {
+  padding: 12px 16px;
+  background: var(--bg-secondary, #f9f9f9);
+  border-top: 1px solid var(--border-color, #e0e0e0);
+  font-size: 13px;
+}
+
+.dailymed-results.dark .medication-metadata {
+  background: var(--dark-bg-secondary, #1a1a1a);
+  border-top-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .metadata-label {
+  font-weight: 600;
+  color: var(--text-secondary, #6c757d);
+  margin-right: 8px;
+}
+
+.dailymed-results .metadata-value {
+  font-family: 'Courier New', monospace;
+  color: var(--text-primary, #000000);
+}
+
+.dailymed-results.dark .metadata-value {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+/* Pagination */
+.dailymed-results .pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color, #e0e0e0);
+}
+
+.dailymed-results.dark .pagination {
+  border-top-color: var(--dark-border, #333333);
+}
+
+.dailymed-results .pagination-button {
+  padding: 8px 16px;
+  background: var(--primary-color, #007AFF);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dailymed-results .pagination-button:hover:not(:disabled) {
+  background: var(--primary-hover, #0051D5);
+}
+
+.dailymed-results .pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dailymed-results .page-info {
+  font-size: 14px;
+  color: var(--text-secondary, #6c757d);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dailymed-results .card-header {
+    padding: 12px;
+  }
+
+  .dailymed-results .medication-title {
+    font-size: 15px;
+  }
+
+  .dailymed-results .card-actions {
+    flex-direction: column;
+  }
+
+  .dailymed-results .view-source-button {
+    justify-content: center;
+  }
+
+  .dailymed-results .card-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dailymed-results .results-title {
+    font-size: 16px;
+  }
+
+  .dailymed-results .medication-title {
+    font-size: 14px;
+  }
+
+  .dailymed-results .card-quick-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

@@ -1,0 +1,342 @@
+/* DailyMed Search Results Styles - Exact Replica */
+.dailymed-search-results {
+  padding: 20px;
+  background: #ffffff;
+  min-height: 400px;
+}
+
+.dailymed-search-results.dark {
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+/* Results Header */
+.results-header {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #003d7a;
+}
+
+.results-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #003d7a;
+  margin: 0;
+}
+
+.search-term {
+  color: #0066cc;
+  text-transform: uppercase;
+}
+
+.results-count {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Results Controls */
+.results-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.sort-dropdown,
+.results-per-page {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  background: white;
+  font-size: 13px;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: #333;
+}
+
+.page-nav {
+  background: none;
+  border: none;
+  color: #0066cc;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 13px;
+  margin: 0 5px;
+}
+
+.page-nav:hover {
+  color: #004080;
+}
+
+/* Results List */
+.results-list {
+  border: 1px solid #ddd;
+}
+
+.result-item {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 15px;
+  background: white;
+}
+
+.result-item:hover {
+  background: #f9f9f9;
+}
+
+.result-content {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+/* Product Thumbnail */
+.product-thumbnail {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+}
+
+.product-thumbnail img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.no-image {
+  color: #999;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Product Information */
+.product-info {
+  flex: 1;
+}
+
+.product-title {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.product-link {
+  background: none;
+  border: none;
+  color: #0066cc;
+  text-decoration: underline;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.product-link:hover {
+  color: #004080;
+}
+
+.brand-name {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.generic-name {
+  font-style: italic;
+  font-weight: normal;
+}
+
+.dosage-form {
+  color: #666;
+  font-weight: normal;
+}
+
+/* NDC Codes */
+.ndc-codes {
+  font-size: 13px;
+  margin: 5px 0;
+  color: #333;
+}
+
+.ndc-codes strong {
+  font-weight: bold;
+}
+
+.view-more-link {
+  background: none;
+  border: none;
+  color: #0066cc;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+/* Packager */
+.packager {
+  font-size: 13px;
+  margin: 5px 0;
+  color: #333;
+}
+
+/* Updated Date */
+.updated-date {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* View More Button */
+.result-actions {
+  display: flex;
+  align-items: center;
+}
+
+.view-more-button {
+  background: #003d7a;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+}
+
+.view-more-button:hover {
+  background: #002850;
+}
+
+/* Bottom Pagination */
+.bottom-pagination {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.pagination-button {
+  background: #003d7a;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: #002850;
+}
+
+.pagination-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Error State */
+.dailymed-search-results.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #d32f2f;
+  font-size: 16px;
+}
+
+/* Empty State */
+.dailymed-search-results.empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.empty-state {
+  text-align: center;
+  color: #666;
+}
+
+.empty-state h3 {
+  margin: 10px 0;
+  color: #333;
+}
+
+/* Dark Theme */
+.dailymed-search-results.dark .results-header {
+  border-bottom-color: #0066cc;
+}
+
+.dailymed-search-results.dark .results-title {
+  color: #4da6ff;
+}
+
+.dailymed-search-results.dark .search-term {
+  color: #66b3ff;
+}
+
+.dailymed-search-results.dark .results-controls {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+.dailymed-search-results.dark .sort-dropdown,
+.dailymed-search-results.dark .results-per-page {
+  background: #333;
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+.dailymed-search-results.dark .result-item {
+  background: #1a1a1a;
+  border-color: #333;
+}
+
+.dailymed-search-results.dark .result-item:hover {
+  background: #252525;
+}
+
+.dailymed-search-results.dark .product-thumbnail {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+.dailymed-search-results.dark .product-link {
+  color: #66b3ff;
+}
+
+.dailymed-search-results.dark .bottom-pagination {
+  background: #2a2a2a;
+  border-color: #444;
+}

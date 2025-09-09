@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test DailyMed Image Proxy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #FF6900;
+            padding-bottom: 10px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #ddd;
+            margin: 10px 0;
+            display: block;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>DailyMed Image Proxy Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Direct Proxy Image Request</h2>
+        <p>Testing: /api/dailymed-image?name=Figure1.jpg&setid=test</p>
+        <img src="/api/dailymed-image?name=Figure1.jpg&setid=test" 
+             alt="Test Figure 1" 
+             onload="document.getElementById('test1-status').innerHTML='✅ Image loaded successfully';"
+             onerror="document.getElementById('test1-status').innerHTML='❌ Failed to load image';">
+        <div id="test1-status" class="status">Loading...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Common HUMIRA Figure</h2>
+        <p>Testing HUMIRA instruction figure with common setid</p>
+        <img src="/api/dailymed-image?name=MM1.jpg&setid=aea91847-2a88-471f-8151-b34100f6501e" 
+             alt="HUMIRA Figure" 
+             onload="document.getElementById('test2-status').innerHTML='✅ HUMIRA image loaded';"
+             onerror="document.getElementById('test2-status').innerHTML='❌ Failed to load HUMIRA image';">
+        <div id="test2-status" class="status">Loading...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Test API Endpoint</h2>
+        <button onclick="testAPI()">Test DailyMed API</button>
+        <pre id="api-result"></pre>
+    </div>
+
+    <script>
+        // Open this file in browser at: http://localhost:5173/test-dailymed-images.html
+        
+        async function testAPI() {
+            const resultEl = document.getElementById('api-result');
+            resultEl.textContent = 'Testing API...';
+            
+            try {
+                // Test the search endpoint
+                const response = await fetch('/api/dailymed/services/v2/spls.json?drug_name=humira&pagesize=1');
+                const data = await response.json();
+                
+                if (data.data && data.data.length > 0) {
+                    const setId = data.data[0].setid;
+                    resultEl.textContent = `✅ API Working!\nFound drug with setId: ${setId}\n\nNow testing media endpoint...`;
+                    
+                    // Test media endpoint
+                    const mediaResponse = await fetch(`/api/dailymed/services/v2/spls/${setId}/media.json`);
+                    const mediaData = await mediaResponse.json();
+                    
+                    resultEl.textContent += `\n\nMedia endpoint response:\n${JSON.stringify(mediaData, null, 2).substring(0, 500)}...`;
+                } else {
+                    resultEl.textContent = '❌ No results from API';
+                }
+            } catch (error) {
+                resultEl.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        // Auto-test API on load
+        window.addEventListener('load', () => {
+            console.log('Testing DailyMed proxy configuration...');
+            console.log('If images don\'t load, check browser console for errors');
+        });
+    </script>
+</body>
+</html>

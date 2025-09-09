@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test DailyMed Proxy</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        img { max-width: 300px; border: 2px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>DailyMed Proxy Test</h1>
+    
+    <div class="test">
+        <h2>Test 1: API Endpoint</h2>
+        <button onclick="testAPI()">Test API</button>
+        <pre id="api-result"></pre>
+    </div>
+
+    <div class="test">
+        <h2>Test 2: Direct Image via Proxy</h2>
+        <p>Testing: /api/dailymed-image?name=MM1.jpg&setid=aea91847-2a88-471f-8151-b34100f6501e</p>
+        <img id="test-img" 
+             src="/api/dailymed-image?name=MM1.jpg&setid=aea91847-2a88-471f-8151-b34100f6501e"
+             onerror="document.getElementById('img-status').className='error'; document.getElementById('img-status').textContent='Failed to load'"
+             onload="document.getElementById('img-status').className='success'; document.getElementById('img-status').textContent='Successfully loaded'">
+        <div id="img-status">Loading...</div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const result = document.getElementById('api-result');
+            try {
+                // Test the basic API
+                result.textContent = 'Testing /api/dailymed/services/v2/spls.json?drug_name=humira&pagesize=1';
+                const response = await fetch('/api/dailymed/services/v2/spls.json?drug_name=humira&pagesize=1');
+                
+                result.textContent += '\n\nResponse Status: ' + response.status;
+                result.textContent += '\nResponse Headers:\n';
+                for (let [key, value] of response.headers) {
+                    result.textContent += `  ${key}: ${value}\n`;
+                }
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result.textContent += '\n\nResponse Data:\n' + JSON.stringify(data, null, 2).substring(0, 500);
+                    
+                    if (data.data && data.data[0]) {
+                        const setId = data.data[0].setid;
+                        result.textContent += '\n\nFound setId: ' + setId;
+                        
+                        // Test media endpoint
+                        const mediaUrl = `/api/dailymed/services/v2/spls/${setId}/media.json`;
+                        result.textContent += '\n\nTesting media endpoint: ' + mediaUrl;
+                        const mediaResponse = await fetch(mediaUrl);
+                        result.textContent += '\nMedia Response Status: ' + mediaResponse.status;
+                        
+                        if (mediaResponse.ok) {
+                            const mediaData = await mediaResponse.json();
+                            result.textContent += '\n\nMedia Data (first 500 chars):\n' + JSON.stringify(mediaData, null, 2).substring(0, 500);
+                        }
+                    }
+                } else {
+                    const text = await response.text();
+                    result.textContent += '\n\nError Response:\n' + text.substring(0, 500);
+                }
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message + '\n\nStack:\n' + error.stack;
+            }
+        }
+        
+        // Auto-test on load
+        window.addEventListener('DOMContentLoaded', testAPI);
+    </script>
+</body>
+</html>

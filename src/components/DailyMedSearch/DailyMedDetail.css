@@ -1,0 +1,509 @@
+/* DailyMed Detail Component Styles */
+
+.dailymed-detail {
+  width: 100%;
+}
+
+/* Boxed Warning */
+.dailymed-detail .boxed-warning {
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.dailymed-detail.dark .boxed-warning {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.dailymed-detail .warning-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dailymed-detail .warning-header svg {
+  color: var(--danger-color, #ef4444);
+}
+
+.dailymed-detail .warning-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--danger-color, #ef4444);
+  margin: 0;
+}
+
+.dailymed-detail .warning-content {
+  color: var(--text-primary, #000000);
+  line-height: 1.6;
+}
+
+.dailymed-detail.dark .warning-content {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+/* Highlights Section */
+.dailymed-detail .highlights-section {
+  margin-bottom: 24px;
+}
+
+.dailymed-detail .highlights-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #000000);
+  margin-bottom: 12px;
+}
+
+.dailymed-detail.dark .highlights-title {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-detail .highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.dailymed-detail .highlight-card {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e0e0e0);
+  background: var(--card-bg, #ffffff);
+}
+
+.dailymed-detail.dark .highlight-card {
+  background: var(--dark-card-bg, #2a2a2a);
+  border-color: var(--dark-border, #333333);
+}
+
+.dailymed-detail .highlight-card.warning {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.dailymed-detail .highlight-card.info {
+  background: rgba(0, 122, 255, 0.05);
+  border-color: rgba(0, 122, 255, 0.2);
+}
+
+.dailymed-detail .highlight-card.dosage {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.dailymed-detail .highlight-card h5 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: var(--text-primary, #000000);
+}
+
+.dailymed-detail.dark .highlight-card h5 {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-detail .highlight-card p {
+  font-size: 13px;
+  margin: 0;
+  color: var(--text-secondary, #6c757d);
+  line-height: 1.5;
+}
+
+/* Products Section */
+.dailymed-detail .products-section {
+  margin-bottom: 24px;
+}
+
+.dailymed-detail .section-header {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #000000);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dailymed-detail.dark .section-header {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-detail .products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.dailymed-detail .product-card {
+  padding: 12px;
+  background: var(--bg-secondary, #f5f5f5);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.dailymed-detail.dark .product-card {
+  background: var(--dark-bg-secondary, #2a2a2a);
+}
+
+.dailymed-detail .product-info {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.dailymed-detail .product-label {
+  font-weight: 500;
+  color: var(--text-secondary, #6c757d);
+}
+
+.dailymed-detail .product-ingredients {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color, #e0e0e0);
+}
+
+.dailymed-detail.dark .product-ingredients {
+  border-top-color: var(--dark-border, #333333);
+}
+
+.dailymed-detail .product-ingredients ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  list-style: disc;
+}
+
+.dailymed-detail .product-ingredients li {
+  color: var(--text-primary, #000000);
+  margin-bottom: 4px;
+}
+
+.dailymed-detail.dark .product-ingredients li {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+/* Images Section */
+.dailymed-detail .images-section {
+  margin-bottom: 24px;
+}
+
+.dailymed-detail .images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.dailymed-detail .image-container {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-secondary, #f5f5f5);
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.dailymed-detail.dark .image-container {
+  background: var(--dark-bg-secondary, #2a2a2a);
+}
+
+.dailymed-detail .image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+}
+
+.dailymed-detail .image-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  text-align: center;
+}
+
+.dailymed-detail .no-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary, #6c757d);
+  font-size: 12px;
+  text-align: center;
+  padding: 8px;
+}
+
+/* Detail Sections */
+.dailymed-detail .detail-sections {
+  margin-top: 24px;
+}
+
+.dailymed-detail .detail-section {
+  margin-bottom: 12px;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dailymed-detail.dark .detail-section {
+  border-color: var(--dark-border, #333333);
+}
+
+.dailymed-detail .section-toggle {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--card-bg, #ffffff);
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dailymed-detail.dark .section-toggle {
+  background: var(--dark-card-bg, #1e1e1e);
+}
+
+.dailymed-detail .section-toggle:hover {
+  background: var(--hover-bg, rgba(0, 0, 0, 0.02));
+}
+
+.dailymed-detail.dark .section-toggle:hover {
+  background: var(--dark-hover-bg, rgba(255, 255, 255, 0.05));
+}
+
+.dailymed-detail .section-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dailymed-detail .section-toggle-left svg {
+  color: var(--text-secondary, #6c757d);
+}
+
+.dailymed-detail .section-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary, #000000);
+}
+
+.dailymed-detail.dark .section-title {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-detail .section-content {
+  padding: 16px;
+  background: var(--bg-secondary, #fafafa);
+  border-top: 1px solid var(--border-color, #e0e0e0);
+}
+
+.dailymed-detail.dark .section-content {
+  background: var(--dark-bg-secondary, #1a1a1a);
+  border-top-color: var(--dark-border, #333333);
+}
+
+.dailymed-detail .section-text {
+  color: var(--text-primary, #000000);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.dailymed-detail.dark .section-text {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+/* Dosage Instructions */
+.dailymed-detail .dosage-instructions {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dailymed-detail .dosage-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  background: var(--card-bg, #ffffff);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.dailymed-detail.dark .dosage-item {
+  background: var(--dark-card-bg, #2a2a2a);
+}
+
+.dailymed-detail .dosage-item svg {
+  color: var(--primary-color, #007AFF);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Drug Interactions */
+.dailymed-detail .interactions-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dailymed-detail .interaction-item {
+  padding: 12px;
+  background: var(--card-bg, #ffffff);
+  border-radius: 6px;
+  border-left: 3px solid var(--warning-color, #f59e0b);
+}
+
+.dailymed-detail.dark .interaction-item {
+  background: var(--dark-card-bg, #2a2a2a);
+}
+
+.dailymed-detail .interaction-item h5 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #000000);
+  margin: 0 0 6px;
+}
+
+.dailymed-detail.dark .interaction-item h5 {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-detail .interaction-item p {
+  font-size: 13px;
+  color: var(--text-secondary, #6c757d);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* NDC Section */
+.dailymed-detail .ndc-section {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--bg-secondary, #f5f5f5);
+  border-radius: 8px;
+}
+
+.dailymed-detail.dark .ndc-section {
+  background: var(--dark-bg-secondary, #1a1a1a);
+}
+
+.dailymed-detail .ndc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.dailymed-detail .ndc-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--card-bg, #ffffff);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.dailymed-detail.dark .ndc-item {
+  background: var(--dark-card-bg, #2a2a2a);
+}
+
+.dailymed-detail .ndc-code {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--primary-color, #007AFF);
+}
+
+.dailymed-detail .ndc-description {
+  flex: 1;
+  color: var(--text-primary, #000000);
+}
+
+.dailymed-detail.dark .ndc-description {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+.dailymed-detail .ndc-date {
+  font-size: 12px;
+  color: var(--text-secondary, #6c757d);
+}
+
+/* Metadata Section */
+.dailymed-detail .metadata-section {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color, #e0e0e0);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.dailymed-detail.dark .metadata-section {
+  border-top-color: var(--dark-border, #333333);
+}
+
+.dailymed-detail .metadata-item {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.dailymed-detail .metadata-label {
+  font-weight: 500;
+  color: var(--text-secondary, #6c757d);
+}
+
+.dailymed-detail .metadata-value {
+  color: var(--text-primary, #000000);
+  font-family: 'Courier New', monospace;
+}
+
+.dailymed-detail.dark .metadata-value {
+  color: var(--dark-text-primary, #ffffff);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dailymed-detail .highlights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dailymed-detail .products-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dailymed-detail .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .dailymed-detail .section-toggle {
+    padding: 10px 12px;
+  }
+
+  .dailymed-detail .section-title {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dailymed-detail .metadata-section {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dailymed-detail .ndc-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

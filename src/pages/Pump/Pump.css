@@ -1,6 +1,6 @@
 /* Pump Page - Mobile First Design */
 .pump-page {
-  background: var(--bg-secondary);
+  background: #ffffff;
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   width: 100%;
   height: 100vh;
@@ -19,6 +19,8 @@
   padding: 0;
   box-sizing: border-box;
   overflow: hidden;
+  max-width: 100%;
+  width: 100%;
 }
 
 /* Mobile styles - similar to note generator */
@@ -37,6 +39,7 @@
     -webkit-overflow-scrolling: touch;
     height: 100%;
     width: 100%;
+    padding: 0 !important;
     padding-bottom: 4rem !important;
   }
   

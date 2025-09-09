@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DailyMed Image Loading Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-container {
+            border: 2px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            background: #f9f9f9;
+        }
+        .image-test {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background: white;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .loading { background: #fff3cd; color: #856404; }
+        img {
+            max-width: 100%;
+            border: 1px solid #000;
+            margin: 10px 0;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>DailyMed Image Loading Test</h1>
+    
+    <div class="test-container">
+        <h2>Test Configuration</h2>
+        <p>This page tests different URL patterns for loading DailyMed images.</p>
+        <p><strong>Example Medication:</strong> Humira (adalimumab)</p>
+        <p><strong>Set ID:</strong> <span id="setId">92e96748-1b41-406b-9cb0-833fc4e0f2c2</span></p>
+        <p><strong>Sample Image Names:</strong> Figure1.jpg, Figure2.jpg, MM1.jpg</p>
+    </div>
+
+    <div class="test-container">
+        <h2>Direct DailyMed URLs (No Proxy)</h2>
+        <div id="direct-tests"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Proxied URLs (Through Vite)</h2>
+        <div id="proxy-tests"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Test Results Summary</h2>
+        <div id="summary"></div>
+    </div>
+
+    <script>
+        const setId = '92e96748-1b41-406b-9cb0-833fc4e0f2c2'; // Humira
+        const imageNames = ['Figure1.jpg', 'Figure2.jpg', 'MM1.jpg', 'image-1.jpg'];
+        
+        const urlPatterns = {
+            direct: [
+                (name, id) => `https://dailymed.nlm.nih.gov/dailymed/image.cfm?name=${name}&setid=${id}`,
+                (name, id) => `https://dailymed.nlm.nih.gov/dailymed/image.cfm?setid=${id}&name=${name}`,
+            ],
+            proxy: [
+                (name, id) => `/api/dailymed/image.cfm?name=${name}&setid=${id}`,
+                (name, id) => `/api/dailymed/image.cfm?setid=${id}&name=${name}`,
+                (name, id) => `/api/dailymed-image?name=${name}&setid=${id}`,
+                (name, id) => `/dailymed-images/image.cfm?name=${name}&setid=${id}`,
+            ]
+        };
+
+        function testImage(url, container, label) {
+            const testDiv = document.createElement('div');
+            testDiv.className = 'image-test';
+            testDiv.innerHTML = `
+                <h4>${label}</h4>
+                <pre>${url}</pre>
+                <div class="status loading">Loading...</div>
+                <img src="${url}" alt="${label}" style="display:none;">
+            `;
+            
+            const img = testDiv.querySelector('img');
+            const status = testDiv.querySelector('.status');
+            
+            img.onload = function() {
+                status.className = 'status success';
+                status.textContent = '✅ Success - Image loaded';
+                img.style.display = 'block';
+                updateSummary();
+            };
+            
+            img.onerror = function() {
+                status.className = 'status error';
+                status.textContent = '❌ Failed - Could not load image';
+                
+                // Try to fetch to get more info
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            status.textContent += ` (HTTP ${response.status})`;
+                        }
+                        return response.text();
+                    })
+                    .then(text => {
+                        if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                            status.textContent += ' - Returned HTML instead of image';
+                        }
+                    })
+                    .catch(err => {
+                        status.textContent += ` - ${err.message}`;
+                    });
+                updateSummary();
+            };
+            
+            container.appendChild(testDiv);
+        }
+
+        function updateSummary() {
+            const successCount = document.querySelectorAll('.status.success').length;
+            const errorCount = document.querySelectorAll('.status.error').length;
+            const totalCount = successCount + errorCount;
+            
+            document.getElementById('summary').innerHTML = `
+                <p><strong>Results:</strong></p>
+                <p>✅ Successful: ${successCount}/${totalCount}</p>
+                <p>❌ Failed: ${errorCount}/${totalCount}</p>
+                ${successCount > 0 ? '<p style="color: green;">✓ At least one URL pattern works!</p>' : ''}
+            `;
+        }
+
+        // Run tests
+        window.onload = function() {
+            const directContainer = document.getElementById('direct-tests');
+            const proxyContainer = document.getElementById('proxy-tests');
+            
+            // Test direct URLs
+            urlPatterns.direct.forEach((pattern, i) => {
+                imageNames.slice(0, 2).forEach(name => {
+                    const url = pattern(name, setId);
+                    testImage(url, directContainer, `Pattern ${i+1}: ${name}`);
+                });
+            });
+            
+            // Test proxy URLs
+            urlPatterns.proxy.forEach((pattern, i) => {
+                imageNames.slice(0, 2).forEach(name => {
+                    const url = pattern(name, setId);
+                    testImage(url, proxyContainer, `Pattern ${i+1}: ${name}`);
+                });
+            });
+        };
+    </script>
+</body>
+</html>

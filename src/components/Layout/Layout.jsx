@@ -11,7 +11,6 @@ import {
   Mic,
   User,
   Calculator as CalcIcon,
-  StickyNote,
   ScanLine,
   Bookmark,
   Zap,
@@ -31,6 +30,75 @@ import DigitalClock from '../DigitalClock/DigitalClock';
 import './Layout.css';
 import './TabletLayout.css';
 import './LayoutMobileHeaderFix.css';
+
+// Custom Speech Icon Component
+const SpeechIcon = ({ size = 24 }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className="lucide lucide-speech-icon lucide-speech"
+  >
+    <path d="M8.8 20v-4.1l1.9.2a2.3 2.3 0 0 0 2.164-2.1V8.3A5.37 5.37 0 0 0 2 8.25c0 2.8.656 3.054 1 4.55a5.77 5.77 0 0 1 .029 2.758L2 20"/>
+    <path d="M19.8 17.8a7.5 7.5 0 0 0 .003-10.603"/>
+    <path d="M17 15a3.5 3.5 0 0 0-.025-4.975"/>
+  </svg>
+);
+
+// Custom Pump Icon Component
+const PumpIcon = ({ size = 24 }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className="lucide lucide-keyboard-music-icon lucide-keyboard-music"
+  >
+    <rect width="20" height="16" x="2" y="4" rx="2"/>
+    <path d="M6 8h4"/>
+    <path d="M14 8h.01"/>
+    <path d="M18 8h.01"/>
+    <path d="M2 12h20"/>
+    <path d="M6 12v4"/>
+    <path d="M10 12v4"/>
+    <path d="M14 12v4"/>
+    <path d="M18 12v4"/>
+  </svg>
+);
+
+// Custom Notes Icon Component
+const NotesIcon = ({ size = 24 }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className="lucide lucide-notebook-pen-icon lucide-notebook-pen"
+  >
+    <path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/>
+    <path d="M2 6h4"/>
+    <path d="M2 10h4"/>
+    <path d="M2 14h4"/>
+    <path d="M2 18h4"/>
+    <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
+  </svg>
+);
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -78,11 +146,12 @@ const Layout = ({ children }) => {
     { path: '/', icon: Home, label: 'Home' },
     { path: '/calculator', icon: Calculator, label: 'Calculator' },
     { path: '/medications', icon: Pill, label: 'Medications' },
+    { path: '/counsel', icon: SpeechIcon, label: 'Counsel' },
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
     { path: '/note-generator', icon: Zap, label: 'Note Generator' },
-    { path: '/pump', icon: CalcIcon, label: 'Pump' },
+    { path: '/pump', icon: PumpIcon, label: 'Pump' },
     { path: '/supplies', icon: Package, label: 'Supplies' },
-    { path: '/notes', icon: StickyNote, label: 'Notes' },
+    { path: '/notes', icon: NotesIcon, label: 'Notes' },
     { path: '/analyzer', icon: ScanLine, label: 'Analyzer' },
     { path: '/phones', icon: Phone, label: 'Phones' },
     { path: '/bookmark-manager', icon: Bookmark, label: 'Bookmarks' },

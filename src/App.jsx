@@ -20,6 +20,7 @@ import Supplies from './pages/Supplies'
 import Notes from './pages/Notes'
 import Analyzer from './pages/Analyzer'
 import Phones from './pages/Phones'
+import Counsel from './pages/Counsel'
 import BookmarkManager from './pages/BookmarkManager'
 import Board from './pages/Board'
 import Terminal from './pages/Terminal'
@@ -47,6 +48,7 @@ function AppContent() {
                 <Route path="/" element={<Home />} />
                 <Route path="/calculator" element={<Calculator />} />
                 <Route path="/medications" element={<Medications />} />
+                <Route path="/counsel" element={<Counsel />} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/note-generator" element={<NoteGenerator />} />
                 <Route path="/pump" element={<Pump />} />

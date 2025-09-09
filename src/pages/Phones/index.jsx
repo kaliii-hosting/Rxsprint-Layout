@@ -16,7 +16,8 @@ import {
   Star,
   MessageSquare,
   Video,
-  Share
+  Share,
+  Save
 } from 'lucide-react';
 import { db, storage } from '../../config/firebase';
 import { collection, doc, setDoc, deleteDoc, onSnapshot, updateDoc } from 'firebase/firestore';
@@ -340,50 +341,88 @@ const Phones = () => {
       {deviceMode !== 'mobile' && (
         <div className="desktop-header">
           <div className="header-left">
-            <h1 className="page-title">Contacts</h1>
-            <span className="contact-count-badge">{contacts.length}</span>
+            <h1 className="page-title">
+              {showAddContact ? (editingContact ? 'Edit Contact' : 'New Contact') : 'Contacts'}
+            </h1>
+            {!showAddContact && <span className="contact-count-badge">{contacts.length}</span>}
           </div>
           <div className="header-center">
-            <div className="search-container">
-              <Search size={16} className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search contacts"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-              />
-              {searchQuery && (
-                <button 
-                  className="clear-btn"
-                  onClick={() => setSearchQuery('')}
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
+            {!showAddContact && (
+              <div className="search-container">
+                <Search size={16} className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search contacts"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="search-input"
+                />
+                {searchQuery && (
+                  <button 
+                    className="clear-btn"
+                    onClick={() => setSearchQuery('')}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
           <div className="header-right">
-            <button 
-              className="add-btn"
-              onClick={() => {
-                setFormData({
-                  name: '',
-                  company: '',
-                  phones: [{ value: '', type: 'mobile' }],
-                  emails: [{ value: '', type: 'work' }],
-                  address: '',
-                  notes: '',
-                  favorite: false,
-                  photoURL: ''
-                });
-                setImagePreview(null);
-                setShowAddContact(true);
-              }}
-            >
-              <Plus size={18} />
-              <span>Add Contact</span>
-            </button>
+            {showAddContact ? (
+              <>
+                <button 
+                  className="cancel-btn"
+                  onClick={() => {
+                    setShowAddContact(false);
+                    setEditingContact(null);
+                    setFormData({
+                      name: '',
+                      company: '',
+                      phones: [{ value: '', type: 'mobile' }],
+                      emails: [{ value: '', type: 'work' }],
+                      address: '',
+                      notes: '',
+                      favorite: false,
+                      photoURL: ''
+                    });
+                    setImagePreview(null);
+                  }}
+                >
+                  <X size={18} />
+                  <span>Cancel</span>
+                </button>
+                <button 
+                  className="save-btn"
+                  onClick={saveContact}
+                  disabled={!formData.name.trim()}
+                >
+                  <Save size={18} />
+                  <span>Save</span>
+                </button>
+              </>
+            ) : (
+              <button 
+                className="add-btn"
+                onClick={() => {
+                  setFormData({
+                    name: '',
+                    company: '',
+                    phones: [{ value: '', type: 'mobile' }],
+                    emails: [{ value: '', type: 'work' }],
+                    address: '',
+                    notes: '',
+                    favorite: false,
+                    photoURL: ''
+                  });
+                  setImagePreview(null);
+                  setShowAddContact(true);
+                }}
+              >
+                <Plus size={18} />
+                <span>Add Contact</span>
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -769,8 +808,35 @@ const Phones = () => {
                 />
               </div>
 
-              {/* Delete Button for Edit Mode */}
-              {editingContact && (
+              {/* Action Buttons for Desktop/Tablet */}
+              {deviceMode !== 'mobile' && (
+                <div className="form-section form-actions">
+                  <button
+                    className="form-save-btn"
+                    onClick={saveContact}
+                    disabled={!formData.name.trim()}
+                  >
+                    <Save size={18} />
+                    <span>Save Contact</span>
+                  </button>
+                  {editingContact && (
+                    <button
+                      className="delete-contact-btn"
+                      onClick={() => {
+                        deleteContact(editingContact.id);
+                        setShowAddContact(false);
+                        setEditingContact(null);
+                      }}
+                    >
+                      <Trash2 size={18} />
+                      <span>Delete Contact</span>
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Delete Button for Mobile Edit Mode */}
+              {deviceMode === 'mobile' && editingContact && (
                 <div className="form-section">
                   <button
                     className="delete-contact-btn"

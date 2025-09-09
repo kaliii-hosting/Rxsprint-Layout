@@ -103,6 +103,10 @@
 
 .toolbar-section.actions {
   margin-left: auto;
+  display: flex !important;
+  gap: 0.5rem;
+  align-items: center;
+  visibility: visible !important;
 }
 
 /* Fix tooltip visibility */
@@ -1329,6 +1333,30 @@ DEPRECATED CODE REMOVED - Now using EnterpriseHeader components
   font-size: 16px;
   margin: 0;
   color: var(--text-secondary);
+}
+
+/* DailyMed Content Section */
+.dailymed-content {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.dailymed-content.fullscreen {
+  animation: fadeIn 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .dailymed-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dailymed-content {
+    padding: 12px;
+  }
 }
 
 /* Spinner Animation */
