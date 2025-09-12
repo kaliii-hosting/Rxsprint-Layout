@@ -28,6 +28,7 @@ import './App.css'
 import './styles/TabletResponsive.css'
 import './styles/MobileGlobalFix.css'
 import './styles/MobileFinalFix.css'
+import './styles/performance-fix.css'
 
 function AppContent() {
   const { isUnlocked, unlock } = useAuth()

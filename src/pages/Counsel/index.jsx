@@ -36,6 +36,7 @@ const Counsel = () => {
   const [selectedDosageForm, setSelectedDosageForm] = useState(0);
   const [deviceMode, setDeviceMode] = useState('desktop'); // For responsive toolbar
   const [processedSections, setProcessedSections] = useState({}); // Cache for processed instruction sections
+  const [boxedWarningVisible, setBoxedWarningVisible] = useState(true); // Show boxed warning by default
   
   const searchInputRef = useRef(null);
   
@@ -146,6 +147,7 @@ const Counsel = () => {
     setLoadingDetails(true);
     setSelectedMedication(medication);
     setSelectedDosageForm(0);
+    setBoxedWarningVisible(true); // Reset boxed warning visibility for new medication
     
     try {
       const details = await dailyMedService.getMedicationDetails(medication.setId);
@@ -454,6 +456,39 @@ const Counsel = () => {
       ingredientsAndAppearance: 'INGREDIENTS AND APPEARANCE',
       patientPackageInsert: 'PATIENT PACKAGE INSERT',
       fullPrescribingInfo: 'FULL PRESCRIBING INFORMATION',
+      safeHandlingWarning: 'SAFE HANDLING WARNING',
+      specialPopulations: 'SPECIAL POPULATIONS',
+      drugAbuseAndDependence: 'DRUG ABUSE AND DEPENDENCE',
+      controlledSubstance: 'Controlled Substance',
+      abuse: 'Abuse',
+      dependence: 'Dependence',
+      recentMajorChanges: 'RECENT MAJOR CHANGES',
+      indicationsAndUsage: 'INDICATIONS AND USAGE',
+      dosageAndAdministration: 'DOSAGE AND ADMINISTRATION',
+      dosageFormsAndStrengths: 'DOSAGE FORMS AND STRENGTHS',
+      warningsAndCautions: 'WARNINGS AND CAUTIONS',
+      laborAndDelivery: 'Labor and Delivery',
+      nursingMothers: 'Nursing Mothers',
+      adverseEvents: 'ADVERSE EVENTS',
+      postmarketingExperience: 'POSTMARKETING EXPERIENCE',
+      drugAndDrugInteractions: 'DRUG AND DRUG INTERACTIONS',
+      laboratoryTestInteractions: 'Laboratory Test Interactions',
+      specificPopulations: 'SPECIFIC POPULATIONS',
+      howSuppliedStorageAndHandling: 'HOW SUPPLIED/STORAGE AND HANDLING',
+      patientCounselingInfo: 'PATIENT COUNSELING INFO',
+      medicationGuide: 'MEDICATION GUIDE',
+      precautions: 'PRECAUTIONS',
+      generalPrecautions: 'General Precautions',
+      informationForPatients: 'Information for Patients',
+      laboratoryTests: 'Laboratory Tests',
+      drugDrugInteractions: 'Drug-Drug Interactions',
+      carcinogenicityMutagenicityAndImpairmentOfFertility: 'Carcinogenicity, Mutagenicity and Impairment of Fertility',
+      pregnancyCategory: 'Pregnancy Category',
+      pregnancyTeratogenicEffects: 'Pregnancy: Teratogenic Effects',
+      pregnancyNonteratogenicEffects: 'Pregnancy: Nonteratogenic Effects',
+      nursingWomen: 'Nursing Women',
+      pediatrics: 'Pediatrics',
+      geriatrics: 'Geriatrics',
       
       // OTC sections
       otcPurpose: 'PURPOSE',
@@ -475,13 +510,9 @@ const Counsel = () => {
     return sectionMap[key] || key.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
   };
 
-  // Exclude sections that are not needed for patient counseling
+  // Exclude display panels, carcinogenesis, clinical studies, and references sections
   const excludedSections = [
-    'highlights', 
-    'tableOfContents', 
-    'recentMajorChanges', 
-    'fullPrescribingInfo',
-    // All principal display panel variations
+    // Principal display panel variations (packaging images)
     'principalDisplayPanel',
     'principalDisplayPanel2',
     'principalDisplayPanel3',
@@ -492,22 +523,17 @@ const Counsel = () => {
     'principalDisplayPanel8',
     'principalDisplayPanel9',
     'principalDisplayPanel10',
-    // All carcinogenesis related sections
+    // Carcinogenesis related sections
     'carcinogenesisMutagenesisImpairmentOfFertility',
     'carcinogenesis',
     'mutagenesis',
     'impairmentOfFertility',
     'animalToxicology',
     'nonclinicalToxicology',
-    // Other excluded sections
-    'pharmacokinetics',
-    'pharmacodynamics',
-    'references',
+    // Clinical studies section
     'clinicalStudies',
-    'mechanismOfAction',
-    'microbiology',
-    'nonclinicalToxicology',
-    'animalToxicology'
+    // References section
+    'references'
   ];
   
   // All sections to display (filtering out excluded sections)
@@ -516,36 +542,78 @@ const Counsel = () => {
   // Section display order matching proper DailyMed structure (without excluded sections)
   const sectionOrder = [
     'boxedWarning',
+    'recentMajorChanges',
     'indications',
-    'dosage', 
+    'indicationsAndUsage',
+    'dosage',
+    'dosageAndAdministration', 
     'dosageForms',
+    'dosageFormsAndStrengths',
     'contraindications',
+    'warnings',
     'warningsAndPrecautions',
+    'warningsAndCautions',
+    'precautions',
+    'generalPrecautions',
+    'informationForPatients',
+    'safeHandlingWarning',
     'adverseReactions',
+    'adverseEvents',
+    'postmarketingExperience',
     'drugInteractions',
+    'drugAndDrugInteractions',
+    'drugDrugInteractions',
+    'laboratoryTestInteractions',
+    'laboratoryTests',
+    'drugAbuseAndDependence',
+    'controlledSubstance',
+    'abuse',
+    'dependence',
     'useInSpecificPopulations',
+    'specificPopulations',
+    'specialPopulations',
+    'pregnancy',
+    'pregnancyCategory',
+    'pregnancyTeratogenicEffects',
+    'pregnancyNonteratogenicEffects',
+    'lactation',
+    'nursingMothers',
+    'nursingWomen',
+    'laborAndDelivery',
+    'femalesAndMalesOfReproductivePotential',
+    'pediatricUse',
+    'pediatrics',
+    'geriatricUse',
+    'geriatrics',
+    'hepaticImpairment',
+    'renalImpairment',
     'overdosage',
     'description',
     'clinicalPharmacology',
+    'mechanismOfAction',
+    'pharmacodynamics',
+    'pharmacokinetics',
+    'microbiology',
     'howSupplied',
+    'howSuppliedStorageAndHandling',
+    'storage',
     'patientInfo',
+    'patientCounselingInformation',
+    'patientCounselingInfo',
     'medGuide',
+    'medicationGuide',
     'instructionsForUse',
     'instructionsForUse2',
     'instructionsForUse3',
     'instructionsForUse4',
+    'instructionsForUse5',
+    'instructionsForUse6',
+    'instructionsForUse7',
+    'instructionsForUse8',
     'ingredientsAndAppearance',
-    'pregnancy',
-    'lactation',
-    'femalesAndMalesOfReproductivePotential',
-    'pediatricUse',
-    'geriatricUse',
-    'hepaticImpairment',
-    'renalImpairment',
-    'storage',
-    'patientCounselingInformation',
     'packaging',
     'patientPackageInsert',
+    'fullPrescribingInfo',
     'otcPurpose',
     'otcActiveIngredient',
     'otcUses',
@@ -562,21 +630,20 @@ const Counsel = () => {
     'otcKeepOutOfReachOfChildren'
   ];
 
-  // Sort sections by predefined order and filter if needed
+  // Sort sections by predefined order - SHOW ALL SECTIONS for complete counseling information
   const getSortedSections = () => {
     if (!medicationDetails?.sections) return [];
     
     let sections = Object.entries(medicationDetails.sections);
     
-    // Filter out excluded sections - check both exact match and pattern matching
+    // Filter out excluded sections
     sections = sections.filter(([key]) => {
-      // Check exact match
+      // Check if key is in excluded sections list
       if (excludedSections.includes(key)) return false;
       
-      // Check if key contains any excluded patterns
       const keyLower = key.toLowerCase();
       
-      // Filter out all principal display panel variations
+      // Filter out principal display panel variations
       if (keyLower.includes('principaldisplaypanel') || 
           keyLower.includes('principal_display_panel') ||
           keyLower.includes('display_panel') ||
@@ -584,7 +651,7 @@ const Counsel = () => {
         return false;
       }
       
-      // Filter out carcinogenesis sections
+      // Filter out carcinogenesis related sections
       if (keyLower.includes('carcinogenesis') || 
           keyLower.includes('mutagenesis') ||
           keyLower.includes('impairmentoffertility') ||
@@ -593,15 +660,19 @@ const Counsel = () => {
         return false;
       }
       
+      // Filter out references
+      if (keyLower === 'references' || keyLower.includes('reference')) {
+        return false;
+      }
+      
+      // Filter out clinical studies
+      if (keyLower === 'clinicalstudies' || keyLower.includes('clinical_studies') || keyLower.includes('clinicalstudies')) {
+        return false;
+      }
+      
+      // Keep all other sections for patient counseling
       return true;
     });
-    
-    // Show all sections - no exclusions to match DailyMed exactly
-    
-    // Additional filter if allowedSections is defined
-    if (allowedSections) {
-      sections = sections.filter(([key]) => allowedSections.includes(key));
-    }
       
     return sections.sort((a, b) => {
       const indexA = sectionOrder.indexOf(a[0]);
@@ -728,20 +799,19 @@ const Counsel = () => {
                     {med.genericName && (
                       <p className="med-generic">{med.genericName}</p>
                     )}
-                    {med.ndcCodes && med.ndcCodes.length > 0 && (
-                      <div className="ndc-info">
-                        <strong>NDC Code(s):</strong> {med.ndcCodes.slice(0, 3).join(', ')}
-                        {med.ndcCodes.length > 3 && (
-                          <span>, <a href="#" onClick={(e) => {
-                            e.preventDefault();
-                            loadMedicationDetails(med);
-                          }}>view more</a></span>
-                        )}
-                      </div>
-                    )}
                     <p className="med-packager">
                       <strong>Packager:</strong> {med.labelerName || 'Not specified'}
                     </p>
+                    {med.ndcCodes && med.ndcCodes.length > 0 && (
+                      <div className="ndc-info">
+                        <strong>NDC Codes:</strong>
+                        <div className="ndc-codes-list">
+                          {med.ndcCodes.map((ndc, index) => (
+                            <span key={index} className="ndc-code">{ndc}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <button 
                       className="view-more-btn"
                       onClick={() => loadMedicationDetails(med)}
@@ -775,11 +845,109 @@ const Counsel = () => {
                 <p>Loading medication information...</p>
               </div>
             ) : medicationDetails ? (
+              <>
+                {/* Comprehensive Medication Information Panel - Only show if we have actual data */}
+                {((medicationDetails.rxNormMappings && medicationDetails.rxNormMappings.length > 0) || 
+                  (medicationDetails.pharmacologicClass && medicationDetails.pharmacologicClass.length > 0) || 
+                  (medicationDetails.packages && medicationDetails.packages.length > 0) ||
+                  (medicationDetails.drugNames && medicationDetails.drugNames.length > 0)) && (
+                  <div className="comprehensive-info-panel">
+                    
+                    {/* Pharmacologic Classes */}
+                    {medicationDetails.pharmacologicClass && medicationDetails.pharmacologicClass.length > 0 && (
+                      <div className="info-section">
+                        <h4>Pharmacologic Classes</h4>
+                        <div className="pharma-classes-list">
+                          {medicationDetails.pharmacologicClass.map((pc, idx) => (
+                            <div key={idx} className="pharma-class-item">
+                              <span className="pharma-name">{pc.name}</span>
+                              <span className="pharma-type">{pc.type}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* RxNorm Mappings */}
+                    {medicationDetails.rxNormMappings && medicationDetails.rxNormMappings.length > 0 && (
+                      <div className="info-section">
+                        <h4>RxNorm Concepts</h4>
+                        <div className="rxnorm-list">
+                          {medicationDetails.rxNormMappings.map((rx, idx) => (
+                            <div key={idx} className="rxnorm-item">
+                              <span className="rxcui">RxCUI: {rx.rxcui}</span>
+                              <span className="rxstring">{rx.rxString}</span>
+                              {rx.rxTty && <span className="rxtty">({rx.rxTty})</span>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* NDC Packages */}
+                    {medicationDetails.packages && medicationDetails.packages.length > 0 && (
+                      <div className="info-section">
+                        <h4>NDC Packages</h4>
+                        <div className="packages-list">
+                          {medicationDetails.packages.slice(0, 10).map((pkg, idx) => (
+                            <div key={idx} className="package-item">
+                              <span className="ndc-code">{pkg.ndc}</span>
+                              <span className="package-desc">{pkg.description}</span>
+                            </div>
+                          ))}
+                          {medicationDetails.packages.length > 10 && (
+                            <div className="more-packages">
+                              ...and {medicationDetails.packages.length - 10} more packages
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Drug Names */}
+                    {medicationDetails.drugNames && medicationDetails.drugNames.length > 0 && (
+                      <div className="info-section">
+                        <h4>Associated Drug Names</h4>
+                        <div className="drug-names-list">
+                          {medicationDetails.drugNames.map((name, idx) => (
+                            <span key={idx} className="drug-name-tag">{name}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
               <div className="sections-container">
                 {getSortedSections().length > 0 ? (
                   getSortedSections().map(([key, section]) => {
                     // Skip empty sections
                     if (!section || !section.text || section.text.trim() === '') return null;
+                    
+                    // Special handling for boxed warning
+                    if (key === 'boxedWarning') {
+                      return (
+                        <div key={key} className="section-item boxed-warning-item">
+                          {boxedWarningVisible && (
+                            <div className="boxed-warning-section">
+                              <div className="boxed-warning-title">
+                                {formatSectionTitle(key, section).replace('BOXED WARNING', 'WARNING')}
+                              </div>
+                              <div 
+                                className="boxed-warning-content"
+                                dangerouslySetInnerHTML={{ __html: section.text }}
+                              />
+                              <button 
+                                className="boxed-warning-close"
+                                onClick={() => setBoxedWarningVisible(false)}
+                              >
+                                CLOSE
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
                     
                     return (
                       <div key={key} className="section-item">
@@ -861,6 +1029,7 @@ const Counsel = () => {
                   </div>
                 )}
               </div>
+              </>
             ) : (
               <div className="error-state">
                 <AlertCircle size={48} />

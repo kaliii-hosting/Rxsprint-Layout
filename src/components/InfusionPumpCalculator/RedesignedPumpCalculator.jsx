@@ -585,6 +585,7 @@ const RedesignedPumpCalculator = () => {
   const [results, setResults] = useState(null);
   const [showResults, setShowResults] = useState(false);
   const [isFixedRateCalculation, setIsFixedRateCalculation] = useState(false);
+  const [calculationType, setCalculationType] = useState(null); // 'fixed' or 'custom' - tracks which calculation was performed
   const [errors, setErrors] = useState({});
   const [doseSafety, setDoseSafety] = useState({ classification: 'unknown', ratio: 0, color: '#6c757d' });
   const [fixedInfusionError, setFixedInfusionError] = useState('');
@@ -599,6 +600,8 @@ const RedesignedPumpCalculator = () => {
   const [focusedMedicationIndex, setFocusedMedicationIndex] = useState(0);
   const [showVialInputModal, setShowVialInputModal] = useState(false);
   const [userVialInputs, setUserVialInputs] = useState({});
+  const [manualVialOverride, setManualVialOverride] = useState(null); // For manual vial selection
+  const [showVialAdjustmentModal, setShowVialAdjustmentModal] = useState(false); // For vial adjustment modal
   
   // AI Adjustment Tool state
   // Calibration Tool state - inline fields instead of modal
@@ -641,6 +644,13 @@ const RedesignedPumpCalculator = () => {
   const [selectedVialSize, setSelectedVialSize] = useState(null);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [megaMenuSearch, setMegaMenuSearch] = useState('');
+  const [vialCombinationMode, setVialCombinationMode] = useState('auto');
+  const [customVialCounts, setCustomVialCounts] = useState({});
+  
+  // Function to update custom vial counts
+  const updateCustomVialCounts = (counts) => {
+    setCustomVialCounts(counts);
+  };
   const megaMenuRef = useRef(null);
   const vialDropdownRef = useRef(null);
   const megaMenuButtonRef = useRef(null);
@@ -2417,7 +2427,11 @@ const RedesignedPumpCalculator = () => {
     
     // If calculating for single dose, ignore dose frequency and days supply
     let vialCombination;
-    if (forSingleDose) {
+    
+    // Check if we have manual vial override
+    if (manualVialOverride && forSingleDose) {
+      vialCombination = manualVialOverride;
+    } else if (forSingleDose) {
       // Calculate vial combination for single dose only
       const singleDoseCombination = calculateSingleDoseVialCombination();
       if (!singleDoseCombination) {
@@ -2531,7 +2545,7 @@ const RedesignedPumpCalculator = () => {
       // No artificial rounding as exact volumes are clinically important
       return Math.round(totalVolume * 10) / 10;
     }
-  }, [selectedMedicationData, calculateVialCombination, calculateSingleDoseVialCombination]);
+  }, [selectedMedicationData, calculateVialCombination, calculateSingleDoseVialCombination, manualVialOverride]);
   
   // Calculate drug removal volume
   const calculateDrugRemovalVolume = useCallback(() => {
@@ -4068,6 +4082,7 @@ const RedesignedPumpCalculator = () => {
     setResults(null);
     setShowResults(false);
     setIsFixedRateCalculation(false);
+    setCalculationType(null); // Reset calculation type
     
     // Reset errors
     setErrors({});
@@ -4841,15 +4856,29 @@ const RedesignedPumpCalculator = () => {
                           })()}
                         </span>
                       </div>
-                      {/* Calculate Days Coverage Button - Copy Button Design to match Calculate Fixed Date */}
+                      {/* Adjust Vial Count Button */}
                       <button
                         type="button"
-                        className="copy-note-btn calculate-days-coverage-btn"
-                        onClick={() => setShowVialInputModal(true)}
+                        className="copy-note-btn adjust-vial-count-btn"
+                        onClick={() => setShowVialAdjustmentModal(true)}
                         disabled={!selectedMedicationData || !inputs.dose || !inputs.patientWeight}
+                        style={{ 
+                          color: 'white',
+                          backgroundColor: '#ff6600',
+                          border: 'none',
+                          padding: '8px 16px',
+                          borderRadius: '6px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          opacity: (!selectedMedicationData || !inputs.dose || !inputs.patientWeight) ? 0.5 : 1
+                        }}
                       >
-                        <Calendar size={18} />
-                        Calculate Days Coverage
+                        <Settings size={18} style={{ color: 'white' }} />
+                        <span style={{ color: 'white' }}>Adjust Vial Count</span>
                       </button>
                     </div>
                   </div>
@@ -5709,8 +5738,11 @@ const RedesignedPumpCalculator = () => {
           </button>
           
           <button 
-            className={`pump-toolbar-button ${(!selectedMedicationData || !inputs.patientWeight || !inputs.dose) ? 'disabled' : ''}`}
+            className={`pump-toolbar-button ${(!selectedMedicationData || !inputs.patientWeight || !inputs.dose || calculationType === 'custom') ? 'disabled' : ''}`}
             onClick={() => {
+                if (calculationType === 'custom') {
+                  return; // Block if custom calculation was performed
+                }
                 if (!selectedMedicationData || !inputs.patientWeight || !inputs.dose) {
                   setFixedInfusionError('Please select medication, enter patient weight, and prescribed dose first');
                   setTimeout(() => setFixedInfusionError(''), 5000);
@@ -5721,12 +5753,17 @@ const RedesignedPumpCalculator = () => {
                   setTimeout(() => setFixedInfusionError(''), 5000);
                 } else {
                   setFixedInfusionError('');
+                  setCalculationType('fixed'); // Set calculation type to fixed
+                  if (inputs.useCustomSteps) {
+                    handleInputChange('useCustomSteps', false); // Turn off custom steps when using fixed
+                  }
                   calculatePumpSettings(true);
                 }
               }}
-              disabled={!selectedMedicationData || !inputs.patientWeight || !inputs.dose}
+              disabled={!selectedMedicationData || !inputs.patientWeight || !inputs.dose || calculationType === 'custom'}
               title={!selectedMedicationData || !inputs.patientWeight || !inputs.dose ? 
                 "Please select medication, enter patient weight, and prescribed dose first" : 
+                calculationType === 'custom' ? "Reset calculator to use fixed infusion" :
                 "Calculate using standard infusion parameters"}
           >
             <Activity size={16} />
@@ -5734,8 +5771,11 @@ const RedesignedPumpCalculator = () => {
           </button>
           
           <button 
-            className={`pump-toolbar-button ${(!selectedMedicationData || !inputs.patientWeight || !inputs.dose) ? 'disabled' : ''}`}
+            className={`pump-toolbar-button ${(!selectedMedicationData || !inputs.patientWeight || !inputs.dose || calculationType === 'fixed') ? 'disabled' : ''}`}
             onClick={() => {
+                if (calculationType === 'fixed') {
+                  return; // Block if fixed calculation was performed
+                }
                 if (!selectedMedicationData || !inputs.patientWeight || !inputs.dose) {
                   alert('Please select medication, enter patient weight, and prescribed dose first');
                   return;
@@ -5746,13 +5786,16 @@ const RedesignedPumpCalculator = () => {
                     ...prev,
                     infusionParameters: true
                   }));
+                  setCalculationType('custom'); // Set calculation type immediately when switching to custom mode
                 } else if (canCalculateCustom() && customStepsValidation.isAcceptable) {
+                  setCalculationType('custom'); // Set calculation type to custom
                   calculatePumpSettings();
                 }
               }}
-              disabled={!selectedMedicationData || !inputs.patientWeight || !inputs.dose}
+              disabled={!selectedMedicationData || !inputs.patientWeight || !inputs.dose || calculationType === 'fixed'}
               title={!selectedMedicationData || !inputs.patientWeight || !inputs.dose ? 
                 "Please select medication, enter patient weight, and prescribed dose first" : 
+                calculationType === 'fixed' ? "Reset calculator to use custom infusion" :
                 "Set up custom infusion steps with variable rates"}
           >
             <Layers size={16} />
@@ -6260,6 +6303,301 @@ const RedesignedPumpCalculator = () => {
                         <RotateCcw size={16} />
                         Reset All
                       </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Vial Adjustment Modal for Drug Volume Calculation */}
+        {showVialAdjustmentModal && (
+          <div className="vial-combinations-modal">
+            <div className="modal-backdrop" onClick={() => setShowVialAdjustmentModal(false)} />
+            <div className="modal-content">
+              <div className="modal-header">
+                <h3>
+                  <Settings size={20} />
+                  Adjust Vial Count for Drug Volume
+                </h3>
+                <button 
+                  className="modal-close"
+                  onClick={() => setShowVialAdjustmentModal(false)}
+                  aria-label="Close"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body">
+                {selectedMedicationData && (
+                  <>
+                    <div className="medication-info-header">
+                      <strong>{selectedMedicationData.brandName}</strong>
+                      <span className="separator">•</span>
+                      <span>Required dose: {(() => {
+                        const weight = parseFloat(inputs.patientWeight);
+                        const dose = parseFloat(inputs.dose);
+                        const singleDose = inputs.doseUnit.includes('/kg') ? dose * weight : dose;
+                        return `${formatNumber(singleDose)} ${inputs.doseUnit.replace('/kg', '')}`;
+                      })()}</span>
+                    </div>
+                    
+                    {/* Show current optimal combination */}
+                    <div className="current-combination-info">
+                      <label>Current optimal combination:</label>
+                      <div className="vial-combination-display">
+                        {(() => {
+                          const singleDoseCombination = calculateSingleDoseVialCombination();
+                          if (!singleDoseCombination) return 'No combination available';
+                          return singleDoseCombination.map((item, idx) => (
+                            <span key={idx} className="vial-count-item">
+                              {idx > 0 ? ' + ' : ''}
+                              {item.count} × {item.vial.strength}{item.vial.unit}
+                            </span>
+                          )).reduce((acc, curr) => [...acc, curr], []);
+                        })()}
+                      </div>
+                    </div>
+
+                    <div className="vial-input-list">
+                      {selectedMedicationData.vialSizes
+                        ?.filter(vial => !vial.form || (vial.form !== 'capsule' && vial.form !== 'tablet'))
+                        .map((vial, index) => {
+                          const vialKey = `${vial.strength}_${vial.unit}_${index}`;
+                          // Initialize with current optimal combination if not set
+                          const currentCount = manualVialOverride?.find(item => 
+                            item.vial.strength === vial.strength && 
+                            item.vial.unit === vial.unit
+                          )?.count || 0;
+                          
+                          return (
+                            <div key={vialKey} className="vial-input-row">
+                              <div className="vial-info">
+                                <span className="vial-strength">{vial.strength} {vial.unit}</span>
+                                {vial.volume && <span className="vial-volume">({vial.volume} mL)</span>}
+                              </div>
+                              <div className="vial-input-controls">
+                                <button
+                                  type="button"
+                                  className="vial-adjust-btn"
+                                  onClick={() => {
+                                    const newOverride = [...(manualVialOverride || [])];
+                                    const existingIndex = newOverride.findIndex(item => 
+                                      item.vial.strength === vial.strength && 
+                                      item.vial.unit === vial.unit
+                                    );
+                                    
+                                    if (existingIndex >= 0 && newOverride[existingIndex].count > 1) {
+                                      newOverride[existingIndex].count--;
+                                    } else if (existingIndex >= 0) {
+                                      newOverride.splice(existingIndex, 1);
+                                    }
+                                    
+                                    setManualVialOverride(newOverride.length > 0 ? newOverride : null);
+                                  }}
+                                  disabled={currentCount === 0}
+                                >
+                                  <Minus size={16} />
+                                </button>
+                                <input
+                                  type="number"
+                                  className="vial-count-input"
+                                  value={currentCount}
+                                  onChange={(e) => {
+                                    const value = parseInt(e.target.value) || 0;
+                                    const newOverride = [...(manualVialOverride || [])];
+                                    const existingIndex = newOverride.findIndex(item => 
+                                      item.vial.strength === vial.strength && 
+                                      item.vial.unit === vial.unit
+                                    );
+                                    
+                                    if (value > 0) {
+                                      if (existingIndex >= 0) {
+                                        newOverride[existingIndex].count = value;
+                                      } else {
+                                        newOverride.push({ vial, count: value });
+                                      }
+                                    } else if (existingIndex >= 0) {
+                                      newOverride.splice(existingIndex, 1);
+                                    }
+                                    
+                                    setManualVialOverride(newOverride.length > 0 ? newOverride : null);
+                                  }}
+                                  min="0"
+                                />
+                                <button
+                                  type="button"
+                                  className="vial-adjust-btn"
+                                  onClick={() => {
+                                    const newOverride = [...(manualVialOverride || [])];
+                                    const existingIndex = newOverride.findIndex(item => 
+                                      item.vial.strength === vial.strength && 
+                                      item.vial.unit === vial.unit
+                                    );
+                                    
+                                    if (existingIndex >= 0) {
+                                      newOverride[existingIndex].count++;
+                                    } else {
+                                      newOverride.push({ vial, count: 1 });
+                                    }
+                                    
+                                    setManualVialOverride(newOverride);
+                                  }}
+                                >
+                                  <Plus size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+
+                    {/* Show new drug volume based on manual selection */}
+                    {manualVialOverride && (
+                      <div className="coverage-results">
+                        <div className="coverage-summary">
+                          <div className="summary-row highlight">
+                            <span className="summary-label">New Drug Volume:</span>
+                            <span className="summary-value">
+                              {calculateDrugVolume(true, volumeCalculationMethod)} mL
+                            </span>
+                          </div>
+                          <div className="summary-row">
+                            <span className="summary-label">Total Vials:</span>
+                            <span className="summary-value">
+                              {manualVialOverride.reduce((sum, item) => sum + item.count, 0)} vials
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="modal-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <button
+                          type="button"
+                          className="round-vial-btn"
+                          onClick={() => {
+                            // Calculate required dose
+                            const weight = parseFloat(inputs.patientWeight);
+                            const dose = parseFloat(inputs.dose);
+                            const requiredDose = inputs.doseUnit.includes('/kg') ? dose * weight : dose;
+                            
+                            // Find the largest vial size
+                            const sortedVials = [...selectedMedicationData.vialSizes]
+                              .filter(vial => !vial.form || (vial.form !== 'capsule' && vial.form !== 'tablet'))
+                              .sort((a, b) => b.strength - a.strength);
+                            
+                            if (sortedVials.length > 0) {
+                              const largestVial = sortedVials[0];
+                              // Round UP to nearest full vial
+                              const vialsNeeded = Math.ceil(requiredDose / largestVial.strength);
+                              setManualVialOverride([{ vial: largestVial, count: vialsNeeded }]);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#4CAF50',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                          }}
+                        >
+                          <ChevronUp size={16} style={{ color: 'white' }} />
+                          <span style={{ color: 'white' }}>Round Up to Full Vial</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="round-vial-btn"
+                          onClick={() => {
+                            // Calculate required dose
+                            const weight = parseFloat(inputs.patientWeight);
+                            const dose = parseFloat(inputs.dose);
+                            const requiredDose = inputs.doseUnit.includes('/kg') ? dose * weight : dose;
+                            
+                            // Find the largest vial size
+                            const sortedVials = [...selectedMedicationData.vialSizes]
+                              .filter(vial => !vial.form || (vial.form !== 'capsule' && vial.form !== 'tablet'))
+                              .sort((a, b) => b.strength - a.strength);
+                            
+                            if (sortedVials.length > 0) {
+                              const largestVial = sortedVials[0];
+                              // Round DOWN to nearest full vial
+                              const vialsNeeded = Math.floor(requiredDose / largestVial.strength);
+                              if (vialsNeeded > 0) {
+                                setManualVialOverride([{ vial: largestVial, count: vialsNeeded }]);
+                              }
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#f44336',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                          }}
+                        >
+                          <ChevronDown size={16} style={{ color: 'white' }} />
+                          <span style={{ color: 'white' }}>Round Down to Full Vial</span>
+                        </button>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <button
+                          type="button"
+                          className="reset-vials-btn"
+                          onClick={() => {
+                            setManualVialOverride(null);
+                          }}
+                          style={{
+                            backgroundColor: '#757575',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                          }}
+                        >
+                          <RotateCcw size={16} style={{ color: 'white' }} />
+                          <span style={{ color: 'white' }}>Reset to Optimal</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="apply-vials-btn"
+                          onClick={() => {
+                            setShowVialAdjustmentModal(false);
+                          }}
+                          style={{
+                            backgroundColor: '#757575',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                          }}
+                        >
+                          <Check size={16} style={{ color: 'white' }} />
+                          <span style={{ color: 'white' }}>Apply Changes</span>
+                        </button>
+                      </div>
                     </div>
                   </>
                 )}

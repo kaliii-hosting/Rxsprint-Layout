@@ -110,16 +110,6 @@
           "reconstitutionSolution": "Sterile water or Normal Saline",
           "reconstitutionVolume": 10.2,
           "withdrawVolume": 10.0
-        },
-        {
-          "strength": 200,
-          "unit": "units",
-          "volume": 5.3,
-          "concentration": 40,
-          "reconstitutionSolution": "Sterile water",
-          "reconstitutionVolume": 5.1,
-          "withdrawVolume": 5.0,
-          "availability": "unavailable"
         }
       ],
       "standardDose": {
@@ -154,7 +144,7 @@
           "method": "constant rate"
         }
       },
-      "notes": "Final concentration = 40 units/mL (10.6 mL total); 200-unit vial unavailable",
+      "notes": "Final concentration = 40 units/mL (10.6 mL total)",
       "specialDosing": "Fixed doses (no weight-based adjustments): CEREZYME: 60 units/kg every 2 weeks (range: 2.5-60 units/kg)"
     },
     "ELAPRASE": {

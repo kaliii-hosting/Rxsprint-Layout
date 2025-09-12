@@ -187,6 +187,16 @@ class SPLParser {
       console.log(`Skipping ${displayName || loincCode} - it's a summary/navigation section`);
       return;
     }
+    
+    // Also check if this section is nested inside highlights
+    const parentSection = section.parentElement?.closest('section');
+    if (parentSection) {
+      const parentCode = parentSection.querySelector('code')?.getAttribute('code');
+      if (parentCode === '48780-1') {
+        console.log(`Skipping ${displayName || loincCode} - nested inside highlights section`);
+        return;
+      }
+    }
 
     const mapping = this.loincMap[loincCode];
     if (!mapping) {

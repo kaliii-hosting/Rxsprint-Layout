@@ -786,10 +786,53 @@
   color: #333;
 }
 
+.ndc-info {
+  margin: 10px 0;
+  font-size: 13px;
+  color: #333;
+}
+
+.ndc-info strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.ndc-codes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.ndc-code {
+  background: #f0f0f0;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.dark .ndc-info {
+  color: #ccc;
+}
+
+.dark .ndc-info strong {
+  color: #aaa;
+}
+
+.dark .ndc-code {
+  background: #2a2a2a;
+  color: #ccc;
+  border-color: #444;
+}
+
 .view-more-btn {
   margin-top: 10px;
   padding: 6px 12px;
-  background: #CB6015;
+  background: #CB6015 !important;
   color: white !important;
   border: none;
   border-radius: 3px;
@@ -802,8 +845,12 @@
   gap: 5px;
 }
 
+.view-more-btn span {
+  color: white !important;
+}
+
 .view-more-btn:hover {
-  background: #B55413;
+  background: #B55413 !important;
 }
 
 .view-more-btn::before {
@@ -1689,23 +1736,160 @@
 }
 
 /* Boxed Warning - DailyMed exact style */
-.section-text .dm-boxed-warning,
-.boxed-warning,
-.boxed-section {
+.boxed-warning-section {
   border: 2px solid #000;
   background: #fff;
-  margin: 15px 0;
-  padding: 10px;
+  margin: 20px 0;
+  padding: 15px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-.boxed-section-title {
+.dark .boxed-warning-section {
+  background: #2a2a2a;
+  border-color: #fff;
+  color: #fff;
+}
+
+.boxed-warning-title {
   font-weight: bold;
-  font-size: 13px;
+  font-size: 14px;
   text-transform: uppercase;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+
+.boxed-warning-content {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.boxed-warning-content p {
+  margin: 10px 0;
+}
+
+.boxed-warning-content ul {
+  margin: 10px 0;
+  padding-left: 25px;
+  list-style: none;
+}
+
+.boxed-warning-content ul li {
+  position: relative;
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.boxed-warning-content ul li::before {
+  content: '•';
+  color: #FFA500;
+  font-weight: bold;
+  font-size: 16px;
+  position: absolute;
+  left: 0;
+  top: -2px;
+}
+
+/* Handle DailyMed HTML structures in boxed warning */
+.boxed-warning-content .dm-list-item::before,
+.boxed-warning-content li[type="disc"]::before {
+  content: '•';
+  color: #FFA500;
+}
+
+.boxed-warning-content .dm-reference,
+.boxed-warning-content .xref {
+  font-style: italic;
+  color: #666;
+}
+
+.boxed-warning-content .dm-paragraph,
+.boxed-warning-content .paragraph {
+  margin: 10px 0;
+}
+
+.boxed-warning-content h1,
+.boxed-warning-content h2,
+.boxed-warning-content h3 {
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 10px 0 8px 0;
+}
+
+.boxed-warning-content em,
+.boxed-warning-content i {
+  font-style: italic;
+  color: #666;
+}
+
+.dark .boxed-warning-content em,
+.dark .boxed-warning-content i {
+  color: #aaa;
+}
+
+.boxed-warning-content a {
+  color: #0066cc;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.boxed-warning-content a:hover {
+  color: #0052a3;
+}
+
+.dark .boxed-warning-content a {
+  color: #66b3ff;
+}
+
+.boxed-warning-content strong {
+  font-weight: bold;
+}
+
+.boxed-warning-close {
+  display: block;
+  margin-top: 15px;
+  padding: 5px 15px;
   background: #f0f0f0;
-  padding: 5px 10px;
-  margin: -10px -10px 10px -10px;
+  border: 1px solid #ccc;
+  color: #333;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.boxed-warning-close:hover {
+  background: #e0e0e0;
+}
+
+.dark .boxed-warning-close {
+  background: #444;
+  border-color: #666;
+  color: #fff;
+}
+
+.dark .boxed-warning-close:hover {
+  background: #555;
+}
+
+/* Special handling for boxed warning in section item */
+.section-item.boxed-warning-item {
+  margin-bottom: 20px;
+}
+
+.section-item.boxed-warning-item .section-header {
+  display: none;
+}
+
+.section-item.boxed-warning-item .section-content {
+  display: block !important;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
 }
 
 .section-text .dm-subsection {
@@ -2835,5 +3019,270 @@
   .counsel-content {
     -webkit-overflow-scrolling: touch;
     transform: translateZ(0);
+  }
+}
+/* Comprehensive Information Panel Styles */
+.comprehensive-info-panel {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.dark .comprehensive-info-panel {
+  background: #2d2d2d;
+  border-color: #444;
+}
+
+.comprehensive-info-panel .info-section {
+  margin-bottom: 20px;
+}
+
+.comprehensive-info-panel .info-section:last-child {
+  margin-bottom: 0;
+}
+
+.comprehensive-info-panel h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.dark .comprehensive-info-panel h4 {
+  color: #adb5bd;
+}
+
+/* Drug Classes */
+.drug-classes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.drug-class-item {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dark .drug-class-item {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+.class-name {
+  font-weight: 500;
+  color: #212529;
+}
+
+.dark .class-name {
+  color: #f8f9fa;
+}
+
+.class-type {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+/* Pharmacologic Classes */
+.pharma-classes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pharma-class-item {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dark .pharma-class-item {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+.pharma-name {
+  font-weight: 500;
+  color: #212529;
+}
+
+.dark .pharma-name {
+  color: #f8f9fa;
+}
+
+.pharma-type {
+  font-size: 12px;
+  color: #6c757d;
+  background: #e9ecef;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.dark .pharma-type {
+  background: #495057;
+  color: #adb5bd;
+}
+
+/* RxNorm Mappings */
+.rxnorm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rxnorm-item {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.dark .rxnorm-item {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+.rxcui {
+  font-family: monospace;
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  color: #495057;
+}
+
+.dark .rxcui {
+  background: #2d2d2d;
+  color: #adb5bd;
+}
+
+.rxstring {
+  flex: 1;
+  color: #212529;
+}
+
+.dark .rxstring {
+  color: #f8f9fa;
+}
+
+.rxtty {
+  font-size: 11px;
+  color: #6c757d;
+  text-transform: uppercase;
+}
+
+/* NDC Packages */
+.packages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.package-item {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 8px 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.dark .package-item {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+.ndc-code {
+  font-family: monospace;
+  font-size: 12px;
+  color: #0066cc;
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.dark .ndc-code {
+  color: #4dabf7;
+}
+
+.package-desc {
+  flex: 1;
+  font-size: 13px;
+  color: #495057;
+}
+
+.dark .package-desc {
+  color: #adb5bd;
+}
+
+.more-packages {
+  padding: 8px;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  font-size: 12px;
+}
+
+/* Drug Names */
+.drug-names-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.drug-name-tag {
+  background: #e7f3ff;
+  color: #004085;
+  border: 1px solid #b8daff;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.dark .drug-name-tag {
+  background: #1c3d5a;
+  color: #b8daff;
+  border-color: #004085;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .comprehensive-info-panel {
+    padding: 15px;
+  }
+  
+  .pharma-class-item,
+  .rxnorm-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .package-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .ndc-code {
+    min-width: auto;
   }
 }

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test DailyMed Extraction</title>
+</head>
+<body>
+    <h1>Testing DailyMed Section Extraction</h1>
+    <button onclick="testExtraction()">Test Aldurazyme Extraction</button>
+    <div id="results"></div>
+
+    <script>
+    async function testExtraction() {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = 'Fetching...';
+        
+        try {
+            // Fetch the XML directly
+            const response = await fetch('/api/dailymed/services/v2/spls/a80ac249-cae4-41f3-88bb-344088b20e60.xml');
+            const xmlText = await response.text();
+            
+            // Parse XML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(xmlText, 'text/xml');
+            
+            // Find all sections
+            const sections = doc.querySelectorAll('section');
+            let html = '<h2>Found ' + sections.length + ' sections</h2>';
+            
+            sections.forEach((section, idx) => {
+                const code = section.querySelector('code');
+                const title = section.querySelector('title');
+                const text = section.querySelector('text');
+                
+                if (code) {
+                    const loincCode = code.getAttribute('code');
+                    const displayName = code.getAttribute('displayName');
+                    const titleText = title ? title.textContent : 'No title';
+                    const textContent = text ? text.textContent.substring(0, 200) : 'No text';
+                    
+                    // Check if inside highlights
+                    let parentSection = section.parentElement;
+                    let insideHighlights = false;
+                    while (parentSection && parentSection.tagName === 'section') {
+                        const parentCode = parentSection.querySelector('code');
+                        if (parentCode && parentCode.getAttribute('code') === '48780-1') {
+                            insideHighlights = true;
+                            break;
+                        }
+                        parentSection = parentSection.parentElement;
+                    }
+                    
+                    // Highlight critical sections
+                    let style = '';
+                    if (loincCode === '34068-7') style = 'background: #ffcccc;'; // Dosage
+                    if (loincCode === '34076-0') style = 'background: #ccffcc;'; // Patient Counseling
+                    if (insideHighlights) style += ' opacity: 0.5;';
+                    
+                    html += `
+                        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px; ${style}">
+                            <strong>Section ${idx}</strong><br>
+                            LOINC: ${loincCode}<br>
+                            Display: ${displayName}<br>
+                            Title: ${titleText}<br>
+                            Inside Highlights: ${insideHighlights}<br>
+                            Text Length: ${text ? text.textContent.length : 0} chars<br>
+                            Preview: ${textContent}...
+                        </div>
+                    `;
+                    
+                    // Special logging for dosage sections
+                    if (loincCode === '34068-7' || displayName?.includes('DOSAGE')) {
+                        console.log('DOSAGE SECTION:', {
+                            index: idx,
+                            loincCode,
+                            displayName,
+                            title: titleText,
+                            insideHighlights,
+                            textLength: text ? text.textContent.length : 0,
+                            preview: textContent
+                        });
+                    }
+                }
+            });
+            
+            resultsDiv.innerHTML = html;
+        } catch (error) {
+            resultsDiv.innerHTML = 'Error: ' + error.message;
+            console.error(error);
+        }
+    }
+    </script>
+</body>
+</html>

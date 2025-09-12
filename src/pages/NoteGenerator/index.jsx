@@ -23,7 +23,12 @@ import {
   Save,
   X,
   Tag,
-  FolderOpen
+  FolderOpen,
+  ScanLine,
+  Sparkles,
+  Zap,
+  Shield,
+  Star
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { firestore as db } from '../../config/firebase';
@@ -39,6 +44,8 @@ const NoteGenerator = () => {
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [editedNote, setEditedNote] = useState('');
   const noteTextareaRef = useRef(null);
+  const [isGeneratingNote, setIsGeneratingNote] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState('');
   
   // Scroll to top function
   const scrollToTop = () => {
@@ -56,9 +63,10 @@ const NoteGenerator = () => {
     }
     
     // Method 4: History push to top
-    if (window.location.hash) {
-      window.location.hash = '';
-    }
+    // Commented out as it might cause re-renders
+    // if (window.location.hash) {
+    //   window.location.hash = '';
+    // }
     
     // Method 5: Focus on top element
     const topElement = document.querySelector('h1, h2, .card-header, .dashboard-card');
@@ -101,6 +109,9 @@ const NoteGenerator = () => {
   const bannerInputRef = useRef(null);
   const bannerSectionRef = useRef(null);
   const bannersListRef = useRef(null);
+  
+  // Ref to access latest interventionForm value in event handlers
+  const interventionFormRef = useRef();
   
   // Existing notes state
   const [existingNotes, setExistingNotes] = useState([]);
@@ -146,6 +157,11 @@ const NoteGenerator = () => {
     pharmacistQuestions: '',
     pharmacistQuestionsDetails: '',
     ade: '',
+    haeAttack: '',
+    haeAttackCount: '',
+    haeAttackMedications: [],
+    haeAttackSwellingAreas: [],
+    haeAttackTotalDoses: '',
     shippingStatus: '',
     shippingDetails: '',
     stao: ''
@@ -192,8 +208,8 @@ const NoteGenerator = () => {
     'stao'
   ];
 
-  // Update intervention form field
-  const updateInterventionField = (field, value) => {
+  // Update intervention form field - memoized to prevent re-creation
+  const updateInterventionField = useCallback((field, value) => {
     setInterventionForm(prev => ({
       ...prev,
       [field]: value
@@ -209,13 +225,12 @@ const NoteGenerator = () => {
         return newSet;
       });
     }
-    
-    // Clear edited note to enable dynamic updating
-    // This ensures the note regenerates with new field values
-    if (editedNote) {
-      setEditedNote('');
-    }
-  };
+  }, []);
+
+  // Update ref with latest interventionForm value whenever it changes
+  useEffect(() => {
+    interventionFormRef.current = interventionForm;
+  }, [interventionForm]);
 
   // Render three-way switch toggle component with drag support
   const renderSwitchToggle = (fieldName, yesValue, noValue, yesLabel = 'Yes', noLabel = 'No') => {
@@ -458,14 +473,14 @@ const NoteGenerator = () => {
 
   // Generate intervention note
   const generateInterventionNote = () => {
-    const fields = [];
-    
-    // Start with basic information
-    if (interventionForm.reviewedNotesFor) {
-      fields.push(`Reviewed notes and order for ${interventionForm.reviewedNotesFor}`);
-    } else {
-      fields.push('Reviewed notes and order for');
-    }
+      const fields = [];
+      
+      // Start with basic information
+      if (interventionForm.reviewedNotesFor) {
+        fields.push(`Reviewed notes and order for ${interventionForm.reviewedNotesFor}`);
+      } else {
+        fields.push('Reviewed notes and order for');
+      }
     
     if (interventionForm.sig) {
       fields.push(`Sig: ${interventionForm.sig}`);
@@ -588,10 +603,12 @@ const NoteGenerator = () => {
     }
     
     // Compliance
-    if (interventionForm.compliance === 'compliant') {
-      fields.push('Patient compliant');
-    } else if (interventionForm.compliance === 'not-compliant') {
-      fields.push('Patient not compliant');
+    if (interventionForm.compliance === 'good') {
+      fields.push('Patient compliance: Good');
+    } else if (interventionForm.compliance === 'fair') {
+      fields.push('Patient compliance: Fair');
+    } else if (interventionForm.compliance === 'poor') {
+      fields.push('Patient compliance: Poor');
     }
     
     // Infusion Method
@@ -619,6 +636,38 @@ const NoteGenerator = () => {
       fields.push('ADE SUBMITTED');
     }
     
+    // HAE Attack
+    if (interventionForm.haeAttack === 'yes') {
+      // Always add this when HAE Attack is "yes"
+      fields.push('Patient reported acute attacks');
+      
+      if (interventionForm.haeAttackCount) {
+        const attackText = interventionForm.haeAttackCount === '3+' ? '3 or more' : interventionForm.haeAttackCount;
+        fields.push(`Patient had ${attackText} acute HAE attack(s) since last fill`);
+      }
+      
+      if (interventionForm.haeAttackSwellingAreas && interventionForm.haeAttackSwellingAreas.length > 0) {
+        fields.push(`Swelling areas: ${interventionForm.haeAttackSwellingAreas.join(', ')}`);
+      }
+      
+      if (interventionForm.haeAttackTotalDoses) {
+        fields.push(`Total doses used for acute attacks: ${interventionForm.haeAttackTotalDoses}`);
+      }
+      
+      if (interventionForm.haeAttackMedications && interventionForm.haeAttackMedications.length > 0) {
+        const medsWithDoses = interventionForm.haeAttackMedications.map(med => {
+          const doses = interventionForm[`haeAttackDoses_${med}`];
+          if (doses && !med.includes('resolved') && !med.includes('Prophy')) {
+            return `${med} (${doses} doses)`;
+          }
+          return med;
+        });
+        fields.push(`Medications used for attacks: ${medsWithDoses.join(', ')}`);
+      }
+    } else if (interventionForm.haeAttack === 'no') {
+      fields.push('No HAE attacks reported');
+    }
+    
     // Shipping Status
     if (interventionForm.shippingStatus === 'okay-to-ship') {
       fields.push('Okay to ship supplies');
@@ -637,7 +686,9 @@ const NoteGenerator = () => {
       fields.push(`STAO: ${interventionForm.stao}`);
     }
     
-    return fields.join(' . ').toUpperCase() + ' .';
+    const generatedNote = fields.join('. ').toUpperCase() + '.';
+    
+    return generatedNote;
   };
 
   // Copy to clipboard
@@ -653,15 +704,17 @@ const NoteGenerator = () => {
 
   // Handle edit mode
   const handleEditNote = () => {
-    const currentNote = isEditingNote ? editedNote : generateInterventionNote();
-    setEditedNote(currentNote);
-    setIsEditingNote(true);
-    setTimeout(() => {
-      if (noteTextareaRef.current) {
-        noteTextareaRef.current.focus();
-        noteTextareaRef.current.setSelectionRange(currentNote.length, currentNote.length);
-      }
-    }, 100);
+    if (!isEditingNote) {
+      const currentNote = generateInterventionNote();
+      setEditedNote(currentNote);
+      setIsEditingNote(true);
+      setTimeout(() => {
+        if (noteTextareaRef.current) {
+          noteTextareaRef.current.focus();
+          noteTextareaRef.current.setSelectionRange(currentNote.length, currentNote.length);
+        }
+      }, 100);
+    }
   };
 
   // Save edited note
@@ -742,6 +795,11 @@ const NoteGenerator = () => {
       pharmacistQuestions: '',
       pharmacistQuestionsDetails: '',
       ade: '',
+      haeAttack: '',
+      haeAttackCount: '',
+      haeAttackMedications: [],
+      haeAttackSwellingAreas: [],
+      haeAttackTotalDoses: '',
       shippingStatus: '',
       shippingDetails: '',
       stao: ''
@@ -754,6 +812,10 @@ const NoteGenerator = () => {
   // Banner Notes Functions
   const addBanner = async () => {
     if (!newBannerText.trim()) return;
+    
+    // Show loading animation when adding banner
+    setIsGeneratingNote(true);
+    setGenerationProgress('Adding banner...');
     
     const newBanner = {
       id: Date.now().toString(),
@@ -776,6 +838,12 @@ const NoteGenerator = () => {
     if (bannerNotes.title.trim()) {
       saveBannerNoteToFirebase(updatedBanners);
     }
+    
+    // Hide loading animation
+    setTimeout(() => {
+      setIsGeneratingNote(false);
+      setGenerationProgress('');
+    }, 500);
   };
 
   const removeBanner = (bannerId) => {
@@ -982,7 +1050,7 @@ const NoteGenerator = () => {
       
       // Only update if value actually changed
       const fieldName = dragState.fieldName;
-      const currentValue = interventionForm[fieldName];
+      const currentValue = interventionFormRef.current[fieldName];
       
       if (currentValue !== newValue) {
         updateInterventionField(fieldName, newValue);
@@ -1073,7 +1141,7 @@ const NoteGenerator = () => {
       }
       
       const fieldName = dragState.fieldName;
-      const currentValue = interventionForm[fieldName];
+      const currentValue = interventionFormRef.current[fieldName];
       
       if (currentValue !== newValue) {
         updateInterventionField(fieldName, newValue);
@@ -1126,10 +1194,24 @@ const NoteGenerator = () => {
         document.removeEventListener('touchend', handleGlobalTouchEnd);
       };
     }
-  }, [dragState, interventionForm]);
+  }, [dragState, updateInterventionField]);
 
   return (
     <div className="note-generator-page page-container">
+      {/* Loading Overlay - Identical to Supplies Analyzer */}
+      {isGeneratingNote && (
+        <div className="scanning-overlay">
+          <div className="scanning-content supplies-scanning">
+            <div className="supplies-scan-animation">
+              <ScanLine size={64} className="supplies-scanning-icon" />
+            </div>
+            <p className="scan-text supplies-scan-text">
+              {generationProgress || 'Processing...'}
+            </p>
+          </div>
+        </div>
+      )}
+      
       <div className="note-generator-content">
         <div className="note-generator-dashboard">
 
@@ -1362,7 +1444,11 @@ const NoteGenerator = () => {
                                     {note.banners?.slice(0, 3).map((banner, idx) => (
                                       <span 
                                         key={idx}
-                                        className={`preview-banner ${banner.isOrange ? 'orange' : 'blue'}`}
+                                        className={`preview-banner ${
+                                          banner.color === 'orange' || banner.isOrange ? 'orange' : 
+                                          banner.color === 'green' ? 'green' : 
+                                          banner.color === 'grey' ? 'grey' : 'blue'
+                                        }`}
                                       >
                                         {banner.text.length > 20 ? banner.text.substring(0, 20) + '...' : banner.text}
                                       </span>
@@ -1458,33 +1544,59 @@ const NoteGenerator = () => {
                     </div>
                   </div>
 
-                  {/* Display Existing Banners */}
+                  {/* Display Existing Banners - Redesigned */}
                   {bannerNotes.banners && bannerNotes.banners.length > 0 && (
-                    <div className="banner-display-section">
-                      <h5>Current Banners:</h5>
-                      <div ref={bannersListRef} className="banners-list">
+                    <div className="modern-banner-display-section">
+                      <div className="banner-section-header">
+                        <h5 className="banner-section-title">
+                          <Sparkles size={16} />
+                          Active Banners
+                        </h5>
+                        <span className="banner-count">{bannerNotes.banners.length}</span>
+                      </div>
+                      <div ref={bannersListRef} className="modern-banners-list">
                         {bannerNotes.banners.map((banner, index) => (
                           <React.Fragment key={banner.id}>
-                            {banner.newLine && index > 0 && <div className="banner-line-break" />}
+                            {banner.newLine && index > 0 && <div className="banner-separator" />}
                             <div 
-                              className={`banner-item ${
-                                banner.color === 'orange' || banner.isOrange ? 'orange' : 
-                                banner.color === 'green' ? 'green' : 
-                                banner.color === 'grey' ? 'grey' : 'blue'
-                              } ${banner.isDone ? 'done' : ''} ${copiedBannerId === banner.id ? 'copied' : ''}`}
+                              className={`modern-banner-card ${
+                                banner.color === 'orange' || banner.isOrange ? 'banner-orange' : 
+                                banner.color === 'green' ? 'banner-green' : 
+                                banner.color === 'grey' ? 'banner-grey' : 'banner-blue'
+                              } ${banner.isDone ? 'banner-done' : ''} ${copiedBannerId === banner.id ? 'banner-copied' : ''}`}
                               onClick={() => copyBannerToClipboard(banner)}
                               title="Click to copy banner text"
                             >
-                              <span className="banner-text">{banner.text}</span>
+                              <div className="banner-icon-wrapper">
+                                {banner.color === 'orange' || banner.isOrange ? <AlertCircle size={20} /> : 
+                                 banner.color === 'green' ? <Shield size={20} /> : 
+                                 banner.color === 'grey' ? <Info size={20} /> : <Star size={20} />}
+                              </div>
+                              <div className="banner-content-wrapper">
+                                <div className="banner-header">
+                                  <span className="banner-label">
+                                    {banner.color === 'orange' || banner.isOrange ? 'PRIORITY' : 
+                                     banner.color === 'green' ? 'SUCCESS' : 
+                                     banner.color === 'grey' ? 'INFO' : 'STANDARD'}
+                                  </span>
+                                  <span className="banner-timestamp">
+                                    {new Date(banner.createdAt).toLocaleTimeString('en-US', { 
+                                      hour: '2-digit', 
+                                      minute: '2-digit' 
+                                    })}
+                                  </span>
+                                </div>
+                                <div className="banner-message">{banner.text}</div>
+                              </div>
                               <button
-                                className="remove-banner-btn"
+                                className="banner-action-btn"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   removeBanner(banner.id);
                                 }}
                                 title="Remove banner"
                               >
-                                <X size={14} />
+                                <X size={18} />
                               </button>
                             </div>
                           </React.Fragment>
@@ -1518,12 +1630,14 @@ const NoteGenerator = () => {
             {isInterventionExpanded && (
             <div className="card-body">
               <div className="intervention-form-container">
-                {/* All fields in requested order */}
-                <div className="form-section">
-                  <h4 className="section-title">
+                {/* Patient Information Section */}
+                <div className="section-header-fullwidth">
+                  <h4 className="section-title-fullwidth">
                     <User size={16} />
                     Patient Information
                   </h4>
+                </div>
+                <div className="form-section">
                   <div className="input-grid compact-grid">
                     <div className="input-group">
                       <label>Reviewed notes and order for</label>
@@ -1622,7 +1736,7 @@ const NoteGenerator = () => {
                       />
                     </div>
                     <div className="input-group">
-                      <label>Number of doses on hand with patient</label>
+                      <label>Doses on-hand</label>
                       <input
                         ref={el => formRefs.current['numberOfDoses'] = el}
                         type="text"
@@ -1638,11 +1752,13 @@ const NoteGenerator = () => {
                 </div>
 
                 {/* Quick Toggle Options */}
-                <div className="form-section toggle-buttons-section">
-                  <h4 className="section-title">
+                <div className="section-header-fullwidth">
+                  <h4 className="section-title-fullwidth">
                     <Activity size={16} />
                     Quick Toggle Options
                   </h4>
+                </div>
+                <div className="form-section toggle-buttons-section">
                   <div className="toggle-buttons-grid">
                     {/* Allergy Updates */}
                     <div className="input-group">
@@ -1835,10 +1951,32 @@ const NoteGenerator = () => {
                       )}
                     </div>
 
-                    {/* Compliance */}
+                    {/* Compliance - 3-button toggle */}
                     <div className="input-group">
                       <label>Compliance</label>
-                      {renderSwitchToggle('compliance', 'compliant', 'not-compliant')}
+                      <div className="compliance-toggle-container">
+                        <button
+                          className={`compliance-btn good ${interventionForm.compliance === 'good' ? 'active' : ''}`}
+                          onClick={() => updateInterventionField('compliance', 'good')}
+                          type="button"
+                        >
+                          Good
+                        </button>
+                        <button
+                          className={`compliance-btn fair ${interventionForm.compliance === 'fair' ? 'active' : ''}`}
+                          onClick={() => updateInterventionField('compliance', 'fair')}
+                          type="button"
+                        >
+                          Fair
+                        </button>
+                        <button
+                          className={`compliance-btn poor ${interventionForm.compliance === 'poor' ? 'active' : ''}`}
+                          onClick={() => updateInterventionField('compliance', 'poor')}
+                          type="button"
+                        >
+                          Poor
+                        </button>
+                      </div>
                     </div>
 
                     {/* Pharmacist Interaction */}
@@ -1864,15 +2002,296 @@ const NoteGenerator = () => {
                       <label>ADE</label>
                       {renderSwitchToggle('ade', 'yes', 'no')}
                     </div>
+
+                    {/* HAE Attack */}
+                    <div className="input-group">
+                      <label>HAE Attack</label>
+                      {renderSwitchToggle('haeAttack', 'yes', 'no')}
+                    </div>
+                    
+                    {/* HAE Attack Related Fields - Show when HAE Attack is "yes" */}
+                    {interventionForm.haeAttack === 'yes' && (
+                      <div className="input-group" style={{ gridColumn: '1 / -1', width: '100%' }}>
+                        <div style={{ 
+                          border: '2px solid var(--border-color)',
+                          borderRadius: '12px',
+                          background: 'var(--bg-tertiary)',
+                          marginTop: '0.5rem',
+                          overflow: 'hidden'
+                        }}>
+                          {/* Section 1: Number of Acute Attacks */}
+                          <div style={{
+                            padding: '1.25rem',
+                            background: 'rgba(255, 255, 255, 0.5)',
+                            borderBottom: '2px solid var(--border-color)'
+                          }}>
+                            <label style={{ 
+                              fontSize: '0.875rem', 
+                              fontWeight: '700',
+                              color: 'var(--text-primary)',
+                              display: 'block',
+                              marginBottom: '0.75rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              textAlign: 'center'
+                            }}>
+                              Number of Acute Attacks Since Last Fill
+                            </label>
+                            <div className="compliance-toggle-container" style={{ marginTop: '0.5rem', width: 'fit-content', margin: '0.5rem auto 0' }}>
+                              <button
+                                type="button"
+                                className={`compliance-btn ${interventionForm.haeAttackCount === '1' ? 'active' : ''}`}
+                                onClick={() => updateInterventionField('haeAttackCount', '1')}
+                                style={{
+                                  background: interventionForm.haeAttackCount === '1' ? '#39ff14' : 'transparent',
+                                  color: interventionForm.haeAttackCount === '1' ? '#000' : 'var(--text-secondary)',
+                                  minWidth: '60px'
+                                }}
+                              >
+                                1
+                              </button>
+                              <button
+                                type="button"
+                                className={`compliance-btn ${interventionForm.haeAttackCount === '2' ? 'active' : ''}`}
+                                onClick={() => updateInterventionField('haeAttackCount', '2')}
+                                style={{
+                                  background: interventionForm.haeAttackCount === '2' ? '#39ff14' : 'transparent',
+                                  color: interventionForm.haeAttackCount === '2' ? '#000' : 'var(--text-secondary)',
+                                  minWidth: '60px'
+                                }}
+                              >
+                                2
+                              </button>
+                              <button
+                                type="button"
+                                className={`compliance-btn ${interventionForm.haeAttackCount === '3+' ? 'active' : ''}`}
+                                onClick={() => updateInterventionField('haeAttackCount', '3+')}
+                                style={{
+                                  background: interventionForm.haeAttackCount === '3+' ? '#39ff14' : 'transparent',
+                                  color: interventionForm.haeAttackCount === '3+' ? '#000' : 'var(--text-secondary)',
+                                  minWidth: '100px'
+                                }}
+                              >
+                                3 or more
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Section 2: Total doses field */}
+                          <div style={{
+                            padding: '1.25rem',
+                            background: 'rgba(255, 255, 255, 0.3)',
+                            borderBottom: '2px solid var(--border-color)'
+                          }}>
+                            <label style={{ 
+                              fontSize: '0.875rem', 
+                              fontWeight: '700',
+                              color: 'var(--text-primary)',
+                              display: 'block',
+                              marginBottom: '0.75rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em'
+                            }}>
+                              Total number of doses used for acute attacks:
+                            </label>
+                            <input
+                              type="text"
+                              value={interventionForm.haeAttackTotalDoses || ''}
+                              onChange={(e) => updateInterventionField('haeAttackTotalDoses', e.target.value)}
+                              placeholder="Enter total doses"
+                              style={{
+                                width: '250px',
+                                padding: '0.5rem 0.75rem',
+                                fontSize: '0.875rem',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '6px',
+                                background: 'var(--input-bg)',
+                                color: 'var(--text-primary)',
+                                fontWeight: '500'
+                              }}
+                            />
+                          </div>
+
+                          {/* Section 3: Swelling Areas and Medications */}
+                          <div style={{ 
+                            padding: '1.25rem',
+                            background: 'rgba(255, 255, 255, 0.1)'
+                          }}>
+                            <div style={{ 
+                              display: 'grid', 
+                              gridTemplateColumns: '1fr 1.5fr', 
+                              gap: '2rem'
+                            }}>
+                              {/* Swelling Areas - Left */}
+                              <div style={{
+                                padding: '1rem',
+                                background: 'rgba(255, 255, 255, 0.4)',
+                                borderRadius: '8px',
+                                border: '1px solid rgba(0, 0, 0, 0.05)'
+                              }}>
+                                <label style={{ 
+                                  fontSize: '0.875rem', 
+                                  fontWeight: '700',
+                                  color: 'var(--text-primary)',
+                                  display: 'block',
+                                  marginBottom: '1rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em',
+                                  paddingBottom: '0.5rem',
+                                  borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
+                                }}>
+                                  Swelling Areas
+                                </label>
+                                <div style={{ 
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '0.75rem'
+                                }}>
+                                  {[
+                                    'Face (lips, eyes, cheeks)',
+                                    'Laryngeal',
+                                    'Extremities (hands, feet, arms, legs)',
+                                    'Genitals',
+                                    'Abdominal'
+                                  ].map(area => (
+                                    <label key={area} style={{ 
+                                      display: 'flex', 
+                                      alignItems: 'center', 
+                                      gap: '0.5rem', 
+                                      cursor: 'pointer', 
+                                      fontSize: '0.813rem'
+                                    }}>
+                                      <input
+                                        type="checkbox"
+                                        checked={(interventionForm.haeAttackSwellingAreas || []).includes(area)}
+                                        onChange={(e) => {
+                                          const currentAreas = interventionForm.haeAttackSwellingAreas || [];
+                                          if (e.target.checked) {
+                                            updateInterventionField('haeAttackSwellingAreas', [...currentAreas, area]);
+                                          } else {
+                                            updateInterventionField('haeAttackSwellingAreas', currentAreas.filter(a => a !== area));
+                                          }
+                                        }}
+                                        style={{ width: '16px', height: '16px', accentColor: 'var(--primary-color)' }}
+                                      />
+                                      <span style={{ color: 'var(--text-primary)', lineHeight: '1.3' }}>{area}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Medications - Right */}
+                              <div style={{
+                                padding: '1rem',
+                                background: 'rgba(255, 255, 255, 0.4)',
+                                borderRadius: '8px',
+                                border: '1px solid rgba(0, 0, 0, 0.05)'
+                              }}>
+                                <label style={{ 
+                                  fontSize: '0.875rem', 
+                                  fontWeight: '700',
+                                  color: 'var(--text-primary)',
+                                  display: 'block',
+                                  marginBottom: '1rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em',
+                                  paddingBottom: '0.5rem',
+                                  borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
+                                }}>
+                                  Medication(s) used to treat attack(s) and doses
+                                </label>
+                                <div style={{ 
+                                  display: 'grid',
+                                  gridTemplateColumns: 'repeat(2, 1fr)',
+                                  gap: '0.75rem 1.5rem'
+                                }}>
+                                  {[
+                                    'Berinert',
+                                    'Firazyr',
+                                    'Icatibant',
+                                    'Kalbitor',
+                                    'Ruconest',
+                                    'Ekterly',
+                                    'The attack resolved on its own',
+                                    'Prophy meds were used'
+                                  ].map(medication => (
+                                    <div key={medication} style={{ 
+                                      display: 'flex', 
+                                      alignItems: 'center', 
+                                      gap: '0.375rem'
+                                    }}>
+                                      <label style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '0.375rem', 
+                                        cursor: 'pointer', 
+                                        flex: 1,
+                                        minWidth: 0
+                                      }}>
+                                        <input
+                                          type="checkbox"
+                                          checked={(interventionForm.haeAttackMedications || []).includes(medication)}
+                                          onChange={(e) => {
+                                            const currentMeds = interventionForm.haeAttackMedications || [];
+                                            if (e.target.checked) {
+                                              updateInterventionField('haeAttackMedications', [...currentMeds, medication]);
+                                            } else {
+                                              updateInterventionField('haeAttackMedications', currentMeds.filter(m => m !== medication));
+                                              // Clear doses if medication is unchecked
+                                              updateInterventionField(`haeAttackDoses_${medication}`, '');
+                                            }
+                                          }}
+                                          style={{ width: '16px', height: '16px', accentColor: 'var(--primary-color)', flexShrink: 0 }}
+                                        />
+                                        <span style={{ 
+                                          fontSize: '0.813rem', 
+                                          color: 'var(--text-primary)',
+                                          lineHeight: '1.2',
+                                          wordBreak: 'break-word'
+                                        }}>
+                                          {medication}
+                                        </span>
+                                      </label>
+                                      {(interventionForm.haeAttackMedications || []).includes(medication) && 
+                                       !medication.includes('resolved') && 
+                                       !medication.includes('Prophy') && (
+                                        <input
+                                          type="text"
+                                          value={interventionForm[`haeAttackDoses_${medication}`] || ''}
+                                          onChange={(e) => updateInterventionField(`haeAttackDoses_${medication}`, e.target.value)}
+                                          placeholder="#"
+                                          style={{
+                                            width: '45px',
+                                            padding: '0.25rem',
+                                            fontSize: '0.75rem',
+                                            border: '1px solid var(--border-color)',
+                                            borderRadius: '4px',
+                                            background: 'var(--input-bg)',
+                                            color: 'var(--text-primary)',
+                                            textAlign: 'center'
+                                          }}
+                                        />
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Dosing & Administration */}
-                <div className="form-section">
-                  <h4 className="section-title">
+                <div className="section-header-fullwidth">
+                  <h4 className="section-title-fullwidth">
                     <Calendar size={16} />
                     Dosing & Administration
                   </h4>
+                </div>
+                <div className="form-section">
                   <div className="input-grid compact-grid">
                     <div className="input-group">
                       <label>Next dose due on</label>

@@ -302,10 +302,59 @@ class DailyMedService {
       const results = [];
       
       if (data.data && data.data.length > 0) {
-        for (const item of data.data) {
-          const imageUrl = await this.getPackageImage(item.setid);
+        // Process all items in parallel for better performance
+        const promises = data.data.map(async (item) => {
+          // Fetch image and NDC codes in parallel
+          const [imageUrl, ndcDataFromAPI] = await Promise.all([
+            this.getPackageImage(item.setid),
+            this.getNDCCodes(item.setid).catch(err => {
+              console.error('Error fetching NDC codes:', err);
+              return [];
+            })
+          ]);
           
-          results.push({
+          // Extract NDC codes from various possible fields
+          let ndcCodes = [];
+          
+          // Try products field
+          if (item.products && Array.isArray(item.products)) {
+            ndcCodes = item.products.map(p => p.product_code || p.ndc || p.product_ndc).filter(Boolean);
+          }
+          
+          // Try product_codes field
+          if (!ndcCodes.length && item.product_codes) {
+            if (Array.isArray(item.product_codes)) {
+              ndcCodes = item.product_codes;
+            } else if (typeof item.product_codes === 'string') {
+              ndcCodes = [item.product_codes];
+            }
+          }
+          
+          // Try ndc field directly
+          if (!ndcCodes.length && item.ndc) {
+            if (Array.isArray(item.ndc)) {
+              ndcCodes = item.ndc;
+            } else if (typeof item.ndc === 'string') {
+              ndcCodes = [item.ndc];
+            }
+          }
+          
+          // Try package_ndcs field
+          if (!ndcCodes.length && item.package_ndcs) {
+            if (Array.isArray(item.package_ndcs)) {
+              ndcCodes = item.package_ndcs;
+            } else if (typeof item.package_ndcs === 'string') {
+              ndcCodes = item.package_ndcs.split(',').map(ndc => ndc.trim());
+            }
+          }
+          
+          // Use NDC codes from API if not found in search result
+          if (!ndcCodes.length && ndcDataFromAPI && ndcDataFromAPI.length > 0) {
+            ndcCodes = ndcDataFromAPI.map(ndc => ndc.ndcCode).filter(Boolean);
+            console.log(`Found ${ndcCodes.length} NDC codes from API for ${item.brand_name || item.title}`);
+          }
+          
+          return {
             setId: item.setid,
             title: item.title || `${item.brand_name} (${item.drug_name})`,
             brandName: item.brand_name || this.extractBrandName(item.title),
@@ -315,12 +364,16 @@ class DailyMedService {
             route: item.route,
             marketingStatus: item.marketing_status,
             deaSchedule: item.dea_schedule,
-            ndcCodes: item.products ? item.products.map(p => p.product_code) : [],
+            ndcCodes: ndcCodes,
             imageUrl: imageUrl,
             splVersion: item.spl_version,
             publishedDate: item.published_date
-          });
-        }
+          };
+        });
+        
+        // Wait for all items to be processed
+        const processedResults = await Promise.all(promises);
+        results.push(...processedResults);
       }
       
       const searchData = {
@@ -414,58 +467,70 @@ class DailyMedService {
     try {
       console.log('Fetching medication details for setId:', setId);
       
-      // Fetch XML, media, NDC, RxNorm, and pharmacologic class data in parallel for better performance
-      const [xmlDetails, mediaImages, ndcData, rxNormData, pharmacologicClass] = await Promise.all([
+      // Fetch all data sources in parallel for best coverage
+      const [xmlDetails, mediaImages, ndcData, rxNormData, pharmacologicClass, history, packaging, drugNames, drugClasses] = await Promise.all([
         this.fetchAndParseXML(setId),
         this.fetchMediaImages(setId),
         this.getNDCCodes(setId),
         this.getRxNormMappings(setId),
-        this.getPharmacologicClass(setId)
+        this.getPharmacologicClass(setId),
+        this.getSPLHistory(setId),
+        this.getPackagingInfo(setId),
+        this.getDrugNames(setId),
+        this.getDrugClasses(setId)
       ]);
+      
+      let details = null;
       
       if (xmlDetails && Object.keys(xmlDetails.sections).length > 0) {
         console.log('Successfully parsed XML with', Object.keys(xmlDetails.sections).length, 'sections');
         
         // Re-extract sections with media images for proper image handling
         console.log('Re-extracting sections with', mediaImages.length, 'media images');
-        // Log instruction images specifically
         const instructionImgs = mediaImages.filter(img => img.isInstructionImage);
         console.log('📍 Found', instructionImgs.length, 'instruction images:', instructionImgs.map(img => img.name));
         xmlDetails.sections = this.extractSections(xmlDetails.parsedDoc, setId, mediaImages);
         
-        // Add all supplementary data
-        xmlDetails.images = mediaImages;
-        xmlDetails.packages = ndcData;
-        xmlDetails.rxNormMappings = rxNormData;
-        xmlDetails.pharmacologicClass = pharmacologicClass;
-        
-        // Try to enhance with HTML content if available
-        await this.enhanceWithHTMLContent(xmlDetails, setId);
-        
-        // Skip caching for medication details due to size issues
-        // this.setCachedData(cacheKey, xmlDetails);
-        console.log('Skipping cache storage for medication details to avoid quota issues');
-        return xmlDetails;
+        details = xmlDetails;
+      } else {
+        // Try JSON fallback if XML failed
+        console.log('XML parsing failed, trying JSON fallback');
+        details = await this.fetchJSONDetails(setId) || { sections: {} };
       }
       
-      // Fallback to JSON if XML fails
-      console.log('XML parsing failed or returned no sections, trying JSON fallback');
-      const jsonDetails = await this.fetchJSONDetails(setId);
+      // Add all supplementary data for complete medication information
+      details.images = mediaImages;
+      details.packages = ndcData;
+      details.rxNormMappings = rxNormData;
+      details.pharmacologicClass = pharmacologicClass;
+      details.history = history;
+      details.packaging = packaging;
+      details.drugNames = drugNames;
+      details.drugClasses = drugClasses;
       
-      if (jsonDetails) {
-        jsonDetails.images = mediaImages;
-        jsonDetails.packages = ndcData;
-        
-        // Try to enhance with HTML content
-        await this.enhanceWithHTMLContent(jsonDetails, setId);
-        
-        // Skip caching for medication details due to size issues  
-        // this.setCachedData(cacheKey, jsonDetails);
-        console.log('Skipping cache storage for JSON medication details to avoid quota issues');
-        return jsonDetails;
-      }
+      // Log comprehensive data availability
+      console.log('Comprehensive medication data loaded:', {
+        sections: Object.keys(details.sections || {}).length,
+        images: mediaImages?.length || 0,
+        ndcCodes: ndcData?.length || 0,
+        rxNormMappings: rxNormData?.length || 0,
+        pharmacologicClasses: pharmacologicClass?.length || 0,
+        historyVersions: history?.length || 0,
+        packagingInfo: packaging?.length || 0,
+        drugNames: drugNames?.length || 0,
+        drugClasses: drugClasses?.length || 0
+      });
       
-      throw new Error('Failed to fetch medication details from both XML and JSON endpoints');
+      // CRITICAL: Ensure all patient counseling sections are present
+      console.log('🔍 Ensuring all critical counseling sections are present...');
+      await this.ensureAllCriticalSections(details, setId);
+      
+      // No additional reference checking needed here since cleanupReferenceSections handles it
+      
+      console.log('📊 Final section count:', Object.keys(details.sections).length);
+      console.log('📋 Sections available:', Object.keys(details.sections));
+      
+      return details;
     } catch (error) {
       console.error('Error getting medication details:', error);
       return this.getErrorDetails(setId, error.message);
@@ -693,6 +758,503 @@ class DailyMedService {
     return 'package';
   }
 
+  // Fetch comprehensive data from DailyMed (all sections at once)
+  async fetchComprehensiveData(setId) {
+    try {
+      console.log('🔍 Attempting comprehensive data fetch for setId:', setId);
+      
+      // Fetch all data sources in parallel
+      const [xmlData, jsonData, ndcData, mediaImages] = await Promise.all([
+        this.fetchAndParseXML(setId).catch(err => {
+          console.error('XML fetch failed:', err);
+          return null;
+        }),
+        this.fetchJSONDetails(setId).catch(err => {
+          console.error('JSON fetch failed:', err);
+          return null;
+        }),
+        this.getNDCCodes(setId),
+        this.fetchMediaImages(setId)
+      ]);
+      
+      // Start with the best data source
+      let details = xmlData || jsonData || { sections: {} };
+      
+      // Enhance with all available data
+      if (!details.packages) details.packages = ndcData;
+      if (!details.images) details.images = mediaImages;
+      
+      // Ensure all critical patient counseling sections are present
+      await this.ensurePatientCounselingSections(details, setId);
+      
+      console.log('📊 Comprehensive fetch complete. Total sections:', Object.keys(details.sections).length);
+      console.log('Sections found:', Object.keys(details.sections));
+      
+      return details;
+    } catch (error) {
+      console.error('Comprehensive fetch failed:', error);
+      return null;
+    }
+  }
+  
+  // Clean up reference sections and ensure we have full content
+  cleanupReferenceSections(sections) {
+    if (!sections) return;
+    
+    // Critical sections that must have full content
+    const criticalSections = ['dosage', 'patientCounselingInformation', 'patientInfo', 'indications', 'warningsAndPrecautions'];
+    
+    // First, identify which sections have reference content vs full content
+    const sectionStatus = {};
+    
+    Object.keys(sections).forEach(key => {
+      const text = sections[key]?.text || '';
+      const hasReferenceText = text.includes('see Full Prescribing Information') || 
+                               text.includes('For pretreatment recommendations') ||
+                               text.includes('For dosage and administration modifications');
+      const isShort = text.length < 500;
+      
+      sectionStatus[key] = {
+        hasContent: text.length > 0,
+        isReference: hasReferenceText && isShort,
+        length: text.length
+      };
+    });
+    
+    // For each critical section, find the best available version
+    criticalSections.forEach(sectionKey => {
+      // Look for all related sections
+      const relatedKeys = Object.keys(sections).filter(key => {
+        // Match the base key or numbered variants
+        return key === sectionKey || 
+               key.startsWith(`${sectionKey}_`) ||
+               (sectionKey === 'patientCounselingInformation' && (key === 'patientInfo' || key.startsWith('patientInfo_'))) ||
+               (sectionKey === 'patientInfo' && (key === 'patientCounselingInformation' || key.startsWith('patientCounselingInformation_')));
+      });
+      
+      if (relatedKeys.length === 0) {
+        console.log(`⚠️ No ${sectionKey} section found`);
+        return;
+      }
+      
+      // Find the best version (longest non-reference content)
+      let bestKey = null;
+      let bestLength = 0;
+      
+      relatedKeys.forEach(key => {
+        const status = sectionStatus[key];
+        if (status.hasContent && !status.isReference && status.length > bestLength) {
+          bestKey = key;
+          bestLength = status.length;
+        }
+      });
+      
+      // If no non-reference version found, use the longest available
+      if (!bestKey) {
+        relatedKeys.forEach(key => {
+          const status = sectionStatus[key];
+          if (status.hasContent && status.length > bestLength) {
+            bestKey = key;
+            bestLength = status.length;
+          }
+        });
+      }
+      
+      if (bestKey && bestKey !== sectionKey) {
+        console.log(`✅ Using ${bestKey} as source for ${sectionKey} (${bestLength} chars)`);
+        sections[sectionKey] = sections[bestKey];
+        
+        // Remove duplicates but keep the primary key
+        relatedKeys.forEach(key => {
+          if (key !== sectionKey) {
+            delete sections[key];
+          }
+        });
+      } else if (!bestKey) {
+        console.warn(`❌ No valid content found for ${sectionKey}`);
+      }
+    });
+    
+    // Ensure patient counseling information is available under both common keys
+    if (sections['patientInfo'] && !sections['patientCounselingInformation']) {
+      sections['patientCounselingInformation'] = sections['patientInfo'];
+    } else if (sections['patientCounselingInformation'] && !sections['patientInfo']) {
+      sections['patientInfo'] = sections['patientCounselingInformation'];
+    }
+  }
+  
+  // Ensure ALL critical sections are complete
+  async ensureAllCriticalSections(details, setId) {
+    if (!details.sections) details.sections = {};
+    
+    // Priority sections that MUST be complete
+    const criticalSections = [
+      'patientCounselingInformation',
+      'dosage',  // Dosage and Administration
+      'patientInfo', 
+      'medGuide',
+      'instructionsForUse',
+      'warningsAndPrecautions',
+      'adverseReactions',
+      'drugInteractions',
+      'contraindications',
+      'indications'
+    ];
+    
+    console.log('🔍 Checking for critical sections...');
+    console.log('Current sections available:', Object.keys(details.sections));
+    
+    // Special handling for Dosage and Administration - may be under different keys
+    if (!details.sections['dosage'] || details.sections['dosage'].text.length < 100) {
+      // Try to find dosage section under alternative names
+      const dosageKeys = ['dosageAndAdministration', 'dosage', 'dosageAdministration', 'administration'];
+      for (const key of Object.keys(details.sections)) {
+        if (dosageKeys.some(dk => key.toLowerCase().includes(dk.toLowerCase()))) {
+          if (!details.sections['dosage'] || details.sections[key].text.length > (details.sections['dosage']?.text?.length || 0)) {
+            details.sections['dosage'] = details.sections[key];
+            console.log(`📋 Found dosage section under key: ${key}`);
+          }
+        }
+      }
+    }
+    
+    // Special handling for Patient Counseling - may be under different keys
+    if (!details.sections['patientCounselingInformation'] || details.sections['patientCounselingInformation'].text.length < 100) {
+      const counselingKeys = ['patientCounseling', 'counseling', 'patientInfo', 'patientInformation'];
+      for (const key of Object.keys(details.sections)) {
+        if (counselingKeys.some(ck => key.toLowerCase().includes(ck.toLowerCase()))) {
+          if (!details.sections['patientCounselingInformation'] || details.sections[key].text.length > (details.sections['patientCounselingInformation']?.text?.length || 0)) {
+            details.sections['patientCounselingInformation'] = details.sections[key];
+            console.log(`📋 Found patient counseling section under key: ${key}`);
+          }
+        }
+      }
+    }
+    
+    const missingSections = criticalSections.filter(key => 
+      !details.sections[key] || !details.sections[key].text || details.sections[key].text.trim().length < 50
+    );
+    
+    if (missingSections.length > 0) {
+      console.log('⚠️ Missing or incomplete critical sections:', missingSections);
+      
+      // Try multiple recovery strategies
+      
+      // 1. Try direct XML extraction for missing sections
+      if (details.parsedDoc) {
+        console.log('📄 Attempting to re-extract missing sections from parsed XML document');
+        missingSections.forEach(sectionKey => {
+          if (!details.sections[sectionKey] || details.sections[sectionKey].text.length < 50) {
+            // Try to find the section in the XML by multiple methods
+            const section = this.findSectionInXML(details.parsedDoc, sectionKey);
+            if (section && section.text && section.text.length > 50) {
+              details.sections[sectionKey] = section;
+              console.log(`✅ Recovered ${sectionKey} from XML re-extraction (${section.text.length} chars)`);
+            }
+          }
+        });
+      }
+      
+      // 2. Try the comprehensive fetch if we haven't already
+      if (missingSections.filter(key => !details.sections[key] || !details.sections[key].text).length > 0) {
+        try {
+          const comprehensiveData = await this.fetchComprehensiveData(setId);
+          if (comprehensiveData && comprehensiveData.sections) {
+            missingSections.forEach(sectionKey => {
+              if (comprehensiveData.sections[sectionKey] && 
+                  comprehensiveData.sections[sectionKey].text &&
+                  (!details.sections[sectionKey] || details.sections[sectionKey].text.length < 50)) {
+                details.sections[sectionKey] = comprehensiveData.sections[sectionKey];
+                console.log(`✅ Recovered ${sectionKey} from comprehensive fetch`);
+              }
+            });
+          }
+        } catch (err) {
+          console.log('Comprehensive fetch failed:', err.message);
+        }
+      }
+      
+      // 3. Create placeholder sections for any still missing
+      missingSections.forEach(sectionKey => {
+        if (!details.sections[sectionKey]) {
+          details.sections[sectionKey] = {
+            title: this.formatSectionTitle(sectionKey),
+            text: '<p><em>This section is not available in the current labeling.</em></p>',
+            source: 'placeholder'
+          };
+          console.log(`ℹ️ Added placeholder for ${sectionKey}`);
+        }
+      });
+    }
+    
+    return details;
+  }
+  
+  // Find section directly in XML document
+  findSectionInXML(doc, sectionKey) {
+    // Map section keys to their LOINC codes
+    const loincMap = {
+      'patientCounselingInformation': ['88436-1', '34076-0', '68498-5'],
+      'patientInfo': ['34076-0', '42232-9', '68498-5'],
+      'medGuide': ['42230-3', '51945-4'],
+      'instructionsForUse': ['42231-1', '51727-6', '69718-5', '69719-3', '59845-8'],
+      'warningsAndPrecautions': ['43685-7', '34071-1'],
+      'adverseReactions': ['34084-4'],
+      'drugInteractions': ['34073-7'],
+      'contraindications': ['34070-3'],
+      'dosage': ['34068-7', '34068-0'],
+      'indications': ['34067-9', '34067-0']
+    };
+    
+    const loincCodes = loincMap[sectionKey] || [];
+    
+    // Try to find section by LOINC code
+    for (const code of loincCodes) {
+      const sections = doc.querySelectorAll(`section`);
+      for (const section of sections) {
+        const codeEl = section.querySelector('code');
+        if (codeEl && codeEl.getAttribute('code') === code) {
+          const titleEl = section.querySelector('title');
+          const textEl = section.querySelector('text');
+          
+          if (textEl) {
+            const htmlContent = this.extractCompleteHTML(textEl, '', sectionKey, []);
+            if (htmlContent && htmlContent.trim().length > 50) {
+              return {
+                title: titleEl ? titleEl.textContent.trim() : this.formatSectionTitle(sectionKey),
+                text: htmlContent,
+                loincCode: code,
+                source: 'xml-recovery'
+              };
+            }
+          }
+        }
+      }
+    }
+    
+    // Try to find by display name patterns
+    const namePatterns = {
+      'patientCounselingInformation': /patient\s+counseling/i,
+      'patientInfo': /patient\s+information/i,
+      'medGuide': /medication\s+guide/i,
+      'instructionsForUse': /instructions\s+for\s+use/i,
+      'warningsAndPrecautions': /warnings\s+and\s+precautions/i,
+      'adverseReactions': /adverse\s+reactions/i,
+      'drugInteractions': /drug\s+interactions/i,
+      'contraindications': /contraindications/i,
+      'dosage': /dosage\s+and\s+administration/i,
+      'indications': /indications\s+and\s+usage/i
+    };
+    
+    const pattern = namePatterns[sectionKey];
+    if (pattern) {
+      const sections = doc.querySelectorAll('section');
+      for (const section of sections) {
+        const codeEl = section.querySelector('code');
+        const displayName = codeEl ? codeEl.getAttribute('displayName') : '';
+        const titleEl = section.querySelector('title');
+        const titleText = titleEl ? titleEl.textContent : '';
+        
+        if (pattern.test(displayName) || pattern.test(titleText)) {
+          const textEl = section.querySelector('text');
+          if (textEl) {
+            const htmlContent = this.extractCompleteHTML(textEl, '', sectionKey, []);
+            if (htmlContent && htmlContent.trim().length > 50) {
+              return {
+                title: titleEl ? titleEl.textContent.trim() : this.formatSectionTitle(sectionKey),
+                text: htmlContent,
+                source: 'xml-pattern-recovery'
+              };
+            }
+          }
+        }
+      }
+    }
+    
+    return null;
+  }
+  
+  // Extract section from full HTML document
+  extractSectionFromFullHTML(htmlText, sectionKey) {
+    const patterns = {
+      patientCounselingInformation: [
+        /<(?:h[1-6]|div)[^>]*>[\s\S]*?PATIENT\s+COUNSELING\s+INFORMATION[\s\S]*?<\/(?:h[1-6]|div)>([\s\S]*?)(?=<(?:h[1-6]|div)[^>]*>[\s\S]*?[A-Z\s]{4,}[\s\S]*?<\/(?:h[1-6]|div)>|<\/body>|$)/i,
+        /<section[^>]*data-section-code="34076-0"[^>]*>([\s\S]*?)<\/section>/i
+      ],
+      patientInfo: [
+        /<(?:h[1-6]|div)[^>]*>[\s\S]*?PATIENT\s+INFORMATION[\s\S]*?<\/(?:h[1-6]|div)>([\s\S]*?)(?=<(?:h[1-6]|div)[^>]*>[\s\S]*?[A-Z\s]{4,}[\s\S]*?<\/(?:h[1-6]|div)>|<\/body>|$)/i,
+        /<section[^>]*data-section-code="42232-9"[^>]*>([\s\S]*?)<\/section>/i
+      ],
+      indications: [
+        /<(?:h[1-6]|div)[^>]*>[\s\S]*?(?:1\s+)?INDICATIONS\s+AND\s+USAGE[\s\S]*?<\/(?:h[1-6]|div)>([\s\S]*?)(?=<(?:h[1-6]|div)[^>]*>[\s\S]*?\d?\s*[A-Z\s]{4,}[\s\S]*?<\/(?:h[1-6]|div)>|<\/body>|$)/i,
+        /<section[^>]*data-section-code="34067-9"[^>]*>([\s\S]*?)<\/section>/i
+      ],
+      dosage: [
+        /<(?:h[1-6]|div)[^>]*>[\s\S]*?(?:2\s+)?DOSAGE\s+AND\s+ADMINISTRATION[\s\S]*?<\/(?:h[1-6]|div)>([\s\S]*?)(?=<(?:h[1-6]|div)[^>]*>[\s\S]*?\d?\s*[A-Z\s]{4,}[\s\S]*?<\/(?:h[1-6]|div)>|<\/body>|$)/i,
+        /<section[^>]*data-section-code="34068-7"[^>]*>([\s\S]*?)<\/section>/i
+      ],
+      warningsAndPrecautions: [
+        /<(?:h[1-6]|div)[^>]*>[\s\S]*?(?:5\s+)?WARNINGS\s+AND\s+PRECAUTIONS[\s\S]*?<\/(?:h[1-6]|div)>([\s\S]*?)(?=<(?:h[1-6]|div)[^>]*>[\s\S]*?\d?\s*[A-Z\s]{4,}[\s\S]*?<\/(?:h[1-6]|div)>|<\/body>|$)/i,
+        /<section[^>]*data-section-code="43685-7"[^>]*>([\s\S]*?)<\/section>/i
+      ],
+      adverseReactions: [
+        /<(?:h[1-6]|div)[^>]*>[\s\S]*?(?:6\s+)?ADVERSE\s+REACTIONS[\s\S]*?<\/(?:h[1-6]|div)>([\s\S]*?)(?=<(?:h[1-6]|div)[^>]*>[\s\S]*?\d?\s*[A-Z\s]{4,}[\s\S]*?<\/(?:h[1-6]|div)>|<\/body>|$)/i,
+        /<section[^>]*data-section-code="34084-4"[^>]*>([\s\S]*?)<\/section>/i
+      ],
+      drugInteractions: [
+        /<(?:h[1-6]|div)[^>]*>[\s\S]*?(?:7\s+)?DRUG\s+INTERACTIONS[\s\S]*?<\/(?:h[1-6]|div)>([\s\S]*?)(?=<(?:h[1-6]|div)[^>]*>[\s\S]*?\d?\s*[A-Z\s]{4,}[\s\S]*?<\/(?:h[1-6]|div)>|<\/body>|$)/i,
+        /<section[^>]*data-section-code="34073-7"[^>]*>([\s\S]*?)<\/section>/i
+      ],
+      contraindications: [
+        /<(?:h[1-6]|div)[^>]*>[\s\S]*?(?:4\s+)?CONTRAINDICATIONS[\s\S]*?<\/(?:h[1-6]|div)>([\s\S]*?)(?=<(?:h[1-6]|div)[^>]*>[\s\S]*?\d?\s*[A-Z\s]{4,}[\s\S]*?<\/(?:h[1-6]|div)>|<\/body>|$)/i,
+        /<section[^>]*data-section-code="34070-3"[^>]*>([\s\S]*?)<\/section>/i
+      ],
+      medGuide: [
+        /<(?:h[1-6]|div)[^>]*>[\s\S]*?MEDICATION\s+GUIDE[\s\S]*?<\/(?:h[1-6]|div)>([\s\S]*?)(?=<(?:h[1-6]|div)[^>]*>[\s\S]*?[A-Z\s]{4,}[\s\S]*?<\/(?:h[1-6]|div)>|<\/body>|$)/i,
+        /<section[^>]*data-section-code="42230-3"[^>]*>([\s\S]*?)<\/section>/i
+      ],
+      instructionsForUse: [
+        /<(?:h[1-6]|div)[^>]*>[\s\S]*?INSTRUCTIONS\s+FOR\s+USE[\s\S]*?<\/(?:h[1-6]|div)>([\s\S]*?)(?=<(?:h[1-6]|div)[^>]*>[\s\S]*?[A-Z\s]{4,}[\s\S]*?<\/(?:h[1-6]|div)>|<\/body>|$)/i,
+        /<section[^>]*data-section-code="42231-1"[^>]*>([\s\S]*?)<\/section>/i
+      ]
+    };
+    
+    const sectionPatterns = patterns[sectionKey] || [];
+    
+    for (const pattern of sectionPatterns) {
+      const match = htmlText.match(pattern);
+      if (match && match[1] && match[1].trim().length > 50) {
+        return {
+          title: this.formatSectionTitle(sectionKey),
+          text: match[1].trim(),
+          source: 'html-full-recovery'
+        };
+      }
+    }
+    
+    return null;
+  }
+  
+  // Ensure patient counseling sections are complete
+  async ensurePatientCounselingSections(details, setId) {
+    const counselingSections = [
+      'patientCounselingInformation',
+      'patientInfo',
+      'medGuide',
+      'instructionsForUse',
+      'warningsAndPrecautions',
+      'adverseReactions',
+      'drugInteractions',
+      'contraindications',
+      'dosage',
+      'indications'
+    ];
+    
+    // Check if key counseling sections are missing
+    const missingSections = counselingSections.filter(key => !details.sections[key] || !details.sections[key].text);
+    
+    if (missingSections.length > 0) {
+      console.log('⚠️ Missing critical counseling sections:', missingSections);
+      
+      // Try to fetch from the rendered HTML version which might be more complete
+      try {
+        const htmlUrl = `${this.proxyUrl}/services/v2/spls/${setId}.html`;
+        const response = await fetch(htmlUrl);
+        
+        if (response.ok) {
+          const htmlText = await response.text();
+          
+          // Extract sections from HTML using pattern matching
+          missingSections.forEach(sectionKey => {
+            const sectionData = this.extractSectionFromHTML(htmlText, sectionKey);
+            if (sectionData && sectionData.text) {
+              details.sections[sectionKey] = sectionData;
+              console.log(`✅ Recovered section from HTML: ${sectionKey}`);
+            }
+          });
+        }
+      } catch (err) {
+        console.log('Could not fetch HTML version for section recovery');
+      }
+    }
+    
+    return details;
+  }
+  
+  // Extract a specific section from HTML content
+  extractSectionFromHTML(htmlText, sectionKey) {
+    const sectionPatterns = {
+      patientCounselingInformation: [
+        /<h[1-6][^>]*>.*?PATIENT\s+COUNSELING\s+INFORMATION.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?[A-Z]{3,}|<\/body>|$)/i,
+        /<section[^>]*id="[^"]*counseling[^"]*"[^>]*>([\s\S]*?)<\/section>/i,
+        /<div[^>]*class="[^"]*counseling[^"]*"[^>]*>([\s\S]*?)<\/div>/i
+      ],
+      patientInfo: [
+        /<h[1-6][^>]*>.*?PATIENT\s+INFORMATION.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?[A-Z]{3,}|<\/body>|$)/i,
+        /<section[^>]*id="[^"]*patient-info[^"]*"[^>]*>([\s\S]*?)<\/section>/i,
+        /<div[^>]*class="[^"]*patient[^"]*"[^>]*>([\s\S]*?)<\/div>/i
+      ],
+      indications: [
+        /<h[1-6][^>]*>.*?INDICATIONS\s+AND\s+USAGE.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?[A-Z]{3,}|<\/body>|$)/i,
+        /<section[^>]*id="[^"]*indications[^"]*"[^>]*>([\s\S]*?)<\/section>/i,
+        /<div[^>]*class="[^"]*indication[^"]*"[^>]*>([\s\S]*?)<\/div>/i
+      ],
+      dosage: [
+        /<h[1-6][^>]*>.*?DOSAGE\s+AND\s+ADMINISTRATION.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?[A-Z]{3,}|<\/body>|$)/i,
+        /<h[1-6][^>]*>.*?2\s+DOSAGE\s+AND\s+ADMINISTRATION.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?\d\s+[A-Z]{3,}|<\/body>|$)/i,
+        /<section[^>]*id="[^"]*dosage[^"]*"[^>]*>([\s\S]*?)<\/section>/i,
+        /<div[^>]*class="[^"]*dosage[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /<div[^>]*id="section-2"[^>]*>([\s\S]*?)(?=<div[^>]*id="section-\d+"|<\/body>|$)/i
+      ],
+      warningsAndPrecautions: [
+        /<h[1-6][^>]*>.*?WARNINGS\s+AND\s+PRECAUTIONS.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?[A-Z]{3,}|<\/body>|$)/i,
+        /<h[1-6][^>]*>.*?5\s+WARNINGS\s+AND\s+PRECAUTIONS.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?\d\s+[A-Z]{3,}|<\/body>|$)/i,
+        /<section[^>]*id="[^"]*warnings[^"]*"[^>]*>([\s\S]*?)<\/section>/i,
+        /<div[^>]*class="[^"]*warning[^"]*"[^>]*>([\s\S]*?)<\/div>/i
+      ],
+      adverseReactions: [
+        /<h[1-6][^>]*>.*?ADVERSE\s+REACTIONS.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?[A-Z]{3,}|<\/body>|$)/i,
+        /<h[1-6][^>]*>.*?6\s+ADVERSE\s+REACTIONS.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?\d\s+[A-Z]{3,}|<\/body>|$)/i,
+        /<section[^>]*id="[^"]*adverse[^"]*"[^>]*>([\s\S]*?)<\/section>/i
+      ],
+      drugInteractions: [
+        /<h[1-6][^>]*>.*?DRUG\s+INTERACTIONS.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?[A-Z]{3,}|<\/body>|$)/i,
+        /<h[1-6][^>]*>.*?7\s+DRUG\s+INTERACTIONS.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?\d\s+[A-Z]{3,}|<\/body>|$)/i,
+        /<section[^>]*id="[^"]*drug-interaction[^"]*"[^>]*>([\s\S]*?)<\/section>/i
+      ],
+      contraindications: [
+        /<h[1-6][^>]*>.*?CONTRAINDICATIONS.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?[A-Z]{3,}|<\/body>|$)/i,
+        /<h[1-6][^>]*>.*?4\s+CONTRAINDICATIONS.*?<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>.*?\d\s+[A-Z]{3,}|<\/body>|$)/i,
+        /<section[^>]*id="[^"]*contraindication[^"]*"[^>]*>([\s\S]*?)<\/section>/i
+      ]
+    };
+    
+    const patterns = sectionPatterns[sectionKey] || [];
+    
+    for (const pattern of patterns) {
+      const match = htmlText.match(pattern);
+      if (match && match[1]) {
+        // Clean up the extracted text
+        let text = match[1].trim();
+        
+        // Remove any nested section headers that don't belong
+        text = text.replace(/<h[1-6][^>]*>.*?(?:FULL\s+PRESCRIBING|PRINCIPAL\s+DISPLAY).*?<\/h[1-6]>[\s\S]*$/i, '');
+        
+        // Ensure we captured meaningful content
+        if (text.length > 50) {
+          console.log(`✅ Extracted ${sectionKey} from HTML (${text.length} chars)`);
+          return {
+            title: this.formatSectionTitle(sectionKey),
+            text: text,
+            source: 'html-recovery'
+          };
+        }
+      }
+    }
+    
+    return null;
+  }
+
   // Fetch and parse XML document
   async fetchAndParseXML(setId) {
     try {
@@ -724,6 +1286,10 @@ class DailyMedService {
       
       // Extract sections
       const sections = this.extractSections(doc, setId, imageData.productGallery);
+      
+      // Clean up sections - ensure we have full content, not references
+      this.cleanupReferenceSections(sections);
+      
       details.sections = sections;
       
       // Store parsed doc for later use
@@ -949,6 +1515,9 @@ class DailyMedService {
     // First pass: collect all sections
     const tempSections = {};
     
+    // Check if we're processing highlights sections and skip them for critical content
+    let currentlyInHighlights = false;
+    
     uniqueSections.forEach((section, index) => {
       const codeEl = section.querySelector(':scope > code');
       if (!codeEl) return;
@@ -958,6 +1527,23 @@ class DailyMedService {
       const codeSystem = codeEl.getAttribute('codeSystem');
       
       if (!code) return;
+      
+      // Check if this is a highlights section (LOINC: 48780-1)
+      if (code === '48780-1' || displayName?.toLowerCase().includes('highlights')) {
+        currentlyInHighlights = true;
+        console.log('⚠️ Entering highlights section - will skip reference content');
+        return; // Skip the highlights section itself
+      }
+      
+      // Check if we're inside highlights by looking at parent sections
+      const parentSection = section.closest('section');
+      if (parentSection && parentSection !== section) {
+        const parentCode = parentSection.querySelector(':scope > code')?.getAttribute('code');
+        if (parentCode === '48780-1') {
+          console.log(`⚠️ Skipping section ${code} - ${displayName} (inside highlights)`);
+          return; // Skip sections inside highlights
+        }
+      }
       
       // Get section key from LOINC code
       const sectionKey = this.mapLOINCToSection(code);
@@ -1020,23 +1606,49 @@ class DailyMedService {
       const htmlContent = this.extractCompleteHTML(textEl, setId, sectionKey, mediaImages);
       
       if (htmlContent && htmlContent.trim()) {
+        // Check if this is reference content (from highlights/summary sections)
+        // Be more careful - only flag as reference if it's SHORT AND contains reference text
+        const isReferenceContent = (htmlContent.length < 300 && 
+                                    htmlContent.includes('see Full Prescribing Information')) ||
+                                  (htmlContent.length < 200 && (
+                                    htmlContent.includes('For pretreatment recommendations') ||
+                                    htmlContent.includes('For dosage and administration modifications') ||
+                                    htmlContent.includes('For instructions on preparation')
+                                  ));
+        
         if (shouldMerge && tempSections[targetKey]) {
           // Merge with existing section
           tempSections[targetKey].text += `\n<div class="subsection">\n<h3>${title}</h3>\n${htmlContent}\n</div>`;
           console.log(`Merged subsection ${sectionKey} into ${targetKey}`);
         } else {
-          tempSections[targetKey] = {
-            title: title,
-            text: htmlContent,
-            code: code,
-            displayName: displayName
-          };
-          console.log(`Extracted section: ${targetKey} (LOINC: ${code})`);
+          // If we already have this section and the new one looks like a reference, skip it
+          if (tempSections[targetKey] && isReferenceContent) {
+            console.log(`Skipping reference/summary content for ${targetKey} - already have full content`);
+            return;
+          }
           
-          // Special logging for indications
-          if (targetKey === 'indications') {
-            console.log(`INDICATIONS content length: ${htmlContent.length} characters`);
-            console.log(`INDICATIONS preview: ${htmlContent.substring(0, 200)}...`);
+          // If we have a reference section but find full content, replace it
+          if (tempSections[targetKey] && !isReferenceContent && 
+              tempSections[targetKey].text.includes('see Full Prescribing Information')) {
+            console.log(`Replacing reference content with FULL content for ${targetKey}`);
+          }
+          
+          // Only use content if it's not a reference OR if we have nothing else
+          if (!isReferenceContent || !tempSections[targetKey]) {
+            tempSections[targetKey] = {
+              title: title,
+              text: htmlContent,
+              code: code,
+              displayName: displayName,
+              isReference: isReferenceContent
+            };
+            console.log(`Extracted section: ${targetKey} (LOINC: ${code}) - ${isReferenceContent ? 'REFERENCE' : 'FULL'} content (${htmlContent.length} chars)`);
+            
+            // Special logging for critical sections
+            if (targetKey === 'indications' || targetKey === 'dosage' || targetKey === 'patientCounselingInformation') {
+              console.log(`${targetKey.toUpperCase()} content length: ${htmlContent.length} characters`);
+              console.log(`${targetKey.toUpperCase()} preview: ${htmlContent.substring(0, 200)}...`);
+            }
           }
         }
       } else if (sectionKey === 'indications') {
@@ -1401,8 +2013,35 @@ class DailyMedService {
                                    sectionKey === 'instructionsForUse3' ||
                                    sectionKey === 'instructionsForUse4';
     
+    // Check if this is dosage section which often has complex tables
+    const isDosageSection = sectionKey.toLowerCase().includes('dosage') || 
+                           sectionKey === 'dosage' ||
+                           sectionKey.toLowerCase().includes('administration');
+    
+    // Check if this is patient counseling section
+    const isCounselingSection = sectionKey.toLowerCase().includes('counseling') || 
+                                sectionKey.toLowerCase().includes('patientinfo') ||
+                                sectionKey === 'patientCounselingInformation';
+    
     if (isInstructionsSection) {
       console.log(`🎯 Processing Instructions section: ${sectionKey}, mediaImages available: ${mediaImages.length}`);
+    }
+    
+    if (isDosageSection) {
+      console.log(`💊 Processing Dosage section: ${sectionKey} - ensuring ALL content including tables and subsections are preserved`);
+    }
+    
+    if (isCounselingSection) {
+      console.log(`👥 Processing Patient Counseling section: ${sectionKey} - ensuring complete extraction`);
+    }
+    
+    // For critical sections, also check for subsections within the text element
+    if (isDosageSection || isCounselingSection) {
+      // Check if there are nested section elements (subsections)
+      const nestedSections = textEl.querySelectorAll('section');
+      if (nestedSections.length > 0) {
+        console.log(`📦 Found ${nestedSections.length} nested subsections in ${sectionKey}`);
+      }
     }
     
     // For Instructions sections, we need to get the raw XML to preserve renderMultiMedia tags
@@ -1472,6 +2111,20 @@ class DailyMedService {
     } else {
       // For non-instructions sections, use innerHTML
       innerHTML = textEl.innerHTML || '';
+      
+      // For critical sections, try XMLSerializer for complete extraction
+      if ((isDosageSection || isCounselingSection) && (!innerHTML || innerHTML.length < 100)) {
+        try {
+          const serializer = new XMLSerializer();
+          const serialized = serializer.serializeToString(textEl);
+          if (serialized && serialized.length > innerHTML.length) {
+            innerHTML = serialized;
+            console.log(`Used XMLSerializer for ${sectionKey} - got ${serialized.length} chars`);
+          }
+        } catch (e) {
+          console.log('XMLSerializer failed for critical section:', e);
+        }
+      }
     }
     
     // If innerHTML contains actual HTML tags, use it
@@ -1883,11 +2536,85 @@ class DailyMedService {
         html = html.replace(/See Figure\s+(\d+)/gi, '<a href="#figure$1" class="figure-reference">See Figure $1</a>');
       }
       
+      // Special handling for critical sections to ensure complete extraction
+      // ALWAYS ensure we have complete content for critical sections
+      if (isDosageSection || isCounselingSection) {
+        // Check if content seems to be a reference/summary
+        const isReference = html.includes('see Full Prescribing Information') || 
+                           html.includes('For pretreatment recommendations') ||
+                           html.includes('For dosage and administration modifications') ||
+                           html.includes('For instructions on preparation');
+        
+        if (isReference || html.length < 500) {
+          console.log(`⚠️ ${sectionKey} appears to be a reference/summary (${html.length} chars), using FULL DOM extraction`);
+          
+          // Force complete extraction directly from DOM
+          let fullContent = '';
+          
+          // Get all paragraphs
+          const paragraphs = textEl.querySelectorAll('paragraph');
+          paragraphs.forEach(p => {
+            fullContent += `<p>${this.processChildren(p, setId, false)}</p>`;
+          });
+          
+          // Get all lists
+          const lists = textEl.querySelectorAll('list');
+          lists.forEach(list => {
+            const listType = list.getAttribute('listType') === 'ordered' ? 'ol' : 'ul';
+            fullContent += `<${listType}>`;
+            const items = list.querySelectorAll('item');
+            items.forEach(item => {
+              fullContent += `<li>${this.processChildren(item, setId, false)}</li>`;
+            });
+            fullContent += `</${listType}>`;
+          });
+          
+          // Get all tables - CRITICAL for dosage sections
+          const tables = textEl.querySelectorAll('table');
+          tables.forEach(table => {
+            fullContent += this.processTable(table, setId, false);
+          });
+          
+          // Get all content elements
+          const contents = textEl.querySelectorAll('content');
+          contents.forEach(content => {
+            fullContent += this.processChildren(content, setId, false);
+          });
+          
+          if (fullContent.length > html.length) {
+            html = fullContent;
+            console.log(`✅ Extracted FULL ${sectionKey} content using DOM extraction (${fullContent.length} chars)`);
+          }
+        }
+        
+        // Also try to extract nested sections
+        const nestedSections = textEl.querySelectorAll('section');
+        if (nestedSections.length > 0) {
+          let nestedHTML = '';
+          nestedSections.forEach(section => {
+            const titleEl = section.querySelector('title');
+            const textEl = section.querySelector('text');
+            if (titleEl && textEl) {
+              const title = titleEl.textContent.trim();
+              const content = this.processChildren(textEl, setId, false);
+              if (content && content.length > 50) { // Only add if there's substantial content
+                nestedHTML += `<div class="subsection"><h4>${title}</h4>${content}</div>`;
+              }
+            }
+          });
+          if (nestedHTML) {
+            html += nestedHTML;
+            console.log(`✅ Added ${nestedSections.length} subsections to ${sectionKey}`);
+          }
+        }
+      }
+      
       return html;
     }
     
-    // Fallback to processing nodes if no innerHTML
-    return this.processXMLNodes(textEl, setId, isInstructionsSection);
+    // Always use processXMLNodes for complete extraction
+    // This ensures tables, lists, and images are properly processed
+    return this.processXMLNodes(textEl, setId, isInstructionsSection || isDosageSection || isCounselingSection);
   }
 
   // Process XML nodes (fallback method)
@@ -1916,7 +2643,7 @@ class DailyMedService {
           return `<${tag}>${items}</${tag}>`;
           
         case 'table':
-          return this.processTable(n);
+          return this.processTable(n, setId, isInstructionsSection);
           
         case 'content':
           const styleCode = n.getAttribute('styleCode') || '';
@@ -1940,19 +2667,29 @@ class DailyMedService {
           }
           
           if (imageName) {
-            // Clean the image name
-            imageName = imageName.replace(/^#/, '');
-            const imageUrl = `${this.proxyUrl}/image.cfm?name=${encodeURIComponent(imageName)}&id=${setId}`;
+            // Clean the image name - remove # and any path
+            imageName = imageName.replace(/^#/, '').replace(/^.*\//, '');
+            
+            // For instructions images, ensure we get the correct image
+            let imageUrl;
+            if (isInstructionsSection) {
+              // Try multiple formats for instruction images
+              imageUrl = `${this.proxyUrl}/image.cfm?name=${encodeURIComponent(imageName)}&id=${setId}`;
+              console.log(`🖼️ Instructions image: ${imageName} -> ${imageUrl}`);
+            } else {
+              imageUrl = `${this.proxyUrl}/image.cfm?name=${encodeURIComponent(imageName)}&id=${setId}`;
+            }
+            
             const caption = n.querySelector('caption');
             const captionText = caption ? caption.textContent : '';
             
             const figureClass = isInstructionsSection ? 'dm-figure instruction-figure' : 'dm-figure';
             const imageClass = isInstructionsSection ? 'dm-image instruction-image' : 'dm-image';
-            const figureId = n.getAttribute('ID') ? ` id="${n.getAttribute('ID')}"` : '';
+            const figureId = n.getAttribute('ID') ? ` id="figure${n.getAttribute('ID').replace(/\D/g, '')}"` : '';
             
             return `
               <div class="${figureClass}"${figureId}>
-                <img src="${imageUrl}" class="${imageClass}" alt="${captionText || imageName}" loading="lazy">
+                <img src="${imageUrl}" class="${imageClass}" alt="${captionText || imageName}" loading="lazy" onerror="console.error('Failed to load image:', this.src)">
                 ${captionText ? `<div class="dm-figure-caption">${captionText}</div>` : ''}
               </div>
             `;
@@ -1994,7 +2731,7 @@ class DailyMedService {
   }
 
   // Process table elements
-  processTable(tableNode) {
+  processTable(tableNode, setId, isInstructionsSection = false) {
     let html = '<table class="dm-table">';
     
     // Process header
@@ -2011,7 +2748,9 @@ class DailyMedService {
           const attrs = [];
           if (colspan) attrs.push(`colspan="${colspan}"`);
           if (rowspan) attrs.push(`rowspan="${rowspan}"`);
-          html += `<th ${attrs.join(' ')}>${cell.textContent.trim()}</th>`;
+          // Process cell content recursively to preserve nested elements
+          const cellContent = this.processChildren(cell, setId, isInstructionsSection);
+          html += `<th ${attrs.join(' ')}>${cellContent}</th>`;
         });
         html += '</tr>';
       });
@@ -2034,7 +2773,9 @@ class DailyMedService {
           if (colspan) attrs.push(`colspan="${colspan}"`);
           if (rowspan) attrs.push(`rowspan="${rowspan}"`);
           const tag = cell.nodeName.toLowerCase();
-          html += `<${tag} ${attrs.join(' ')}>${cell.textContent.trim()}</${tag}>`;
+          // Process cell content recursively to preserve nested elements
+          const cellContent = this.processChildren(cell, setId, isInstructionsSection);
+          html += `<${tag} ${attrs.join(' ')}>${cellContent}</${tag}>`;
         });
         html += '</tr>';
       });
@@ -2147,6 +2888,8 @@ class DailyMedService {
       '88436-1': 'patientCounselingInformation',
       '59845-5': 'summaryOfRiskAndBenefitInformation',
       '59846-3': 'importantDrugInformation',
+      '34076-0': 'patientCounselingInformation', // Alternative code
+      '68498-5': 'patientCounselingInformation', // Another alternative
       '53617-7': 'recentMajorChanges',
       '77264-0': 'accessibilityInformation',
       
@@ -2448,7 +3191,8 @@ class DailyMedService {
   // Get RxNorm mappings for a medication
   async getRxNormMappings(setId) {
     try {
-      const url = `${this.proxyUrl}/services/v2/spls/${setId}/rxnorms.json`;
+      // Use the correct RxCUI endpoint as shown in the API documentation
+      const url = `${this.proxyUrl}/services/v2/spls/${setId}/rxcuis.json`;
       console.log('Fetching RxNorm mappings from:', url);
       
       const data = await this.safeFetch(url);
@@ -2474,6 +3218,95 @@ class DailyMedService {
       return rxNormConcepts.length > 0 ? rxNormConcepts : null;
     } catch (error) {
       console.error('Error fetching RxNorm mappings:', error);
+      return null;
+    }
+  }
+
+  // Get SPL history for tracking version changes
+  async getSPLHistory(setId) {
+    try {
+      const url = `${this.proxyUrl}/services/v2/spls/${setId}/history.json`;
+      console.log('Fetching SPL history from:', url);
+      
+      const data = await this.safeFetch(url);
+      if (!data || !data.data) {
+        console.warn('SPL history fetch failed for setId:', setId);
+        return null;
+      }
+      
+      // Return history with version information
+      return data.data.map(item => ({
+        version: item.spl_version || item.version,
+        effectiveTime: item.effective_time,
+        setId: item.spl_set_id || setId
+      }));
+    } catch (error) {
+      console.error('Error fetching SPL history:', error);
+      return null;
+    }
+  }
+
+  // Get packaging information
+  async getPackagingInfo(setId) {
+    try {
+      const url = `${this.proxyUrl}/services/v2/spls/${setId}/packaging.json`;
+      console.log('Fetching packaging info from:', url);
+      
+      const data = await this.safeFetch(url);
+      if (!data || !data.data) {
+        console.warn('Packaging info fetch failed for setId:', setId);
+        return null;
+      }
+      
+      // Return packaging descriptions
+      return data.data;
+    } catch (error) {
+      console.error('Error fetching packaging info:', error);
+      return null;
+    }
+  }
+
+  // Get drug names
+  async getDrugNames(setId) {
+    try {
+      const url = `${this.proxyUrl}/services/v2/spls/${setId}/drugnames.json`;
+      console.log('Fetching drug names from:', url);
+      
+      const data = await this.safeFetch(url);
+      if (!data || !data.data) {
+        console.warn('Drug names fetch failed for setId:', setId);
+        return null;
+      }
+      
+      // Return all drug names associated with this SPL
+      return data.data;
+    } catch (error) {
+      console.error('Error fetching drug names:', error);
+      return null;
+    }
+  }
+
+  // Get drug classes using the correct endpoint
+  async getDrugClasses(setId) {
+    try {
+      const url = `${this.proxyUrl}/services/v2/spls/${setId}/drugclasses.json`;
+      console.log('Fetching drug classes from:', url);
+      
+      const data = await this.safeFetch(url);
+      if (!data || !data.data) {
+        console.warn('Drug classes fetch failed for setId:', setId);
+        return null;
+      }
+      
+      // Return drug class information
+      return data.data.map(item => ({
+        className: item.drug_class || item.class_name,
+        classCode: item.drug_class_code || item.code,
+        classType: item.class_type || 'Pharmacologic',
+        source: item.source || 'FDA'
+      }));
+    } catch (error) {
+      console.error('Error fetching drug classes:', error);
       return null;
     }
   }

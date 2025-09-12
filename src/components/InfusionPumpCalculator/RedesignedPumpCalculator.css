@@ -5544,20 +5544,44 @@ button.professional-action-btn.calculate-custom-btn {
   color: #0066cc;
 }
 
-/* Disabled State */
+/* Disabled State - Enhanced Grey Out Effect */
 .pump-toolbar-button.disabled,
 .pump-toolbar-button:disabled {
-  background: #f8f8f8;
-  color: #999;
-  border-color: #ddd;
-  cursor: not-allowed;
-  opacity: 0.6;
+  background: #e5e5e5 !important;
+  color: #888888 !important;
+  border-color: #cccccc !important;
+  cursor: not-allowed !important;
+  opacity: 0.4 !important;
+  filter: grayscale(100%) !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+  position: relative;
+}
+
+.pump-toolbar-button.disabled::after,
+.pump-toolbar-button:disabled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(200, 200, 200, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.pump-toolbar-button.disabled svg,
+.pump-toolbar-button:disabled svg {
+  opacity: 0.5 !important;
+  color: #999999 !important;
 }
 
 .pump-toolbar-button.disabled:hover,
 .pump-toolbar-button:disabled:hover {
-  background: #f8f8f8;
-  border-color: #ddd;
+  background: #e5e5e5 !important;
+  border-color: #cccccc !important;
+  transform: none !important;
 }
 
 /* Toolbar Divider */

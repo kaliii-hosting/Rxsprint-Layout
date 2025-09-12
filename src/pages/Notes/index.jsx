@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download, ChevronRight, Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, Heading3, Code, Strikethrough, Undo, Redo, Type, MessageSquare, Table, TableProperties, RowsIcon, ColumnsIcon, GripVertical, GripHorizontal } from 'lucide-react';
+import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download, ChevronRight, Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, Heading3, Code, Strikethrough, Undo, Redo, Type, MessageSquare, Table, TableProperties, RowsIcon, ColumnsIcon, GripVertical, GripHorizontal, AlertCircle, Shield, Info, Sparkles, ScanLine, Zap } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { firestore as db, storage } from '../../config/firebase';
@@ -58,6 +58,8 @@ import InlineTableEditor from '../../components/InlineTableEditor/InlineTableEdi
 
 const Notes = () => {
   const { theme } = useTheme();
+  const [isLoadingBanners, setIsLoadingBanners] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState('');
   
   // Add keyframe animations for banner glow effects
   React.useEffect(() => {
@@ -2231,12 +2233,27 @@ const Notes = () => {
             return;
           }
         
-          // Handle regular banners - inline layout
+          // Handle regular banners - inline layout with type label
           const fullText = banner.text;
+          
+          // Determine banner type label
+          let bannerTypeLabel = 'STANDARD';
+          if (banner.color === 'orange' || banner.isOrange) {
+            bannerTypeLabel = 'PRIORITY';
+          } else if (banner.color === 'green') {
+            bannerTypeLabel = 'SUCCESS';
+          } else if (banner.color === 'grey') {
+            bannerTypeLabel = 'INFO';
+          }
+          
+          // Calculate banner dimensions to fit both label and text
+          pdf.setFontSize(7); // Small font for label
+          const labelWidth = pdf.getTextWidth(bannerTypeLabel);
           pdf.setFontSize(bannerFontSize);
-          const textWidth = pdf.getTextWidth(fullText);
-          const bannerWidth = Math.max(textWidth + (bannerPadding * 2), 30); // Reduced min width
-          const bannerHeight = minBannerHeight;
+          const textLines = banner.text.split('\n');
+          const maxTextWidth = Math.max(...textLines.map(line => pdf.getTextWidth(line)));
+          const bannerWidth = Math.max(Math.max(labelWidth, maxTextWidth) + (bannerPadding * 2), 40); // Adjusted min width
+          const bannerHeight = minBannerHeight + (textLines.length - 1) * 4 + 3; // Add height for label and multi-line
           
           // Check if banner fits on current line
           if (currentX > leftMargin && currentX + bannerWidth > leftMargin + contentWidth) {
@@ -2266,22 +2283,30 @@ const Notes = () => {
           // Draw banner with rounded corners like viewer
           pdf.roundedRect(currentX, yPosition, bannerWidth, bannerHeight, 2, 2, 'F');
           
-          // Add text
+          // Add type label
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(7);
+          const labelX = currentX + bannerPadding;
+          const labelY = yPosition + 3;
+          pdf.text(bannerTypeLabel, labelX, labelY);
+          
+          // Add banner text (supports multi-line)
           pdf.setFont('helvetica', 'normal');
           pdf.setFontSize(bannerFontSize);
           
-          let displayText = fullText;
-          if (pdf.getTextWidth(displayText) > bannerWidth - (bannerPadding * 2)) {
-            while (pdf.getTextWidth(displayText + '...') > bannerWidth - (bannerPadding * 2) && displayText.length > 1) {
-              displayText = displayText.substring(0, displayText.length - 1);
-            }
-            displayText += '...';
-          }
-          
           const textX = currentX + bannerPadding;
-          // Perfect vertical centering for jsPDF (baseline positioning)
-          const textY = yPosition + 5.5; // Center of 8px height banner
-          pdf.text(displayText, textX, textY);
+          let textY = yPosition + 7; // Start below the label
+          
+          textLines.forEach((line, lineIndex) => {
+            let displayText = line;
+            if (pdf.getTextWidth(displayText) > bannerWidth - (bannerPadding * 2)) {
+              while (pdf.getTextWidth(displayText + '...') > bannerWidth - (bannerPadding * 2) && displayText.length > 1) {
+                displayText = displayText.substring(0, displayText.length - 1);
+              }
+              displayText += '...';
+            }
+            pdf.text(displayText, textX, textY + (lineIndex * 4));
+          });
           
           // Update position for next banner
           currentX += bannerWidth + bannerGap;
@@ -2992,113 +3017,51 @@ const Notes = () => {
                           {formData.banners.map((banner) => (
                             <div 
                               key={banner.id}
-                              className={`content-banner-item ${
-                                banner.isCallout || banner.color === 'callout' ? 'callout-banner' :
-                                banner.isTitle || banner.color === 'title' ? 'title-banner' :
-                                banner.color === 'orange' ? 'new-line' : 
-                                banner.color === 'green' || banner.isDone ? 'done' : 
-                                banner.color === 'grey' ? 'grey' : ''
-                              }`}
-                              style={{
-                                display: (banner.isCallout || banner.isTitle) ? 'block' : 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.75rem',
-                                padding: banner.isCallout ? '1.25rem 1.75rem' : banner.isTitle ? '1.2rem 1.5rem' : '0.75rem 1.25rem',
-                                background: 
-                                  copiedBannerId === banner.id ? 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' :
-                                  banner.isCallout ? 'linear-gradient(135deg, #FFF8F3 0%, #FFF5ED 100%)' :
-                                  banner.isTitle ? 'linear-gradient(135deg, #FFD4A3 0%, #FFBB7D 100%)' :
-                                  banner.color === 'orange' ? 'linear-gradient(135deg, #CB6015 0%, #A04E11 100%)' :
-                                  (banner.color === 'green' || banner.isDone) ? 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)' :
-                                  banner.color === 'grey' ? 'linear-gradient(135deg, #64748b 0%, #475569 100%)' :
-                                  'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                                borderLeft: banner.isCallout ? '5px solid #FF6900' : 'none',
-                                border: (banner.color === 'green' || banner.isDone) && copiedBannerId !== banner.id ? '1px solid rgba(0, 255, 136, 0.3)' : banner.isCallout ? undefined : 'none',
-                                borderRadius: banner.isCallout ? '8px' : banner.isTitle ? '6px' : '10px',
-                                color: 
-                                  copiedBannerId === banner.id ? 'white' :
-                                  banner.isCallout ? '#424242' :
-                                  banner.isTitle ? '#8B4513' :
-                                  (banner.color === 'green' || banner.isDone) ? '#003d1f' :
-                                  'white',
-                                fontFamily: banner.isCallout || banner.isTitle ? 
-                                  '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' : 
-                                  '"Dongle", sans-serif',
-                                fontSize: banner.isCallout ? '1rem' : banner.isTitle ? '0.875rem' : '1.75rem',
-                                fontWeight: banner.isTitle ? '500' : '400',
-                                textTransform: banner.isTitle ? 'uppercase' : 'none',
-                                letterSpacing: banner.isTitle ? '0.5px' : '0.03em',
-                                cursor: banner.isCallout || banner.isTitle ? 'default' : 'pointer',
-                                boxShadow: 
-                                  copiedBannerId === banner.id ? '0 4px 20px rgba(147, 51, 234, 0.4), 0 0 30px rgba(147, 51, 234, 0.2)' :
-                                  banner.isCallout ? '0 3px 12px rgba(255, 105, 0, 0.12)' :
-                                  banner.isTitle ? '0 3px 10px rgba(255, 183, 77, 0.25)' :
-                                  (banner.color === 'green' || banner.isDone) ? '0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2)' :
-                                  banner.color === 'orange' ? '0 4px 12px rgba(203, 96, 21, 0.25)' :
-                                  banner.color === 'grey' ? '0 4px 12px rgba(100, 116, 139, 0.25)' :
-                                  '0 4px 12px rgba(59, 130, 246, 0.25)',
-                                margin: banner.isCallout || banner.isTitle ? '0.75rem 0' : '0.25rem 0.5rem',
-                                width: banner.isCallout || banner.isTitle ? '100%' : 'auto',
-                                boxSizing: 'border-box',
-                                transition: 'all 0.2s ease',
-                                animation: (banner.color === 'green' || banner.isDone) && copiedBannerId !== banner.id ? 'neonGlow 2s ease-in-out infinite alternate' : 
-                                           copiedBannerId === banner.id ? 'purpleGlow 0.5s ease' : 'none',
-                                position: 'relative'
-                              }}
-                              onClick={() => {
-                                if (!banner.isTitle && !banner.isCallout) {
-                                  copyBannerToClipboard(banner);
-                                }
-                              }}
+                              className={`modern-banner-card ${
+                                banner.isCallout || banner.color === 'callout' ? 'banner-callout' :
+                                banner.isTitle || banner.color === 'title' ? 'banner-title' :
+                                banner.color === 'orange' || banner.isOrange ? 'banner-orange' : 
+                                banner.color === 'green' ? 'banner-green' : 
+                                banner.color === 'grey' ? 'banner-grey' : 'banner-blue'
+                              } ${banner.isDone ? 'banner-done' : ''} ${copiedBannerId === banner.id ? 'banner-copied' : ''}`}
+                              onClick={() => !banner.isTitle && !banner.isCallout && copyBannerToClipboard(banner)}
                               onContextMenu={(e) => handleContextMenu(e, banner.id)}
                             >
-                              <span className="banner-text" style={{ 
-                                color: copiedBannerId === banner.id ? 'white' :
-                                       banner.isCallout ? '#424242' :
-                                       banner.isTitle ? '#8B4513' :
-                                       (banner.color === 'green' || banner.isDone) ? '#003d1f' :
-                                       'white',
-                                whiteSpace: 'pre-wrap',
-                                fontFamily: banner.isCallout || banner.isTitle ? 
-                                  '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' : 
-                                  '"Dongle", sans-serif',
-                                fontSize: banner.isCallout ? '1rem' : banner.isTitle ? '0.875rem' : '1.75rem',
-                                fontWeight: banner.isTitle ? '500' : '400',
-                                textTransform: banner.isTitle ? 'uppercase' : 'none',
-                                letterSpacing: banner.isTitle ? '0.5px' : '0.03em'
-                              }}>{banner.text}</span>
-                              {!banner.isTitle && !banner.isCallout && (
-                                <div className="banner-icon" style={{ marginLeft: 'auto', opacity: 0.9 }}>
-                                  {copiedBannerId === banner.id ? (
-                                    <Check size={18} style={{ color: 'inherit' }} />
-                                  ) : banner.isDone ? (
-                                    <CheckCircle size={18} style={{ color: 'inherit' }} />
-                                  ) : (
-                                    <Copy size={18} style={{ color: 'inherit' }} />
-                                  )}
+                              <div className="banner-icon-wrapper">
+                                {banner.isCallout ? <AlertCircle size={20} /> :
+                                 banner.isTitle ? <Zap size={20} /> :
+                                 banner.color === 'orange' || banner.isOrange ? <AlertCircle size={20} /> : 
+                                 banner.color === 'green' ? <Shield size={20} /> : 
+                                 banner.color === 'grey' ? <Info size={20} /> : <Star size={20} />}
+                              </div>
+                              <div className="banner-content-wrapper">
+                                <div className="banner-header">
+                                  <span className="banner-label">
+                                    {banner.isCallout ? 'CALLOUT' :
+                                     banner.isTitle ? 'TITLE' :
+                                     banner.color === 'orange' || banner.isOrange ? 'PRIORITY' : 
+                                     banner.color === 'green' ? 'SUCCESS' : 
+                                     banner.color === 'grey' ? 'INFO' : 'STANDARD'}
+                                  </span>
+                                  <span className="banner-timestamp">
+                                    {banner.createdAt && !isNaN(Date.parse(banner.createdAt)) ? 
+                                      (banner.createdAt instanceof Date ? banner.createdAt : new Date(banner.createdAt)).toLocaleTimeString('en-US', { 
+                                        hour: '2-digit', 
+                                        minute: '2-digit' 
+                                      }) : ''}
+                                  </span>
                                 </div>
-                              )}
+                                <div className="banner-message" style={{ whiteSpace: 'pre-wrap' }}>{banner.text}</div>
+                              </div>
                               <button
-                                className="remove-banner-btn inline"
+                                className="banner-action-btn"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   removeBanner(banner.id);
                                 }}
-                                style={{
-                                  background: 'rgba(255, 255, 255, 0.2)',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  padding: '2px 6px',
-                                  marginLeft: '8px',
-                                  cursor: 'pointer',
-                                  color: 'inherit',
-                                  position: 'absolute',
-                                  right: '8px',
-                                  top: '50%',
-                                  transform: 'translateY(-50%)'
-                                }}
+                                title="Remove banner"
                               >
-                                ×
+                                <X size={18} />
                               </button>
                             </div>
                           ))}
@@ -3197,57 +3160,13 @@ const Notes = () => {
                               </div>
                             ) : (
                               <div 
-                                className={`content-banner-item ${
-                                  banner.isCallout || banner.color === 'callout' ? 'callout-banner' :
-                                  banner.isTitle || banner.color === 'title' ? 'title-banner' :
-                                  banner.color === 'orange' || banner.isOrange ? 'new-line' : 
-                                  banner.color === 'green' ? 'done' : 
-                                  banner.color === 'grey' ? 'grey' : ''
-                                } ${banner.isDone ? 'done' : ''} ${copiedBannerId === banner.id ? 'copied' : ''}`}
-                                style={{
-                                  display: (banner.isCallout || banner.isTitle) ? 'block' : 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '0.75rem',
-                                  padding: banner.isCallout ? '1.25rem 1.75rem' : banner.isTitle ? '1.2rem 1.5rem' : '0.75rem 1.25rem',
-                                  background: 
-                                    copiedBannerId === banner.id ? 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' :
-                                    banner.isCallout ? 'linear-gradient(135deg, #FFF8F3 0%, #FFF5ED 100%)' :
-                                    banner.isTitle ? 'linear-gradient(135deg, #FFD4A3 0%, #FFBB7D 100%)' :
-                                    banner.color === 'orange' ? 'linear-gradient(135deg, #CB6015 0%, #A04E11 100%)' :
-                                    banner.color === 'green' || banner.isDone ? 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)' :
-                                    banner.color === 'grey' ? 'linear-gradient(135deg, #64748b 0%, #475569 100%)' :
-                                    'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                                  borderLeft: banner.isCallout ? '5px solid #FF6900' : 'none',
-                                  border: (banner.color === 'green' || banner.isDone) && copiedBannerId !== banner.id ? '1px solid rgba(0, 255, 136, 0.3)' : 'none',
-                                  borderRadius: banner.isCallout ? '8px' : banner.isTitle ? '6px' : '10px',
-                                  color: 
-                                    copiedBannerId === banner.id ? 'white' :
-                                    banner.isCallout ? '#424242' :
-                                    banner.isTitle ? '#8B4513' :
-                                    (banner.color === 'green' || banner.isDone) ? '#003d1f' :
-                                    'white',
-                                  fontFamily: banner.isCallout || banner.isTitle ? 
-                                    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' : 
-                                    '"Dongle", sans-serif',
-                                  fontSize: banner.isCallout ? '1rem' : banner.isTitle ? '0.875rem' : '1.75rem',
-                                  fontWeight: banner.isTitle ? '500' : '400',
-                                  textTransform: banner.isTitle ? 'uppercase' : 'none',
-                                  letterSpacing: banner.isTitle ? '0.5px' : '0.03em',
-                                  cursor: banner.isCallout || banner.isTitle ? 'default' : 'pointer',
-                                  boxShadow: 
-                                    copiedBannerId === banner.id ? '0 4px 20px rgba(147, 51, 234, 0.4), 0 0 30px rgba(147, 51, 234, 0.2)' :
-                                    banner.isCallout ? '0 3px 12px rgba(255, 105, 0, 0.12)' :
-                                    banner.isTitle ? '0 3px 10px rgba(255, 183, 77, 0.25)' :
-                                    (banner.color === 'green' || banner.isDone) ? '0 4px 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2)' :
-                                    banner.color === 'orange' ? '0 4px 12px rgba(203, 96, 21, 0.25)' :
-                                    banner.color === 'grey' ? '0 4px 12px rgba(100, 116, 139, 0.25)' :
-                                    '0 4px 12px rgba(59, 130, 246, 0.25)',
-                                  margin: banner.isCallout || banner.isTitle ? '0.5rem 0' : '0.25rem',
-                                  width: banner.isCallout || banner.isTitle ? '100%' : 'auto',
-                                  transition: 'all 0.2s ease',
-                                  animation: (banner.color === 'green' || banner.isDone) && copiedBannerId !== banner.id ? 'neonGlow 2s ease-in-out infinite alternate' : 
-                                             copiedBannerId === banner.id ? 'purpleGlow 0.5s ease' : 'none'
-                                }}
+                                className={`modern-banner-card ${
+                                  banner.isCallout || banner.color === 'callout' ? 'banner-callout' :
+                                  banner.isTitle || banner.color === 'title' ? 'banner-title' :
+                                  banner.color === 'orange' || banner.isOrange ? 'banner-orange' : 
+                                  banner.color === 'green' ? 'banner-green' : 
+                                  banner.color === 'grey' ? 'banner-grey' : 'banner-blue'
+                                } ${banner.isDone ? 'banner-done' : ''} ${copiedBannerId === banner.id ? 'banner-copied' : ''}`}
                                 onClick={() => !isLongPress && !banner.isTitle && !banner.isCallout && copyBannerToClipboard(banner)}
                                 onContextMenu={(e) => handleContextMenu(e, banner.id)}
                                 onTouchStart={() => handleTouchStart(banner.id)}
@@ -3255,22 +3174,33 @@ const Notes = () => {
                                 onTouchMove={handleTouchMove}
                                 title="Click to copy, right-click for options"
                               >
-                                <span className="banner-text" style={{ 
-                                  color: copiedBannerId === banner.id ? 'white' :
-                                         banner.isCallout ? '#424242' :
-                                         banner.isTitle ? '#8B4513' :
-                                         (banner.color === 'green' || banner.isDone) ? '#003d1f' :
-                                         'white',
-                                  whiteSpace: 'pre-wrap',
-                                  fontFamily: banner.isCallout || banner.isTitle ? 
-                                    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' : 
-                                    '"Dongle", sans-serif',
-                                  fontSize: banner.isCallout ? '1rem' : banner.isTitle ? '0.875rem' : '1.75rem',
-                                  fontWeight: banner.isTitle ? '500' : '400',
-                                  textTransform: banner.isTitle ? 'uppercase' : 'none',
-                                  letterSpacing: banner.isTitle ? '0.5px' : '0.03em'
-                                }}>{banner.text}</span>
-                                <div className="banner-icon">
+                                <div className="banner-icon-wrapper">
+                                  {banner.isCallout ? <AlertCircle size={20} /> :
+                                   banner.isTitle ? <Zap size={20} /> :
+                                   banner.color === 'orange' || banner.isOrange ? <AlertCircle size={20} /> : 
+                                   banner.color === 'green' ? <Shield size={20} /> : 
+                                   banner.color === 'grey' ? <Info size={20} /> : <Star size={20} />}
+                                </div>
+                                <div className="banner-content-wrapper">
+                                  <div className="banner-header">
+                                    <span className="banner-label">
+                                      {banner.isCallout ? 'CALLOUT' :
+                                       banner.isTitle ? 'TITLE' :
+                                       banner.color === 'orange' || banner.isOrange ? 'PRIORITY' : 
+                                       banner.color === 'green' ? 'SUCCESS' : 
+                                       banner.color === 'grey' ? 'INFO' : 'STANDARD'}
+                                    </span>
+                                    <span className="banner-timestamp">
+                                      {banner.createdAt && !isNaN(Date.parse(banner.createdAt)) ? 
+                                        (banner.createdAt instanceof Date ? banner.createdAt : new Date(banner.createdAt)).toLocaleTimeString('en-US', { 
+                                          hour: '2-digit', 
+                                          minute: '2-digit' 
+                                        }) : ''}
+                                    </span>
+                                  </div>
+                                  <div className="banner-message" style={{ whiteSpace: 'pre-wrap' }}>{banner.text}</div>
+                                </div>
+                                <div className="banner-status-icon">
                                   {copiedBannerId === banner.id ? (
                                     <Check size={18} className="copied-icon" />
                                   ) : banner.isDone ? (
@@ -3303,7 +3233,7 @@ const Notes = () => {
                   <p>Loading notes...</p>
                 </div>
               ) : filteredNotes.length > 0 ? (
-                <div className="notes-grid-layout">
+                <div className="notes-list-layout">
                   {filteredNotes.map((note, index) => {
                     
                     // Extract plain text from HTML content for preview
@@ -3312,7 +3242,7 @@ const Notes = () => {
                       const temp = document.createElement('div');
                       temp.innerHTML = htmlContent;
                       const text = temp.textContent || temp.innerText || '';
-                      return text.substring(0, 150) + (text.length > 150 ? '...' : '');
+                      return text.substring(0, 80) + (text.length > 80 ? '...' : '');
                     };
                     
                     const contentPreview = getPlainTextPreview(note.content);
@@ -3320,7 +3250,7 @@ const Notes = () => {
                     return (
                       <div
                         key={note.id}
-                        className="modern-note-card enterprise-card"
+                        className="note-list-item"
                         onClick={() => handleSelectNote(note)}
                         onContextMenu={(e) => {
                           e.preventDefault();
@@ -3354,60 +3284,36 @@ const Notes = () => {
                           }
                         }}
                       >
-                        <h3 className="modern-note-title">{note.title || 'Untitled'}</h3>
-                        {/* Display image thumbnail if available */}
-                        {note.images && note.images.length > 0 && (
-                          <div className="note-card-image-preview">
-                            <img 
-                              src={note.images[0]} 
-                              alt="Note preview" 
-                              className="card-thumbnail-image"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                              }}
-                            />
-                            {note.images.length > 1 && (
-                              <div className="more-images-indicator">
-                                +{note.images.length - 1} more
-                              </div>
+                        <div className="note-list-content">
+                          <div className="note-list-header">
+                            <h3 className="note-list-title">{note.title || 'Untitled'}</h3>
+                            {note.starred && (
+                              <Star size={14} className="note-star-icon" fill="currentColor" />
                             )}
                           </div>
-                        )}
-                        <div className="banner-content">
-                          {/* Show banner pills if note has banners */}
-                          {note.banners && note.banners.length > 0 && (
-                            <div className="card-banner-preview">
-                              {note.banners
-                                .filter(banner => !banner.isTitle && banner.color !== 'title' && !banner.isCallout && banner.color !== 'callout')
-                                .slice(0, 3)
-                                .map((banner, idx) => (
-                                  <span 
-                                    key={idx} 
-                                    className={`card-banner-pill ${
-                                      banner.color === 'orange' || banner.isOrange ? 'orange' : 
-                                      banner.color === 'green' ? 'done' : 
-                                      banner.color === 'grey' ? 'grey' : ''
-                                    } ${banner.isDone ? 'done' : ''}`}
-                                  >
-                                    {banner.text}
-                                  </span>
-                                ))}
-                              {note.banners.length > 3 && (
-                                <span className="card-banner-pill">+{note.banners.length - 3} more</span>
-                              )}
-                            </div>
+                          {contentPreview && (
+                            <p className="note-list-preview">{contentPreview}</p>
                           )}
-                          {contentPreview && !note.images?.length && (
-                            <p className="modern-note-preview">{contentPreview}</p>
-                          )}
-                        </div>
-                        <div className="modern-note-footer">
-                          {note.starred && (
-                            <div className="modern-note-star">
-                              <Star size={16} fill="currentColor" />
-                            </div>
-                          )}
-                          <ChevronRight size={20} className="banner-chevron" />
+                          <div className="note-list-meta">
+                            <span className="note-date">
+                              {note.updatedAt ? new Date(note.updatedAt.seconds * 1000).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric'
+                              }) : 'No date'}
+                            </span>
+                            {note.banners && note.banners.length > 0 && (
+                              <span className="note-banner-count">
+                                <Tag size={12} />
+                                {note.banners.length}
+                              </span>
+                            )}
+                            {note.images && note.images.length > 0 && (
+                              <span className="note-image-count">
+                                <ImageIcon size={12} />
+                                {note.images.length}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
