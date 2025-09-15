@@ -1,0 +1,170 @@
+/* Responsive styles for Notes List Horizontal Banners */
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .notes-list-layout {
+    padding: 12px !important;
+  }
+
+  .note-list-item {
+    padding: 12px 16px !important;
+    min-height: 64px !important;
+  }
+
+  .note-list-item h3 {
+    font-size: 15px !important;
+  }
+
+  .note-list-item > div:first-child span {
+    font-size: 12px !important;
+  }
+
+  /* Hide time on mobile for space */
+  .note-list-item > div:first-child span {
+    display: block;
+  }
+
+  /* Metadata badges on mobile */
+  .note-list-item > div:last-child {
+    gap: 8px !important;
+  }
+
+  .note-list-item > div:last-child > div {
+    padding: 4px 8px !important;
+  }
+
+  .note-list-item > div:last-child > div span {
+    font-size: 12px !important;
+  }
+
+  .note-list-item > div:last-child > div svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  /* Hide chevron on mobile */
+  .note-list-item > div:last-child > svg:last-child {
+    display: none !important;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .notes-list-layout {
+    padding: 14px !important;
+  }
+
+  .note-list-item {
+    padding: 14px 18px !important;
+    min-height: 68px !important;
+  }
+
+  .note-list-item h3 {
+    font-size: 15px !important;
+  }
+
+  .note-list-item > div:first-child span {
+    font-size: 12px !important;
+  }
+
+  /* Metadata badges on tablet */
+  .note-list-item > div:last-child {
+    gap: 12px !important;
+  }
+
+  .note-list-item > div:last-child > div {
+    padding: 5px 10px !important;
+  }
+
+  .note-list-item > div:last-child > div span {
+    font-size: 13px !important;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .notes-list-layout {
+    padding: 8px !important;
+    gap: 6px !important;
+  }
+
+  .note-list-item {
+    padding: 10px 12px !important;
+    min-height: 60px !important;
+    border-radius: 8px !important;
+  }
+
+  .note-list-item h3 {
+    font-size: 14px !important;
+  }
+
+  /* Stack metadata vertically on very small screens */
+  .note-list-item > div:last-child {
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 4px !important;
+  }
+
+  .note-list-item > div:last-child > div {
+    padding: 3px 6px !important;
+    border-radius: 12px !important;
+  }
+
+  .note-list-item > div:last-child > div span {
+    font-size: 11px !important;
+  }
+
+  .note-list-item > div:last-child > div svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .note-list-item {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+  }
+
+  .note-list-item h3 {
+    color: #f3f4f6 !important;
+  }
+
+  .note-list-item > div:first-child span {
+    color: #9ca3af !important;
+  }
+
+  .note-list-item:hover {
+    border-color: #60a5fa !important;
+  }
+
+  .note-list-item > div:last-child > div:first-child {
+    background-color: #1e3a8a !important;
+  }
+
+  .note-list-item > div:last-child > div:nth-child(2) {
+    background-color: #14532d !important;
+  }
+}
+
+/* Smooth transitions for all responsive changes */
+.note-list-item,
+.note-list-item * {
+  transition: all 0.2s ease;
+}
+
+/* Ensure text doesn't overflow on small screens */
+.note-list-item h3 {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Touch-friendly tap targets */
+@media (pointer: coarse) {
+  .note-list-item {
+    min-height: 48px !important;
+  }
+}

@@ -162,6 +162,7 @@ const NoteGenerator = () => {
     haeAttackMedications: [],
     haeAttackSwellingAreas: [],
     haeAttackTotalDoses: '',
+    haeAttackDates: '',
     shippingStatus: '',
     shippingDetails: '',
     stao: ''
@@ -653,6 +654,10 @@ const NoteGenerator = () => {
       if (interventionForm.haeAttackTotalDoses) {
         fields.push(`Total doses used for acute attacks: ${interventionForm.haeAttackTotalDoses}`);
       }
+
+      if (interventionForm.haeAttackDates) {
+        fields.push(`Attack date(s): ${interventionForm.haeAttackDates}`);
+      }
       
       if (interventionForm.haeAttackMedications && interventionForm.haeAttackMedications.length > 0) {
         const medsWithDoses = interventionForm.haeAttackMedications.map(med => {
@@ -800,6 +805,7 @@ const NoteGenerator = () => {
       haeAttackMedications: [],
       haeAttackSwellingAreas: [],
       haeAttackTotalDoses: '',
+      haeAttackDates: '',
       shippingStatus: '',
       shippingDetails: '',
       stao: ''
@@ -1216,7 +1222,7 @@ const NoteGenerator = () => {
         <div className="note-generator-dashboard">
 
           {/* Patient Information Section - Collapsible Dropdown */}
-          <div className="dashboard-card patient-info-card full-width">
+          <div className={`dashboard-card patient-info-card full-width ${isPatientInfoExpanded ? 'expanded' : 'collapsed'}`}>
             <div className="card-header collapsible-header" onClick={() => setIsPatientInfoExpanded(!isPatientInfoExpanded)}>
               <div className="header-left">
                 <h3>Patient Information</h3>
@@ -1341,7 +1347,7 @@ const NoteGenerator = () => {
           </div>
 
           {/* Banner Notes Section - Collapsible Dropdown */}
-          <div ref={bannerSectionRef} className="dashboard-card banner-notes-card full-width">
+          <div ref={bannerSectionRef} className={`dashboard-card banner-notes-card full-width ${isBannerNotesExpanded ? 'expanded' : 'collapsed'}`}>
             <div className="card-header collapsible-header" onClick={() => setIsBannerNotesExpanded(!isBannerNotesExpanded)}>
               <div className="header-left">
                 <h3>Banner Notes</h3>
@@ -1617,7 +1623,7 @@ const NoteGenerator = () => {
           </div>
 
           {/* Intervention Note Form - Collapsible Dropdown */}
-          <div className="dashboard-card note-form-card">
+          <div className={`dashboard-card note-form-card ${isInterventionExpanded ? 'expanded' : 'collapsed'}`}>
             <div className="card-header collapsible-header" onClick={() => setIsInterventionExpanded(!isInterventionExpanded)}>
               <div className="header-left">
                 <h3>Intervention Note Information</h3>
@@ -1957,22 +1963,31 @@ const NoteGenerator = () => {
                       <div className="compliance-toggle-container">
                         <button
                           className={`compliance-btn good ${interventionForm.compliance === 'good' ? 'active' : ''}`}
-                          onClick={() => updateInterventionField('compliance', 'good')}
+                          onClick={() => updateInterventionField('compliance', interventionForm.compliance === 'good' ? '' : 'good')}
                           type="button"
+                          style={{
+                            color: interventionForm.compliance === 'good' ? undefined : 'var(--text-secondary)'
+                          }}
                         >
                           Good
                         </button>
                         <button
                           className={`compliance-btn fair ${interventionForm.compliance === 'fair' ? 'active' : ''}`}
-                          onClick={() => updateInterventionField('compliance', 'fair')}
+                          onClick={() => updateInterventionField('compliance', interventionForm.compliance === 'fair' ? '' : 'fair')}
                           type="button"
+                          style={{
+                            color: interventionForm.compliance === 'fair' ? undefined : 'var(--text-secondary)'
+                          }}
                         >
                           Fair
                         </button>
                         <button
                           className={`compliance-btn poor ${interventionForm.compliance === 'poor' ? 'active' : ''}`}
-                          onClick={() => updateInterventionField('compliance', 'poor')}
+                          onClick={() => updateInterventionField('compliance', interventionForm.compliance === 'poor' ? '' : 'poor')}
                           type="button"
+                          style={{
+                            color: interventionForm.compliance === 'poor' ? undefined : 'var(--text-secondary)'
+                          }}
                         >
                           Poor
                         </button>
@@ -2011,199 +2026,321 @@ const NoteGenerator = () => {
                     
                     {/* HAE Attack Related Fields - Show when HAE Attack is "yes" */}
                     {interventionForm.haeAttack === 'yes' && (
-                      <div className="input-group" style={{ gridColumn: '1 / -1', width: '100%' }}>
-                        <div style={{ 
+                      <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+                        <div style={{
                           border: '2px solid var(--border-color)',
-                          borderRadius: '12px',
-                          background: 'var(--bg-tertiary)',
+                          borderRadius: '16px',
+                          background: 'linear-gradient(to bottom, var(--bg-secondary), var(--bg-tertiary))',
                           marginTop: '0.5rem',
-                          overflow: 'hidden'
+                          overflow: 'hidden',
+                          width: '100%',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
                         }}>
-                          {/* Section 1: Number of Acute Attacks */}
+                          {/* Header Title */}
                           <div style={{
-                            padding: '1.25rem',
-                            background: 'rgba(255, 255, 255, 0.5)',
+                            padding: '1.25rem 1.5rem',
+                            background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(255, 140, 66, 0.05) 100%)',
                             borderBottom: '2px solid var(--border-color)'
                           }}>
-                            <label style={{ 
-                              fontSize: '0.875rem', 
+                            <h3 style={{
+                              margin: 0,
+                              fontSize: '1.25rem',
                               fontWeight: '700',
                               color: 'var(--text-primary)',
-                              display: 'block',
-                              marginBottom: '0.75rem',
                               textTransform: 'uppercase',
                               letterSpacing: '0.05em',
                               textAlign: 'center'
                             }}>
-                              Number of Acute Attacks Since Last Fill
-                            </label>
-                            <div className="compliance-toggle-container" style={{ marginTop: '0.5rem', width: 'fit-content', margin: '0.5rem auto 0' }}>
-                              <button
-                                type="button"
-                                className={`compliance-btn ${interventionForm.haeAttackCount === '1' ? 'active' : ''}`}
-                                onClick={() => updateInterventionField('haeAttackCount', '1')}
-                                style={{
-                                  background: interventionForm.haeAttackCount === '1' ? '#39ff14' : 'transparent',
-                                  color: interventionForm.haeAttackCount === '1' ? '#000' : 'var(--text-secondary)',
-                                  minWidth: '60px'
-                                }}
-                              >
-                                1
-                              </button>
-                              <button
-                                type="button"
-                                className={`compliance-btn ${interventionForm.haeAttackCount === '2' ? 'active' : ''}`}
-                                onClick={() => updateInterventionField('haeAttackCount', '2')}
-                                style={{
-                                  background: interventionForm.haeAttackCount === '2' ? '#39ff14' : 'transparent',
-                                  color: interventionForm.haeAttackCount === '2' ? '#000' : 'var(--text-secondary)',
-                                  minWidth: '60px'
-                                }}
-                              >
-                                2
-                              </button>
-                              <button
-                                type="button"
-                                className={`compliance-btn ${interventionForm.haeAttackCount === '3+' ? 'active' : ''}`}
-                                onClick={() => updateInterventionField('haeAttackCount', '3+')}
-                                style={{
-                                  background: interventionForm.haeAttackCount === '3+' ? '#39ff14' : 'transparent',
-                                  color: interventionForm.haeAttackCount === '3+' ? '#000' : 'var(--text-secondary)',
-                                  minWidth: '100px'
-                                }}
-                              >
-                                3 or more
-                              </button>
-                            </div>
+                              HAE Attack Details
+                            </h3>
                           </div>
 
-                          {/* Section 2: Total doses field */}
+                          {/* Section 1: Combined row for Number of Attacks, Total Doses, and Dates */}
                           <div style={{
-                            padding: '1.25rem',
-                            background: 'rgba(255, 255, 255, 0.3)',
-                            borderBottom: '2px solid var(--border-color)'
+                            padding: '1.75rem',
+                            background: 'var(--bg-primary)',
+                            borderBottom: '1px solid var(--border-color)'
                           }}>
-                            <label style={{ 
-                              fontSize: '0.875rem', 
-                              fontWeight: '700',
-                              color: 'var(--text-primary)',
-                              display: 'block',
-                              marginBottom: '0.75rem',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.05em'
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 1fr 1fr',
+                              gap: '2rem',
+                              alignItems: 'stretch'
                             }}>
-                              Total number of doses used for acute attacks:
-                            </label>
-                            <input
-                              type="text"
-                              value={interventionForm.haeAttackTotalDoses || ''}
-                              onChange={(e) => updateInterventionField('haeAttackTotalDoses', e.target.value)}
-                              placeholder="Enter total doses"
-                              style={{
-                                width: '250px',
-                                padding: '0.5rem 0.75rem',
-                                fontSize: '0.875rem',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: '6px',
-                                background: 'var(--input-bg)',
-                                color: 'var(--text-primary)',
-                                fontWeight: '500'
-                              }}
-                            />
-                          </div>
-
-                          {/* Section 3: Swelling Areas and Medications */}
-                          <div style={{ 
-                            padding: '1.25rem',
-                            background: 'rgba(255, 255, 255, 0.1)'
-                          }}>
-                            <div style={{ 
-                              display: 'grid', 
-                              gridTemplateColumns: '1fr 1.5fr', 
-                              gap: '2rem'
-                            }}>
-                              {/* Swelling Areas - Left */}
+                              {/* Number of Acute Attacks */}
                               <div style={{
-                                padding: '1rem',
-                                background: 'rgba(255, 255, 255, 0.4)',
-                                borderRadius: '8px',
-                                border: '1px solid rgba(0, 0, 0, 0.05)'
+                                padding: '1.25rem',
+                                background: 'var(--bg-secondary)',
+                                borderRadius: '12px',
+                                border: '1px solid var(--border-color)',
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column'
                               }}>
-                                <label style={{ 
-                                  fontSize: '0.875rem', 
+                                <label style={{
+                                  fontSize: '1rem',
                                   fontWeight: '700',
                                   color: 'var(--text-primary)',
                                   display: 'block',
                                   marginBottom: '1rem',
                                   textTransform: 'uppercase',
                                   letterSpacing: '0.05em',
-                                  paddingBottom: '0.5rem',
-                                  borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
+                                  textAlign: 'center',
+                                  paddingBottom: '0.75rem',
+                                  borderBottom: '1px solid var(--border-color)'
+                                }}>
+                                  Number of Acute Attacks Since Last Fill
+                                </label>
+                                <div className="compliance-toggle-container" style={{ width: 'fit-content', margin: '0 auto' }}>
+                                  <button
+                                    type="button"
+                                    className={`compliance-btn ${interventionForm.haeAttackCount === '1' ? 'active' : ''}`}
+                                    onClick={() => updateInterventionField('haeAttackCount', '1')}
+                                    style={{
+                                      background: interventionForm.haeAttackCount === '1' ? '#39ff14' : 'transparent',
+                                      color: '#000',
+                                      minWidth: '60px',
+                                      padding: '0.6rem 0.8rem',
+                                      fontSize: '1rem',
+                                      fontWeight: interventionForm.haeAttackCount === '1' ? '700' : '500',
+                                      border: '1px solid',
+                                      borderColor: interventionForm.haeAttackCount === '1' ? '#39ff14' : 'var(--border-color)'
+                                    }}
+                                  >
+                                    1
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={`compliance-btn ${interventionForm.haeAttackCount === '2' ? 'active' : ''}`}
+                                    onClick={() => updateInterventionField('haeAttackCount', '2')}
+                                    style={{
+                                      background: interventionForm.haeAttackCount === '2' ? '#39ff14' : 'transparent',
+                                      color: '#000',
+                                      minWidth: '60px',
+                                      padding: '0.6rem 0.8rem',
+                                      fontSize: '1rem',
+                                      fontWeight: interventionForm.haeAttackCount === '2' ? '700' : '500',
+                                      border: '1px solid',
+                                      borderColor: interventionForm.haeAttackCount === '2' ? '#39ff14' : 'var(--border-color)'
+                                    }}
+                                  >
+                                    2
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={`compliance-btn ${interventionForm.haeAttackCount === '3+' ? 'active' : ''}`}
+                                    onClick={() => updateInterventionField('haeAttackCount', '3+')}
+                                    style={{
+                                      background: interventionForm.haeAttackCount === '3+' ? '#39ff14' : 'transparent',
+                                      color: '#000',
+                                      minWidth: '100px',
+                                      padding: '0.6rem 0.8rem',
+                                      fontSize: '1rem',
+                                      fontWeight: interventionForm.haeAttackCount === '3+' ? '700' : '500',
+                                      border: '1px solid',
+                                      borderColor: interventionForm.haeAttackCount === '3+' ? '#39ff14' : 'var(--border-color)'
+                                    }}
+                                  >
+                                    3 or more
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Attack Dates */}
+                              <div style={{
+                                padding: '1.25rem',
+                                background: 'var(--bg-secondary)',
+                                borderRadius: '12px',
+                                border: '1px solid var(--border-color)',
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column'
+                              }}>
+                                <label style={{
+                                  fontSize: '1rem',
+                                  fontWeight: '700',
+                                  color: 'var(--text-primary)',
+                                  display: 'block',
+                                  marginBottom: '1rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em',
+                                  textAlign: 'center',
+                                  paddingBottom: '0.75rem',
+                                  borderBottom: '1px solid var(--border-color)'
+                                }}>
+                                  Date(s) of Attack(s)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={interventionForm.haeAttackDates || ''}
+                                  onChange={(e) => updateInterventionField('haeAttackDates', e.target.value)}
+                                  placeholder="Enter date(s)"
+                                  style={{
+                                    width: '100%',
+                                    padding: '0.75rem 1rem',
+                                    fontSize: '1rem',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '8px',
+                                    background: 'var(--input-bg)',
+                                    color: 'var(--text-primary)',
+                                    fontWeight: '500'
+                                  }}
+                                />
+                              </div>
+
+                              {/* Total Doses */}
+                              <div style={{
+                                padding: '1.25rem',
+                                background: 'var(--bg-secondary)',
+                                borderRadius: '12px',
+                                border: '1px solid var(--border-color)',
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column'
+                              }}>
+                                <label style={{
+                                  fontSize: '1rem',
+                                  fontWeight: '700',
+                                  color: 'var(--text-primary)',
+                                  display: 'block',
+                                  marginBottom: '1rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em',
+                                  textAlign: 'center',
+                                  paddingBottom: '0.75rem',
+                                  borderBottom: '1px solid var(--border-color)'
+                                }}>
+                                  Total Doses Used for Acute Attacks
+                                </label>
+                                <input
+                                  type="text"
+                                  value={interventionForm.haeAttackTotalDoses || ''}
+                                  onChange={(e) => updateInterventionField('haeAttackTotalDoses', e.target.value)}
+                                  placeholder="Enter total doses"
+                                  style={{
+                                    width: '100%',
+                                    padding: '0.75rem 1rem',
+                                    fontSize: '1rem',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '8px',
+                                    background: 'var(--input-bg)',
+                                    color: 'var(--text-primary)',
+                                    fontWeight: '500'
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Section 2: Swelling Areas and Medications */}
+                          <div style={{
+                            padding: '1.75rem',
+                            background: 'var(--bg-primary)'
+                          }}>
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 1fr',
+                              gap: '2rem'
+                            }}>
+                              {/* Swelling Areas - Left */}
+                              <div style={{
+                                padding: '1.5rem',
+                                background: 'var(--bg-secondary)',
+                                borderRadius: '12px',
+                                border: '1px solid var(--border-color)'
+                              }}>
+                                <label style={{
+                                  fontSize: '1.125rem',
+                                  fontWeight: '700',
+                                  color: 'var(--text-primary)',
+                                  display: 'block',
+                                  marginBottom: '1.25rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em',
+                                  paddingBottom: '0.75rem',
+                                  borderBottom: '2px solid var(--border-color)',
+                                  textAlign: 'center'
                                 }}>
                                   Swelling Areas
                                 </label>
-                                <div style={{ 
+                                <div style={{
                                   display: 'flex',
                                   flexDirection: 'column',
-                                  gap: '0.75rem'
+                                  gap: '0.5rem'
                                 }}>
                                   {[
                                     'Face (lips, eyes, cheeks)',
                                     'Laryngeal',
-                                    'Extremities (hands, feet, arms, legs)',
+                                    'Extremities',
                                     'Genitals',
                                     'Abdominal'
-                                  ].map(area => (
-                                    <label key={area} style={{ 
-                                      display: 'flex', 
-                                      alignItems: 'center', 
-                                      gap: '0.5rem', 
-                                      cursor: 'pointer', 
-                                      fontSize: '0.813rem'
-                                    }}>
-                                      <input
-                                        type="checkbox"
-                                        checked={(interventionForm.haeAttackSwellingAreas || []).includes(area)}
-                                        onChange={(e) => {
+                                  ].map(area => {
+                                    const isSelected = (interventionForm.haeAttackSwellingAreas || []).includes(area);
+                                    return (
+                                      <button
+                                        key={area}
+                                        type="button"
+                                        onClick={() => {
                                           const currentAreas = interventionForm.haeAttackSwellingAreas || [];
-                                          if (e.target.checked) {
-                                            updateInterventionField('haeAttackSwellingAreas', [...currentAreas, area]);
-                                          } else {
+                                          if (isSelected) {
                                             updateInterventionField('haeAttackSwellingAreas', currentAreas.filter(a => a !== area));
+                                          } else {
+                                            updateInterventionField('haeAttackSwellingAreas', [...currentAreas, area]);
                                           }
                                         }}
-                                        style={{ width: '16px', height: '16px', accentColor: 'var(--primary-color)' }}
-                                      />
-                                      <span style={{ color: 'var(--text-primary)', lineHeight: '1.3' }}>{area}</span>
-                                    </label>
-                                  ))}
+                                        style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'space-between',
+                                          padding: '0.75rem 1rem',
+                                          border: '1px solid',
+                                          borderColor: isSelected ? '#39ff14' : 'var(--border-color)',
+                                          borderRadius: '6px',
+                                          background: isSelected ? '#39ff14' : 'transparent',
+                                          color: isSelected ? '#000' : 'var(--text-primary)',
+                                          fontSize: '0.95rem',
+                                          fontWeight: isSelected ? '600' : '400',
+                                          cursor: 'pointer',
+                                          transition: 'all 0.2s ease',
+                                          textAlign: 'left',
+                                          width: '100%'
+                                        }}
+                                      >
+                                        <span>{area}</span>
+                                        {isSelected && (
+                                          <span style={{ fontSize: '1rem', marginLeft: '0.5rem' }}>✓</span>
+                                        )}
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               </div>
 
                               {/* Medications - Right */}
                               <div style={{
-                                padding: '1rem',
-                                background: 'rgba(255, 255, 255, 0.4)',
-                                borderRadius: '8px',
-                                border: '1px solid rgba(0, 0, 0, 0.05)'
+                                padding: '1.5rem',
+                                background: 'var(--bg-secondary)',
+                                borderRadius: '12px',
+                                border: '1px solid var(--border-color)'
                               }}>
-                                <label style={{ 
-                                  fontSize: '0.875rem', 
+                                <label style={{
+                                  fontSize: '1.125rem',
                                   fontWeight: '700',
                                   color: 'var(--text-primary)',
                                   display: 'block',
-                                  marginBottom: '1rem',
+                                  marginBottom: '1.25rem',
                                   textTransform: 'uppercase',
                                   letterSpacing: '0.05em',
-                                  paddingBottom: '0.5rem',
-                                  borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
+                                  paddingBottom: '0.75rem',
+                                  borderBottom: '2px solid var(--border-color)',
+                                  textAlign: 'center'
                                 }}>
-                                  Medication(s) used to treat attack(s) and doses
+                                  Medications Used & Doses
                                 </label>
-                                <div style={{ 
+                                <div style={{
                                   display: 'grid',
                                   gridTemplateColumns: 'repeat(2, 1fr)',
-                                  gap: '0.75rem 1.5rem'
+                                  gap: '0.5rem 1rem'
                                 }}>
                                   {[
                                     'Berinert',
@@ -2214,66 +2351,82 @@ const NoteGenerator = () => {
                                     'Ekterly',
                                     'The attack resolved on its own',
                                     'Prophy meds were used'
-                                  ].map(medication => (
-                                    <div key={medication} style={{ 
-                                      display: 'flex', 
-                                      alignItems: 'center', 
-                                      gap: '0.375rem'
-                                    }}>
-                                      <label style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        gap: '0.375rem', 
-                                        cursor: 'pointer', 
-                                        flex: 1,
-                                        minWidth: 0
+                                  ].map(medication => {
+                                    const isSelected = (interventionForm.haeAttackMedications || []).includes(medication);
+                                    const needsDoses = isSelected && !medication.includes('resolved') && !medication.includes('Prophy');
+
+                                    return (
+                                      <div key={medication} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem'
                                       }}>
-                                        <input
-                                          type="checkbox"
-                                          checked={(interventionForm.haeAttackMedications || []).includes(medication)}
-                                          onChange={(e) => {
+                                        <button
+                                          type="button"
+                                          onClick={() => {
                                             const currentMeds = interventionForm.haeAttackMedications || [];
-                                            if (e.target.checked) {
-                                              updateInterventionField('haeAttackMedications', [...currentMeds, medication]);
-                                            } else {
+                                            if (isSelected) {
                                               updateInterventionField('haeAttackMedications', currentMeds.filter(m => m !== medication));
-                                              // Clear doses if medication is unchecked
                                               updateInterventionField(`haeAttackDoses_${medication}`, '');
+                                            } else {
+                                              updateInterventionField('haeAttackMedications', [...currentMeds, medication]);
                                             }
                                           }}
-                                          style={{ width: '16px', height: '16px', accentColor: 'var(--primary-color)', flexShrink: 0 }}
-                                        />
-                                        <span style={{ 
-                                          fontSize: '0.813rem', 
-                                          color: 'var(--text-primary)',
-                                          lineHeight: '1.2',
-                                          wordBreak: 'break-word'
-                                        }}>
-                                          {medication}
-                                        </span>
-                                      </label>
-                                      {(interventionForm.haeAttackMedications || []).includes(medication) && 
-                                       !medication.includes('resolved') && 
-                                       !medication.includes('Prophy') && (
-                                        <input
-                                          type="text"
-                                          value={interventionForm[`haeAttackDoses_${medication}`] || ''}
-                                          onChange={(e) => updateInterventionField(`haeAttackDoses_${medication}`, e.target.value)}
-                                          placeholder="#"
                                           style={{
-                                            width: '45px',
-                                            padding: '0.25rem',
-                                            fontSize: '0.75rem',
-                                            border: '1px solid var(--border-color)',
-                                            borderRadius: '4px',
-                                            background: 'var(--input-bg)',
-                                            color: 'var(--text-primary)',
-                                            textAlign: 'center'
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            padding: '0.625rem 0.875rem',
+                                            border: '1px solid',
+                                            borderColor: isSelected ? '#39ff14' : 'var(--border-color)',
+                                            borderRadius: '6px',
+                                            background: isSelected ? '#39ff14' : 'transparent',
+                                            color: isSelected ? '#000' : 'var(--text-primary)',
+                                            fontSize: '0.9rem',
+                                            fontWeight: isSelected ? '600' : '400',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            flex: needsDoses ? '1' : 'auto',
+                                            minWidth: needsDoses ? '0' : 'auto',
+                                            width: needsDoses ? 'auto' : '100%'
                                           }}
-                                        />
-                                      )}
-                                    </div>
-                                  ))}
+                                        >
+                                          <span style={{
+                                            wordBreak: 'break-word',
+                                            lineHeight: '1.2'
+                                          }}>{medication}</span>
+                                          {isSelected && (
+                                            <span style={{
+                                              fontSize: '1.125rem',
+                                              marginLeft: '0.5rem',
+                                              fontWeight: '800',
+                                              flexShrink: 0
+                                            }}>✓</span>
+                                          )}
+                                        </button>
+                                        {needsDoses && (
+                                          <input
+                                            type="text"
+                                            value={interventionForm[`haeAttackDoses_${medication}`] || ''}
+                                            onChange={(e) => updateInterventionField(`haeAttackDoses_${medication}`, e.target.value)}
+                                            placeholder="#"
+                                            style={{
+                                              width: '50px',
+                                              padding: '0.375rem',
+                                              fontSize: '0.95rem',
+                                              fontWeight: '500',
+                                              border: '2px solid var(--border-color)',
+                                              borderRadius: '6px',
+                                              background: 'var(--input-bg)',
+                                              color: 'var(--text-primary)',
+                                              textAlign: 'center',
+                                              flexShrink: 0
+                                            }}
+                                          />
+                                        )}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             </div>

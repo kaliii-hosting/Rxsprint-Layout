@@ -52,20 +52,26 @@
   top: 0;
   z-index: 10;
   box-shadow: var(--cal-shadow-sm);
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   padding: 0.75rem 1rem;
   gap: 1rem;
   min-height: 56px;
 }
 
-/* Navigation Section */
+/* Left section for balance */
+.header-left-section {
+  display: flex;
+  align-items: center;
+}
+
+/* Navigation Section - Centered */
 .header-nav-section {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-shrink: 0;
+  justify-self: center;
 }
 
 .nav-btn {
@@ -112,12 +118,12 @@
   color: var(--cal-text-secondary);
 }
 
-/* Date Range Section */
+/* Date Range Section - Right aligned */
 .header-range-section {
-  flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
+  justify-self: end;
   min-width: 0;
 }
 
@@ -378,8 +384,8 @@
   align-items: center;
   padding: 0.75rem 0;
   border-bottom: 1px solid var(--cal-border);
-  cursor: pointer;
   transition: background 0.2s;
+  position: relative;
 }
 
 .ios-event-item:hover {
@@ -387,6 +393,10 @@
   margin: 0 -0.5rem;
   padding: 0.75rem 0.5rem;
   border-radius: 0.375rem;
+}
+
+.ios-event-item:hover .ios-event-delete {
+  opacity: 1;
 }
 
 .ios-event-item:last-child {
@@ -403,6 +413,30 @@
 
 .ios-event-content {
   flex: 1;
+  cursor: pointer;
+}
+
+.ios-event-delete {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+
+.ios-event-delete:hover {
+  background: #c82333;
+}
+
+.ios-event-delete:active {
+  transform: scale(0.95);
 }
 
 .ios-event-title {
@@ -780,4 +814,52 @@
   .ios-calendar-container::-webkit-scrollbar-thumb:hover {
     background: var(--cal-text-light);
   }
+}
+
+/* Day View Event Styles */
+.day-event-block {
+  position: relative;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  cursor: default;
+  transition: transform 0.2s;
+}
+
+.day-event-block:hover {
+  transform: translateX(2px);
+}
+
+.day-event-block:hover .event-delete-btn {
+  opacity: 1;
+}
+
+.day-event-block .event-content {
+  cursor: pointer;
+}
+
+.event-delete-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.event-delete-btn:hover {
+  background: #dc3545;
+}
+
+.event-delete-btn:active {
+  transform: scale(0.95);
 }

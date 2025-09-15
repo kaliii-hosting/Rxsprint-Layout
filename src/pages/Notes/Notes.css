@@ -1066,12 +1066,13 @@
   flex-shrink: 0;
 }
 
+/* Hover effects removed for header toolbar buttons
 .back-to-notes-btn:hover {
   background: var(--button-hover-bg);
   color: var(--text-primary);
   border-color: var(--primary-color);
   transform: translateY(-1px);
-}
+} */
 
 .note-title-input-compact {
   flex: 1;
@@ -2311,12 +2312,13 @@
   min-height: 36px;
 }
 
+/* Hover effects removed for header toolbar buttons
 .action-btn-compact:hover {
   background: var(--button-hover-bg);
   color: var(--text-primary);
   border-color: var(--primary-color);
   transform: translateY(-1px);
-}
+} */
 
 .action-btn-compact span {
   display: none;
@@ -2431,19 +2433,21 @@
   color: white;
 }
 
+/* Hover effects removed
 .action-btn-compact.primary:hover {
   background: var(--primary-hover);
   border-color: var(--primary-hover);
-}
+} */
 
 .action-btn-compact.danger {
   color: var(--error-color);
 }
 
+/* Hover effects removed
 .action-btn-compact.danger:hover {
   background: rgba(239, 68, 68, 0.1);
   border-color: var(--error-color);
-}
+} */
 
 .star-btn-compact {
   display: flex;
@@ -2459,11 +2463,12 @@
   transition: all 0.2s ease;
 }
 
+/* Hover effects removed
 .star-btn-compact:hover {
   background: var(--button-hover-bg);
   color: #ffc107;
   border-color: #ffc107;
-}
+} */
 
 .star-btn-compact.starred {
   color: #ffc107;
@@ -2632,10 +2637,11 @@
   padding: 0;
 }
 
+/* Hover effects removed
 .star-btn:hover {
   background: var(--bg-hover);
   color: #ffc107;
-}
+} */
 
 .star-btn.starred {
   color: #ffc107;
@@ -2650,12 +2656,13 @@
   transition: all 0.2s ease;
 }
 
+/* Hover effects removed
 .star-btn.large:hover {
   background: var(--bg-tertiary);
   border-color: #ffc107;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
-}
+} */
 
 .star-btn.large.starred {
   background: rgba(255, 193, 7, 0.1);
@@ -2840,13 +2847,14 @@
   border-radius: 10px;
 }
 
+/* Hover effects removed
 .action-btn:hover {
   border-color: var(--primary-color);
   color: var(--text-primary);
   background: var(--bg-tertiary);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
+} */
 
 .action-btn svg {
   width: 18px;
@@ -2878,12 +2886,13 @@
   stroke: white !important;
 }
 
+/* Hover effects removed
 .action-btn.primary:hover {
   background: var(--primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(255, 85, 0, 0.25);
   border-color: var(--primary-hover);
-}
+} */
 
 .action-btn.danger {
   background: transparent;
@@ -2895,12 +2904,13 @@
   color: var(--error-color);
 }
 
+/* Hover effects removed
 .action-btn.danger:hover {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.2);
   color: var(--error-color);
   transform: translateY(-1px);
-}
+} */
 
 .action-btn.danger svg {
   width: 18px;

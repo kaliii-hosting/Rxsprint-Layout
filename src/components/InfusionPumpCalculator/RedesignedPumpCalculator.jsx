@@ -4930,11 +4930,16 @@ const RedesignedPumpCalculator = () => {
                         <Droplets size={14} className="preview-icon" />
                         <span className="preview-value">
                           {(() => {
+                            // Check if we're using open vial volume
+                            if (manualVialOverride && manualVialOverride[0]?.vial?.isOpenVial) {
+                              const openVialData = manualVialOverride[0];
+                              return `Open Vial: ${openVialData.actualVialsOpened} vials opened`;
+                            }
                             if (selectedMedicationData?.dosageForm === 'lyophilized') {
-                              const vials = calculateSingleDoseVialCombination();
+                              const vials = manualVialOverride || calculateSingleDoseVialCombination();
                               if (vials && vials[0]) {
                                 const totalVials = vials.reduce((sum, v) => sum + v.count, 0);
-                                const volumeType = volumeCalculationMethod === 'withdrawn' ? 
+                                const volumeType = volumeCalculationMethod === 'withdrawn' ?
                                   (vials[0].vial.withdrawVolume || vials[0].vial.volume || vials[0].vial.reconstitutionVolume) :
                                   vials[0].vial.reconstitutionVolume;
                                 if (volumeCalculationMethod === 'withdrawn') {
@@ -4944,7 +4949,7 @@ const RedesignedPumpCalculator = () => {
                                 }
                               }
                             } else if (selectedMedicationData?.dosageForm === 'solution') {
-                              const vials = calculateSingleDoseVialCombination();
+                              const vials = manualVialOverride || calculateSingleDoseVialCombination();
                               if (vials && vials[0] && vials[0].vial.concentration) {
                                 return `Solution: ${vials[0].vial.concentration} mg/mL`;
                               }
@@ -6458,17 +6463,37 @@ const RedesignedPumpCalculator = () => {
                       <div className="coverage-results">
                         <div className="coverage-summary">
                           <div className="summary-row highlight">
-                            <span className="summary-label">New Drug Volume:</span>
+                            <span className="summary-label">
+                              {manualVialOverride[0]?.vial?.isOpenVial ? 'Open Vial Volume:' : 'New Drug Volume:'}
+                            </span>
                             <span className="summary-value">
-                              {calculateDrugVolume(true, volumeCalculationMethod)} mL
+                              {manualVialOverride[0]?.vial?.isOpenVial
+                                ? `${manualVialOverride[0].vial.volume.toFixed(1)} mL`
+                                : `${calculateDrugVolume(true, volumeCalculationMethod)} mL`
+                              }
                             </span>
                           </div>
                           <div className="summary-row">
-                            <span className="summary-label">Total Vials:</span>
+                            <span className="summary-label">
+                              {manualVialOverride[0]?.vial?.isOpenVial ? 'Vials to Open:' : 'Total Vials:'}
+                            </span>
                             <span className="summary-value">
-                              {manualVialOverride.reduce((sum, item) => sum + item.count, 0)} vials
+                              {manualVialOverride[0]?.vial?.isOpenVial
+                                ? `${manualVialOverride[0].actualVialsOpened} vials`
+                                : `${manualVialOverride.reduce((sum, item) => sum + item.count, 0)} vials`
+                              }
                             </span>
                           </div>
+                          {manualVialOverride[0]?.vial?.isOpenVial && (
+                            <div className="summary-row">
+                              <span className="summary-label">Concentration:</span>
+                              <span className="summary-value">
+                                {(manualVialOverride[0].vial.strength /
+                                  (manualVialOverride[0].vial.withdrawVolume ||
+                                   manualVialOverride[0].vial.reconstitutionVolume || 10)).toFixed(2)} mg/mL
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -6553,6 +6578,84 @@ const RedesignedPumpCalculator = () => {
                         </button>
                       </div>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <button
+                          type="button"
+                          className="open-vial-volume-btn"
+                          onClick={() => {
+                            // Calculate exact drug volume based on prescribed dose and vial concentration
+                            const weight = parseFloat(inputs.patientWeight);
+                            const dose = parseFloat(inputs.dose);
+                            const requiredDose = inputs.doseUnit.includes('/kg') ? dose * weight : dose;
+
+                            // Find vials with volume information that can be opened
+                            const vialsWithVolume = selectedMedicationData.vialSizes
+                              ?.filter(vial =>
+                                (!vial.form || (vial.form !== 'capsule' && vial.form !== 'tablet')) &&
+                                vial.strength > 0 &&
+                                (vial.volume || vial.withdrawVolume || vial.reconstitutionVolume)
+                              );
+
+                            if (vialsWithVolume && vialsWithVolume.length > 0) {
+                              // Use the first available vial to get concentration
+                              const referenceVial = vialsWithVolume[0];
+
+                              // Get the actual volume for the vial
+                              const vialVolume = referenceVial.withdrawVolume ||
+                                                referenceVial.volume ||
+                                                referenceVial.reconstitutionVolume || 0;
+
+                              if (vialVolume > 0 && referenceVial.strength > 0) {
+                                // Calculate concentration (mg/mL)
+                                const concentration = referenceVial.strength / vialVolume;
+
+                                // Calculate exact volume needed for the prescribed dose
+                                // Volume = Dose / Concentration
+                                const exactVolumeNeeded = requiredDose / concentration;
+
+                                // Calculate how many vials are needed to provide this volume
+                                const vialsNeeded = Math.ceil(exactVolumeNeeded / vialVolume);
+
+                                // Create the manual override with the calculated vials
+                                // This represents opening vials to get the exact volume
+                                const vialCombination = [{
+                                  vial: {
+                                    ...referenceVial,
+                                    // Override the volume to be the exact volume needed
+                                    volume: exactVolumeNeeded,
+                                    withdrawVolume: exactVolumeNeeded,
+                                    isOpenVial: true // Flag to indicate this is an open vial calculation
+                                  },
+                                  count: 1, // We're treating this as one "unit" of exact volume
+                                  actualVialsOpened: vialsNeeded // Track how many actual vials would be opened
+                                }];
+
+                                setManualVialOverride(vialCombination);
+
+                                // Optionally show a message about the calculation
+                                console.log(`Open Vial Calculation:
+                                  Prescribed Dose: ${requiredDose} ${referenceVial.unit}
+                                  Concentration: ${concentration.toFixed(2)} ${referenceVial.unit}/mL
+                                  Exact Volume Needed: ${exactVolumeNeeded.toFixed(1)} mL
+                                  Vials to Open: ${vialsNeeded}`);
+                              }
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#2196F3',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                          }}
+                        >
+                          <FlaskConical size={16} style={{ color: 'white' }} />
+                          <span style={{ color: 'white' }}>Open Vial Volume</span>
+                        </button>
                         <button
                           type="button"
                           className="reset-vials-btn"

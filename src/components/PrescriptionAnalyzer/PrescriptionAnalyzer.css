@@ -1,0 +1,499 @@
+/* ========================================
+   PRESCRIPTION ANALYZER - COMPACT WORKING LAYOUT
+   Field | Electronic Prescription | Data Entered | Status
+   ======================================== */
+
+.prescription-analyzer-container {
+  width: 100%;
+  max-width: 100vw;
+  padding: 0;
+  background: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Roboto, sans-serif;
+}
+
+.prescription-analyzer-results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.prescription-comparison-container {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.file-result-title {
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comparison-table-wrapper {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  width: 100%;
+}
+
+/* Compact comparison table */
+.prescription-comparison-table {
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  font-size: 10px !important;
+  margin: 0 !important;
+  min-width: 700px !important;
+}
+
+.prescription-comparison-table thead tr {
+  background: #2d3748;
+}
+
+.prescription-comparison-table thead th {
+  color: white;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 8px 6px;
+  text-align: center;
+  border-right: 1px solid #4a5568;
+  white-space: nowrap;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.prescription-comparison-table thead th:last-child {
+  border-right: none;
+}
+
+/* Fixed column widths for proper alignment - Override conflicting styles */
+.prescription-comparison-table thead th:nth-child(1),
+.prescription-comparison-table .field-header,
+.prescription-comparison-table thead tr th:nth-child(1) {
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
+}
+
+.prescription-comparison-table thead th:nth-child(2),
+.prescription-comparison-table .rx-header,
+.prescription-comparison-table thead tr th:nth-child(2) {
+  width: calc((100% - 280px) / 2) !important;
+  min-width: 200px !important;
+  text-align: center !important;
+}
+
+.prescription-comparison-table thead th:nth-child(3),
+.prescription-comparison-table .de-header,
+.prescription-comparison-table thead tr th:nth-child(3) {
+  width: calc((100% - 280px) / 2) !important;
+  min-width: 200px !important;
+  text-align: center !important;
+}
+
+.prescription-comparison-table thead th:nth-child(4),
+.prescription-comparison-table .status-header,
+.prescription-comparison-table thead tr th:nth-child(4) {
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
+}
+
+/* Table body */
+.prescription-comparison-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.2s ease;
+}
+
+.prescription-comparison-table tbody td {
+  padding: 4px 6px;
+  vertical-align: middle;
+  font-size: 10px;
+  color: #374151;
+  border-right: 1px solid #e5e7eb;
+  line-height: 1.2;
+  height: 24px;
+  box-sizing: border-box;
+}
+
+.prescription-comparison-table tbody td:last-child {
+  border-right: none;
+}
+
+/* Field cell with banners - Grey background */
+.prescription-comparison-table tbody td:nth-child(1),
+.prescription-comparison-table .field-cell,
+.field-cell {
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
+  padding: 2px !important;
+  background: #f3f4f6 !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+.field-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s ease;
+  min-height: 18px;
+  justify-content: center;
+}
+
+.field-banner .section-label {
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  opacity: 0.8;
+  line-height: 1;
+}
+
+.field-banner .field-label {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1px;
+  line-height: 1.1;
+}
+
+/* Value cells - Equal width, compact */
+.prescription-comparison-table tbody td:nth-child(2),
+.prescription-comparison-table .rx-value-cell,
+.rx-value-cell {
+  width: calc((100% - 280px) / 2) !important;
+  min-width: 200px !important;
+  padding: 4px 8px !important;
+  word-wrap: break-word !important;
+  white-space: normal !important;
+  text-align: center !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+.prescription-comparison-table tbody td:nth-child(3),
+.prescription-comparison-table .de-value-cell,
+.de-value-cell {
+  width: calc((100% - 280px) / 2) !important;
+  min-width: 200px !important;
+  padding: 4px 8px !important;
+  word-wrap: break-word !important;
+  white-space: normal !important;
+  text-align: center !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+/* Status cell */
+.prescription-comparison-table tbody td:nth-child(4),
+.prescription-comparison-table .status-cell,
+.status-cell {
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
+  text-align: center !important;
+  padding: 4px 2px !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.status-badge.matched {
+  background: #dcfce7;
+  color: #000000;
+}
+
+.status-badge.changed {
+  background: #fee2e2;
+  color: #000000;
+}
+
+.status-badge.partial {
+  background: #fef3c7;
+  color: #000000;
+}
+
+.status-badge.missing {
+  background: #fee2e2;
+  color: #000000;
+}
+
+.status-badge.empty {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* Row highlighting - different shades of green for matching */
+.prescription-comparison-table tbody tr.matching-row td {
+  background: #f0fdf4 !important;
+}
+
+.prescription-comparison-table tbody tr.matching-row:hover td {
+  background: #dcfce7 !important;
+}
+
+/* Row highlighting - different shades of red for mismatch */
+.prescription-comparison-table tbody tr.changed-row td {
+  background: #fef2f2 !important;
+}
+
+.prescription-comparison-table tbody tr.changed-row:hover td {
+  background: #fee2e2 !important;
+}
+
+/* Row highlighting - yellow for partial */
+.prescription-comparison-table tbody tr.partial-row td {
+  background: #fffbeb !important;
+}
+
+.prescription-comparison-table tbody tr.partial-row:hover td {
+  background: #fef3c7 !important;
+}
+
+/* Row highlighting - red for missing (like mismatch) */
+.prescription-comparison-table tbody tr.missing-row td {
+  background: #fef2f2 !important;
+}
+
+.prescription-comparison-table tbody tr.missing-row:hover td {
+  background: #fee2e2 !important;
+}
+
+/* Field banner colors - matching (green shades) */
+.prescription-comparison-table .matching-row .field-banner {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+/* Field banner colors - mismatch (red shades) */
+.prescription-comparison-table .changed-row .field-banner {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* Field banner colors - partial (yellow shades) */
+.prescription-comparison-table .partial-row .field-banner {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+/* Field banner colors - missing (red shades like mismatch) */
+.prescription-comparison-table .missing-row .field-banner {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* Default field banner - Grey background with dark grey text */
+.field-banner {
+  background: #e5e7eb;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+/* Required asterisk */
+.required {
+  color: #ef4444;
+  margin-left: 1px;
+  font-weight: bold;
+  font-size: 7px;
+}
+
+/* Tablet responsive (768px - 1024px) */
+@media (max-width: 1024px) {
+  .prescription-comparison-table {
+    font-size: 9px;
+    min-width: 650px;
+  }
+
+  .prescription-comparison-table thead th {
+    font-size: 9px;
+    padding: 6px 4px;
+  }
+
+  .prescription-comparison-table tbody td {
+    padding: 3px 4px;
+    font-size: 9px;
+    height: 22px;
+  }
+
+  .field-banner {
+    min-height: 16px;
+    padding: 2px 3px;
+  }
+
+  .field-banner .section-label {
+    font-size: 6px;
+  }
+
+  .field-banner .field-label {
+    font-size: 7px;
+  }
+
+  .status-badge {
+    font-size: 7px;
+    padding: 1px 3px;
+  }
+}
+
+/* Mobile responsive (< 768px) */
+@media (max-width: 767px) {
+  .prescription-analyzer-container {
+    padding: 0 8px;
+  }
+
+  .comparison-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .file-result-title {
+    font-size: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .prescription-comparison-table {
+    font-size: 8px;
+    min-width: 600px;
+  }
+
+  .prescription-comparison-table thead th {
+    font-size: 8px;
+    padding: 4px 2px;
+  }
+
+  .prescription-comparison-table tbody td {
+    padding: 2px;
+    font-size: 8px;
+    height: 20px;
+  }
+
+  .prescription-comparison-table .field-header {
+    width: 120px;
+  }
+
+  .prescription-comparison-table .status-header {
+    width: 120px;
+  }
+
+  .field-cell {
+    width: 120px;
+    padding: 1px;
+  }
+
+  .status-cell {
+    width: 120px;
+    padding: 2px 1px;
+  }
+
+  .field-banner {
+    min-height: 14px;
+    padding: 1px 2px;
+    gap: 0;
+  }
+
+  .field-banner .section-label {
+    font-size: 5px;
+  }
+
+  .field-banner .field-label {
+    font-size: 6px;
+  }
+
+  .status-badge {
+    font-size: 6px;
+    padding: 1px 2px;
+    gap: 1px;
+  }
+
+  .rx-value-cell,
+  .de-value-cell {
+    font-size: 8px;
+    padding: 2px;
+    line-height: 1.1;
+  }
+}
+
+/* Print styles */
+@media print {
+  .prescription-analyzer-container {
+    max-width: none;
+  }
+
+  .comparison-table-wrapper {
+    border: 1px solid #000;
+    break-inside: avoid;
+  }
+
+  .prescription-comparison-table {
+    font-size: 9px;
+    min-width: initial;
+  }
+}
+
+/* Ensure full width usage */
+.prescription-analyzer-container,
+.prescription-analyzer-results,
+.prescription-comparison-container,
+.comparison-table-wrapper {
+  box-sizing: border-box;
+}
+
+/* Force column alignment with exact positioning */
+.prescription-comparison-table {
+  table-layout: fixed !important;
+}
+
+.prescription-comparison-table colgroup col:nth-child(1) {
+  width: 140px !important;
+}
+
+.prescription-comparison-table colgroup col:nth-child(2) {
+  width: calc((100% - 280px) / 2) !important;
+}
+
+.prescription-comparison-table colgroup col:nth-child(3) {
+  width: calc((100% - 280px) / 2) !important;
+}
+
+.prescription-comparison-table colgroup col:nth-child(4) {
+  width: 140px !important;
+}

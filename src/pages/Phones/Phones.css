@@ -715,12 +715,17 @@
 }
 
 .section-title {
-  padding: 4px 16px;
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--text-secondary, #6c6c70);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 4px 16px !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: #8e8e93 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  margin-bottom: 8px !important;
+  display: block !important;
 }
 
 /* Form Inputs */

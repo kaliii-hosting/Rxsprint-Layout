@@ -187,6 +187,7 @@ export default defineConfig({
         target: 'https://dailymed.nlm.nih.gov',
         changeOrigin: true,
         secure: false,
+        timeout: 30000, // 30 second timeout
         rewrite: (path) => {
           // /api/dailymed/xxx -> /dailymed/xxx
           const newPath = path.replace('/api', '');

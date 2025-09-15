@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Upload, X, ScanLine, Check, X as XIcon, AlertCircle, RotateCcw, FileText, ChevronDown, Package, GitCompare, TrendingUp, TrendingDown, ImageIcon, Plus } from 'lucide-react';
+import PrescriptionAnalyzer from '../../components/PrescriptionAnalyzer/PrescriptionAnalyzer';
 import './Analyzer.css';
 import './AnalyzerResponsiveToolbar.css';
 import './SuppliesOrangeColorFix.css'; // Must be early to override green colors
@@ -8,20 +9,6 @@ import './SuppliesTableFixes.css';
 import './SuppliesTableOverrides.css';
 import './ResponsiveSuppliesTables.css';
 import './SuppliesTableEnhancements.css';
-import './PrescriptionTableProperLayout.css'; // Proper layout without breaking other elements
-import './PrescriptionTableDefinitiveFix.css'; // Definitive fix with maximum specificity
-import './PrescriptionTableNuclearFix.css'; // Overrides supplies CSS conflicts
-import './PrescriptionTableX1Design.css'; // X1.jpg exact design with centering
-import './PrescriptionTableFinalLayout.css'; // Final layout with correct column widths and row highlighting
-import './PrescriptionTableCenterAndAlerts.css'; // Centers table and styles alerts as banners
-import './PrescriptionTablePositionFix.css'; // Fixes centering and title/button positioning
-import './PrescriptionContainerDesign.css'; // Container with header like Analyze section
-import './PrescriptionResultsContainer.css'; // Prescription Results container with proper header
-import './PrescriptionResponsiveLayout.css'; // Responsive layout for all screen sizes
-import './PrescriptionStatusColumnFix.css'; // MUST BE LAST - Fixes STATUS column width
-import './TableAlignmentFix.css'; // Fixes table alignment across zoom levels
-import './AnalyzerButtonFix.css'; // Fixes Analyze Prescription button style
-import './PrescriptionHeaderFullWidth.css'; // Fixes prescription header to be full width
 
 const Analyzer = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -32,8 +19,7 @@ const Analyzer = () => {
   const [allAnalysisResults, setAllAnalysisResults] = useState([]);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [showImageModal, setShowImageModal] = useState(false);
-  const [showDEAAlert, setShowDEAAlert] = useState(false);
-  const [showNeedlesAlert, setShowNeedlesAlert] = useState(false);
+  const [showQuantityAlert, setShowQuantityAlert] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isFolderUpload, setIsFolderUpload] = useState(false);
   const [activeSection, setActiveSection] = useState('prescription'); // 'prescription' or 'supplies'
@@ -717,6 +703,7 @@ const Analyzer = () => {
     setCurrentFileIndex(0);
     setShowDEAAlert(false);
     setShowNeedlesAlert(false);
+    setShowQuantityAlert(false);
     setIsFolderUpload(false);
     // Clear prescription paste states
     setPrescriptionFiles([]);
@@ -804,6 +791,7 @@ const Analyzer = () => {
       setPreviewUrl(null);
       setShowDEAAlert(false);
       setShowNeedlesAlert(false);
+      setShowQuantityAlert(false);
       setIsFolderUpload(false);
       setSelectedSupplyFile(null);
       setSupplyPreviewUrl(null);
@@ -835,17 +823,7 @@ const Analyzer = () => {
     }, 300);
   };
 
-  // Simple animation for analyzing
-  useEffect(() => {
-    if (isAnalyzing) {
-      // Auto complete after 3 seconds for demo
-      const timeout = setTimeout(() => {
-        setIsAnalyzing(false);
-      }, 3000);
-      
-      return () => clearTimeout(timeout);
-    }
-  }, [isAnalyzing]);
+  // Removed artificial delay - analysis completes naturally
 
   // Cleanup reset timeout on unmount
   useEffect(() => {
@@ -998,24 +976,9 @@ const Analyzer = () => {
       results[key] = value?.valueString || value?.content || '';
     });
 
-    // Check for alerts
-    const rxDea = (results['RX Doctor DEA'] || "").trim().toUpperCase();
-    const deDea = (results['DE Doctor DEA'] || "").trim().toUpperCase();
-    
-    const hasDeaAlert = (rxDea.startsWith("M") && rxDea.length > 0) || (deDea.startsWith("M") && deDea.length > 0);
-
-    // Check for needles in drug name
-    const rxDrug = results['Rx Drug'] || "";
-    const deDrug = results['DE Drug'] || "";
-    const needleRegex = /\bneedle(s)?\b/i;
-    
-    const hasNeedlesAlert = needleRegex.test(rxDrug) || needleRegex.test(deDrug);
-
     return {
       fileName,
-      results,
-      hasDeaAlert,
-      hasNeedlesAlert
+      results
     };
   };
 
@@ -3027,7 +2990,7 @@ const Analyzer = () => {
                     <button 
                       className={`toggle-btn full-width ${isAnalyzingSupplies ? 'active' : ''}`}
                       onClick={analyzeSupplies}
-                      disabled={!previousSupplyFile || !currentSupplyFile || isAnalyzingSupplies}
+                      disabled={previousSupplyFiles.length === 0 || currentSupplyFiles.length === 0 || isAnalyzingSupplies}
                       style={{ color: 'white', WebkitTextFillColor: 'white' }}
                     >
                       <GitCompare size={16} style={{ color: 'white', WebkitTextFillColor: 'white' }} />
@@ -3040,28 +3003,197 @@ const Analyzer = () => {
           )}
 
 
-          {/* Scanning Overlay - Using same style as supplies analyzer */}
+          {/* Prescription Analyzer Preloader - Using Notes page animation */}
           {isAnalyzing && (
             <div className="scanning-overlay">
-              <div className="scanning-content supplies-scanning">
-                <div className="supplies-scan-animation">
-                  <ScanLine size={64} className="supplies-scanning-icon" />
+              <div className="scanning-content" style={{ position: 'relative', minHeight: '200px' }}>
+                {/* Notes Page Preloader Animation */}
+                <div className="load">
+                  <hr/><hr/><hr/><hr/>
                 </div>
-                <p className="scan-text supplies-scan-text">
-                  {isFolderUpload 
+
+                <p className="scan-text" style={{ marginTop: '140px', fontSize: '18px', color: '#000000' }}>
+                  {isFolderUpload
                     ? `Analyzing file ${currentFileIndex + 1} of ${selectedFiles.length}...`
                     : 'Analyzing prescription...'}
                 </p>
                 {analysisProgress && (
-                  <p className="scan-progress-text" style={{ marginTop: '10px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                  <p className="scan-progress-text" style={{ marginTop: '10px', fontSize: '14px', color: 'rgba(0, 0, 0, 0.7)' }}>
                     {analysisProgress}
                   </p>
                 )}
-                <div className="scan-progress">
-                  <div className="scan-progress-bar"></div>
-                </div>
+
+                {/* Preloader CSS */}
+                <style>{`
+                  .load {
+                    position: absolute;
+                    top: 40%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 100px;
+                    height: 100px;
+                  }
+
+                  .load hr {
+                    border: 0;
+                    margin: 0;
+                    width: 40%;
+                    height: 40%;
+                    position: absolute;
+                    border-radius: 50%;
+                    animation: spin 2s ease infinite;
+                  }
+
+                  .load :first-child {
+                    background: #19A68C;
+                    animation-delay: -1.5s;
+                  }
+
+                  .load :nth-child(2) {
+                    background: #F63D3A;
+                    animation-delay: -1s;
+                  }
+
+                  .load :nth-child(3) {
+                    background: #FDA543;
+                    animation-delay: -0.5s;
+                  }
+
+                  .load :last-child {
+                    background: #193B48;
+                  }
+
+                  @keyframes spin {
+                    0%, 100% {
+                      transform: translate(0);
+                    }
+                    25% {
+                      transform: translate(160%);
+                    }
+                    50% {
+                      transform: translate(160%, 160%);
+                    }
+                    75% {
+                      transform: translate(0, 160%);
+                    }
+                  }
+                `}</style>
               </div>
             </div>
+          )}
+
+          {/* Force Override Styles for Prescription Table - UPDATED ${Date.now()} */}
+          {activeSection === 'prescription' && (
+            <style>{`
+              /* ABSOLUTELY FORCE WHITE HEADERS - NUCLEAR OPTION */
+              .prescription-tables-container th,
+              .prescription-table-section th,
+              .analysis-table th,
+              .analysis-table thead th,
+              .analysis-table thead tr th,
+              .prescribed-header,
+              .data-entered-header,
+              .match-header,
+              th[class*="header"] {
+                background-color: #3b5063 !important;
+                color: white !important;
+                font-weight: 700 !important;
+              }
+
+              /* FORCE ALL TH ELEMENTS IN ANALYSIS TABLE */
+              .analysis-table thead tr th {
+                background-color: #3b5063 !important;
+                color: white !important;
+                font-weight: 700 !important;
+                border-color: #2c3e50 !important;
+              }
+
+              /* FORCE FIELD NAME COLUMN WIDTH - VERY WIDE AND BOLD */
+              .field-name-cell,
+              .analysis-table td:nth-child(2),
+              .prescription-table-section td:nth-child(2),
+              td.field-name-cell {
+                width: 600px !important;
+                min-width: 600px !important;
+                max-width: 600px !important;
+                padding: 12px 35px !important;
+                white-space: nowrap !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+                font-size: 15px !important;
+                font-weight: bold !important;
+              }
+
+              /* FORCE STATUS COLUMN WIDTH FOR "STATUS" TEXT */
+              .match-status-cell,
+              .match-header,
+              .analysis-table td:last-child,
+              .analysis-table th:last-child,
+              th.match-header,
+              td.match-status-cell {
+                width: 80px !important;
+                min-width: 80px !important;
+                max-width: 80px !important;
+                padding: 4px !important;
+                text-align: center !important;
+              }
+
+              /* FORCE FIRST COLUMN WIDTH AND BIGGER FONT */
+              .section-label-cell,
+              .analysis-table td:first-child {
+                width: 150px !important;
+                min-width: 150px !important;
+                max-width: 150px !important;
+                font-size: 15px !important;
+                font-weight: 700 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+              }
+
+              /* ALIGN ELECTRONIC PRESCRIPTION COLUMN TO RIGHT */
+              .prescribed-value-cell,
+              .analysis-table td:nth-child(3) {
+                text-align: right !important;
+              }
+
+              /* CENTER COLUMN HEADERS */
+              .prescribed-header,
+              .data-entered-header {
+                text-align: center !important;
+              }
+
+              /* HANDLE SIG TEXT - ALLOW MULTIPLE LINES */
+              tr[data-section*="rx"] td:nth-child(3):contains("INJECT"),
+              tr[data-section*="rx"] td:nth-child(4):contains("INJECT") {
+                white-space: pre-wrap !important;
+                word-wrap: break-word !important;
+              }
+
+              /* REMOVE CONTAINER BACKGROUNDS */
+              .prescription-tables-container,
+              .prescription-table-section,
+              .prescription-table-screenshot-container {
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+              }
+
+              /* FORCE TABLE WIDTH - VERY WIDE */
+              .analysis-table,
+              table.analysis-table {
+                min-width: 2000px !important;
+                width: 100% !important;
+                table-layout: fixed !important;
+              }
+
+              /* OVERRIDE ANY OTHER STYLES WITH MAXIMUM SPECIFICITY */
+              html body .analyzer-page .prescription-tables-container .analysis-table th,
+              html body .analyzer-page .prescription-table-section .analysis-table th {
+                background-color: #3b5063 !important;
+                color: white !important;
+              }
+            `}</style>
           )}
 
           {/* Prescription Results - Only show in prescription section */}
@@ -3069,266 +3201,16 @@ const Analyzer = () => {
             <div className="prescription-results-wrapper">
               <div className="prescription-results-header">
                 <h2>Prescription Analysis Results</h2>
-                <button 
-                  className="reset-analysis-btn" 
-                  onClick={handleReset}
-                  title="Reset prescription analysis"
-                >
-                  <RotateCcw size={18} />
-                  <span>Reset Analysis</span>
-                </button>
               </div>
               <div className="prescription-results-content">
 
-              {/* Fixed Alert Popups */}
-              {showDEAAlert && (
-                <>
-                  <div className="alert-overlay" onClick={() => setShowDEAAlert(false)} />
-                  <div className="dea-alert-popup">
-                    <div className="alert-header">
-                      <AlertCircle size={20} />
-                      <span>⚠️ DEA ALERT</span>
-                    </div>
-                    <div className="alert-content">
-                      <p>DEA number starts with "M".</p>
-                      <p>Please verify a supervising prescriber.</p>
-                    </div>
-                    <div className="alert-actions">
-                      <button className="alert-ok-btn" onClick={() => setShowDEAAlert(false)}>
-                        OK
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-              {showNeedlesAlert && (
-                <>
-                  <div className="alert-overlay" onClick={() => setShowNeedlesAlert(false)} />
-                  <div className="needles-alert-popup">
-                    <div className="alert-header">
-                      <AlertCircle size={20} />
-                      <span>⚠️ Needles Prescription Check</span>
-                    </div>
-                    <div className="alert-content">
-                      <p>Confirm days supply for needles does not exceed 10</p>
-                      <p>days for state laws.</p>
-                    </div>
-                    <div className="alert-actions">
-                      <button className="alert-ok-btn" onClick={() => setShowNeedlesAlert(false)}>
-                        OK
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Analysis Table */}
-              {allAnalysisResults.length > 0 ? (
-                // Multiple files results
-                <div className="prescription-tables-container">
-                  {allAnalysisResults.map((fileResult, fileIndex) => {
-                    // Format DOB with age calculation  
-                    const formatDOBWithAge = (dobString) => {
-                      if (!dobString || dobString === '-') return dobString;
-                      // Calculate age if DOB is present
-                      const dobParts = dobString.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
-                      if (dobParts) {
-                        const month = parseInt(dobParts[1]);
-                        const day = parseInt(dobParts[2]);
-                        const year = parseInt(dobParts[3]) < 100 ? 1900 + parseInt(dobParts[3]) : parseInt(dobParts[3]);
-                        const birthDate = new Date(year, month - 1, day);
-                        const today = new Date();
-                        let age = today.getFullYear() - birthDate.getFullYear();
-                        const monthDiff = today.getMonth() - birthDate.getMonth();
-                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                          age--;
-                        }
-                        return `${dobString}  (Age: ${age})`;
-                      }
-                      return dobString;
-                    };
-
-                    // Format address for two-line display
-                    const formatAddress = (addressString) => {
-                      if (!addressString || addressString === '-') return addressString;
-                      // Check if address already has a newline or comma
-                      if (addressString.includes(',')) {
-                        const parts = addressString.split(',');
-                        if (parts.length >= 2) {
-                          return parts[0].trim() + '\n' + parts.slice(1).join(',').trim();
-                        }
-                      }
-                      return addressString;
-                    };
-
-                    return (
-                      <div key={fileIndex} className="prescription-table-screenshot-container">
-                        <h3 className="file-result-title">{fileResult.fileName}</h3>
-                        <table className="analysis-table screenshot-design">
-                          <thead>
-                            <tr>
-                              <th colSpan="2"></th>
-                              <th className="prescribed-header">PRESCRIBED: eRx Approved with Changes</th>
-                              <th className="data-entered-header">DATA ENTERED <span className="header-checkmark">✓</span></th>
-                              <th className="match-header">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {fieldSections.map((section, sectionIndex) => (
-                              section.fields.map((field, fieldIndex) => {
-                                const rxValue = fileResult.results[field.rxKey] || '';
-                                const deValue = fileResult.results[field.deKey] || '';
-                                const matchStatus = getMatchStatus(field.label, rxValue, deValue, fileResult.results, fileResult.results);
-                                const isFirstInSection = fieldIndex === 0;
-                                
-                                // Format fields specially
-                                let displayRxValue = rxValue;
-                                let displayDeValue = deValue;
-                                
-                                if (field.label === 'DOB') {
-                                  displayDeValue = formatDOBWithAge(deValue);
-                                } else if (field.label === 'Address') {
-                                  displayRxValue = formatAddress(rxValue);
-                                  displayDeValue = formatAddress(deValue);
-                                }
-                                
-                                return (
-                                  <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`} data-section={section.title.toLowerCase().replace(' ', '-')}>
-                                    {isFirstInSection && (
-                                      <td className="section-label-cell" rowSpan={section.rowSpan}>
-                                        <div className="section-label-vertical">
-                                          {section.title}
-                                        </div>
-                                      </td>
-                                    )}
-                                    <td className="field-name-cell">
-                                      {field.label}{field.required && <span className="required-asterisk">*</span>}
-                                    </td>
-                                    <td className="prescribed-value-cell">
-                                      {displayRxValue || '-'}
-                                    </td>
-                                    <td className="data-entered-value-cell">
-                                      {displayDeValue || '-'}
-                                    </td>
-                                    <td className="match-status-cell">
-                                      <span className={`status-icon ${matchStatus === 'match' ? 'match' : matchStatus === 'mismatch' ? 'mismatch' : matchStatus === 'partial' ? 'partial' : 'empty'}`}>
-                                        {matchStatus === 'match' && deValue ? '✓' : matchStatus === 'mismatch' ? '✗' : matchStatus === 'partial' ? '?' : '-'}
-                                      </span>
-                                    </td>
-                                  </tr>
-                                );
-                              })
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                // Single file results - 4-column table with vertical section labels
-                <div className="prescription-tables-container">
-                  <div className="prescription-table-section">
-                    {(() => {
-                      // Format DOB with age calculation
-                      const formatDOBWithAge = (dobString) => {
-                        if (!dobString || dobString === '-') return dobString;
-                        // Calculate age if DOB is present
-                        const dobParts = dobString.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
-                        if (dobParts) {
-                          const month = parseInt(dobParts[1]);
-                          const day = parseInt(dobParts[2]);
-                          const year = parseInt(dobParts[3]) < 100 ? 1900 + parseInt(dobParts[3]) : parseInt(dobParts[3]);
-                          const birthDate = new Date(year, month - 1, day);
-                          const today = new Date();
-                          let age = today.getFullYear() - birthDate.getFullYear();
-                          const monthDiff = today.getMonth() - birthDate.getMonth();
-                          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                            age--;
-                          }
-                          return `${dobString}  (Age: ${age})`;
-                        }
-                        return dobString;
-                      };
-
-                      // Format address for two-line display
-                      const formatAddress = (addressString) => {
-                        if (!addressString || addressString === '-') return addressString;
-                        // Check if address already has a newline or comma
-                        if (addressString.includes(',')) {
-                          const parts = addressString.split(',');
-                          if (parts.length >= 2) {
-                            return parts[0].trim() + '\n' + parts.slice(1).join(',').trim();
-                          }
-                        }
-                        return addressString;
-                      };
-
-                      return (
-                        <div className="prescription-table-screenshot-container">
-                        <table className="analysis-table screenshot-design">
-                          <thead>
-                            <tr>
-                              <th colSpan="2"></th>
-                              <th className="prescribed-header">PRESCRIBED: eRx Approved with Changes</th>
-                              <th className="data-entered-header">DATA ENTERED <span className="header-checkmark">✓</span></th>
-                              <th className="match-header">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {fieldSections.map((section, sectionIndex) => (
-                              section.fields.map((field, fieldIndex) => {
-                                const rxValue = analysisResults[field.rxKey] || '';
-                                const deValue = analysisResults[field.deKey] || '';
-                                const matchStatus = getMatchStatus(field.label, rxValue, deValue, analysisResults, analysisResults);
-                                const isFirstInSection = fieldIndex === 0;
-                                
-                                // Format fields specially
-                                let displayRxValue = rxValue;
-                                let displayDeValue = deValue;
-                                
-                                if (field.label === 'DOB') {
-                                  displayDeValue = formatDOBWithAge(deValue);
-                                } else if (field.label === 'Address') {
-                                  displayRxValue = formatAddress(rxValue);
-                                  displayDeValue = formatAddress(deValue);
-                                }
-                                
-                                return (
-                                  <tr key={`${sectionIndex}-${fieldIndex}`} className={`${matchStatus}-row`} data-section={section.title.toLowerCase().replace(' ', '-')}>
-                                    {isFirstInSection && (
-                                      <td className="section-label-cell" rowSpan={section.rowSpan}>
-                                        <div className="section-label-vertical">
-                                          {section.title}
-                                        </div>
-                                      </td>
-                                    )}
-                                    <td className="field-name-cell">
-                                      {field.label}{field.required && <span className="required-asterisk">*</span>}
-                                    </td>
-                                    <td className="prescribed-value-cell">
-                                      {displayRxValue || '-'}
-                                    </td>
-                                    <td className="data-entered-value-cell">
-                                      {displayDeValue || '-'}
-                                    </td>
-                                    <td className="match-status-cell">
-                                      <span className={`status-icon ${matchStatus === 'match' ? 'match' : matchStatus === 'mismatch' ? 'mismatch' : matchStatus === 'partial' ? 'partial' : 'empty'}`}>
-                                        {matchStatus === 'match' && deValue ? '✓' : matchStatus === 'mismatch' ? '✗' : matchStatus === 'partial' ? '?' : '-'}
-                                      </span>
-                                    </td>
-                                  </tr>
-                                );
-                              })
-                            ))}
-                          </tbody>
-                        </table>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                </div>
-              )}
+              {/* Analysis Table - Using Isolated Component */}
+              <PrescriptionAnalyzer
+                analysisResults={analysisResults}
+                allAnalysisResults={allAnalysisResults}
+                fieldSections={fieldSections}
+                getMatchStatus={getMatchStatus}
+              />
               </div>
             </div>
           )}
@@ -3423,9 +3305,14 @@ const Analyzer = () => {
                   </div>
                 </div>
               </div>
-              
+
+              {/* Loading state removed - using main overlay instead */}
+
               {/* Side by Side Tables */}
-              <div className="supplies-tables-container">
+              <div className="supplies-tables-container" style={{
+                position: 'relative',
+                pointerEvents: isAnalyzingSupplies ? 'none' : 'auto'
+              }}>
                 {/* Previous Orders Table */}
                 <div className="supply-table-section">
                   <h3 className="supply-table-title">
@@ -3706,22 +3593,71 @@ const Analyzer = () => {
             </div>
           )}
           
-          {/* Analyzing Supplies Overlay */}
+          {/* Analyzing Supplies Overlay - Identical to Prescription Analyzer */}
           {isAnalyzingSupplies && (
             <div className="scanning-overlay">
-              <div className="scanning-content supplies-scanning">
-                <div className="supplies-scan-animation">
-                  <GitCompare size={64} className="supplies-scanning-icon" />
+              <div className="scanning-content" style={{ position: 'relative', minHeight: '200px' }}>
+                {/* Identical Preloader Animation to Prescription Analyzer */}
+                <div className="supplies-load">
+                  <hr/><hr/><hr/><hr/>
                 </div>
-                <p className="scan-text supplies-scan-text">Analyzing and comparing supply orders...</p>
+                <p className="scan-text" style={{ marginTop: '140px', fontSize: '18px', color: '#000000' }}>
+                  Analyzing and comparing supply orders...
+                </p>
                 {analysisProgress && (
-                  <p className="scan-progress-text" style={{ marginTop: '10px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                  <p className="scan-progress-text" style={{ marginTop: '10px', fontSize: '14px', color: 'rgba(0, 0, 0, 0.7)' }}>
                     {analysisProgress}
                   </p>
                 )}
-                <div className="scan-progress">
-                  <div className="scan-progress-bar"></div>
-                </div>
+                {/* Preloader CSS - Identical to prescription analyzer */}
+                <style>{`
+                  .supplies-load {
+                    position: absolute;
+                    top: 40%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 100px;
+                    height: 100px;
+                  }
+                  .supplies-load hr {
+                    border: 0;
+                    margin: 0;
+                    width: 40%;
+                    height: 40%;
+                    position: absolute;
+                    border-radius: 50%;
+                    animation: supplies-spin 2s ease infinite;
+                  }
+                  .supplies-load :first-child {
+                    background: #19A68C;
+                    animation-delay: -1.5s;
+                  }
+                  .supplies-load :nth-child(2) {
+                    background: #F63D3A;
+                    animation-delay: -1s;
+                  }
+                  .supplies-load :nth-child(3) {
+                    background: #FDA543;
+                    animation-delay: -0.5s;
+                  }
+                  .supplies-load :last-child {
+                    background: #193B48;
+                  }
+                  @keyframes supplies-spin {
+                    0%, 100% {
+                      transform: translate(0);
+                    }
+                    25% {
+                      transform: translate(160%);
+                    }
+                    50% {
+                      transform: translate(160%, 160%);
+                    }
+                    75% {
+                      transform: translate(0, 160%);
+                    }
+                  }
+                `}</style>
               </div>
             </div>
           )}

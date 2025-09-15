@@ -68,9 +68,17 @@
    PART 2: STATUS ROW COLORS - ENTIRE ROW
    ======================================== */
 
+/* Override any prescription analyzer styles that might leak */
+.supplies-results-section tr[class*="-row"] td,
+.supply-table-section tr[class*="-row"] td {
+  background: transparent !important;
+}
+
 /* MISSING STATUS - Pale Red - Entire Row */
 .analyzer-page .supplies-results-section tr.missing-row,
-.analyzer-page .supply-table-section tr.missing-row {
+.analyzer-page .supply-table-section tr.missing-row,
+body .analyzer-page .supplies-results-section tbody tr.missing-row,
+body .analyzer-page .supply-table-section tbody tr.missing-row {
   background: #fee2e2 !important;
 }
 
@@ -88,7 +96,9 @@
 .analyzer-page .supplies-results-section tr.changed-row,
 .analyzer-page .supply-table-section tr.changed-row,
 .analyzer-page .supplies-results-section tr.quantity-changed-row,
-.analyzer-page .supply-table-section tr.quantity-changed-row {
+.analyzer-page .supply-table-section tr.quantity-changed-row,
+body .analyzer-page .supplies-results-section tbody tr.changed-row,
+body .analyzer-page .supply-table-section tbody tr.changed-row {
   background: #fef9c3 !important;
 }
 
@@ -109,7 +119,9 @@
 .analyzer-page .supplies-results-section tr.matched-row,
 .analyzer-page .supply-table-section tr.matched-row,
 .analyzer-page .supplies-results-section tr.matching-row,
-.analyzer-page .supply-table-section tr.matching-row {
+.analyzer-page .supply-table-section tr.matching-row,
+body .analyzer-page .supplies-results-section tbody tr.matching-row,
+body .analyzer-page .supply-table-section tbody tr.matching-row {
   background: #dcfce7 !important;
 }
 
@@ -128,7 +140,9 @@
 
 /* NEW STATUS - Pale Blue - Entire Row */
 .analyzer-page .supplies-results-section tr.new-row,
-.analyzer-page .supply-table-section tr.new-row {
+.analyzer-page .supply-table-section tr.new-row,
+body .analyzer-page .supplies-results-section tbody tr.new-row,
+body .analyzer-page .supply-table-section tbody tr.new-row {
   background: #dbeafe !important;
 }
 
@@ -339,3 +353,49 @@ body .analyzer-page .supply-table-section .table-wrapper {
 .analyzer-page .summary-card.changed { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important; }
 .analyzer-page .summary-card.new { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important; }
 .analyzer-page .summary-card.missing { background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important; }
+
+/* ========================================
+   PART 7: OVERRIDE PRESCRIPTION ANALYZER CONFLICTS
+   ======================================== */
+
+/* Reset any prescription analyzer row styles that might leak into supplies tables */
+body .supplies-results-section table tbody tr[class*="-row"] {
+  background: initial;
+}
+
+body .supply-table-section table tbody tr[class*="-row"] {
+  background: initial;
+}
+
+/* Force supplies table row colors with maximum specificity */
+html body .analyzer-page .supplies-results-section table tbody tr.matching-row {
+  background-color: #dcfce7 !important;
+}
+
+html body .analyzer-page .supplies-results-section table tbody tr.changed-row {
+  background-color: #fef9c3 !important;
+}
+
+html body .analyzer-page .supplies-results-section table tbody tr.new-row {
+  background-color: #dbeafe !important;
+}
+
+html body .analyzer-page .supplies-results-section table tbody tr.missing-row {
+  background-color: #fee2e2 !important;
+}
+
+html body .analyzer-page .supply-table-section table tbody tr.matching-row {
+  background-color: #dcfce7 !important;
+}
+
+html body .analyzer-page .supply-table-section table tbody tr.changed-row {
+  background-color: #fef9c3 !important;
+}
+
+html body .analyzer-page .supply-table-section table tbody tr.new-row {
+  background-color: #dbeafe !important;
+}
+
+html body .analyzer-page .supply-table-section table tbody tr.missing-row {
+  background-color: #fee2e2 !important;
+}

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download, ChevronRight, Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, Heading3, Code, Strikethrough, Undo, Redo, Type, MessageSquare, Table, TableProperties, RowsIcon, ColumnsIcon, GripVertical, GripHorizontal, AlertCircle, Shield, Info, Sparkles, ScanLine, Zap } from 'lucide-react';
+import { Plus, Search, Trash2, Save, X, Calendar, Clock, FileText, Star, Image as ImageIcon, Tag, Copy, Check, Edit3, CheckCircle, Download, ChevronRight, Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, Heading3, Code, Strikethrough, Undo, Redo, Type, MessageSquare, Table, TableProperties, RowsIcon, ColumnsIcon, GripVertical, GripHorizontal, AlertCircle, Shield, Info, Sparkles, ScanLine, Zap, User } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { firestore as db, storage } from '../../config/firebase';
+import { firestore as db, storage, auth } from '../../config/firebase';
 import { 
   collection, 
   addDoc, 
@@ -48,6 +48,8 @@ import './NotesTableStyles.css'; // Excel table styles with padding and text wra
 import './StreamlinedLayout.css'; // Streamlined layout fixes for spacing and scrolling
 import './LexicalIntegration.css'; // Lexical editor integration styles
 import './BannerMultilineSupport.css'; // Multi-line text support for banners
+import './NotesListResponsive.css'; // Responsive styles for horizontal banner notes list
+import './NotesTableResponsive.css'; // Responsive styles for table view notes list
 // CRITICAL: BannerVibrantColors.css must be imported LAST to override all other styles
 // This file contains the EXACT banner designs from commit 76d2eae
 import './BannerVibrantColors.css';
@@ -59,7 +61,6 @@ import InlineTableEditor from '../../components/InlineTableEditor/InlineTableEdi
 const Notes = () => {
   const { theme } = useTheme();
   const [isLoadingBanners, setIsLoadingBanners] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState('');
   
   // Add keyframe animations for banner glow effects
   React.useEffect(() => {
@@ -98,7 +99,7 @@ const Notes = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);  // Start with true to prevent 'not found' message
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNote, setSelectedNote] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -184,11 +185,11 @@ const Notes = () => {
 
     try {
       const notesRef = collection(db, 'notes');
-      unsubscribe = onSnapshot(notesRef, 
+      unsubscribe = onSnapshot(notesRef,
         (snapshot) => {
           const notesData = snapshot.docs.map(doc => {
             const data = doc.data();
-            
+
             return {
               id: doc.id,
               ...data,
@@ -196,13 +197,15 @@ const Notes = () => {
               updatedAt: data.updatedAt?.toDate() || new Date()
             };
           });
-          
+
           // Sort by updated date (newest first)
           notesData.sort((a, b) => b.updatedAt - a.updatedAt);
-          
+
           setNotes(notesData);
+
+          // Data loaded - hide loading immediately
           setLoading(false);
-        }, 
+        },
         (error) => {
           console.error('Error loading notes:', error);
           setLoading(false);
@@ -523,13 +526,51 @@ const Notes = () => {
 
   // Upload image to Firebase Storage
   const uploadImage = async (file, isScreenshot = false) => {
+    console.log('=== IMAGE UPLOAD START ===');
+    console.log('File:', file);
+    console.log('Is Screenshot:', isScreenshot);
+    console.log('File type:', file.type);
+    console.log('File size:', file.size);
+
+    setUploadingImage(true);
+
+    // For screenshots and small images, convert directly to base64
+    // This avoids Firebase permission issues
+    if (isScreenshot || file.size < 5000000) { // Less than 5MB
+      try {
+        console.log('Converting image to base64 directly (avoiding Firebase)...');
+        const base64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        console.log('Base64 conversion successful, length:', base64.length);
+        console.log('=== IMAGE UPLOAD COMPLETE (base64) ===');
+
+        // Still update the images array for reference
+        const newImages = [...(formData.images || []), base64];
+        setFormData(prev => ({ ...prev, images: newImages }));
+
+        setUploadingImage(false);
+        return base64;
+      } catch (error) {
+        console.error('Error converting to base64:', error);
+        setUploadingImage(false);
+        alert('Failed to process image');
+        return null;
+      }
+    }
+
+    // For larger files, still try Firebase
     if (!storage) {
-      console.error('Storage service not available');
+      console.error('Storage service not available for large file');
       alert('Storage service not available');
+      setUploadingImage(false);
       return null;
     }
-    
-    setUploadingImage(true);
+
     try {
       // Create a unique filename with simpler approach
       const timestamp = Date.now();
@@ -554,16 +595,20 @@ const Notes = () => {
       const storageRef = ref(storage, fileName);
       const snapshot = await uploadBytes(storageRef, file, metadata);
       const downloadURL = await getDownloadURL(snapshot.ref);
-      
-      console.log('Upload successful, URL:', downloadURL);
-      
+
+      console.log('Upload successful!');
+      console.log('Download URL:', downloadURL);
+
       // Also store image URL in images array for reference
       const newImages = [...(formData.images || []), downloadURL];
       setFormData(prev => ({ ...prev, images: newImages }));
-      
+
+      console.log('Updated images array:', newImages);
+      console.log('=== IMAGE UPLOAD COMPLETE ===');
+
       // Don't auto-save - just update the content without closing the editor
       // The user can save manually when they're done editing
-      
+
       return downloadURL;
       
     } catch (error) {
@@ -1745,9 +1790,9 @@ const Notes = () => {
     }
   };
 
-  // Enterprise text processing for optimal PDF formatting
+  // Professional text processing for optimal PDF formatting
   const processEnterpriseText = (text, maxWidth, pdf) => {
-    // Clean and optimize text for enterprise formatting
+    // Clean and optimize text for professional formatting
     const cleanText = text
       .replace(/\s+/g, ' ') // Normalize multiple spaces
       .replace(/\.\s+/g, '. ') // Consistent sentence spacing
@@ -1760,41 +1805,9 @@ const Notes = () => {
 
     // Use intelligent line breaking for better text flow
     const lines = pdf.splitTextToSize(cleanText, maxWidth);
-    
-    // Post-process lines to avoid orphaned words and improve readability
-    const optimizedLines = [];
-    for (let i = 0; i < lines.length; i++) {
-      let line = lines[i].trim();
-      
-      // If line ends with a single word that's very short, try to pull it up
-      if (i < lines.length - 1 && line.split(' ').length > 1) {
-        const words = line.split(' ');
-        const lastWord = words[words.length - 1];
-        
-        // If last word is very short (1-3 chars), consider moving it to next line
-        if (lastWord.length <= 3 && lines[i + 1]) {
-          const nextLineWords = lines[i + 1].trim().split(' ');
-          if (nextLineWords.length <= 3) { // Only if next line is short
-            const newCurrentLine = words.slice(0, -1).join(' ');
-            const newNextLine = lastWord + ' ' + lines[i + 1].trim();
-            
-            // Check if the new arrangement fits
-            const newCurrentWidth = pdf.getTextWidth(newCurrentLine);
-            const newNextWidth = pdf.getTextWidth(newNextLine);
-            
-            if (newCurrentWidth <= maxWidth && newNextWidth <= maxWidth) {
-              optimizedLines.push(newCurrentLine);
-              lines[i + 1] = newNextLine; // Update next line
-              continue;
-            }
-          }
-        }
-      }
-      
-      optimizedLines.push(line);
-    }
-    
-    return optimizedLines;
+
+    // Return properly formatted lines
+    return lines.map(line => line.trim());
   };
 
   // Enterprise banner rendering for compact PDF format
@@ -1935,35 +1948,179 @@ const Notes = () => {
   // Helper function to convert image URL to base64
   const getImageAsBase64 = async (url) => {
     try {
-      // Handle Firebase Storage URLs
-      if (url.includes('firebasestorage.googleapis.com')) {
-        // Firebase URLs can be fetched directly with CORS
-        const response = await fetch(url);
-        const blob = await response.blob();
-        
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      } else if (url.startsWith('data:') || url.startsWith('blob:')) {
-        // Already in correct format
+      console.log('getImageAsBase64 called with URL:', url?.substring(0, 100));
+
+      // Clean the URL and decode HTML entities
+      url = url.trim();
+      url = url.replace(/&amp;/g, '&')
+               .replace(/&lt;/g, '<')
+               .replace(/&gt;/g, '>')
+               .replace(/&quot;/g, '"')
+               .replace(/&#39;/g, "'");
+
+      console.log('Cleaned URL:', url?.substring(0, 100));
+
+      // Handle different URL types
+      if (url.startsWith('data:')) {
+        // Already in base64 format
+        console.log('URL is already a data URL');
         return url;
-      } else {
-        // For other URLs, try to fetch
-        const response = await fetch(url);
-        const blob = await response.blob();
-        
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
       }
+
+      // Handle Firebase Storage URLs
+      if (url.includes('firebasestorage.googleapis.com') || url.includes('firebasestorage.app')) {
+        console.log('Detected Firebase Storage URL');
+        try {
+          // Parse and clean the URL
+          const urlObj = new URL(url);
+
+          // Ensure alt=media parameter is present
+          if (!urlObj.searchParams.has('alt')) {
+            urlObj.searchParams.set('alt', 'media');
+          }
+
+          const finalUrl = urlObj.toString();
+          console.log('Final Firebase URL:', finalUrl);
+
+          // Try to fetch with different methods
+          let response;
+
+          // Method 1: Try without credentials first (most Firebase storage is public read)
+          try {
+            response = await fetch(finalUrl, {
+              mode: 'cors',
+              credentials: 'omit'
+            });
+            console.log('Fetch attempt status:', response.status);
+          } catch (fetchError) {
+            console.error('Initial fetch failed:', fetchError);
+          }
+
+          // Method 2: If auth is available and we have a user, try with token
+          if ((!response || !response.ok) && auth && auth.currentUser) {
+            try {
+              const token = await auth.currentUser.getIdToken();
+              response = await fetch(finalUrl, {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                },
+                mode: 'cors'
+              });
+              console.log('Auth token attempt status:', response.status);
+            } catch (authError) {
+              console.log('Auth token method failed:', authError);
+            }
+          }
+
+          if (!response || !response.ok) {
+            console.error(`Firebase fetch failed with status: ${response?.status || 'no response'}`);
+
+            // If 403, it's likely a permissions issue
+            if (response?.status === 403) {
+              console.error('403 Forbidden - Firebase Storage permissions issue');
+              console.log('URL that failed:', finalUrl);
+
+              // Try to use the download URL directly without modifications
+              const originalResponse = await fetch(url, { mode: 'no-cors' });
+              if (originalResponse.type === 'opaque') {
+                console.log('Got opaque response, trying alternative methods...');
+              }
+            }
+            throw new Error(`HTTP error! status: ${response?.status || 'unknown'}`);
+          }
+
+          const blob = await response.blob();
+          console.log('Firebase image fetched, blob size:', blob.size);
+
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              console.log('Firebase image converted to base64');
+              resolve(reader.result);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } catch (fbError) {
+          console.error('Error fetching Firebase image:', fbError);
+          return null;
+        }
+      }
+
+      // Handle Supabase URLs
+      if (url.includes('supabase')) {
+        console.log('Detected Supabase URL');
+        try {
+          const response = await fetch(url, {
+            mode: 'cors',
+            credentials: 'omit'
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const blob = await response.blob();
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } catch (supabaseError) {
+          console.error('Error fetching Supabase image:', supabaseError);
+          return null;
+        }
+      }
+
+      // Handle blob URLs (common for screenshots that haven't been uploaded)
+      if (url.startsWith('blob:')) {
+        console.log('Detected blob URL');
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          console.log('Blob fetched, size:', blob.size);
+
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              console.log('Blob converted to base64');
+              resolve(reader.result);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } catch (blobError) {
+          console.error('Error fetching blob URL (might be revoked):', blobError);
+          return null;
+        }
+      }
+
+      // For other URLs, try generic fetch
+      console.log('Trying generic fetch for URL');
+      const response = await fetch(url, {
+        mode: 'cors',
+        credentials: 'omit'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      console.log('Image fetched, blob size:', blob.size);
+
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          console.log('Image converted to base64');
+          resolve(reader.result);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
     } catch (error) {
-      console.error('Error converting image to base64:', error);
+      console.error('Error converting image to base64:', error, 'URL:', url?.substring(0, 100));
       return null;
     }
   };
@@ -1972,12 +2129,20 @@ const Notes = () => {
   // Export note to PDF
   const exportToPDF = async () => {
     if (!selectedNote && !isCreating) return;
-    
+
+    // Debug: Log the actual content being exported
+    console.log('=== PDF EXPORT DEBUG START ===');
+    console.log('Note title:', formData.title);
+    console.log('Content length:', formData.content?.length);
+    console.log('Content preview (first 1000 chars):', formData.content?.substring(0, 1000));
+    console.log('Images array:', formData.images);
+    console.log('=== PDF EXPORT DEBUG END ===');
+
     // Show loading indicator
     const loadingDiv = document.createElement('div');
     loadingDiv.innerHTML = '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 10px; z-index: 9999;">Generating PDF...</div>';
     document.body.appendChild(loadingDiv);
-    
+
     try {
       // Create PDF with A4 dimensions
       const pdf = new jsPDF({
@@ -1985,33 +2150,33 @@ const Notes = () => {
         unit: 'mm',
         format: 'a4'
       });
-      
+
       // Load logo image
       const logoUrl = 'https://fchtwxunzmkzbnibqbwl.supabase.co/storage/v1/object/public/kaliii//rxsprint%20logo%20IIII.png';
       const logoImg = new Image();
       logoImg.crossOrigin = 'anonymous';
       logoImg.src = logoUrl;
-    
-      // A4 dimensions: 210mm x 297mm - Optimized for maximum content
+
+      // A4 dimensions: 210mm x 297mm - Professional margins to prevent overlap
       const pageWidth = 210;
       const pageHeight = 297;
-      // Reduced margins for more content per page
-      const leftMargin = 20; // Reduced for more content
-      const rightMargin = 20; // Equal to left margin for centering
-      const topMargin = 35; // Reduced header space
-      const bottomMargin = 20; // Reduced footer space
-      const contentWidth = pageWidth - leftMargin - rightMargin; // Maximized content area
+      // Professional margins for proper content display
+      const leftMargin = 15; // Standard left margin
+      const rightMargin = 15; // Standard right margin
+      const topMargin = 25; // Space for header
+      const bottomMargin = 25; // Space for footer
+      const contentWidth = pageWidth - leftMargin - rightMargin; // Content area
       const maxY = pageHeight - bottomMargin;
-      
-      // Optimized Typography settings for A4
-      const titleSize = 14;
-      const headingSize = 12;
-      const bodySize = 9; // Optimal for readability and space
-      const metaSize = 8;
-      const lineSpacing = 0.9; // Tighter line spacing for more content
-      const paragraphSpacing = 1.0; // Minimal paragraph spacing
-      const sectionSpacing = 2; // Compact section spacing
-      
+
+      // Optimized Typography settings for professional PDF
+      const titleSize = 16;
+      const headingSize = 14;
+      const bodySize = 11; // Readable size
+      const metaSize = 9;
+      const lineSpacing = 1.5; // Professional line spacing
+      const paragraphSpacing = 3; // Clear paragraph separation
+      const sectionSpacing = 5; // Clear section separation
+
       let yPosition = topMargin;
       let pageNumber = 1;
       const totalPages = 1; // Will be updated after content is added
@@ -2033,41 +2198,41 @@ const Notes = () => {
         
         // Helper function to draw header and footer
         const drawHeaderFooter = (pageNum, hasLogo = withLogo) => {
-          // Professional light theme header
+          // Clear white background
           pdf.setFillColor(255, 255, 255);
           pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-          
-          // Compact header section
+
+          // Professional header with proper spacing
           pdf.setFillColor(248, 250, 252);
-          pdf.rect(0, 0, pageWidth, 30, 'F');
-          
+          pdf.rect(0, 0, pageWidth, 20, 'F');
+
           // Orange accent line
           pdf.setFillColor(255, 85, 0);
-          pdf.rect(0, 30, pageWidth, 1, 'F');
-          
+          pdf.rect(0, 20, pageWidth, 0.5, 'F');
+
           // Logo or text fallback
           if (hasLogo && logoImg.complete) {
-            // Logo - smaller for compact header
-            const logoMaxWidth = 35;
-            const logoMaxHeight = 15;
+            // Logo with proper sizing
+            const logoMaxWidth = 40;
+            const logoMaxHeight = 12;
             const imgRatio = logoImg.width / logoImg.height;
             let logoWidth = logoMaxWidth;
             let logoHeight = logoMaxWidth / imgRatio;
-            
+
             if (logoHeight > logoMaxHeight) {
               logoHeight = logoMaxHeight;
               logoWidth = logoMaxHeight * imgRatio;
             }
-            
-            pdf.addImage(logoImg, 'PNG', leftMargin, 8, logoWidth, logoHeight);
+
+            pdf.addImage(logoImg, 'PNG', leftMargin, 4, logoWidth, logoHeight);
           } else {
             // Fallback to text
             pdf.setFont('helvetica', 'bold');
             pdf.setFontSize(14);
             pdf.setTextColor(255, 85, 0);
-            pdf.text('RX SPRINT', leftMargin, 18);
+            pdf.text('RX SPRINT', leftMargin, 12);
           }
-          
+
           // Date and note info
           const currentDate = new Date();
           const formattedDate = currentDate.toLocaleDateString('en-US', {
@@ -2079,24 +2244,23 @@ const Notes = () => {
             hour: '2-digit',
             minute: '2-digit'
           });
-          
+
           pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(8);
+          pdf.setFontSize(9);
           pdf.setTextColor(71, 85, 105);
-          pdf.text(`${formattedDate} ${formattedTime}`, pageWidth - rightMargin, 12, { align: 'right' });
-          pdf.text(`Note: ${formData.title || 'Untitled'}`, pageWidth - rightMargin, 18, { align: 'right' });
-          
-          // Compact footer
+          pdf.text(`${formattedDate} ${formattedTime}`, pageWidth - rightMargin, 8, { align: 'right' });
+          pdf.text(`Note: ${formData.title || 'Untitled'}`, pageWidth - rightMargin, 14, { align: 'right' });
+
+          // Professional footer
           pdf.setFillColor(248, 250, 252);
-          pdf.rect(0, pageHeight - 15, pageWidth, 15, 'F');
+          pdf.rect(0, pageHeight - 20, pageWidth, 20, 'F');
           pdf.setDrawColor(226, 232, 240);
-          pdf.line(0, pageHeight - 15, pageWidth, pageHeight - 15);
-          
+          pdf.line(0, pageHeight - 20, pageWidth, pageHeight - 20);
+
           pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(7);
+          pdf.setFontSize(9);
           pdf.setTextColor(100, 116, 139);
-          // Only show page number in footer to avoid duplication
-          pdf.text(`Page ${pageNum}`, pageWidth / 2, pageHeight - 8, { align: 'center' });
+          pdf.text(`Page ${pageNum}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
         };
         
         // Draw header and footer for first page
@@ -2108,7 +2272,7 @@ const Notes = () => {
           pdf.addPage();
           pageNumber++;
           drawHeaderFooter(pageNumber);
-          yPosition = 35; // Start content right after header
+          yPosition = topMargin + 5; // Start content after header with proper spacing
           // Reset font to ensure consistency on new page
           pdf.setFont('helvetica', 'normal');
           pdf.setFontSize(bodySize);
@@ -2118,13 +2282,13 @@ const Notes = () => {
     // Helper function to check and add new page if needed
     const checkPageBreak = (requiredSpace = bodySize * lineSpacing) => {
       // Ensure we have enough space, considering the footer area
-      if (yPosition + requiredSpace > maxY - 15) { // Increased safety margin to prevent footer overlap
+      if (yPosition + requiredSpace > maxY - 5) { // Safety margin to prevent footer overlap
         addNewPage();
       }
     };
     
     // Start content below header with appropriate spacing
-    yPosition = 35; // Optimized for compact A4 layout
+    yPosition = topMargin + 5; // Professional spacing after header
     
     // Reset text formatting with Roboto font
     pdf.setTextColor(0);
@@ -2132,12 +2296,12 @@ const Notes = () => {
     pdf.setFontSize(bodySize);
     
     
-    // Add banners if any using direct PDF rendering for fast performance
+    // Add banners if any using direct PDF rendering for professional display
     if (formData.banners && formData.banners.length > 0) {
-      const bannerPadding = 3; // Reduced padding for more content
-      const bannerGap = 2; // Reduced gap between banners
-      const bannerFontSize = 9; // Smaller font to fit more
-      const minBannerHeight = 8; // Reduced height for compactness
+      const bannerPadding = 4; // Professional padding
+      const bannerGap = 3; // Clear gap between banners
+      const bannerFontSize = 10; // Readable font size
+      const minBannerHeight = 12; // Professional height
       
       // Group banners by line breaks - same as editor/viewer
       const bannerGroups = [];
@@ -2169,65 +2333,78 @@ const Notes = () => {
         
         // Process each banner in the group  
         group.forEach((banner, bannerIndex) => {
-          // Handle title banners - full width, break line first
+          // Handle title banners - full width, professional design
           if (banner.isTitle || banner.color === 'title') {
             // Finish current line if we have regular banners pending
             if (currentX > leftMargin) {
-              yPosition += lineHeight + 3;
+              yPosition += lineHeight + 4;
               currentX = leftMargin;
               lineHeight = 0;
             }
-            
-            checkPageBreak(12);
-            // Title banner with yellowish salmon design matching viewer exactly
-            pdf.setFillColor(255, 212, 163); // Yellowish salmon background #FFD4A3
-            pdf.roundedRect(leftMargin, yPosition, contentWidth, 12, 2, 2, 'F');
-            pdf.setFont('helvetica', 'bold'); // Medium/bold weight to match viewer font-weight: 500
-            pdf.setFontSize(8.5); // Slightly larger to match 0.875rem
-            pdf.setTextColor(139, 69, 19); // Brown text #8B4513
-            const titleText = banner.text.toUpperCase(); // Uppercase to match CSS
-            // Perfect vertical centering for jsPDF text baseline
-            const titleTextY = yPosition + 7.5; // Center of 12px height banner
-            pdf.text(titleText, leftMargin + 6, titleTextY);
-            yPosition += 14;
+
+            // Calculate title banner height based on text
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(11);
+            const titleLines = pdf.splitTextToSize(banner.text.toUpperCase(), contentWidth - 12);
+            const titleHeight = Math.max(15, titleLines.length * 5 + 8);
+
+            checkPageBreak(titleHeight + 2);
+
+            // Title banner with yellowish salmon design
+            pdf.setFillColor(255, 212, 163); // Yellowish salmon background
+            pdf.roundedRect(leftMargin, yPosition, contentWidth, titleHeight, 3, 3, 'F');
+
+            // Add subtle border
+            pdf.setDrawColor(255, 149, 0);
+            pdf.setLineWidth(0.5);
+            pdf.roundedRect(leftMargin, yPosition, contentWidth, titleHeight, 3, 3, 'D');
+
+            // Draw text
+            pdf.setTextColor(139, 69, 19); // Brown text
+            let titleY = yPosition + (titleHeight - (titleLines.length - 1) * 5) / 2 + 2;
+            titleLines.forEach(line => {
+              pdf.text(line, leftMargin + 6, titleY);
+              titleY += 5;
+            });
+
+            yPosition += titleHeight + 3;
             return;
           }
         
-          // Handle callout banners - full width, break line first
+          // Handle callout banners - full width, professional design
           if (banner.isCallout || banner.color === 'callout') {
             // Finish current line if we have regular banners pending
             if (currentX > leftMargin) {
-              yPosition += lineHeight + 3;
+              yPosition += lineHeight + 4;
               currentX = leftMargin;
               lineHeight = 0;
             }
-            
-            const calloutLines = pdf.splitTextToSize(banner.text, contentWidth - 10);
-            const calloutHeight = Math.max(12, calloutLines.length * 4 + 6);
-            checkPageBreak(calloutHeight + 4);
-            
-            // Callout with compact styling
-            pdf.setFillColor(250, 250, 250); // Light background
-            pdf.setDrawColor(230, 230, 230);
-            pdf.setLineWidth(0.3);
-            pdf.roundedRect(leftMargin, yPosition, contentWidth, calloutHeight, 2, 2, 'FD');
-            
-            // Orange left border
-            pdf.setFillColor(255, 105, 0);
-            pdf.rect(leftMargin, yPosition, 2, calloutHeight, 'F');
-            
-            // Text - centered vertically in callout
+
             pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(8);
+            pdf.setFontSize(10);
+            const calloutLines = pdf.splitTextToSize(banner.text, contentWidth - 12);
+            const calloutHeight = Math.max(20, calloutLines.length * 5 + 10);
+            checkPageBreak(calloutHeight + 4);
+
+            // Callout with professional styling
+            pdf.setFillColor(255, 248, 243); // Light orange background
+            pdf.setDrawColor(255, 105, 0);
+            pdf.setLineWidth(0.5);
+            pdf.roundedRect(leftMargin, yPosition, contentWidth, calloutHeight, 3, 3, 'FD');
+
+            // Orange left border accent
+            pdf.setFillColor(255, 105, 0);
+            pdf.rect(leftMargin, yPosition, 3, calloutHeight, 'F');
+
+            // Text with proper spacing
             pdf.setTextColor(66, 66, 66);
             // Calculate starting Y to center text block
-            const lineCount = calloutLines.length;
-            const textBlockHeight = (lineCount - 1) * 4; // Space between lines
+            const textBlockHeight = (calloutLines.length - 1) * 5;
             const startY = yPosition + (calloutHeight - textBlockHeight) / 2 + 2;
             let calloutY = startY;
             calloutLines.forEach(line => {
-              pdf.text(line, leftMargin + 6, calloutY);
-              calloutY += 4;
+              pdf.text(line, leftMargin + 8, calloutY);
+              calloutY += 5;
             });
             yPosition += calloutHeight + 4;
             return;
@@ -2247,13 +2424,24 @@ const Notes = () => {
           }
           
           // Calculate banner dimensions to fit both label and text
-          pdf.setFontSize(7); // Small font for label
+          pdf.setFontSize(8); // Font for label
           const labelWidth = pdf.getTextWidth(bannerTypeLabel);
           pdf.setFontSize(bannerFontSize);
-          const textLines = banner.text.split('\n');
-          const maxTextWidth = Math.max(...textLines.map(line => pdf.getTextWidth(line)));
-          const bannerWidth = Math.max(Math.max(labelWidth, maxTextWidth) + (bannerPadding * 2), 40); // Adjusted min width
-          const bannerHeight = minBannerHeight + (textLines.length - 1) * 4 + 3; // Add height for label and multi-line
+
+          // Handle multi-line text properly
+          const textLines = banner.text.split('\n').filter(line => line.trim());
+          const maxLineWidth = 80; // Maximum width for a single banner
+
+          // Process each line to handle long text
+          const processedLines = [];
+          textLines.forEach(line => {
+            const wrappedLines = pdf.splitTextToSize(line, maxLineWidth - bannerPadding * 2);
+            processedLines.push(...wrappedLines);
+          });
+
+          const maxTextWidth = Math.max(...processedLines.map(line => pdf.getTextWidth(line)));
+          const bannerWidth = Math.min(maxLineWidth, Math.max(labelWidth + 10, maxTextWidth + (bannerPadding * 2), 45));
+          const bannerHeight = minBannerHeight + (processedLines.length - 1) * 4.5 + 4; // Height for all lines
           
           // Check if banner fits on current line
           if (currentX > leftMargin && currentX + bannerWidth > leftMargin + contentWidth) {
@@ -2285,27 +2473,21 @@ const Notes = () => {
           
           // Add type label
           pdf.setFont('helvetica', 'bold');
-          pdf.setFontSize(7);
+          pdf.setFontSize(8);
           const labelX = currentX + bannerPadding;
-          const labelY = yPosition + 3;
+          const labelY = yPosition + 4;
           pdf.text(bannerTypeLabel, labelX, labelY);
-          
+
           // Add banner text (supports multi-line)
           pdf.setFont('helvetica', 'normal');
           pdf.setFontSize(bannerFontSize);
-          
+
           const textX = currentX + bannerPadding;
-          let textY = yPosition + 7; // Start below the label
-          
-          textLines.forEach((line, lineIndex) => {
-            let displayText = line;
-            if (pdf.getTextWidth(displayText) > bannerWidth - (bannerPadding * 2)) {
-              while (pdf.getTextWidth(displayText + '...') > bannerWidth - (bannerPadding * 2) && displayText.length > 1) {
-                displayText = displayText.substring(0, displayText.length - 1);
-              }
-              displayText += '...';
-            }
-            pdf.text(displayText, textX, textY + (lineIndex * 4));
+          let textY = yPosition + 9; // Start below the label
+
+          // Draw processed lines
+          processedLines.forEach((line, lineIndex) => {
+            pdf.text(line, textX, textY + (lineIndex * 4.5));
           });
           
           // Update position for next banner
@@ -2319,8 +2501,8 @@ const Notes = () => {
         }
       });
       
-      // Add minimal spacing after all banners
-      yPosition += 4;
+      // Add professional spacing after all banners
+      yPosition += sectionSpacing;
       
       // Reset text formatting
       pdf.setTextColor(0);
@@ -2334,14 +2516,268 @@ const Notes = () => {
       if (formData.banners && formData.banners.length > 0) {
         yPosition += sectionSpacing * 1.0;
       }
-      
+
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(bodySize);
-      
+
+      // Extract images using multiple methods to ensure we catch everything
+      const imageUrls = new Set(); // Use Set to avoid duplicates
+
+      // Method 1: Standard img tags with quotes
+      const imgRegex1 = /<img[^>]*src=["']([^"']+)["'][^>]*>/gi;
+      let match1;
+      while ((match1 = imgRegex1.exec(formData.content)) !== null) {
+        // Decode HTML entities in the URL
+        let url = match1[1];
+        url = url.replace(/&amp;/g, '&')
+                 .replace(/&lt;/g, '<')
+                 .replace(/&gt;/g, '>')
+                 .replace(/&quot;/g, '"')
+                 .replace(/&#39;/g, "'");
+        imageUrls.add(url);
+      }
+
+      // Method 2: Img tags without quotes (edge case)
+      const imgRegex2 = /<img[^>]*src=([^\s>]+)[^>]*>/gi;
+      let match2;
+      while ((match2 = imgRegex2.exec(formData.content)) !== null) {
+        const url = match2[1].replace(/["']/g, '');
+        if (url && !imageUrls.has(url)) {
+          imageUrls.add(url);
+        }
+      }
+
+      // Method 3: Check for data-src attributes (some editors use this)
+      const dataSrcRegex = /<img[^>]*data-src=["']([^"']+)["'][^>]*>/gi;
+      let match3;
+      while ((match3 = dataSrcRegex.exec(formData.content)) !== null) {
+        imageUrls.add(match3[1]);
+      }
+
+      // Method 4: Also check the images array stored separately
+      if (formData.images && Array.isArray(formData.images)) {
+        formData.images.forEach(url => {
+          if (url) imageUrls.add(url);
+        });
+      }
+
+      // Method 5: Try to get current editor content if available
+      if (editorRef.current?.editor) {
+        try {
+          const currentContent = editorRef.current.editor.getHTML();
+          console.log('Got current editor content, length:', currentContent?.length);
+
+          // Extract images from current editor content
+          const editorImgRegex = /<img[^>]*src=["']([^"']+)["'][^>]*>/gi;
+          let editorMatch;
+          while ((editorMatch = editorImgRegex.exec(currentContent)) !== null) {
+            imageUrls.add(editorMatch[1]);
+          }
+        } catch (e) {
+          console.log('Could not get editor content:', e);
+        }
+      }
+
+      // Convert Set to Array
+      const uniqueImageUrls = Array.from(imageUrls);
+
+      console.log('\n=== COMPREHENSIVE IMAGE EXTRACTION ===');
+      console.log('Total unique images found:', uniqueImageUrls.length);
+      console.log('Content length:', formData.content?.length || 0);
+      console.log('From saved content:', Array.from(imageUrls).filter(url => formData.content?.includes(url)).length);
+      console.log('From images array:', formData.images?.length || 0);
+
+      if (uniqueImageUrls.length === 0) {
+        console.warn('⚠️ NO IMAGES FOUND!');
+        console.log('Content sample (first 500 chars):', formData.content?.substring(0, 500));
+        console.log('Images array:', formData.images);
+      } else {
+        uniqueImageUrls.forEach((url, index) => {
+          console.log(`Image ${index + 1}:`, url?.substring(0, 150));
+        });
+      }
+      console.log('=== END EXTRACTION ===\n');
+
       // Create a temporary div to parse HTML content
       const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = formData.content;
+      tempDiv.innerHTML = formData.content || '';
+
+      // Debug: More comprehensive logging
+      console.log('=== PDF CONTENT PARSING DEBUG ===');
+      console.log('Raw HTML content length:', formData.content?.length);
+      console.log('Raw HTML content (first 2000 chars):', formData.content?.substring(0, 2000));
+
+      // Check if content contains img tags using string search
+      const imgTagCount = (formData.content?.match(/<img[^>]*>/gi) || []).length;
+      console.log('IMG tags found via regex:', imgTagCount);
+
+      // Find all images in the parsed content
+      const allImages = tempDiv.querySelectorAll('img');
+      console.log(`Found ${allImages.length} images via querySelectorAll`);
+
+      // Also try other methods
+      const imgTags = tempDiv.getElementsByTagName('img');
+      console.log(`Found ${imgTags.length} img tags via getElementsByTagName`);
+
+      // Check all elements
+      const allElements = tempDiv.getElementsByTagName('*');
+      console.log(`Total elements in tempDiv: ${allElements.length}`);
+
+      // Log detailed info about each image
+      if (allImages.length > 0) {
+        allImages.forEach((img, index) => {
+          console.log(`\nImage ${index + 1} complete details:`);
+          console.log('- getAttribute("src"):', img.getAttribute('src'));
+          console.log('- .src property:', img.src);
+          console.log('- getAttribute("data-src"):', img.getAttribute('data-src'));
+          console.log('- .alt:', img.alt);
+          console.log('- .width:', img.width);
+          console.log('- .height:', img.height);
+          console.log('- .naturalWidth:', img.naturalWidth);
+          console.log('- .naturalHeight:', img.naturalHeight);
+          console.log('- .className:', img.className);
+          console.log('- Parent element:', img.parentElement?.tagName);
+          console.log('- outerHTML:', img.outerHTML);
+        });
+      } else {
+        console.log('NO IMAGES FOUND IN PARSED CONTENT!');
+        console.log('Checking if HTML parsing is the issue...');
+        console.log('TempDiv innerHTML:', tempDiv.innerHTML?.substring(0, 500));
+      }
+      console.log('=== END PDF CONTENT PARSING DEBUG ===');
       
+      // Helper function to process images that were found
+      const processExtractedImages = async () => {
+        if (uniqueImageUrls.length > 0) {
+          console.log('\n=== PROCESSING IMAGES FOR PDF ===');
+          console.log(`Processing ${uniqueImageUrls.length} images...`);
+
+          for (let i = 0; i < uniqueImageUrls.length; i++) {
+            const imageUrl = uniqueImageUrls[i];
+            console.log(`\nProcessing image ${i + 1}/${uniqueImageUrls.length}`);
+            console.log('URL:', imageUrl?.substring(0, 150));
+            try {
+              // Add spacing before image
+              yPosition += sectionSpacing;
+
+              // Determine if it's a screenshot
+              const isScreenshot = imageUrl.toLowerCase().includes('screenshot') ||
+                                 imageUrl.includes('paste') ||
+                                 imageUrl.includes('clipboard');
+
+              // Calculate dimensions
+              const maxImageWidth = contentWidth * 0.95;
+              const maxImageHeight = isScreenshot ? 200 : 180;
+
+              // Default dimensions
+              let imgWidth = maxImageWidth;
+              let imgHeight = isScreenshot ? imgWidth * 0.5625 : imgWidth * 0.75;
+
+              // Ensure it fits
+              if (imgHeight > maxImageHeight) {
+                imgHeight = maxImageHeight;
+                imgWidth = imgHeight * (isScreenshot ? 1.78 : 1.33);
+              }
+
+              // Check page break
+              checkPageBreak(imgHeight + sectionSpacing * 2);
+
+              // Center the image
+              const imgX = leftMargin + (contentWidth - imgWidth) / 2;
+
+              // Add border
+              pdf.setDrawColor(240, 240, 240);
+              pdf.setLineWidth(0.1);
+              pdf.rect(imgX - 1, yPosition - 1, imgWidth + 2, imgHeight + 2, 'D');
+
+              // Convert to base64 and add to PDF
+              console.log('Converting to base64...');
+              let base64Image = null;
+
+              // Try multiple conversion methods
+              try {
+                base64Image = await getImageAsBase64(imageUrl);
+              } catch (error) {
+                console.error('First attempt failed:', error);
+                // Try alternative fetch method
+                try {
+                  if (imageUrl.startsWith('http') || imageUrl.startsWith('//')) {
+                    const response = await fetch(imageUrl);
+                    const blob = await response.blob();
+                    base64Image = await new Promise((resolve) => {
+                      const reader = new FileReader();
+                      reader.onloadend = () => resolve(reader.result);
+                      reader.readAsDataURL(blob);
+                    });
+                  }
+                } catch (altError) {
+                  console.error('Alternative fetch also failed:', altError);
+                }
+              }
+
+              if (base64Image) {
+                console.log('Base64 conversion successful, size:', base64Image.length);
+
+                // Determine image type
+                let imageType = 'PNG'; // Default to PNG
+                if (base64Image.includes('image/jpeg') || base64Image.includes('image/jpg')) {
+                  imageType = 'JPEG';
+                } else if (base64Image.includes('image/gif')) {
+                  imageType = 'GIF';
+                } else if (base64Image.includes('image/webp')) {
+                  imageType = 'WEBP';
+                }
+
+                console.log('Image type:', imageType);
+
+                try {
+                  // Add image to PDF
+                  pdf.addImage(base64Image, imageType, imgX, yPosition, imgWidth, imgHeight, undefined, 'FAST');
+                  console.log('✓ Image added to PDF successfully at position:', {x: imgX, y: yPosition, width: imgWidth, height: imgHeight});
+                } catch (addError) {
+                  console.error('Error adding image to PDF:', addError);
+                  // Try with different format
+                  try {
+                    pdf.addImage(base64Image, 'PNG', imgX, yPosition, imgWidth, imgHeight);
+                    console.log('✓ Image added with PNG format as fallback');
+                  } catch (fallbackError) {
+                    console.error('Fallback also failed:', fallbackError);
+                    throw fallbackError;
+                  }
+                }
+              } else {
+                console.error('Failed to convert image to base64');
+                // Add placeholder
+                pdf.setFillColor(245, 245, 245);
+                pdf.rect(imgX, yPosition, imgWidth, imgHeight, 'FD');
+                pdf.setFontSize(10);
+                pdf.setTextColor(100);
+                pdf.text('Image could not be loaded', imgX + imgWidth / 2, yPosition + imgHeight / 2, { align: 'center' });
+                pdf.setTextColor(0);
+                pdf.setFontSize(bodySize);
+              }
+
+              yPosition += imgHeight + sectionSpacing;
+            } catch (error) {
+              console.error(`Error processing image ${i + 1}:`, error);
+              // Add error placeholder
+              pdf.setDrawColor(255, 0, 0);
+              pdf.setLineWidth(1);
+              pdf.rect(leftMargin, yPosition, contentWidth, 40, 'D');
+              pdf.setFontSize(10);
+              pdf.setTextColor(255, 0, 0);
+              pdf.text(`Failed to load image: ${imageUrl?.substring(0, 50)}...`, leftMargin + 5, yPosition + 20);
+              pdf.setTextColor(0);
+              pdf.setFontSize(bodySize);
+              yPosition += 45;
+            }
+          }
+          console.log('=== IMAGE PROCESSING COMPLETE ===\n');
+        } else {
+          console.log('No images found to process');
+        }
+      };
+
       // Process each child element
       const processNode = async (node) => {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -2352,11 +2788,11 @@ const Notes = () => {
             pdf.setFont('helvetica', 'normal');
             pdf.setFontSize(bodySize);
             pdf.setTextColor(0);
-            
+
             // Center content with proper text formatting
             const maxTextWidth = contentWidth; // Use full content width for better layout
             const optimizedLines = processEnterpriseText(text, maxTextWidth, pdf);
-            
+
             optimizedLines.forEach(line => {
               checkPageBreak(bodySize * lineSpacing + 2);
               pdf.text(line, leftMargin, yPosition);
@@ -2365,17 +2801,26 @@ const Notes = () => {
           }
         } else if (node.nodeType === Node.ELEMENT_NODE) {
           // Handle element nodes
-          const tagName = node.tagName.toLowerCase();
+          const tagName = node.tagName ? node.tagName.toLowerCase() : '';
+
+          // Skip non-element nodes but process children of containers
+          if (!tagName) {
+            // Process children of unknown elements
+            for (const child of Array.from(node.childNodes)) {
+              await processNode(child);
+            }
+            return;
+          }
           
           if (tagName === 'table') {
-            // Handle tables using jspdf-autotable
+            // Handle tables with professional formatting
             try {
-              yPosition += paragraphSpacing * 0.5;
-              
+              yPosition += sectionSpacing;
+
               // Extract table data
               const headers = [];
               const rows = [];
-              
+
               // Get headers from th elements
               const headerCells = node.querySelectorAll('th');
               if (headerCells.length > 0) {
@@ -2417,30 +2862,54 @@ const Notes = () => {
               // Only add table if we have data
               if (headers.length > 0 || rows.length > 0) {
                 // Check if table fits on current page
-                const estimatedTableHeight = (rows.length + 1) * 10; // Rough estimate
-                checkPageBreak(estimatedTableHeight);
-                
-                // Configure and add the table with same font as banners
+                const estimatedTableHeight = (rows.length + 2) * 8; // Better estimate
+                checkPageBreak(estimatedTableHeight + 10);
+
+                // Configure table with professional styling
                 const tableConfig = {
                   head: headers.length > 0 ? [headers] : [],
                   body: rows,
                   startY: yPosition,
                   margin: { left: leftMargin, right: rightMargin },
+                  tableWidth: 'auto',
                   styles: {
                     font: 'helvetica',
-                    fontSize: bodySize - 1,
-                    cellPadding: 3,
+                    fontSize: 10,
+                    cellPadding: 4,
                     lineColor: [200, 200, 200],
-                    lineWidth: 0.5,
+                    lineWidth: 0.3,
+                    overflow: 'linebreak',
+                    cellWidth: 'wrap'
                   },
                   headStyles: {
                     font: 'helvetica',
-                    fillColor: [59, 130, 246],
+                    fillColor: [255, 105, 0],
                     textColor: [255, 255, 255],
                     fontStyle: 'bold',
+                    fontSize: 11,
+                    halign: 'left'
                   },
                   alternateRowStyles: {
-                    fillColor: [245, 245, 245],
+                    fillColor: [252, 252, 252],
+                  },
+                  columnStyles: {
+                    0: { cellWidth: 'auto' },
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 'auto' },
+                    3: { cellWidth: 'auto' }
+                  },
+                  didDrawPage: function(data) {
+                    // Ensure proper page breaks for tables
+                    if (data.pageNumber > pageNumber) {
+                      pageNumber = data.pageNumber;
+                      drawHeaderFooter(pageNumber);
+                    }
+                  },
+                  willDrawCell: function(data) {
+                    // Ensure text doesn't overflow cells
+                    if (data.cell.text && data.cell.text.length > 50) {
+                      data.cell.text = data.cell.text.substring(0, 47) + '...';
+                    }
                   }
                 };
                 
@@ -2449,12 +2918,12 @@ const Notes = () => {
                 
                 // Update yPosition based on where the table ended
                 if (pdf.previousAutoTable && pdf.previousAutoTable.finalY) {
-                  yPosition = pdf.previousAutoTable.finalY + paragraphSpacing * 0.5;
+                  yPosition = pdf.previousAutoTable.finalY + sectionSpacing;
                 } else if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) {
-                  yPosition = pdf.lastAutoTable.finalY + paragraphSpacing * 0.5;
+                  yPosition = pdf.lastAutoTable.finalY + sectionSpacing;
                 } else {
                   // Fallback if autoTable position is not available
-                  yPosition += estimatedTableHeight + paragraphSpacing * 0.5;
+                  yPosition += estimatedTableHeight + sectionSpacing;
                 }
               }
             } catch (tableError) {
@@ -2470,25 +2939,29 @@ const Notes = () => {
               yPosition += 35;
             }
           } else if (tagName === 'p') {
-            // Handle paragraphs with advanced enterprise formatting
+            // Handle paragraphs with professional formatting
             const text = node.textContent.trim();
             if (text) {
-              const maxTextWidth = contentWidth - 2; // Maximum text width within content area
+              pdf.setFont('helvetica', 'normal');
+              pdf.setFontSize(bodySize);
+              pdf.setTextColor(0);
+
+              const maxTextWidth = contentWidth;
               const optimizedLines = processEnterpriseText(text, maxTextWidth, pdf);
-              
+
               optimizedLines.forEach(line => {
-                checkPageBreak(bodySize * lineSpacing + 1);
+                checkPageBreak(bodySize * lineSpacing + 2);
                 pdf.text(line, leftMargin, yPosition);
-                yPosition += bodySize * lineSpacing + 0.3; // Ultra-compact line spacing
+                yPosition += bodySize * lineSpacing;
               });
-              yPosition += paragraphSpacing; // Minimal paragraph spacing
+              yPosition += paragraphSpacing; // Professional paragraph spacing
             } else {
-              // Empty paragraph - minimal spacing
-              yPosition += bodySize * 0.1;
+              // Empty paragraph - add small spacing
+              yPosition += paragraphSpacing * 0.5;
             }
           } else if (tagName === 'br') {
-            // Handle line breaks - ultra-minimal spacing for enterprise format
-            yPosition += bodySize * 0.4;
+            // Handle line breaks with proper spacing
+            yPosition += bodySize * lineSpacing * 0.5;
           } else if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3') {
             // Handle headings
             const text = node.textContent.trim();
@@ -2520,12 +2993,12 @@ const Notes = () => {
               const prefixWidth = pdf.getTextWidth(prefix);
               const indentX = leftMargin + prefixWidth;
               
-              // Enterprise list formatting with advanced text optimization
-              const maxTextWidth = contentWidth - prefixWidth - 3; // Maximize text space
+              // Professional list formatting
+              const maxTextWidth = contentWidth - prefixWidth - 5;
               const optimizedLines = processEnterpriseText(listItemText, maxTextWidth, pdf);
-              
+
               optimizedLines.forEach((line, lineIndex) => {
-                checkPageBreak(bodySize * lineSpacing + 1);
+                checkPageBreak(bodySize * lineSpacing + 2);
                 if (lineIndex === 0) {
                   // First line with prefix
                   pdf.text(prefix + line, leftMargin, yPosition);
@@ -2533,7 +3006,7 @@ const Notes = () => {
                   // Subsequent lines indented
                   pdf.text(line, indentX, yPosition);
                 }
-                yPosition += bodySize * lineSpacing + 0.3; // Ultra-compact list spacing
+                yPosition += bodySize * lineSpacing;
               });
             });
             yPosition += paragraphSpacing * 0.5;
@@ -2544,91 +3017,191 @@ const Notes = () => {
               pdf.setFont('helvetica', 'italic');
               pdf.setTextColor(80); // Slightly darker for better readability
               
-              // Advanced blockquote text processing
-              const maxTextWidth = contentWidth - 12; // Minimal indentation for enterprise format
+              // Professional blockquote text processing
+              const maxTextWidth = contentWidth - 15;
               const optimizedLines = processEnterpriseText(text, maxTextWidth, pdf);
-              
+
+              // Add left border for blockquote
+              const blockquoteHeight = optimizedLines.length * bodySize * lineSpacing;
+              pdf.setDrawColor(200, 200, 200);
+              pdf.setLineWidth(0.5);
+              pdf.line(leftMargin + 3, yPosition - 2, leftMargin + 3, yPosition + blockquoteHeight);
+
               optimizedLines.forEach(line => {
-                checkPageBreak(bodySize * lineSpacing + 1);
-                pdf.text(line, leftMargin + 6, yPosition); // Minimal indentation
-                yPosition += bodySize * lineSpacing + 0.3; // Ultra-compact spacing
+                checkPageBreak(bodySize * lineSpacing + 2);
+                pdf.text(line, leftMargin + 8, yPosition);
+                yPosition += bodySize * lineSpacing;
               });
-              yPosition += paragraphSpacing * 0.3; // Minimal blockquote spacing
+              yPosition += paragraphSpacing;
               
               pdf.setFont('helvetica', 'normal');
               pdf.setTextColor(0);
             }
           } else if (tagName === 'img') {
-            // Handle images
-            const src = node.getAttribute('src');
+            // Handle images with optimized sizing for screenshots
+            console.log('Processing img tag:', node.outerHTML?.substring(0, 200));
+
+            // Try multiple ways to get the src
+            let src = node.getAttribute('src') ||
+                     node.getAttribute('data-src') ||
+                     node.src ||
+                     '';
+
+            // If src is empty, check the outerHTML
+            if (!src && node.outerHTML) {
+              const srcMatch = node.outerHTML.match(/src=["']([^"']+)["']/i);
+              if (srcMatch) {
+                src = srcMatch[1];
+              }
+            }
+
+            console.log('Image src extracted:', src?.substring(0, 100));
+
             if (src) {
               try {
-                // Add some space before image
-                yPosition += paragraphSpacing;
-                
-                // Calculate image dimensions
-                const maxImageWidth = contentWidth;
-                const maxImageHeight = 150; // Maximum height in mm
-                
-                // Default dimensions if not specified
+                // Add proper spacing before image
+                yPosition += sectionSpacing;
+
+                // Check if this is likely a screenshot based on dimensions or src
+                const naturalWidth = parseInt(node.getAttribute('width')) ||
+                                   parseInt(node.getAttribute('data-width')) ||
+                                   parseInt(node.style?.width) ||
+                                   node.naturalWidth || 0;
+                const naturalHeight = parseInt(node.getAttribute('height')) ||
+                                    parseInt(node.getAttribute('data-height')) ||
+                                    parseInt(node.style?.height) ||
+                                    node.naturalHeight || 0;
+                const isScreenshot = src.toLowerCase().includes('screenshot') ||
+                                   src.includes('Screenshot') ||
+                                   src.includes('paste') ||
+                                   src.includes('clipboard') ||
+                                   (naturalWidth > 800 && naturalHeight > 600) ||
+                                   (naturalWidth > 1200) ||
+                                   node.alt?.toLowerCase().includes('screenshot') ||
+                                   node.alt?.toLowerCase().includes('screen') ||
+                                   node.className?.includes('screenshot');
+
+                // Calculate optimal image dimensions
+                const maxImageWidth = contentWidth * 0.95; // Use more width for screenshots
+                const maxImageHeight = isScreenshot ? 200 : 180; // More height for screenshots
+
+                // Default dimensions for optimal display
                 let imgWidth = maxImageWidth;
-                let imgHeight = 100;
-                
-                // Try to get natural dimensions from attributes
-                const naturalWidth = parseInt(node.getAttribute('width')) || 0;
-                const naturalHeight = parseInt(node.getAttribute('height')) || 0;
-                
+                let imgHeight = 120; // Default height
+
                 if (naturalWidth && naturalHeight) {
                   const aspectRatio = naturalWidth / naturalHeight;
-                  
-                  // Scale to fit within max dimensions while maintaining aspect ratio
-                  if (naturalWidth > naturalHeight) {
-                    imgWidth = Math.min(maxImageWidth, naturalWidth * 0.264583); // Convert px to mm
-                    imgHeight = imgWidth / aspectRatio;
-                  } else {
-                    imgHeight = Math.min(maxImageHeight, naturalHeight * 0.264583);
-                    imgWidth = imgHeight * aspectRatio;
-                  }
-                  
-                  // Ensure it fits within bounds
-                  if (imgWidth > maxImageWidth) {
+
+                  if (isScreenshot) {
+                    // For screenshots, maximize usage of page width
                     imgWidth = maxImageWidth;
                     imgHeight = imgWidth / aspectRatio;
+
+                    // If height is too much, limit it and recalculate width
+                    if (imgHeight > maxImageHeight) {
+                      imgHeight = maxImageHeight;
+                      imgWidth = imgHeight * aspectRatio;
+                    }
+                  } else {
+                    // Regular images
+                    imgWidth = Math.min(maxImageWidth * 0.8, contentWidth * 0.8);
+                    imgHeight = imgWidth / aspectRatio;
+
+                    // Ensure it fits within maximum height
+                    if (imgHeight > maxImageHeight) {
+                      imgHeight = maxImageHeight;
+                      imgWidth = imgHeight * aspectRatio;
+                    }
                   }
-                  if (imgHeight > maxImageHeight) {
-                    imgHeight = maxImageHeight;
+
+                  // Ensure minimum size for visibility
+                  if (imgWidth < 50) {
+                    imgWidth = 50;
+                    imgHeight = imgWidth / aspectRatio;
+                  }
+                  if (imgHeight < 30) {
+                    imgHeight = 30;
                     imgWidth = imgHeight * aspectRatio;
                   }
                 } else {
-                  // Use default size for images without dimensions
-                  imgWidth = maxImageWidth * 0.8; // 80% of content width
-                  imgHeight = imgWidth * 0.6; // Default aspect ratio
+                  // Use optimal default size based on type
+                  if (isScreenshot) {
+                    // Screenshots typically have landscape orientation
+                    imgWidth = maxImageWidth;
+                    imgHeight = imgWidth * 0.5625; // 16:9 aspect ratio
+                  } else {
+                    imgWidth = maxImageWidth * 0.75;
+                    imgHeight = imgWidth * 0.75; // Square aspect ratio as default
+                  }
                 }
-                
-                // Check if image fits on current page
-                checkPageBreak(imgHeight + paragraphSpacing);
-                
+
+                // For screenshots that might need a full page
+                if (isScreenshot && imgHeight > (maxY - yPosition - 10)) {
+                  // Start screenshot on a new page if it doesn't fit
+                  addNewPage();
+                  yPosition = topMargin + 5;
+                }
+
+                // Check if image fits on current page with proper spacing
+                checkPageBreak(imgHeight + sectionSpacing * 2);
+
                 // Center the image
                 const imgX = leftMargin + (contentWidth - imgWidth) / 2;
-                
-                // Add image to PDF
-                // Convert Firebase Storage URLs to base64 for embedding
-                const base64Image = await getImageAsBase64(src);
+
+                // Add subtle border around image area (lighter for screenshots)
+                pdf.setDrawColor(isScreenshot ? 240 : 230, isScreenshot ? 240 : 230, isScreenshot ? 240 : 230);
+                pdf.setLineWidth(isScreenshot ? 0.1 : 0.2);
+                pdf.rect(imgX - 1, yPosition - 1, imgWidth + 2, imgHeight + 2, 'D');
+
+                // Convert image to base64 for embedding
+                console.log('Processing image for PDF:', {
+                  src: src?.substring(0, 100),
+                  isScreenshot,
+                  dimensions: `${imgWidth}x${imgHeight}mm`
+                });
+
+                let base64Image = null;
+
+                // Try to get the image as base64
+                if (src.startsWith('data:')) {
+                  // Already a data URL, use directly
+                  console.log('Image is already a data URL');
+                  base64Image = src;
+                } else if (src.startsWith('blob:')) {
+                  // Handle blob URLs
+                  console.log('Converting blob URL to base64');
+                  base64Image = await getImageAsBase64(src);
+                } else if (src.startsWith('http') || src.startsWith('//')) {
+                  // Handle remote URLs
+                  console.log('Fetching remote image');
+                  base64Image = await getImageAsBase64(src);
+                } else {
+                  // Try as relative URL
+                  const fullUrl = new URL(src, window.location.origin).href;
+                  console.log('Trying with full URL:', fullUrl);
+                  base64Image = await getImageAsBase64(fullUrl);
+                }
+
+                if (!base64Image) {
+                  console.error('Failed to get base64 for image:', src);
+                }
                 
                 if (base64Image) {
                   try {
-                    // Determine image type from data URL or default to JPEG
-                    let imageType = 'JPEG';
-                    if (base64Image.includes('image/png')) {
+                    // Determine image type from data URL
+                    let imageType = 'PNG'; // Default to PNG for screenshots
+                    if (base64Image.includes('image/jpeg') || base64Image.includes('image/jpg')) {
+                      imageType = 'JPEG';
+                    } else if (base64Image.includes('image/png')) {
                       imageType = 'PNG';
                     } else if (base64Image.includes('image/gif')) {
                       imageType = 'GIF';
                     } else if (base64Image.includes('image/webp')) {
                       imageType = 'WEBP';
                     }
-                    
-                    // Add the image to PDF
-                    pdf.addImage(base64Image, imageType, imgX, yPosition, imgWidth, imgHeight);
+
+                    // Add the image to PDF with proper compression
+                    pdf.addImage(base64Image, imageType, imgX, yPosition, imgWidth, imgHeight, undefined, 'FAST');
                   } catch (imgError) {
                     console.error('Error adding image to PDF:', imgError);
                     // Fallback to placeholder if image fails
@@ -2648,40 +3221,55 @@ const Notes = () => {
                   pdf.setFillColor(245, 245, 245);
                   pdf.rect(imgX, yPosition, imgWidth, imgHeight, 'FD');
                   
-                  pdf.setFontSize(9);
+                  pdf.setFontSize(10);
                   pdf.setTextColor(100);
-                  const placeholderText = 'Image unavailable';
-                  pdf.text(placeholderText, imgX + imgWidth / 2, yPosition + imgHeight / 2, { align: 'center' });
+                  const placeholderText = src.includes('screenshot') ? 'Screenshot unavailable' : 'Image unavailable';
+                  const noteText = 'Please ensure the image is still available in the editor';
+                  pdf.text(placeholderText, imgX + imgWidth / 2, yPosition + imgHeight / 2 - 3, { align: 'center' });
+                  pdf.setFontSize(8);
+                  pdf.text(noteText, imgX + imgWidth / 2, yPosition + imgHeight / 2 + 3, { align: 'center' });
                   pdf.setTextColor(0);
                   pdf.setFontSize(bodySize);
                 }
                 
-                yPosition += imgHeight + paragraphSpacing * 0.5;
+                // Add proper spacing after image
+                yPosition += imgHeight + sectionSpacing;
               } catch (error) {
                 console.error('Error adding image to PDF:', error);
                 // Add error placeholder
                 pdf.setDrawColor(200);
                 pdf.rect(leftMargin, yPosition, contentWidth, 30, 'D');
-                pdf.setFontSize(9);
+                pdf.setFontSize(10);
                 pdf.setTextColor(200, 0, 0);
-                pdf.text('Error loading image', leftMargin + contentWidth / 2, yPosition + 15, { align: 'center' });
+                const errorText = src.includes('screenshot') ? 'Error loading screenshot' : 'Error loading image';
+                pdf.text(errorText, leftMargin + contentWidth / 2, yPosition + 15, { align: 'center' });
+                console.error('Failed to load image for PDF:', src);
                 pdf.setTextColor(0);
                 pdf.setFontSize(bodySize);
-                yPosition += 30 + paragraphSpacing * 0.5;
+                yPosition += 30 + sectionSpacing;
               }
             }
-          } else if (tagName === 'div' && node.className && node.className.includes('tableWrapper')) {
-            // Handle table wrapper divs
-            const table = node.querySelector('table');
-            if (table) {
-              await processNode(table);
+          } else if (tagName === 'div') {
+            // Handle div elements
+            // Check for table wrappers
+            if (node.className && node.className.includes('tableWrapper')) {
+              const table = node.querySelector('table');
+              if (table) {
+                await processNode(table);
+              }
+            } else {
+              // Process all children of divs (they might contain images)
+              for (const child of Array.from(node.childNodes)) {
+                await processNode(child);
+              }
+            }
+          } else if (tagName === 'span' || tagName === 'strong' || tagName === 'em' || tagName === 'b' || tagName === 'i' || tagName === 'u') {
+            // Process inline elements and their children
+            for (const child of Array.from(node.childNodes)) {
+              await processNode(child);
             }
           } else {
-            // For other elements, ensure font is set and process their children
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(bodySize);
-            pdf.setTextColor(0);
-            
+            // For other unknown elements, process their children
             for (const child of Array.from(node.childNodes)) {
               await processNode(child);
             }
@@ -2689,9 +3277,40 @@ const Notes = () => {
         }
       };
       
-      // Process all child nodes of the content
+      // First, process any images we found via regex
+      // This ensures images are included even if HTML parsing fails
+      await processExtractedImages();
+
+      // Then process the rest of the content (text, tables, etc)
+      // but skip img tags since we already processed them
+      const processNodeWithoutImages = async (node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent.trim();
+          if (text) {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(bodySize);
+            pdf.setTextColor(0);
+            const optimizedLines = processEnterpriseText(text, contentWidth, pdf);
+            optimizedLines.forEach(line => {
+              checkPageBreak(bodySize * lineSpacing + 2);
+              pdf.text(line, leftMargin, yPosition);
+              yPosition += bodySize * lineSpacing + 1;
+            });
+          }
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          const tagName = node.tagName ? node.tagName.toLowerCase() : '';
+          // Skip img tags since we already processed them
+          if (tagName === 'img') {
+            return;
+          }
+          // Process other elements normally
+          await processNode(node);
+        }
+      };
+
+      // Process all child nodes of the content (except images)
       for (const child of Array.from(tempDiv.childNodes)) {
-        await processNode(child);
+        await processNodeWithoutImages(child);
       }
         }
         
@@ -2841,17 +3460,70 @@ const Notes = () => {
                 <span className="notes-count-badge">{filteredNotes.length}</span>
               </div>
             </div>
-            
+
+            {/* Search Section */}
+            <div className="toolbar-section search-section" style={{ flex: 1, maxWidth: '400px' }}>
+              <div className="notes-search-wrapper" style={{ position: 'relative', width: '100%' }}>
+                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                <input
+                  type="text"
+                  className="notes-search-input"
+                  placeholder="Search notes..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px 8px 36px',
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#f8fafc',
+                    fontSize: '14px',
+                    outline: 'none',
+                    transition: 'all 0.2s'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.backgroundColor = '#fff';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#e2e8f0';
+                    e.target.style.backgroundColor = '#f8fafc';
+                  }}
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    style={{
+                      position: 'absolute',
+                      right: '8px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#94a3b8'
+                    }}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Actions Section */}
             <div className="toolbar-section actions">
-              <button 
+              <button
                 className="tool-button accent"
                 onClick={handleCreateNote}
                 title="New Note"
               >
                 <Plus size={deviceMode === 'mobile' ? 18 : 20} />
               </button>
-              <button 
+              <button
                 className="tool-button"
                 onClick={handleToolbarAddBanner}
                 title="Add Banner"
@@ -3072,6 +3744,16 @@ const Notes = () => {
                         ref={editorRef}
                         value={formData.content}
                         onChange={(content) => {
+                          console.log('RichTextEditor onChange triggered');
+                          console.log('New content length:', content?.length);
+                          console.log('Contains img tags:', content?.includes('<img'));
+                          if (content?.includes('<img')) {
+                            const imgMatches = content.match(/<img[^>]*>/gi) || [];
+                            console.log('Number of img tags:', imgMatches.length);
+                            imgMatches.forEach((img, index) => {
+                              console.log(`Img tag ${index + 1}:`, img);
+                            });
+                          }
                           setFormData({ ...formData, content });
                         }}
                         placeholder="Start typing your note or paste Excel data..."
@@ -3228,96 +3910,283 @@ const Notes = () => {
           ) : (
             <div className="notes-main-list">
               {loading ? (
-                <div className="loading-state">
-                  <div className="spinner" />
-                  <p>Loading notes...</p>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '400px',
+                  padding: '40px 20px',
+                  width: '100%',
+                  position: 'relative'
+                }}>
+                  {/* New Preloader Animation */}
+                  <div className="load">
+                    <hr/><hr/><hr/><hr/>
+                  </div>
+
+                  {/* Preloader CSS */}
+                  <style>{`
+                    .load {
+                      position: absolute;
+                      top: 50%;
+                      left: 50%;
+                      transform: translate(-50%, -50%);
+                      width: 100px;
+                      height: 100px;
+                    }
+
+                    .load hr {
+                      border: 0;
+                      margin: 0;
+                      width: 40%;
+                      height: 40%;
+                      position: absolute;
+                      border-radius: 50%;
+                      animation: spin 2s ease infinite;
+                    }
+
+                    .load :first-child {
+                      background: #19A68C;
+                      animation-delay: -1.5s;
+                    }
+
+                    .load :nth-child(2) {
+                      background: #F63D3A;
+                      animation-delay: -1s;
+                    }
+
+                    .load :nth-child(3) {
+                      background: #FDA543;
+                      animation-delay: -0.5s;
+                    }
+
+                    .load :last-child {
+                      background: #193B48;
+                    }
+
+                    @keyframes spin {
+                      0%, 100% {
+                        transform: translate(0);
+                      }
+                      25% {
+                        transform: translate(160%);
+                      }
+                      50% {
+                        transform: translate(160%, 160%);
+                      }
+                      75% {
+                        transform: translate(0, 160%);
+                      }
+                    }
+                  `}</style>
                 </div>
               ) : filteredNotes.length > 0 ? (
-                <div className="notes-list-layout">
-                  {filteredNotes.map((note, index) => {
-                    
-                    // Extract plain text from HTML content for preview
-                    const getPlainTextPreview = (htmlContent) => {
-                      if (!htmlContent) return '';
-                      const temp = document.createElement('div');
-                      temp.innerHTML = htmlContent;
-                      const text = temp.textContent || temp.innerText || '';
-                      return text.substring(0, 80) + (text.length > 80 ? '...' : '');
-                    };
-                    
-                    const contentPreview = getPlainTextPreview(note.content);
-                    
-                    return (
-                      <div
-                        key={note.id}
-                        className="note-list-item"
-                        onClick={() => handleSelectNote(note)}
-                        onContextMenu={(e) => {
-                          e.preventDefault();
-                          setNoteContextMenu({
-                            visible: true,
-                            x: e.clientX,
-                            y: e.clientY,
-                            noteId: note.id
-                          });
-                        }}
-                        onTouchStart={(e) => {
-                          noteLongPressTimer.current = setTimeout(() => {
+                <div className="notes-table-container" style={{
+                  backgroundColor: '#ffffff',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  margin: '20px',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  width: 'calc(100% - 40px)',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  {/* Table Header */}
+                  <div className="notes-table-header" style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 120px 180px',
+                    padding: '14px 24px',
+                    backgroundColor: '#ff6b35',
+                    background: 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)',
+                    borderBottom: '2px solid #ff6b35',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#ffffff',
+                    letterSpacing: '0.5px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <FileText size={18} color="#ffffff" />
+                      <span>Note Title</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                      <Tag size={18} color="#ffffff" />
+                      <span>Banners</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                      <Calendar size={18} color="#ffffff" />
+                      <span>Date Created</span>
+                    </div>
+                  </div>
+
+                  {/* Table Body */}
+                  <div className="notes-table-body">
+                    {filteredNotes.map((note, index) => {
+                      return (
+                        <div
+                          key={note.id}
+                          className="notes-table-row"
+                          onClick={() => handleSelectNote(note)}
+                          onContextMenu={(e) => {
                             e.preventDefault();
-                            const touch = e.touches[0];
                             setNoteContextMenu({
                               visible: true,
-                              x: touch.clientX,
-                              y: touch.clientY,
+                              x: e.clientX,
+                              y: e.clientY,
                               noteId: note.id
                             });
-                          }, 500);
-                        }}
-                        onTouchEnd={() => {
-                          if (noteLongPressTimer.current) {
-                            clearTimeout(noteLongPressTimer.current);
-                          }
-                        }}
-                        onTouchMove={() => {
-                          if (noteLongPressTimer.current) {
-                            clearTimeout(noteLongPressTimer.current);
-                          }
-                        }}
-                      >
-                        <div className="note-list-content">
-                          <div className="note-list-header">
-                            <h3 className="note-list-title">{note.title || 'Untitled'}</h3>
-                            {note.starred && (
-                              <Star size={14} className="note-star-icon" fill="currentColor" />
+                          }}
+                          onTouchStart={(e) => {
+                            noteLongPressTimer.current = setTimeout(() => {
+                              e.preventDefault();
+                              const touch = e.touches[0];
+                              setNoteContextMenu({
+                                visible: true,
+                                x: touch.clientX,
+                                y: touch.clientY,
+                                noteId: note.id
+                              });
+                            }, 500);
+                          }}
+                          onTouchEnd={() => {
+                            if (noteLongPressTimer.current) {
+                              clearTimeout(noteLongPressTimer.current);
+                            }
+                          }}
+                          onTouchMove={() => {
+                            if (noteLongPressTimer.current) {
+                              clearTimeout(noteLongPressTimer.current);
+                            }
+                          }}
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 120px 180px',
+                            padding: '16px 24px',
+                            borderBottom: '1px solid #e5e7eb',
+                            borderRight: '1px solid #e5e7eb',
+                            borderLeft: '1px solid #e5e7eb',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            alignItems: 'center',
+                            backgroundColor: '#ffffff'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#fff5f0';
+                            e.currentTarget.style.borderLeftColor = '#ff6b35';
+                            e.currentTarget.style.borderLeftWidth = '3px';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ffffff';
+                            e.currentTarget.style.borderLeftColor = '#e5e7eb';
+                            e.currentTarget.style.borderLeftWidth = '1px';
+                          }}
+                        >
+                          {/* Note Title Column */}
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            minWidth: 0,
+                            borderRight: '1px solid #f3f4f6',
+                            paddingRight: '20px'
+                          }}>
+                            <div style={{
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '8px',
+                              backgroundColor: note.starred ? '#fff7ed' : '#f9fafb',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0
+                            }}>
+                              {note.starred ? (
+                                <Star size={18} fill="#ff6b35" color="#ff6b35" />
+                              ) : (
+                                <FileText size={18} color="#6b7280" />
+                              )}
+                            </div>
+                            <span style={{
+                              fontSize: '15px',
+                              fontWeight: '500',
+                              color: '#1f2937',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {note.title || 'Untitled Note'}
+                            </span>
+                          </div>
+
+                          {/* Banners Column */}
+                          <div style={{
+                            textAlign: 'center',
+                            borderRight: '1px solid #f3f4f6'
+                          }}>
+                            {note.banners && note.banners.length > 0 ? (
+                              <div style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '6px 12px',
+                                backgroundColor: '#fff7ed',
+                                borderRadius: '20px',
+                                border: '1px solid #fed7aa'
+                              }}>
+                                <Tag size={14} color="#ff6b35" />
+                                <span style={{
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  color: '#ff6b35'
+                                }}>
+                                  {note.banners.length}
+                                </span>
+                              </div>
+                            ) : (
+                              <span style={{
+                                fontSize: '14px',
+                                color: '#9ca3af'
+                              }}>0</span>
                             )}
                           </div>
-                          {contentPreview && (
-                            <p className="note-list-preview">{contentPreview}</p>
-                          )}
-                          <div className="note-list-meta">
-                            <span className="note-date">
-                              {note.updatedAt ? new Date(note.updatedAt.seconds * 1000).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric'
-                              }) : 'No date'}
+
+                          {/* Date Column */}
+                          <div style={{
+                            fontSize: '14px',
+                            fontWeight: '400',
+                            color: '#6b7280',
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                          }}>
+                            <Calendar size={14} color="#9ca3af" />
+                            <span>
+                              {note.createdAt ? (
+                                note.createdAt.seconds ?
+                                  new Date(note.createdAt.seconds * 1000).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  }) :
+                                  note.createdAt instanceof Date ?
+                                    note.createdAt.toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric'
+                                    }) :
+                                    new Date(note.createdAt).toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric'
+                                    })
+                              ) : 'No date'}
                             </span>
-                            {note.banners && note.banners.length > 0 && (
-                              <span className="note-banner-count">
-                                <Tag size={12} />
-                                {note.banners.length}
-                              </span>
-                            )}
-                            {note.images && note.images.length > 0 && (
-                              <span className="note-image-count">
-                                <ImageIcon size={12} />
-                                {note.images.length}
-                              </span>
-                            )}
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               ) : (
                 <div className="empty-notes-state">

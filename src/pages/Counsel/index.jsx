@@ -737,12 +737,16 @@ const Counsel = () => {
               <ArrowBigLeft size={deviceMode === 'mobile' ? 18 : 20} />
             </button>
             
-            <button 
-              className="tool-button"
+            <button
+              className={deviceMode === 'desktop' ? 'tool-button official-label-button' : 'tool-button'}
               onClick={() => openOfficialLabel(selectedMedication.setId)}
               title="View Official Label"
             >
-              <Paperclip size={deviceMode === 'mobile' ? 18 : 20} />
+              {deviceMode === 'desktop' ? (
+                <span>Official Label</span>
+              ) : (
+                <Paperclip size={deviceMode === 'mobile' ? 18 : 20} />
+              )}
             </button>
           </div>
         )}

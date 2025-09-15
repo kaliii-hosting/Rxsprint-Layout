@@ -9,7 +9,7 @@
   background: #ffffff;
   position: relative;
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -60,7 +60,8 @@
   align-items: center;
   gap: 1.5rem;
   overflow: visible !important;
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 100;
   margin: 0;
 }
@@ -99,6 +100,9 @@
   white-space: nowrap;
   z-index: 10;
   position: relative;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 /* Desktop Mode */
@@ -250,6 +254,56 @@
   box-shadow: none;
 }
 
+/* Official Label Button - Neon Orange for Desktop */
+.counsel-page .tool-button.official-label-button {
+  background: #FF6600;
+  background: linear-gradient(135deg, #FF6600 0%, #FF8833 100%);
+  border: 1px solid #FF5500;
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  text-transform: none;
+  box-shadow: 0 0 10px rgba(255, 102, 0, 0.3);
+  transition: all 0.2s ease;
+  min-width: fit-content;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.counsel-page .tool-button.official-label-button:hover {
+  background: #FF7700;
+  background: linear-gradient(135deg, #FF7700 0%, #FF9944 100%);
+  border-color: #FF6600;
+  box-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
+  transform: translateY(-1px);
+}
+
+.counsel-page .tool-button.official-label-button:active {
+  background: #FF5500;
+  background: linear-gradient(135deg, #FF5500 0%, #FF7722 100%);
+  border-color: #FF4400;
+  box-shadow: 0 0 5px rgba(255, 102, 0, 0.3);
+  transform: translateY(0);
+}
+
+.dark .counsel-page .tool-button.official-label-button {
+  background: #FF6600;
+  background: linear-gradient(135deg, #FF6600 0%, #FF8833 100%);
+  border-color: #FF5500;
+  color: white;
+  box-shadow: 0 0 12px rgba(255, 102, 0, 0.4);
+}
+
+.dark .counsel-page .tool-button.official-label-button:hover {
+  background: #FF7700;
+  background: linear-gradient(135deg, #FF7700 0%, #FF9944 100%);
+  border-color: #FF6600;
+  box-shadow: 0 0 18px rgba(255, 102, 0, 0.6);
+}
+
 /* Dark mode support */
 .dark .counsel-page .tool-button {
   background: rgba(255, 255, 255, 0.1);
@@ -287,6 +341,7 @@
   width: 100%;
   margin: 0;
   background: #ffffff;
+  height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -586,7 +641,7 @@
     height: 100vh;
     overflow: hidden;
   }
-  
+
   .counsel-content {
     max-height: calc(100vh - 70px);
     overflow-y: auto;
@@ -631,7 +686,7 @@
     height: 100vh;
     overflow: hidden;
   }
-  
+
   .counsel-content {
     max-height: calc(100vh - 60px);
     overflow-y: auto;
@@ -1086,7 +1141,7 @@
 
 .details-header {
   margin-bottom: 0;
-  padding: 2rem;
+  padding: 1.5rem 2rem;
   background: #f8f9fa;
   border-bottom: 2px solid #dee2e6;
 }
@@ -1129,6 +1184,7 @@
   background: #ffffff;
   box-shadow: none;
   padding: 0;
+  width: 100%;
 }
 
 .dark .sections-container {
@@ -1154,25 +1210,166 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 2rem;
-  background: #f8f9fa;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa !important;
+  background-color: #f8f9fa !important;
   cursor: pointer;
-  transition: background 0.2s;
-  border-bottom: 1px solid #e0e0e0;
-  font-weight: normal;
-  margin-bottom: 0;
+  transition: all 0.2s;
+  border-bottom: 1px solid #e5e5e5;
+  font-weight: 500;
+  margin: 0;
+  width: 100%;
+  color: #212529;
+  position: relative;
+}
+
+/* Extra specificity to override any DailyMed styles */
+.counsel-page .section-header,
+.counsel-page .sections-container .section-header,
+.counsel-page .section-item .section-header {
+  background: #f8f9fa !important;
+  background-color: #f8f9fa !important;
+}
+
+/* Official Label Container - DailyMed Style */
+.official-label-container {
+  width: 100%;
+  background: #ffffff;
+  overflow: auto;
+  box-shadow: none;
+  min-height: 80vh;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  position: relative;
+}
+
+.dark .official-label-container {
+  background: #1f1f1f;
+  border-color: #3a3a3a;
+}
+
+/* Official Label Content - Preserve DailyMed Original Styling */
+.official-label-content {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  background: white;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+.dark .official-label-content {
+  background: #1f1f1f;
+  color: #e0e0e0;
+}
+
+/* Preserve DailyMed's original table styling */
+.official-label-content table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  width: 100%;
+}
+
+.official-label-content table,
+.official-label-content table td,
+.official-label-content table th {
+  border: 1px solid #000;
+}
+
+.official-label-content table th,
+.official-label-content table td {
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.official-label-content table th {
+  background-color: #e6e6e6;
+  font-weight: bold;
+}
+
+/* Preserve DailyMed image styling */
+.official-label-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+}
+
+/* Preserve DailyMed text and paragraph styling */
+.official-label-content p {
+  margin: 1em 0;
+  line-height: 1.4;
+}
+
+.official-label-content h1,
+.official-label-content h2,
+.official-label-content h3,
+.official-label-content h4,
+.official-label-content h5,
+.official-label-content h6 {
+  margin: 1.5em 0 0.5em 0;
+  font-weight: bold;
+}
+
+/* Preserve DailyMed list styling */
+.official-label-content ul,
+.official-label-content ol {
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+.official-label-content li {
+  margin-bottom: 0.5em;
+}
+
+/* Preserve any DailyMed specific CSS classes */
+.official-label-content .highlight {
+  background-color: yellow;
+}
+
+.official-label-content .boxed-warning {
+  border: 2px solid #000;
+  padding: 1em;
+  margin: 1em 0;
+  background-color: #fff3cd;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .official-label-container {
+    min-height: 70vh;
+  }
+
+  .official-label-content {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .official-label-container {
+    min-height: 60vh;
+  }
+
+  .official-label-content {
+    font-size: 13px;
+  }
 }
 
 .section-header:hover {
-  background: #f8f9fa;
+  background: #f0f1f3 !important;
 }
 
 .dark .section-header {
-  background: #2a2a2a;
+  background: #2a2a2a !important;
+  color: #e0e0e0;
+  border-bottom-color: #444;
 }
 
 .dark .section-header:hover {
-  background: #333;
+  background: #333 !important;
 }
 
 .section-title-wrapper {
@@ -1183,27 +1380,31 @@
 }
 
 .section-icon {
-  width: 24px;
-  height: 24px;
-  background: #ff8c00;
+  width: 26px;
+  height: 26px;
+  background: #FF6600;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: bold;
   flex-shrink: 0;
+  line-height: 1;
+  margin-right: 0.25rem;
 }
 
 .section-title-wrapper h3 {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 0;
-  color: #000;
+  font-size: 13px;
+  font-weight: 600;
+  color: #212529;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 0;
   letter-spacing: 0;
   font-family: Arial, sans-serif;
+  white-space: nowrap;
 }
 
 .dark .section-title-wrapper h3 {
@@ -1211,7 +1412,7 @@
 }
 
 .section-content {
-  padding: 2rem;
+  padding: 1.5rem 2rem;
   background: white;
   border: none;
   margin-top: 0;
@@ -2346,12 +2547,12 @@
     flex-wrap: wrap;
     gap: 1rem;
   }
-  
+
   .toolbar-title {
     flex: 1 1 100%;
     min-width: auto;
   }
-  
+
   .toolbar-search {
     flex: 1 1 auto;
     max-width: none;
@@ -3285,4 +3486,186 @@
   .ndc-code {
     min-width: auto;
   }
+}
+
+/* Autocomplete dropdown */
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e1e4e8);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .autocomplete-dropdown {
+  background: #2a2a2a;
+  border-color: #444;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.autocomplete-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color, #f0f0f0);
+  transition: background-color 0.15s ease;
+}
+
+.autocomplete-item:hover {
+  background: var(--bg-secondary, #f6f8fa);
+}
+
+.dark .autocomplete-item {
+  border-bottom-color: #333;
+}
+
+.dark .autocomplete-item:hover {
+  background: #333;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-name {
+  font-weight: 500;
+  color: var(--text-primary, #24292f);
+  margin-bottom: 2px;
+}
+
+.suggestion-generic {
+  font-size: 12px;
+  color: var(--text-secondary, #656d76);
+}
+
+.autocomplete-loading {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  color: var(--text-secondary, #656d76);
+  gap: 8px;
+}
+
+.autocomplete-no-results {
+  padding: 12px 16px;
+  color: var(--text-secondary, #656d76);
+  font-style: italic;
+}
+
+/* Loading overlay (Notes style) */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.dark .loading-overlay {
+  background: rgba(26, 26, 26, 0.9);
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.loading-container p {
+  color: var(--text-secondary, #656d76);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Spinner styles (Notes style) */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color, #e1e4e8);
+  border-top-color: var(--primary-color, #0969da);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-large {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color, #e1e4e8);
+  border-top-color: var(--primary-color, #0969da);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.dark .spinner,
+.dark .spinner-large {
+  border-color: #444;
+  border-top-color: var(--primary-color, #58a6ff);
+}
+
+/* Medication not found banner */
+.medication-not-found-banner {
+  margin: 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff6b6b20 0%, #ff534120 100%);
+  border: 1px solid #ff6b6b40;
+  overflow: hidden;
+  position: relative;
+}
+
+.dark .medication-not-found-banner {
+  background: linear-gradient(135deg, #ff6b6b15 0%, #ff534115 100%);
+  border-color: #ff6b6b30;
+}
+
+.banner-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.banner-content svg {
+  color: #e74c3c;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.banner-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #24292f);
+}
+
+.banner-text p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary, #656d76);
+}
+
+.dark .banner-text h3 {
+  color: #ffffff;
+}
+
+.dark .banner-text p {
+  color: #b3b3b3;
+}
+
+/* Content Area - add position relative for loading overlay */
+.counsel-content {
+  position: relative;
 }

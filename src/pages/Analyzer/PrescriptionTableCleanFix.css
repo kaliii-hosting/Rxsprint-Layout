@@ -1,0 +1,167 @@
+/* ========================================
+   PRESCRIPTION TABLE - CLEAN FIX
+   Complete override with explicit widths
+   This file MUST be loaded LAST
+   ======================================== */
+
+/* Container - make it scrollable */
+.prescription-table-screenshot-container {
+  width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  padding: 20px !important;
+  background: transparent !important;
+  display: block !important;
+}
+
+/* The table itself - force minimum width */
+.prescription-table-screenshot-container .analysis-table.screenshot-design {
+  min-width: 1400px !important;
+  width: 100% !important;
+  table-layout: auto !important;
+  border-collapse: collapse !important;
+  background: white !important;
+  display: table !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Force all columns to be visible */
+.prescription-table-screenshot-container .analysis-table.screenshot-design th,
+.prescription-table-screenshot-container .analysis-table.screenshot-design td {
+  display: table-cell !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  border: 1px solid #e0e0e0 !important;
+}
+
+/* Headers - all should be visible with proper background */
+.prescription-table-screenshot-container .analysis-table.screenshot-design thead th {
+  background-color: #3b5063 !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  text-transform: uppercase !important;
+  padding: 12px !important;
+  text-align: center !important;
+}
+
+/* Column 1: Section label */
+.prescription-table-screenshot-container .section-label-cell {
+  width: 120px !important;
+  min-width: 120px !important;
+  background-color: #f0f4f7 !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+/* Column 2: Field names */
+.prescription-table-screenshot-container .field-name-cell {
+  width: 300px !important;
+  min-width: 300px !important;
+  padding: 10px 15px !important;
+  font-weight: 600 !important;
+  background-color: #fafbfc !important;
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+/* Column 3: Electronic Prescription values */
+.prescription-table-screenshot-container .prescribed-value-cell {
+  width: 400px !important;
+  min-width: 400px !important;
+  padding: 10px 15px !important;
+  background-color: white !important;
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+/* Column 4: Data Entered values */
+.prescription-table-screenshot-container .data-entered-value-cell {
+  width: 400px !important;
+  min-width: 400px !important;
+  padding: 10px 15px !important;
+  background-color: white !important;
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+/* Column 5: Status */
+.prescription-table-screenshot-container .match-status-cell {
+  width: 80px !important;
+  min-width: 80px !important;
+  text-align: center !important;
+  padding: 10px !important;
+  background-color: white !important;
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+/* Row colors based on match status */
+.prescription-table-screenshot-container tr.match-row td {
+  background-color: rgba(16, 185, 129, 0.05) !important;
+}
+
+.prescription-table-screenshot-container tr.mismatch-row td {
+  background-color: rgba(239, 68, 68, 0.05) !important;
+}
+
+.prescription-table-screenshot-container tr.mismatch-row .prescribed-value-cell {
+  color: #dc2626 !important;
+  font-weight: 500 !important;
+}
+
+/* Status icons */
+.prescription-table-screenshot-container .status-icon {
+  display: inline-block !important;
+  width: 24px !important;
+  height: 24px !important;
+  line-height: 24px !important;
+  border-radius: 50% !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+}
+
+.prescription-table-screenshot-container .status-icon.match {
+  background-color: #10b981 !important;
+  color: white !important;
+}
+
+.prescription-table-screenshot-container .status-icon.mismatch {
+  background-color: #ef4444 !important;
+  color: white !important;
+}
+
+/* Override any hidden or collapsed rules */
+.prescription-table-screenshot-container * {
+  overflow: visible !important;
+}
+
+/* Ensure headers are not collapsed */
+.prescription-table-screenshot-container th[colspan="2"] {
+  width: 420px !important;
+  min-width: 420px !important;
+}
+
+.prescription-table-screenshot-container .prescribed-header {
+  width: 400px !important;
+  min-width: 400px !important;
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+.prescription-table-screenshot-container .data-entered-header {
+  width: 400px !important;
+  min-width: 400px !important;
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+.prescription-table-screenshot-container .match-header {
+  width: 80px !important;
+  min-width: 80px !important;
+  display: table-cell !important;
+  visibility: visible !important;
+}

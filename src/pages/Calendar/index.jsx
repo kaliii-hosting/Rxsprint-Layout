@@ -367,15 +367,26 @@ const Calendar = () => {
                 </div>
                 <div className="day-hour-events">
                   {hourEvents.map((event, idx) => (
-                    <div 
+                    <div
                       key={event.id}
                       className="day-event-block"
                       style={{ background: getEventColor(events.indexOf(event)) }}
-                      onClick={() => editEvent(event)}
                     >
-                      <div className="event-time">{formatEventTime(event.date)}</div>
-                      <div className="event-title">{event.title}</div>
-                      {event.location && <div className="event-location">{event.location}</div>}
+                      <div className="event-content" onClick={() => editEvent(event)}>
+                        <div className="event-time">{formatEventTime(event.date)}</div>
+                        <div className="event-title">{event.title}</div>
+                        {event.location && <div className="event-location">{event.location}</div>}
+                      </div>
+                      <button
+                        className="event-delete-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteEvent(event.id);
+                        }}
+                        title="Delete event"
+                      >
+                        <X size={14} />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -629,8 +640,13 @@ const Calendar = () => {
     <div className="calendar-page">
       {/* Compact Header Toolbar - All in One Row */}
       <div className="calendar-header-toolbar">
-        {/* Month Navigation */}
-        <div className="header-nav-section">
+        {/* Empty left section for balance */}
+        <div className="header-left-section">
+          {/* This keeps the layout balanced */}
+        </div>
+
+        {/* Month Navigation - Centered */}
+        <div className="header-nav-section" style={{ justifyContent: 'center' }}>
           <button className="nav-btn" onClick={() => navigate(-1)} title="Previous month">
             <ChevronLeft size={18} />
           </button>
@@ -643,15 +659,15 @@ const Calendar = () => {
           </button>
         </div>
 
-        {/* Date Range Display */}
-        <div className="header-range-section">
+        {/* Date Range Display - Right */}
+        <div className="header-range-section" style={{ justifyContent: 'flex-end' }}>
           {dayCountDisplay ? (
             <div className="date-range-display">
               <span className="range-text">
                 {dayCountDisplay.count} days
               </span>
               <span className="range-dates">
-                {dayCountDisplay.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - 
+                {dayCountDisplay.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} -
                 {dayCountDisplay.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
               <button className="range-clear" onClick={() => {
@@ -667,22 +683,6 @@ const Calendar = () => {
               Click dates to select range
             </div>
           )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="header-actions-section">
-          <button className="action-btn today-btn" onClick={() => setCurrentDate(new Date())}>
-            Today
-          </button>
-          <button className="action-btn add-btn" onClick={() => {
-            const dateToUse = selectedDate || new Date();
-            setSelectedDate(dateToUse);
-            setEventForm(prev => ({ ...prev, date: dateToUse }));
-            setShowEventModal(true);
-          }}>
-            <Plus size={16} />
-            <span className="btn-text">Add</span>
-          </button>
         </div>
       </div>
       
@@ -710,12 +710,22 @@ const Calendar = () => {
               {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </div>
             {getEventsForDate(selectedDate).map((event, idx) => (
-              <div key={event.id} className="ios-event-item" onClick={() => editEvent(event)}>
+              <div key={event.id} className="ios-event-item">
                 <div className="ios-event-color" style={{ background: getEventColor(idx) }} />
-                <div className="ios-event-content">
+                <div className="ios-event-content" onClick={() => editEvent(event)}>
                   <div className="ios-event-title">{event.title}</div>
                   <div className="ios-event-time">{formatEventTime(event.date)}</div>
                 </div>
+                <button
+                  className="ios-event-delete"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteEvent(event.id);
+                  }}
+                  title="Delete event"
+                >
+                  <X size={16} />
+                </button>
               </div>
             ))}
           </div>

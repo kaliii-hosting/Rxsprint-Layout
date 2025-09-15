@@ -38,6 +38,38 @@
   position: relative;
 }
 
+/* Top Right Reset Button */
+.top-reset-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid #b91c1c !important;
+  border-radius: 8px !important;
+  padding: 12px 20px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: all 0.3s ease !important;
+  z-index: 1000 !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2) !important;
+}
+
+.top-reset-btn:hover {
+  background: #b91c1c !important;
+  border-color: #991b1b !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3) !important;
+}
+
+.top-reset-btn:active {
+  transform: translateY(0) !important;
+}
+
 .analyzer-dashboard {
   display: flex;
   flex-direction: column;
@@ -2229,39 +2261,57 @@ button.toggle-btn.full-width {
 .prescription-table-section .analysis-table th:first-child,
 .prescription-table-section .analysis-table td:first-child,
 .analysis-results-table .analysis-table th:first-child,
-.analysis-results-table .analysis-table td:first-child {
-  width: 120px;
-  min-width: 100px;
+.analysis-results-table .analysis-table td:first-child,
+.analysis-table.screenshot-design th:first-child,
+.analysis-table.screenshot-design td:first-child {
+  width: 35% !important;  /* Wider to show all text */
+  min-width: 300px !important;  /* Ensure minimum width */
+  white-space: normal !important;  /* Allow text wrapping */
+  word-wrap: break-word !important;  /* Break long words */
+  overflow-wrap: break-word !important;  /* Modern word wrapping */
+  text-align: left !important;  /* Left align */
+  padding-right: 20px !important;  /* Better spacing */
+  padding-left: 15px !important;  /* Better left padding */
 }
 
 /* Status column (2nd column) */
 .prescription-table-section .analysis-table th:nth-child(2),
 .prescription-table-section .analysis-table td:nth-child(2),
 .analysis-results-table .analysis-table th:nth-child(2),
-.analysis-results-table .analysis-table td:nth-child(2) {
-  width: 80px;
-  min-width: 80px;
-  text-align: center;
+.analysis-results-table .analysis-table td:nth-child(2),
+.analysis-table.screenshot-design th:nth-child(2),
+.analysis-table.screenshot-design td:nth-child(2) {
+  width: 40px !important;  /* Very narrow for icon only */
+  min-width: 40px !important;  /* Fixed minimum */
+  max-width: 40px !important;  /* Fixed maximum */
+  text-align: center !important;
+  padding: 0.5rem 0.2rem !important;  /* Minimal padding */
 }
 
 /* Rx Value column (3rd column) - main column with larger width */
 .prescription-table-section .analysis-table th:nth-child(3),
 .prescription-table-section .analysis-table td:nth-child(3),
 .analysis-results-table .analysis-table th:nth-child(3),
-.analysis-results-table .analysis-table td:nth-child(3) {
-  width: 30%;
-  min-width: 150px;
-  max-width: 250px;
+.analysis-results-table .analysis-table td:nth-child(3),
+.analysis-table.screenshot-design th:nth-child(3),
+.analysis-table.screenshot-design td:nth-child(3) {
+  width: 30% !important;
+  min-width: 150px !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
 }
 
 /* DE Value column (4th column) - main column with same width as Rx Value */
 .prescription-table-section .analysis-table th:nth-child(4),
 .prescription-table-section .analysis-table td:nth-child(4),
 .analysis-results-table .analysis-table th:nth-child(4),
-.analysis-results-table .analysis-table td:nth-child(4) {
-  width: 30%;
-  min-width: 150px;
-  max-width: 250px;
+.analysis-results-table .analysis-table td:nth-child(4),
+.analysis-table.screenshot-design th:nth-child(4),
+.analysis-table.screenshot-design td:nth-child(4) {
+  width: 30% !important;
+  min-width: 150px !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
 }
 
 /* Ensure prescription analyzer value cells have consistent styling */
@@ -2584,50 +2634,7 @@ button.toggle-btn.full-width {
 ... (rest of unified table styles commented out)
 */
 
-/* Supplies Scanning Animation */
-.scanning-content.supplies-scanning {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2rem;
-}
-
-.supplies-scan-animation {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.supplies-scanning-icon {
-  color: var(--primary-color, #FF6900);
-  animation: rotateCompare 2s linear infinite;
-}
-
-@keyframes rotateCompare {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.scan-text.supplies-scan-text {
-  text-align: center;
-  color: var(--foreground);
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
-  letter-spacing: 0.3px;
-}
-
-/* Ensure progress bar is centered */
-.supplies-scanning .scan-progress {
-  width: 300px;
-  max-width: 80vw;
-}
+/* Supplies Scanning Animation - Removed old styles to prevent conflicts with Notes-style preloader */
 
 /* CRITICAL FIX: Force white text on orange buttons with maximum specificity */
 .analyzer-page button.toggle-btn.full-width,

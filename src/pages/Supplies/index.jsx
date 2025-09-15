@@ -1200,7 +1200,7 @@ const Supplies = () => {
 
                   {/* PORT Section */}
                   <div className="infusion-type-section">
-                    <div className="infusion-type-header" style={{ backgroundColor: '#e6fff7', color: '#00ff88' }}>
+                    <div className="infusion-type-header" style={{ backgroundColor: '#fff5f0', color: '#ff6b35' }}>
                       <h4>PORT (Implanted Port)</h4>
                     </div>
                     <div className="infusion-type-content">
@@ -1213,17 +1213,17 @@ const Supplies = () => {
                             alignItems: 'center', 
                             justifyContent: 'space-between',
                             padding: '8px 12px',
-                            backgroundColor: '#e6fff7',
+                            backgroundColor: '#fff5f0',
                             borderRadius: '6px',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease'
                           }}
                         >
-                          <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#00ff88' }}>
+                          <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#ff6b35' }}>
                             <Info size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
                             Information
                           </span>
-                          {showPORTInfo ? <ChevronUp size={16} color="#00ff88" /> : <ChevronDown size={16} color="#00ff88" />}
+                          {showPORTInfo ? <ChevronUp size={16} color="#ff6b35" /> : <ChevronDown size={16} color="#ff6b35" />}
                         </div>
                         {showPORTInfo && (
                           <div style={{ marginTop: '10px', padding: '12px', backgroundColor: '#fffaf5', borderRadius: '6px', fontSize: '0.85rem', lineHeight: '1.6' }}>
@@ -1252,7 +1252,7 @@ const Supplies = () => {
                         <li style={{ marginBottom: '5px' }}>• Heparin Flushes</li>
                         <li style={{ marginBottom: '5px' }}>• Extension Sets</li>
                       </ul>
-                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#e6fff7', borderRadius: '4px' }}>
+                      <div className="infusion-type-tip" style={{ marginTop: '10px', padding: '8px', backgroundColor: '#fff5f0', borderRadius: '4px' }}>
                         <strong style={{ fontSize: '0.85rem' }}>➤ Key Identifier:</strong> <span style={{ fontSize: '0.85rem' }}>Look for Central Line Dressing Kit with Gripper Plus or Huber needle combo.</span>
                       </div>
                     </div>

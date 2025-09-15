@@ -55,6 +55,7 @@ const Phones = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [selectedLetter, setSelectedLetter] = useState(null);
+  const [showFavorites, setShowFavorites] = useState(false);
 
   // Form state for new/edit contact
   const [formData, setFormData] = useState({
@@ -89,10 +90,16 @@ const Phones = () => {
       const contactName = (contact.name || contact.firstName || '').toLowerCase();
       const phoneMatch = contact.phones?.some(p => p.value?.includes(searchQuery)) || contact.phone?.includes(searchQuery);
       const emailMatch = contact.emails?.some(e => e.value?.toLowerCase().includes(searchLower)) || contact.email?.toLowerCase().includes(searchLower);
-      return contactName.includes(searchLower) ||
+      const matchesSearch = contactName.includes(searchLower) ||
              phoneMatch ||
              emailMatch ||
              contact.company?.toLowerCase().includes(searchLower);
+
+      // Filter by favorites if enabled
+      if (showFavorites) {
+        return matchesSearch && contact.favorite;
+      }
+      return matchesSearch;
     });
 
     // Don't filter by selected letter - we want to show all contacts
@@ -109,7 +116,7 @@ const Phones = () => {
     });
 
     return grouped;
-  }, [contacts, searchQuery]); // Removed selectedLetter dependency
+  }, [contacts, searchQuery, showFavorites]); // Added showFavorites dependency
 
   // Handle image upload
   const handleImageUpload = async (e) => {
@@ -358,7 +365,7 @@ const Phones = () => {
                   className="search-input"
                 />
                 {searchQuery && (
-                  <button 
+                  <button
                     className="clear-btn"
                     onClick={() => setSearchQuery('')}
                   >
@@ -402,26 +409,57 @@ const Phones = () => {
                 </button>
               </>
             ) : (
-              <button 
-                className="add-btn"
-                onClick={() => {
-                  setFormData({
-                    name: '',
-                    company: '',
-                    phones: [{ value: '', type: 'mobile' }],
-                    emails: [{ value: '', type: 'work' }],
-                    address: '',
-                    notes: '',
-                    favorite: false,
-                    photoURL: ''
-                  });
-                  setImagePreview(null);
-                  setShowAddContact(true);
-                }}
-              >
-                <Plus size={18} />
-                <span>Add Contact</span>
-              </button>
+              <>
+                <button
+                  className={`favorites-btn ${showFavorites ? 'active' : ''}`}
+                  onClick={() => setShowFavorites(!showFavorites)}
+                  title={showFavorites ? 'Show All Contacts' : 'Show Favorites Only'}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: '#FDDA0D',
+                    color: '#333333',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    marginRight: '8px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#F5D000';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#FDDA0D';
+                  }}
+                >
+                  <Star size={16} fill={showFavorites ? '#333333' : 'none'} color="#333333" />
+                  <span>Favorites</span>
+                </button>
+                <button
+                  className="add-btn"
+                  onClick={() => {
+                    setFormData({
+                      name: '',
+                      company: '',
+                      phones: [{ value: '', type: 'mobile' }],
+                      emails: [{ value: '', type: 'work' }],
+                      address: '',
+                      notes: '',
+                      favorite: false,
+                      photoURL: ''
+                    });
+                    setImagePreview(null);
+                    setShowAddContact(true);
+                  }}
+                >
+                  <Plus size={18} />
+                  <span>Add Contact</span>
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -630,7 +668,36 @@ const Phones = () => {
         {/* Add/Edit Contact Form */}
         {showAddContact && (
           <div className={`contact-form ${deviceMode}`}>
-            <div className="form-content">
+            <div className="form-content" style={{ position: 'relative' }}>
+              {/* Favorite Button - Positioned at top right */}
+              <button
+                onClick={() => setFormData(prev => ({ ...prev, favorite: !prev.favorite }))}
+                style={{
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '10px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: formData.favorite ? '#fff4e6' : '#f5f5f5',
+                  transition: 'all 0.2s',
+                  zIndex: 10
+                }}
+                title={formData.favorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                type="button"
+              >
+                <Star
+                  size={24}
+                  fill={formData.favorite ? '#fbbf24' : 'none'}
+                  color={formData.favorite ? '#fbbf24' : '#9ca3af'}
+                />
+              </button>
+
               {/* Photo Section */}
               <div className="photo-section">
                 <div className="photo-upload">
@@ -808,30 +875,35 @@ const Phones = () => {
                 />
               </div>
 
-              {/* Action Buttons for Desktop/Tablet */}
-              {deviceMode !== 'mobile' && (
+              {/* Action Buttons for Desktop/Tablet - Only Delete button when editing */}
+              {deviceMode !== 'mobile' && editingContact && (
                 <div className="form-section form-actions">
                   <button
-                    className="form-save-btn"
-                    onClick={saveContact}
-                    disabled={!formData.name.trim()}
+                    className="delete-contact-btn"
+                    onClick={() => {
+                      deleteContact(editingContact.id);
+                      setShowAddContact(false);
+                      setEditingContact(null);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: '#dc2626',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      fontSize: '16px',
+                      fontWeight: '500'
+                    }}
                   >
-                    <Save size={18} />
-                    <span>Save Contact</span>
+                    <Trash2 size={18} />
+                    <span>Delete Contact</span>
                   </button>
-                  {editingContact && (
-                    <button
-                      className="delete-contact-btn"
-                      onClick={() => {
-                        deleteContact(editingContact.id);
-                        setShowAddContact(false);
-                        setEditingContact(null);
-                      }}
-                    >
-                      <Trash2 size={18} />
-                      <span>Delete Contact</span>
-                    </button>
-                  )}
                 </div>
               )}
 

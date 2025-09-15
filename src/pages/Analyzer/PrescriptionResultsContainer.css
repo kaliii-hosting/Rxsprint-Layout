@@ -44,9 +44,9 @@
 
 /* Reset button in header */
 .prescription-results-header .reset-analysis-btn {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: #dc2626 !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border: 1px solid #b91c1c !important;
   border-radius: 6px !important;
   padding: 8px 16px !important;
   font-size: 14px !important;
@@ -59,8 +59,8 @@
 }
 
 .prescription-results-header .reset-analysis-btn:hover {
-  background: rgba(255, 255, 255, 0.3) !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: #b91c1c !important;
+  border-color: #991b1b !important;
   transform: translateY(-1px) !important;
 }
 

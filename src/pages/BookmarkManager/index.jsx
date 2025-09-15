@@ -183,7 +183,7 @@ const BookmarkManager = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [modalType, setModalType] = useState('bookmark'); // bookmark or folder
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);  // Start with true to prevent 'not found' message
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   
@@ -594,9 +594,75 @@ const BookmarkManager = () => {
         {/* Content */}
         <div className={`bookmark-content ${viewMode}-view`}>
           {loading ? (
-            <div className="loading-state">
-              <div className="loading-spinner"></div>
-              <p>Loading bookmarks...</p>
+            <div className="loading-state" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '400px',
+              width: '100%',
+              position: 'relative'
+            }}>
+              {/* Preloader Animation */}
+              <div className="load">
+                <hr/><hr/><hr/><hr/>
+              </div>
+
+              {/* Preloader CSS */}
+              <style>{`
+                .load {
+                  position: absolute;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%);
+                  width: 100px;
+                  height: 100px;
+                }
+
+                .load hr {
+                  border: 0;
+                  margin: 0;
+                  width: 40%;
+                  height: 40%;
+                  position: absolute;
+                  border-radius: 50%;
+                  animation: spin 2s ease infinite;
+                }
+
+                .load :first-child {
+                  background: #19A68C;
+                  animation-delay: -1.5s;
+                }
+
+                .load :nth-child(2) {
+                  background: #F63D3A;
+                  animation-delay: -1s;
+                }
+
+                .load :nth-child(3) {
+                  background: #FDA543;
+                  animation-delay: -0.5s;
+                }
+
+                .load :last-child {
+                  background: #193B48;
+                }
+
+                @keyframes spin {
+                  0%, 100% {
+                    transform: translate(0);
+                  }
+                  25% {
+                    transform: translate(160%);
+                  }
+                  50% {
+                    transform: translate(160%, 160%);
+                  }
+                  75% {
+                    transform: translate(0, 160%);
+                  }
+                }
+              `}</style>
             </div>
           ) : currentItems.length === 0 ? (
             <div className="empty-state">

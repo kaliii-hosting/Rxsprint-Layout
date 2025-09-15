@@ -1,0 +1,255 @@
+/* Notes Table Responsive Styles - Neon Orange Theme */
+
+/* Base table styles */
+.notes-table-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #ffffff !important;
+  border-radius: 8px !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+/* Neon orange header styling */
+.notes-table-header {
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* Clean white rows with borders */
+.notes-table-row {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-left: 1px solid #e5e7eb !important;
+  border-right: 1px solid #e5e7eb !important;
+}
+
+.notes-table-row:hover {
+  background-color: #fff5f0 !important;
+  border-left: 3px solid #ff6b35 !important;
+}
+
+/* Column borders */
+.notes-table-row > div:not(:last-child) {
+  border-right: 1px solid #f3f4f6 !important;
+}
+
+/* Tablet View (769px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .notes-table-container {
+    margin: 16px !important;
+    width: calc(100% - 32px) !important;
+  }
+
+  .notes-table-header {
+    grid-template-columns: 1fr 100px 150px !important;
+    padding: 12px 20px !important;
+    font-size: 13px !important;
+  }
+
+  .notes-table-row {
+    grid-template-columns: 1fr 100px 150px !important;
+    padding: 14px 20px !important;
+  }
+
+  .notes-table-header svg,
+  .notes-table-row svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .notes-table-row > div:nth-child(1) {
+    font-size: 13px !important;
+  }
+
+  .notes-table-row > div:nth-child(2) span {
+    font-size: 13px !important;
+  }
+
+  .notes-table-row > div:nth-child(3) span {
+    font-size: 13px !important;
+  }
+
+  .notes-table-row > div:nth-child(4) {
+    font-size: 13px !important;
+  }
+}
+
+/* Mobile View (max-width: 768px) */
+@media (max-width: 768px) {
+  .notes-table-container {
+    margin: 12px !important;
+    border-radius: 8px !important;
+    width: calc(100% - 24px) !important;
+  }
+
+  /* Mobile table header */
+  .notes-table-header {
+    grid-template-columns: 1fr 70px 90px !important;
+    padding: 10px 12px !important;
+    font-size: 12px !important;
+  }
+
+  .notes-table-header svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  /* Hide text labels in header on mobile */
+  .notes-table-header > div span {
+    display: none !important;
+  }
+
+  /* Table rows on mobile */
+  .notes-table-row {
+    grid-template-columns: 1fr 70px 90px !important;
+    padding: 12px !important;
+    font-size: 13px !important;
+  }
+
+  /* Note title column mobile */
+  .notes-table-row > div:nth-child(1) {
+    padding-right: 8px !important;
+  }
+
+  .notes-table-row > div:nth-child(1) > div:first-child {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .notes-table-row > div:nth-child(1) svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .notes-table-row > div:nth-child(1) > span {
+    font-size: 13px !important;
+  }
+
+  /* Banners column mobile */
+  .notes-table-row > div:nth-child(2) > div {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+  }
+
+  .notes-table-row > div:nth-child(2) svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  /* Date column mobile */
+  .notes-table-row > div:nth-child(3) {
+    font-size: 11px !important;
+  }
+
+  .notes-table-row > div:nth-child(3) svg {
+    display: none !important;
+  }
+}
+
+/* Extra small mobile (max-width: 480px) */
+@media (max-width: 480px) {
+  .notes-table-container {
+    margin: 8px !important;
+    border-radius: 6px !important;
+  }
+
+  .notes-table-row {
+    padding: 12px !important;
+    gap: 10px !important;
+  }
+
+  /* Smaller ID badge */
+  .notes-table-row > div:nth-child(1) {
+    top: 10px !important;
+    right: 12px !important;
+    padding: 3px 6px !important;
+    font-size: 10px !important;
+  }
+
+  /* Smaller title */
+  .notes-table-row > div:nth-child(2) span {
+    font-size: 14px !important;
+  }
+
+  /* Smaller metadata text */
+  .notes-table-row > div:nth-child(3) span,
+  .notes-table-row > div:nth-child(4) {
+    font-size: 12px !important;
+  }
+
+  /* Even smaller icon circles */
+  .notes-table-row div[style*="width: 32px"],
+  .notes-table-row div[style*="width: 28px"] {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .notes-table-row div[style*="width: 32px"] svg,
+  .notes-table-row div[style*="width: 28px"] svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+}
+
+/* Hover effects - only on non-touch devices */
+@media (hover: hover) {
+  .notes-table-row {
+    transition: background-color 0.15s ease !important;
+  }
+
+  .notes-table-row:hover {
+    background-color: #f9fafb !important;
+  }
+}
+
+/* No dark mode - Light theme only */
+
+/* Ensure smooth scrolling on mobile */
+@media (max-width: 768px) {
+  .notes-table-body {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+  .notes-table-container {
+    margin: 8px !important;
+  }
+
+  .notes-table-row {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .notes-table-header {
+    border-bottom-width: 2px !important;
+  }
+
+  .notes-table-row {
+    border-bottom-width: 2px !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .notes-table-row {
+    transition: none !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .notes-table-container {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  .notes-table-row:hover {
+    background-color: transparent !important;
+  }
+}

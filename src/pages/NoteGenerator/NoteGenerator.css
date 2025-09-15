@@ -73,18 +73,45 @@
   width: 100%;
 }
 
-/* Collapsible header styles */
+/* Collapsible header styles - Styled as banner dropdowns */
 .collapsible-header {
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   user-select: none;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%) !important;
+  color: white !important;
+  padding: 1rem 1.25rem !important;
+  border-radius: 12px !important;
+  border: none !important;
+  margin: 0 !important;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.15);
 }
 
 .collapsible-header:hover {
-  background: var(--button-bg);
+  background: linear-gradient(135deg, #ff5a23 0%, #ff7b30 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.25);
+}
+
+/* Override card header when it's collapsible */
+.card-header.collapsible-header {
+  border-bottom: none !important;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%) !important;
+}
+
+/* Text and icon colors in collapsible headers */
+.collapsible-header h3 {
+  color: white !important;
+  font-weight: 600;
+  margin: 0;
+}
+
+.collapsible-header svg {
+  color: white !important;
+  opacity: 1 !important;
 }
 
 .header-left {
@@ -93,11 +120,19 @@
   gap: 0.75rem;
 }
 
+.header-left svg {
+  color: white !important;
+}
+
 .collapse-indicator {
   display: flex;
   align-items: center;
-  color: var(--text-secondary);
   transition: transform 0.2s ease;
+}
+
+.collapse-indicator svg {
+  color: white !important;
+  opacity: 1 !important;
 }
 
 .collapse-indicator:hover {
@@ -951,6 +986,49 @@
   box-shadow: 0 8px 32px var(--primary-light);
 }
 
+/* Collapsed state - just show the orange banner */
+.dashboard-card.collapsed {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-bottom: 1.5rem !important;
+  overflow: hidden !important;
+}
+
+.dashboard-card.collapsed:hover {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-card.collapsed .collapsible-header {
+  border-radius: 12px !important;
+}
+
+.dashboard-card.collapsed .card-body {
+  display: none !important;
+}
+
+/* Expanded state - show full card with content */
+.dashboard-card.expanded {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  padding: 0;
+  margin-bottom: 2rem;
+}
+
+.dashboard-card.expanded .collapsible-header {
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.dashboard-card.expanded .card-body {
+  display: block !important;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -958,6 +1036,11 @@
   padding: clamp(1rem, 2vw, 1.5rem);
   background: var(--primary-light);
   border-bottom: 1px solid var(--primary-border);
+}
+
+/* Remove border-bottom when header is collapsible */
+.card-header.collapsible-header {
+  border-bottom: none !important;
 }
 
 .card-header h3 {
