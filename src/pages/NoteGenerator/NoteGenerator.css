@@ -236,9 +236,9 @@
   transform: translateY(-1px);
 }
 
-.patient-info-note .note-action-btn.copy-btn {
+.patient-info-note .note-action-btn.copy-btn:not(.export-actions .note-action-btn.copy-btn) {
   background: var(--primary-color);
-  color: white;
+  color: white !important;
 }
 
 .patient-info-note .note-action-btn.copy-btn:hover:not(:disabled) {

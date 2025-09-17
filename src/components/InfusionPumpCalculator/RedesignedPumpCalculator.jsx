@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, memo } from 'react';
 import ReactDOM, { flushSync } from 'react-dom';
-import { 
-  Calculator, 
-  ChevronDown, 
-  Info, 
+import {
+  Calculator,
+  ChevronDown,
+  ChevronRight,
+  Info,
   AlertCircle,
   Clock,
   Droplets,
@@ -27,10 +28,22 @@ import {
   Calendar,
   Gauge,
   Layers,
-  ArrowLeft
+  ArrowLeft,
+  Download,
+  RefreshCw
 } from 'lucide-react';
 import './RedesignedPumpCalculator.css';
 import pumpDatabase from '../../pages/Pump/pump-database.json';
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, BorderStyle, WidthType, AlignmentType, HeightRule, ImageRun } from 'docx';
+import { saveAs } from 'file-saver';
+import QRCode from 'qrcode';
+import { Buffer } from 'buffer';
+import { Mail } from 'lucide-react';
+
+// Make Buffer available globally for docx library
+if (typeof window !== 'undefined' && !window.Buffer) {
+  window.Buffer = Buffer;
+}
 
 // MegaMenu Portal Component
 const MegaMenuPortal = ({ children, isOpen }) => {
@@ -622,6 +635,49 @@ const RedesignedPumpCalculator = () => {
   const [stepsHaveBeenCalibrated, setStepsHaveBeenCalibrated] = useState(false);
   const [calibratedExpectedDuration, setCalibratedExpectedDuration] = useState(null);
   const calibratedDurationRef = useRef(null);
+
+  // Export Pump Sheet states
+  const [isExportFormExpanded, setIsExportFormExpanded] = useState(false);
+  const [volumeAction, setVolumeAction] = useState('remove'); // 'remove', 'add', or 'other'
+  const [exportFormData, setExportFormData] = useState({
+    patientName: '',
+    sprxId: '',
+    dob: '',
+    drugName: '',
+    drugSig: '',
+    volumeAmount: '',
+    volumeOtherText: '',
+    addDrugVolume: '',
+    primeVolume: '',
+    totalVolumeToBeInfused: '',
+    totalInfusionTime: '',
+    programWrittenBy: '',
+    programDate: '',
+    pumpProgrammedBy: '',
+    pumpProgrammedDate: '',
+    pumpCheckBy: '',
+    pumpCheckDate: '',
+    pumpNumber: '',
+    pumpPMDueDate: '',
+    acAdapter: '',
+    expDate: ''
+  });
+
+  // File name section state
+  const [fileNameData, setFileNameData] = useState({
+    unitNumber: '',
+    accountNumber: '',
+    patientName: '',
+    medicationName: '',
+    changes: ''
+  });
+
+  // Toast notification state
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success' // 'success' | 'error' | 'info'
+  });
   
   // Custom infusion steps state
   const [customInfusionSteps, setCustomInfusionSteps] = useState([
@@ -4006,16 +4062,837 @@ const RedesignedPumpCalculator = () => {
     }
   }, [focusedMedicationIndex, showMedicationDropdown]);
 
+  // Email Pump Sheet function
+  const emailPumpSheet = async () => {
+    try {
+      // Show email toast notification FIRST
+      setToast({
+        show: true,
+        message: 'Preparing pump sheet for email...',
+        type: 'email'
+      });
+
+      // Delay the document generation and email to allow user to see the toast
+      setTimeout(async () => {
+        // Generate the document (skip toast since we're showing email toast)
+        const buffer = await generatePumpSheetWord(true);
+        if (!buffer) return;
+
+        // Generate file name and subject from file name data with spaces and dashes
+        let fileName;
+        let emailSubject;
+        if (fileNameData.patientName || fileNameData.medicationName) {
+          const parts = [];
+          if (fileNameData.unitNumber) parts.push(fileNameData.unitNumber);
+          if (fileNameData.accountNumber) parts.push(fileNameData.accountNumber);
+          if (fileNameData.patientName) parts.push(fileNameData.patientName);
+          if (fileNameData.medicationName) parts.push(fileNameData.medicationName);
+          if (fileNameData.changes) parts.push(fileNameData.changes);
+          fileName = parts.join(' - ') + '.docx'; // Space dash space format
+          emailSubject = parts.join(' - '); // Same format for subject
+        } else {
+          fileName = `Pump Sheet - ${exportFormData.patientName || 'Patient'} - ${new Date().toISOString().split('T')[0]}.docx`;
+          emailSubject = `Pump Sheet - ${exportFormData.patientName || 'Patient'}`;
+        }
+
+        // Create a blob URL for the document
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        const url = URL.createObjectURL(blob);
+
+        // Create a temporary download link
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+
+        // Auto-download the file first
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Small delay to ensure download starts
+        setTimeout(() => {
+          // Create mailto link with instruction to attach the downloaded file
+          const subject = encodeURIComponent(emailSubject);
+          const body = encodeURIComponent(
+            `Please find attached the pump sheet.\n\n` +
+            `File Name: ${fileName}\n\n` +
+            `Note: The file has been automatically downloaded to your Downloads folder. ` +
+            `Please attach it to this email before sending.`
+          );
+          const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+          window.location.href = mailtoLink;
+
+          // Update toast message
+          setToast({
+            show: true,
+            message: 'Pump sheet downloaded and email client opened successfully!',
+            type: 'email'
+          });
+
+          // Hide toast after 4 seconds
+          setTimeout(() => {
+            setToast({ show: false, message: '', type: 'success' });
+          }, 4000);
+
+          // Clean up the blob URL
+          URL.revokeObjectURL(url);
+        }, 500);
+      }, 1500); // 1.5 second delay for user to see the initial toast
+
+    } catch (error) {
+      console.error('Error emailing document:', error);
+      setToast({
+        show: true,
+        message: 'Please download the file first, then attach it manually to your email.',
+        type: 'error'
+      });
+      setTimeout(() => {
+        setToast({ show: false, message: '', type: 'error' });
+      }, 4000);
+    }
+  };
+
+  // Generate Pump Sheet Word Document function
+  const generatePumpSheetWord = async (skipToast = false) => {
+    try {
+      // Determine which infusion steps to use
+      let stepsToExport = [];
+
+      if (inputs.useCustomSteps && customInfusionSteps.length > 0) {
+        // Use custom infusion steps
+        stepsToExport = customInfusionSteps;
+      } else if (results && results.infusionSteps) {
+        // Use fixed infusion steps from results
+        stepsToExport = results.infusionSteps.map((step, index) => ({
+          step: index + 1,
+          rate: step.rate,
+          duration: step.duration,
+          durationUnit: 'minutes',
+          volume: step.volume.toFixed(1),
+          isFlush: step.isFlush || (index === results.infusionSteps.length - 1 && step.description === 'Flush')
+        }));
+      } else {
+        setToast({
+          show: true,
+          message: 'No infusion steps available to export',
+          type: 'error'
+        });
+        setTimeout(() => {
+          setToast({ show: false, message: '', type: 'error' });
+        }, 4000);
+        return;
+      }
+
+      // Generate QR Code as base64
+      const qrCodeDataUrl = await QRCode.toDataURL('54915', {
+        width: 150,
+        margin: 1
+      });
+
+      // Convert base64 to Blob for the image
+      const qrCodeBase64 = qrCodeDataUrl.split(',')[1];
+      const binaryString = atob(qrCodeBase64);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Determine volume text based on toggle
+      let volumeText = '';
+      if (volumeAction === 'remove') {
+        volumeText = `Remove:   ${exportFormData.volumeAmount} ml from the 250 ML bag of IV Normal Saline (drug and bag overfill volume)`;
+      } else if (volumeAction === 'add') {
+        volumeText = `Add drug to primary NS bag:  ${exportFormData.volumeAmount} ml drug volume`;
+      } else if (volumeAction === 'other' && exportFormData.volumeOtherText) {
+        volumeText = exportFormData.volumeOtherText;
+      }
+
+      // Create the Word document
+      const doc = new Document({
+        sections: [{
+          properties: {
+            page: {
+              size: {
+                width: 11906, // A4 width in twips
+                height: 16838 // A4 height in twips
+              },
+              margin: {
+                top: 720, // 0.5 inch
+                right: 720,
+                bottom: 720,
+                left: 720
+              }
+            }
+          },
+          children: [
+            // QR Code positioned at top-left with text below
+            new Paragraph({
+              alignment: AlignmentType.LEFT,
+              spacing: { after: 100 },
+              children: [
+                new ImageRun({
+                  data: bytes,
+                  transformation: {
+                    width: 85,
+                    height: 85
+                  }
+                })
+              ]
+            }),
+            new Paragraph({
+              alignment: AlignmentType.LEFT,
+              spacing: { after: 300 },
+              indent: { left: 360 },
+              children: [
+                new TextRun({ text: "54915", size: 18 })
+              ]
+            }),
+            // Title centered
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 200 },
+              children: [
+                new TextRun({ text: "SPECIALTY PHARMACY", bold: true, size: 26 })
+              ]
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 400 },
+              children: [
+                new TextRun({ text: "PUMP CURLIN 6000CMS SHEET", bold: true, size: 22 })
+              ]
+            }),
+            new Paragraph({
+              spacing: { after: 200 },
+              children: [
+                new TextRun({ text: "Pump settings: Variable", size: 20 })
+              ]
+            }),
+
+            // Patient Information Table
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      columnSpan: 2,
+                      shading: { fill: "000000" },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({
+                              text: "PATIENT INFORMATION",
+                              bold: true,
+                              color: "FFFFFF",
+                              size: 22
+                            })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      columnSpan: 2,
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: `Patient Name: ${exportFormData.patientName}`, size: 20 })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: {
+                        size: 50,
+                        type: WidthType.PERCENTAGE
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({
+                              text: `SPRX ID: ${exportFormData.sprxId}`,
+                              size: 20
+                            })
+                          ]
+                        })
+                      ]
+                    }),
+                    new TableCell({
+                      width: {
+                        size: 50,
+                        type: WidthType.PERCENTAGE
+                      },
+                      children: [
+                        new Paragraph({
+                          alignment: AlignmentType.RIGHT,
+                          children: [
+                            new TextRun({
+                              text: `DOB: ${exportFormData.dob ? new Date(exportFormData.dob).toLocaleDateString() : ''}`,
+                              size: 20
+                            })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                })
+              ]
+            }),
+
+            new Paragraph({ text: "" }),
+
+            // Drug information with spacing
+            new Paragraph({
+              spacing: { after: 100 },
+              children: [
+                new TextRun({ text: `Drug Name: ${exportFormData.drugName}: `, bold: true, size: 20 }),
+                new TextRun({ text: `Sig: ${exportFormData.drugSig}`, size: 20 })
+              ]
+            }),
+            new Paragraph({ text: "" }),
+
+            // Volume information
+            ...(volumeText ? [
+              new Paragraph({
+                spacing: { after: 80 },
+                children: [
+                  new TextRun({ text: volumeText, size: 20 })
+                ]
+              })
+            ] : []),
+
+            ...(exportFormData.addDrugVolume && volumeAction === 'add' ? [
+              new Paragraph({
+                spacing: { after: 100 },
+                children: [
+                  new TextRun({ text: `Add drug to primary NS bag:  ${exportFormData.addDrugVolume} ml drug volume`, size: 20 })
+                ]
+              })
+            ] : []),
+
+            ...(exportFormData.primeVolume ? [
+              new Paragraph({
+                spacing: { after: 100 },
+                children: [
+                  new TextRun({ text: `Prime Volume:  ${exportFormData.primeVolume} ml`, size: 20 })
+                ]
+              })
+            ] : []),
+
+            ...(exportFormData.totalVolumeToBeInfused ? [
+              new Paragraph({
+                spacing: { after: 200 },
+                children: [
+                  new TextRun({ text: `Total Volume to be infused:  ${exportFormData.totalVolumeToBeInfused} ml`, size: 20 })
+                ]
+              })
+            ] : []),
+
+            // Program instructions with better spacing
+            new Paragraph({
+              spacing: { after: 80 },
+              children: [
+                new TextRun({ text: "The pump is already PROGRAMMED:", size: 20 })
+              ]
+            }),
+            new Paragraph({
+              indent: { left: 720 },
+              spacing: { after: 60 },
+              children: [
+                new TextRun({ text: "• Turn pump on to review settings", size: 20 })
+              ]
+            }),
+            new Paragraph({
+              indent: { left: 720 },
+              spacing: { after: 60 },
+              children: [
+                new TextRun({ text: "• Wait for the warmup phase to stop", size: 20 })
+              ]
+            }),
+            new Paragraph({
+              indent: { left: 720 },
+              spacing: { after: 60 },
+              children: [
+                new TextRun({ text: "• Press enter", size: 20 })
+              ]
+            }),
+            new Paragraph({
+              indent: { left: 720 },
+              spacing: { after: 60 },
+              children: [
+                new TextRun({ text: '• Press enter to "repeat RX"', size: 20 })
+              ]
+            }),
+            new Paragraph({
+              indent: { left: 720 },
+              spacing: { after: 60 },
+              children: [
+                new TextRun({ text: "• Pump will automatically go through the programming steps (doses)", size: 20 })
+              ]
+            }),
+            new Paragraph({
+              indent: { left: 720 },
+              spacing: { after: 300 },
+              children: [
+                new TextRun({ text: "• Then Press 'Run' to start the infusion after priming and connecting to the IV line", size: 20 })
+              ]
+            }),
+
+            // Custom Infusion Steps Table
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 15, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      margins: {
+                        top: 100,
+                        bottom: 100,
+                        left: 100,
+                        right: 100
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: "Step", bold: true, size: 20 })
+                          ]
+                        })
+                      ]
+                    }),
+                    new TableCell({
+                      width: { size: 45, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      margins: {
+                        top: 100,
+                        bottom: 100,
+                        left: 100,
+                        right: 100
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: "Rate / Time", bold: true, size: 20 })
+                          ]
+                        })
+                      ]
+                    }),
+                    new TableCell({
+                      width: { size: 40, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      margins: {
+                        top: 100,
+                        bottom: 100,
+                        left: 100,
+                        right: 100
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: "Volume", bold: true, size: 20 })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                }),
+                ...stepsToExport.map((step, index) => {
+                  const stepNum = index + 1;
+                  const suffix = index === 0 ? 'st' : index === 1 ? 'nd' : index === 2 ? 'rd' : 'th';
+
+                  let rateTime = step.duration === 'until complete'
+                    ? `${step.rate} ml / hr until infusion completed`
+                    : `${step.rate} ml / hr x ${step.duration} ${step.durationUnit === 'hours' ? 'hr' : 'min'}`;
+
+                  let volume = step.volume;
+                  if (step.isFlush === 'yes' || step.isFlush === true) {
+                    volume = `${volume} ml (flush) add to additive port of IV bag @ end of step ${index}`;
+                  } else {
+                    volume = `${volume} ml`;
+                  }
+
+                  return new TableRow({
+                    children: [
+                      new TableCell({
+                        borders: {
+                          top: { style: BorderStyle.SINGLE, size: 2 },
+                          bottom: { style: BorderStyle.SINGLE, size: 2 },
+                          left: { style: BorderStyle.SINGLE, size: 2 },
+                          right: { style: BorderStyle.SINGLE, size: 2 }
+                        },
+                        margins: {
+                          top: 80,
+                          bottom: 80,
+                          left: 100,
+                          right: 100
+                        },
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({ text: `${stepNum}${suffix}`, size: 20 })
+                            ]
+                          })
+                        ]
+                      }),
+                      new TableCell({
+                        borders: {
+                          top: { style: BorderStyle.SINGLE, size: 2 },
+                          bottom: { style: BorderStyle.SINGLE, size: 2 },
+                          left: { style: BorderStyle.SINGLE, size: 2 },
+                          right: { style: BorderStyle.SINGLE, size: 2 }
+                        },
+                        margins: {
+                          top: 80,
+                          bottom: 80,
+                          left: 100,
+                          right: 100
+                        },
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({ text: rateTime, size: 20 })
+                            ]
+                          })
+                        ]
+                      }),
+                      new TableCell({
+                        borders: {
+                          top: { style: BorderStyle.SINGLE, size: 2 },
+                          bottom: { style: BorderStyle.SINGLE, size: 2 },
+                          left: { style: BorderStyle.SINGLE, size: 2 },
+                          right: { style: BorderStyle.SINGLE, size: 2 }
+                        },
+                        margins: {
+                          top: 80,
+                          bottom: 80,
+                          left: 100,
+                          right: 100
+                        },
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({ text: volume, size: 20 })
+                            ]
+                          })
+                        ]
+                      })
+                    ]
+                  });
+                })
+              ]
+            }),
+
+            new Paragraph({ text: "" }),
+
+            // Bottom fields table - Fixed layout matching reference
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                // Total Infusion Time - spans full width
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      columnSpan: 2,
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({
+                              text: `Total Infusion Time:  `,
+                              size: 20
+                            }),
+                            new TextRun({
+                              text: exportFormData.totalInfusionTime,
+                              size: 20,
+                              bold: true,
+                              underline: {
+                                type: 'single'
+                              }
+                            })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                }),
+                // Program written by row
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 70, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: `Program written by:  ${exportFormData.programWrittenBy}`, size: 20 })
+                          ]
+                        })
+                      ]
+                    }),
+                    new TableCell({
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: `Date:  ${exportFormData.programDate ? new Date(exportFormData.programDate).toLocaleDateString() : ''}`, size: 20 })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                }),
+                // Pump programmed by row
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 70, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: `Pump programmed by:`, size: 20 })
+                          ]
+                        })
+                      ]
+                    }),
+                    new TableCell({
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: `Date:`, size: 20 })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                }),
+                // Pump check by row
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 70, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: `Pump check by:`, size: 20 })
+                          ]
+                        })
+                      ]
+                    }),
+                    new TableCell({
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: `Date:`, size: 20 })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                }),
+                // Pump # and PM Due Date row
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 70, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: `Pump #`, size: 20 })
+                          ]
+                        })
+                      ]
+                    }),
+                    new TableCell({
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: `Pump PM Due Date:`, size: 20 })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                }),
+                // AC adapter and Exp Date row
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 70, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: `AC adapter :`, size: 20 })
+                          ]
+                        })
+                      ]
+                    }),
+                    new TableCell({
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      borders: {
+                        top: { style: BorderStyle.SINGLE, size: 2 },
+                        bottom: { style: BorderStyle.SINGLE, size: 2 },
+                        left: { style: BorderStyle.SINGLE, size: 2 },
+                        right: { style: BorderStyle.SINGLE, size: 2 }
+                      },
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: `Exp Date:`, size: 20 })
+                          ]
+                        })
+                      ]
+                    })
+                  ]
+                })
+              ]
+            })
+          ]
+        }]
+      });
+
+      // Generate and save the document
+      const buffer = await Packer.toBlob(doc);
+
+      // Generate file name from file name section data or use default
+      let fileName;
+      if (fileNameData.patientName || fileNameData.medicationName) {
+        const parts = [];
+        if (fileNameData.unitNumber) parts.push(fileNameData.unitNumber);
+        if (fileNameData.accountNumber) parts.push(fileNameData.accountNumber);
+        if (fileNameData.patientName) parts.push(fileNameData.patientName);
+        if (fileNameData.medicationName) parts.push(fileNameData.medicationName);
+        if (fileNameData.changes) parts.push(fileNameData.changes);
+        fileName = parts.join(' - ') + '.docx'; // Space dash space format
+      } else {
+        fileName = `Pump Sheet - ${exportFormData.patientName || 'Patient'} - ${new Date().toISOString().split('T')[0]}.docx`;
+      }
+
+      // Only show toast and delay download if not called from email function
+      if (!skipToast) {
+        // Show printing toast notification FIRST
+        setToast({
+          show: true,
+          message: 'Pump sheet generated successfully!',
+          type: 'printing'
+        });
+
+        // Delay the download to allow user to see the toast
+        setTimeout(() => {
+          saveAs(buffer, fileName);
+        }, 1500); // 1.5 second delay for user to see the toast
+
+        // Hide toast after 4 seconds
+        setTimeout(() => {
+          setToast({ show: false, message: '', type: 'success' });
+        }, 4000);
+      } else {
+        // If called from email function, save immediately without toast
+        saveAs(buffer, fileName);
+      }
+
+      return buffer; // Return buffer for email functionality
+
+    } catch (error) {
+      console.error('Error generating Word document:', error);
+      alert('Error generating Word document. Please try again.');
+    }
+  };
+
   // Scroll to top helper function
   const scrollToTop = () => {
     // Method 1: Direct window scroll
     window.scrollTo(0, 0);
-    
+
     // Method 2: Document element scroll
     if (document.documentElement) {
       document.documentElement.scrollTop = 0;
     }
-    
+
     // Method 3: Body scroll
     if (document.body) {
       document.body.scrollTop = 0;
@@ -4123,8 +5000,56 @@ const RedesignedPumpCalculator = () => {
 
 
   return (
-    <div className="pump-calculator-container">
-      <div className="pump-calculator-full-width">
+    <>
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`toast-notification toast-${toast.type}`}>
+          <div className="toast-content">
+            <div className={`toast-icon ${toast.type}`}>
+              {toast.type === 'success' && (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+              {toast.type === 'printing' && (
+                <svg className="printing-animation" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M6 9V2h12v7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M6 14h12v8H6z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path className="paper-animation" d="M8 18h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path className="paper-animation-2" d="M8 20h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+              {toast.type === 'email' && (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+              {toast.type === 'error' && (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+              {toast.type === 'info' && (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+            <div className="toast-message">{toast.message}</div>
+            <button
+              className="toast-close"
+              onClick={() => setToast({ show: false, message: '', type: 'success' })}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+      <div className="pump-calculator-container">
+        <div className="pump-calculator-full-width">
         {/* Combined Medication Setup and Dose Calculation Section */}
         <div className="calculator-section combined-section">
           <div className="section-header">
@@ -5825,7 +6750,27 @@ const RedesignedPumpCalculator = () => {
               Calibrate
             </button>
           )}
-          
+
+          {/* Export Pump Sheet Button - Show for both custom and fixed infusion */}
+          {((inputs.useCustomSteps && customStepsValidation.isAcceptable && customInfusionSteps.length > 0) ||
+            (!inputs.useCustomSteps && results && results.infusionSteps && results.infusionSteps.length > 0)) && (
+            <button
+              className="pump-toolbar-button"
+              onClick={() => {
+                setIsExportFormExpanded(!isExportFormExpanded);
+                if (!isExportFormExpanded) {
+                  setTimeout(() => {
+                    document.querySelector('.export-pump-form-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }
+              }}
+              title="Export pump sheet to Word document"
+            >
+              <Download size={16} />
+              Export Pump Sheet
+            </button>
+          )}
+
           {/* Inline Calibration Controls */}
           {showCalibrationFields && inputs.useCustomSteps && (
             (results && results.infusionSteps) || 
@@ -6711,10 +7656,410 @@ const RedesignedPumpCalculator = () => {
 
         {/* Removed old AI Adjustment Modal - now using inline calibration fields */}
         
+        {/* Export Pump Sheet Form Section - Collapsible like Note Generator */}
+        {((inputs.useCustomSteps && customStepsValidation.isAcceptable && customInfusionSteps.length > 0) ||
+          (!inputs.useCustomSteps && results && results.infusionSteps && results.infusionSteps.length > 0)) && (
+          <>
+            {/* File Name Section */}
+            <div className="export-pump-form-section dashboard-card full-width patient-info-card">
+              <div className="card-header">
+                <div className="header-left">
+                  <h3>File Name Generation</h3>
+                  <FileText size={20} />
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="patient-info-container">
+                  <div className="input-grid patient-info-grid">
+                    <div className="input-group">
+                      <label>Unit #</label>
+                      <input
+                        type="text"
+                        value={fileNameData.unitNumber}
+                        onChange={(e) => setFileNameData(prev => ({ ...prev, unitNumber: e.target.value }))}
+                        placeholder="Enter unit number"
+                        className="note-input"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Account #</label>
+                      <input
+                        type="text"
+                        value={fileNameData.accountNumber}
+                        onChange={(e) => setFileNameData(prev => ({ ...prev, accountNumber: e.target.value }))}
+                        placeholder="Enter account number"
+                        className="note-input"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Patient Name</label>
+                      <input
+                        type="text"
+                        value={fileNameData.patientName}
+                        onChange={(e) => setFileNameData(prev => ({ ...prev, patientName: e.target.value }))}
+                        placeholder="Enter patient name"
+                        className="note-input"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Medication Name</label>
+                      <input
+                        type="text"
+                        value={fileNameData.medicationName}
+                        onChange={(e) => setFileNameData(prev => ({ ...prev, medicationName: e.target.value }))}
+                        placeholder="Enter medication name"
+                        className="note-input"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Changes</label>
+                      <input
+                        type="text"
+                        value={fileNameData.changes}
+                        onChange={(e) => setFileNameData(prev => ({ ...prev, changes: e.target.value }))}
+                        placeholder="Enter changes"
+                        className="note-input"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Export Pump Sheet Form */}
+            <div className={`export-pump-form-section dashboard-card full-width ${isExportFormExpanded ? 'expanded' : 'collapsed'}`}>
+              <div className="card-header collapsible-header" onClick={() => setIsExportFormExpanded(!isExportFormExpanded)}>
+                <div className="header-left">
+                  <h3>Export Pump Sheet</h3>
+                  <Download size={20} />
+                </div>
+                <div className="collapse-indicator">
+                  {isExportFormExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                </div>
+              </div>
+            {isExportFormExpanded && (
+              <div className="card-body">
+                <div className="export-pump-container">
+                  <div className="input-grid export-pump-grid">
+                    {/* Patient Information Fields */}
+                    <div className="input-group">
+                      <label>Patient Name</label>
+                      <textarea
+                        value={exportFormData.patientName}
+                        onChange={(e) => setExportFormData(prev => ({ ...prev, patientName: e.target.value }))}
+                        placeholder="Enter patient name"
+                        className="note-input note-textarea"
+                        rows="1"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>SPRX ID</label>
+                      <input
+                        type="text"
+                        value={exportFormData.sprxId}
+                        onChange={(e) => setExportFormData(prev => ({ ...prev, sprxId: e.target.value }))}
+                        placeholder="Enter SPRX ID"
+                        className="note-input"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>DOB</label>
+                      <input
+                        type="date"
+                        value={exportFormData.dob}
+                        onChange={(e) => setExportFormData(prev => ({ ...prev, dob: e.target.value }))}
+                        className="note-input"
+                      />
+                    </div>
+
+                    {/* Drug Information */}
+                    <div className="input-group">
+                      <label>Drug Name</label>
+                      <textarea
+                        value={exportFormData.drugName}
+                        onChange={(e) => setExportFormData(prev => ({ ...prev, drugName: e.target.value }))}
+                        placeholder="e.g., Naglazyme"
+                        className="note-input note-textarea"
+                        rows="1"
+                      />
+                    </div>
+                    <div className="input-group full-width">
+                      <label>Sig</label>
+                      <textarea
+                        value={exportFormData.drugSig}
+                        onChange={(e) => setExportFormData(prev => ({ ...prev, drugSig: e.target.value }))}
+                        placeholder="e.g., INFUSE 60 MG IV IN 250 ML NORMAL SALINE (TOTAL VOLUME) ONCE WEEKLY OVER APPROXIMATELY 4.5 HOURS VIA PUMP"
+                        className="note-input note-textarea"
+                        rows="2"
+                      />
+                    </div>
+
+                    {/* Volume Action Toggle - Note Generator Style */}
+                    <div className="input-group full-width">
+                      <label>Volume Action</label>
+                      <div className="compliance-toggle-container">
+                        <button
+                          type="button"
+                          className={`compliance-btn ${volumeAction === 'remove' ? 'active' : ''}`}
+                          onClick={() => setVolumeAction('remove')}
+                        >
+                          Remove
+                        </button>
+                        <button
+                          type="button"
+                          className={`compliance-btn ${volumeAction === 'add' ? 'active' : ''}`}
+                          onClick={() => setVolumeAction('add')}
+                        >
+                          Add
+                        </button>
+                        <button
+                          type="button"
+                          className={`compliance-btn ${volumeAction === 'other' ? 'active' : ''}`}
+                          onClick={() => setVolumeAction('other')}
+                        >
+                          Other
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Volume Input based on toggle */}
+                    {volumeAction !== 'other' ? (
+                      <div className="input-group">
+                        <label>{volumeAction === 'remove' ? 'Remove' : 'Add'} Volume (mL)</label>
+                        <textarea
+                          value={exportFormData.volumeAmount}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, volumeAmount: e.target.value }))}
+                          placeholder="e.g., 90"
+                          className="note-input note-textarea"
+                          rows="1"
+                        />
+                      </div>
+                    ) : (
+                      <div className="input-group full-width">
+                        <label>Custom Volume Text</label>
+                        <textarea
+                          value={exportFormData.volumeOtherText}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, volumeOtherText: e.target.value }))}
+                          placeholder="Enter custom volume instruction"
+                          className="note-input note-textarea"
+                          rows="2"
+                        />
+                      </div>
+                    )}
+
+                    <div className="input-group">
+                      <label>Add Drug Volume (mL)</label>
+                      <textarea
+                        value={exportFormData.addDrugVolume}
+                        onChange={(e) => setExportFormData(prev => ({ ...prev, addDrugVolume: e.target.value }))}
+                        placeholder="e.g., 60"
+                        className="note-input note-textarea"
+                        rows="1"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Prime Volume (mL)</label>
+                      <input
+                        type="text"
+                        value={exportFormData.primeVolume}
+                        onChange={(e) => setExportFormData(prev => ({ ...prev, primeVolume: e.target.value }))}
+                        placeholder="e.g., 10"
+                        className="note-input"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Total Volume to Infuse (mL)</label>
+                      <input
+                        type="text"
+                        value={exportFormData.totalVolumeToBeInfused}
+                        onChange={(e) => setExportFormData(prev => ({ ...prev, totalVolumeToBeInfused: e.target.value }))}
+                        placeholder="e.g., 250"
+                        className="note-input"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Total Infusion Time</label>
+                      <textarea
+                        value={exportFormData.totalInfusionTime}
+                        onChange={(e) => setExportFormData(prev => ({ ...prev, totalInfusionTime: e.target.value }))}
+                        placeholder="e.g., 4 hours and 32 minutes"
+                        className="note-input note-textarea"
+                        rows="1"
+                      />
+                    </div>
+
+                    {/* Personnel Information */}
+                    <div className="input-group">
+                      <label>Program Written By</label>
+                      <textarea
+                        value={exportFormData.programWrittenBy}
+                        onChange={(e) => setExportFormData(prev => ({ ...prev, programWrittenBy: e.target.value }))}
+                        placeholder="Enter name"
+                        className="note-input note-textarea"
+                        rows="1"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Program Date</label>
+                      <input
+                        type="date"
+                        value={exportFormData.programDate}
+                        onChange={(e) => setExportFormData(prev => ({ ...prev, programDate: e.target.value }))}
+                        className="note-input"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="export-actions">
+                    <button
+                      className="reset-btn"
+                      onClick={() => {
+                        setExportFormData({
+                          patientName: '',
+                          sprxId: '',
+                          dob: '',
+                          drugName: '',
+                          drugSig: '',
+                          volumeAmount: '',
+                          volumeOtherText: '',
+                          addDrugVolume: '',
+                          primeVolume: '',
+                          totalVolumeToBeInfused: '',
+                          totalInfusionTime: '',
+                          programWrittenBy: '',
+                          programDate: '',
+                          pumpProgrammedBy: '',
+                          pumpProgrammedDate: '',
+                          pumpCheckBy: '',
+                          pumpCheckDate: '',
+                          pumpNumber: '',
+                          pumpPMDueDate: '',
+                          acAdapter: '',
+                          expDate: ''
+                        });
+                        setFileNameData({
+                          unitNumber: '',
+                          accountNumber: '',
+                          patientName: '',
+                          medicationName: '',
+                          changes: ''
+                        });
+                        setVolumeAction('remove');
+                      }}
+                    >
+                      <RefreshCw size={16} />
+                      Reset Form
+                    </button>
+                    <button
+                      className="note-action-btn copy-btn"
+                      onClick={() => {
+                        // Show toast immediately
+                        setToast({
+                          show: true,
+                          message: 'Generating pump sheet...',
+                          type: 'printing'
+                        });
+                        // Then generate the document
+                        setTimeout(() => {
+                          generatePumpSheetWord(true); // Skip internal toast since we're showing it here
+                          // Hide toast after 4 seconds
+                          setTimeout(() => {
+                            setToast({ show: false, message: '', type: 'success' });
+                          }, 4000);
+                        }, 100);
+                      }}
+                    >
+                      <Download size={16} />
+                      Generate Pump Sheet
+                    </button>
+                    <button
+                      className="note-action-btn copy-btn"
+                      onClick={() => {
+                        // Show toast immediately
+                        setToast({
+                          show: true,
+                          message: 'Preparing email...',
+                          type: 'email'
+                        });
+                        // Then handle email
+                        setTimeout(() => {
+                          // Call a modified email function
+                          const handleEmail = async () => {
+                            try {
+                              const buffer = await generatePumpSheetWord(true);
+                              if (!buffer) return;
+
+                              let fileName;
+                              let emailSubject;
+                              if (fileNameData.patientName || fileNameData.medicationName) {
+                                const parts = [];
+                                if (fileNameData.unitNumber) parts.push(fileNameData.unitNumber);
+                                if (fileNameData.accountNumber) parts.push(fileNameData.accountNumber);
+                                if (fileNameData.patientName) parts.push(fileNameData.patientName);
+                                if (fileNameData.medicationName) parts.push(fileNameData.medicationName);
+                                if (fileNameData.changes) parts.push(fileNameData.changes);
+                                fileName = parts.join(' - ') + '.docx';
+                                emailSubject = parts.join(' - ');
+                              } else {
+                                fileName = `Pump Sheet - ${exportFormData.patientName || 'Patient'} - ${new Date().toISOString().split('T')[0]}.docx`;
+                                emailSubject = `Pump Sheet - ${exportFormData.patientName || 'Patient'}`;
+                              }
+
+                              const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = fileName;
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+
+                              setTimeout(() => {
+                                const subject = encodeURIComponent(emailSubject);
+                                const body = encodeURIComponent(
+                                  `Please find attached the pump sheet.\n\n` +
+                                  `File Name: ${fileName}\n\n` +
+                                  `Note: The file has been automatically downloaded to your Downloads folder. ` +
+                                  `Please attach it to this email before sending.`
+                                );
+                                const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+                                window.location.href = mailtoLink;
+                                URL.revokeObjectURL(url);
+                              }, 500);
+                            } catch (error) {
+                              console.error('Error:', error);
+                              setToast({
+                                show: true,
+                                message: 'Error preparing email. Please try again.',
+                                type: 'error'
+                              });
+                            }
+                          };
+                          handleEmail();
+                          // Hide toast after 4 seconds
+                          setTimeout(() => {
+                            setToast({ show: false, message: '', type: 'success' });
+                          }, 4000);
+                        }, 100);
+                      }}
+                    >
+                      <Mail size={16} />
+                      Email Pump Sheet
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          </>
+        )}
+
         {/* Spacer to ensure bottom spacing */}
         <div style={{ height: '80px', minHeight: '80px', width: '100%' }}></div>
       </div>
     </div>
+    </>
   );
 };
 
