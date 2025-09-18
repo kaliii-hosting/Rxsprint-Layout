@@ -357,10 +357,10 @@ const CustomVialCalculator = ({
   });
 
   // Calculate function
-  const performCalculations = (counts) => {
+  const performCalculations = (counts, medicationData) => {
     const totalVials = Object.values(counts).reduce((sum, count) => sum + parseInt(count) || 0, 0);
-    
-    if (!selectedMedicationData || !inputs.dose || !inputs.patientWeight || totalVials === 0) {
+
+    if (!medicationData || !inputs.dose || !inputs.patientWeight || totalVials === 0) {
       return {
         totalVials,
         daysCovered: 0,
@@ -375,7 +375,7 @@ const CustomVialCalculator = ({
     Object.entries(counts).forEach(([vialId, count]) => {
       const vialCount = parseInt(count) || 0;
       if (vialCount > 0) {
-        const vialSize = selectedMedicationData.vialSizes?.find(v => 
+        const vialSize = medicationData.vialSizes?.find(v =>
           `${v.strength}-${v.unit}` === vialId
         );
         if (vialSize && vialSize.strength) {
@@ -413,7 +413,7 @@ const CustomVialCalculator = ({
 
   // Update calculations whenever counts change
   useEffect(() => {
-    const results = performCalculations(localCounts);
+    const results = performCalculations(localCounts, selectedMedicationData);
     setCalculationResults(results);
   }, [localCounts, inputs.dose, inputs.patientWeight, inputs.doseUnit, inputs.doseFrequency, inputs.daysSupply, selectedMedicationData]);
 
@@ -647,7 +647,6 @@ const RedesignedPumpCalculator = () => {
     drugSig: '',
     volumeAmount: '',
     volumeOtherText: '',
-    addDrugVolume: '',
     primeVolume: '',
     totalVolumeToBeInfused: '',
     totalInfusionTime: '',
@@ -759,6 +758,26 @@ const RedesignedPumpCalculator = () => {
   const selectedMedicationData = useMemo(() => {
     return selectedMedication ? mergedMedications[selectedMedication] : null;
   }, [selectedMedication, mergedMedications]);
+
+  // Auto-populate export form fields when results are calculated
+  useEffect(() => {
+    if (results) {
+      setExportFormData(prev => ({
+        ...prev,
+        // Remove/Add Volume fields are now manual entry only - no auto-population
+        // volumeAmount is kept as user enters it
+
+        // Auto-populate prime volume with mL unit
+        primeVolume: prev.primeVolume || (results.primeVolume ? `${results.primeVolume} mL` : ''),
+        // Auto-populate total volume with mL unit
+        totalVolumeToBeInfused: prev.totalVolumeToBeInfused || (results.finalVolume ? `${results.finalVolume.toFixed(1)} mL` : ''),
+        // Auto-populate total infusion time
+        totalInfusionTime: prev.totalInfusionTime || (results.totalTimeFormatted || ''),
+        // Auto-populate drug name if available
+        drugName: prev.drugName || (selectedMedicationData?.name || '')
+      }));
+    }
+  }, [results, selectedMedicationData]);
 
   // Filter medications based on search term for custom dropdown
   const filteredMedicationsDropdown = useMemo(() => {
@@ -4200,9 +4219,13 @@ const RedesignedPumpCalculator = () => {
       // Determine volume text based on toggle
       let volumeText = '';
       if (volumeAction === 'remove') {
-        volumeText = `Remove:   ${exportFormData.volumeAmount} ml from the 250 ML bag of IV Normal Saline (drug and bag overfill volume)`;
+        // Use only the manual input value - no unit specified so users can add their own
+        const removeVolumeValue = exportFormData.volumeAmount || '';
+        volumeText = `Remove Volume: ${removeVolumeValue}`;
       } else if (volumeAction === 'add') {
-        volumeText = `Add drug to primary NS bag:  ${exportFormData.volumeAmount} ml drug volume`;
+        // Use only the manual input value - no unit specified so users can add their own
+        const addVolumeValue = exportFormData.volumeAmount || '';
+        volumeText = `Add Volume: ${addVolumeValue}`;
       } else if (volumeAction === 'other' && exportFormData.volumeOtherText) {
         volumeText = exportFormData.volumeOtherText;
       }
@@ -4362,18 +4385,9 @@ const RedesignedPumpCalculator = () => {
             // Volume information
             ...(volumeText ? [
               new Paragraph({
-                spacing: { after: 80 },
-                children: [
-                  new TextRun({ text: volumeText, size: 20 })
-                ]
-              })
-            ] : []),
-
-            ...(exportFormData.addDrugVolume && volumeAction === 'add' ? [
-              new Paragraph({
                 spacing: { after: 100 },
                 children: [
-                  new TextRun({ text: `Add drug to primary NS bag:  ${exportFormData.addDrugVolume} ml drug volume`, size: 20 })
+                  new TextRun({ text: volumeText, size: 20 })
                 ]
               })
             ] : []),
@@ -4382,7 +4396,7 @@ const RedesignedPumpCalculator = () => {
               new Paragraph({
                 spacing: { after: 100 },
                 children: [
-                  new TextRun({ text: `Prime Volume:  ${exportFormData.primeVolume} ml`, size: 20 })
+                  new TextRun({ text: `Prime Volume:  ${exportFormData.primeVolume}`, size: 20 })
                 ]
               })
             ] : []),
@@ -4391,7 +4405,7 @@ const RedesignedPumpCalculator = () => {
               new Paragraph({
                 spacing: { after: 200 },
                 children: [
-                  new TextRun({ text: `Total Volume to be infused:  ${exportFormData.totalVolumeToBeInfused} ml`, size: 20 })
+                  new TextRun({ text: `Total Volume to be infused:  ${exportFormData.totalVolumeToBeInfused}`, size: 20 })
                 ]
               })
             ] : []),
@@ -7740,173 +7754,176 @@ const RedesignedPumpCalculator = () => {
             {isExportFormExpanded && (
               <div className="card-body">
                 <div className="export-pump-container">
-                  <div className="input-grid export-pump-grid">
-                    {/* Patient Information Fields */}
-                    <div className="input-group">
-                      <label>Patient Name</label>
-                      <textarea
-                        value={exportFormData.patientName}
-                        onChange={(e) => setExportFormData(prev => ({ ...prev, patientName: e.target.value }))}
-                        placeholder="Enter patient name"
-                        className="note-input note-textarea"
-                        rows="1"
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label>SPRX ID</label>
-                      <input
-                        type="text"
-                        value={exportFormData.sprxId}
-                        onChange={(e) => setExportFormData(prev => ({ ...prev, sprxId: e.target.value }))}
-                        placeholder="Enter SPRX ID"
-                        className="note-input"
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label>DOB</label>
-                      <input
-                        type="date"
-                        value={exportFormData.dob}
-                        onChange={(e) => setExportFormData(prev => ({ ...prev, dob: e.target.value }))}
-                        className="note-input"
-                      />
-                    </div>
-
-                    {/* Drug Information */}
-                    <div className="input-group">
-                      <label>Drug Name</label>
-                      <textarea
-                        value={exportFormData.drugName}
-                        onChange={(e) => setExportFormData(prev => ({ ...prev, drugName: e.target.value }))}
-                        placeholder="e.g., Naglazyme"
-                        className="note-input note-textarea"
-                        rows="1"
-                      />
-                    </div>
-                    <div className="input-group full-width">
-                      <label>Sig</label>
-                      <textarea
-                        value={exportFormData.drugSig}
-                        onChange={(e) => setExportFormData(prev => ({ ...prev, drugSig: e.target.value }))}
-                        placeholder="e.g., INFUSE 60 MG IV IN 250 ML NORMAL SALINE (TOTAL VOLUME) ONCE WEEKLY OVER APPROXIMATELY 4.5 HOURS VIA PUMP"
-                        className="note-input note-textarea"
-                        rows="2"
-                      />
-                    </div>
-
-                    {/* Volume Action Toggle - Note Generator Style */}
-                    <div className="input-group full-width">
-                      <label>Volume Action</label>
-                      <div className="compliance-toggle-container">
-                        <button
-                          type="button"
-                          className={`compliance-btn ${volumeAction === 'remove' ? 'active' : ''}`}
-                          onClick={() => setVolumeAction('remove')}
-                        >
-                          Remove
-                        </button>
-                        <button
-                          type="button"
-                          className={`compliance-btn ${volumeAction === 'add' ? 'active' : ''}`}
-                          onClick={() => setVolumeAction('add')}
-                        >
-                          Add
-                        </button>
-                        <button
-                          type="button"
-                          className={`compliance-btn ${volumeAction === 'other' ? 'active' : ''}`}
-                          onClick={() => setVolumeAction('other')}
-                        >
-                          Other
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Volume Input based on toggle */}
-                    {volumeAction !== 'other' ? (
-                      <div className="input-group">
-                        <label>{volumeAction === 'remove' ? 'Remove' : 'Add'} Volume (mL)</label>
+                  <div className="export-pump-fields">
+                    {/* Row 1: Patient Information - Three fields */}
+                    <div className="export-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                      <div className="input-group" style={{ flex: '1' }}>
+                        <label>Patient Name</label>
                         <textarea
-                          value={exportFormData.volumeAmount}
-                          onChange={(e) => setExportFormData(prev => ({ ...prev, volumeAmount: e.target.value }))}
-                          placeholder="e.g., 90"
+                          value={exportFormData.patientName}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, patientName: e.target.value }))}
+                          placeholder="Enter patient name"
                           className="note-input note-textarea"
                           rows="1"
                         />
                       </div>
-                    ) : (
-                      <div className="input-group full-width">
-                        <label>Custom Volume Text</label>
-                        <textarea
-                          value={exportFormData.volumeOtherText}
-                          onChange={(e) => setExportFormData(prev => ({ ...prev, volumeOtherText: e.target.value }))}
-                          placeholder="Enter custom volume instruction"
-                          className="note-input note-textarea"
-                          rows="2"
+                      <div className="input-group" style={{ flex: '1' }}>
+                        <label>SPRX ID</label>
+                        <input
+                          type="text"
+                          value={exportFormData.sprxId}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, sprxId: e.target.value }))}
+                          placeholder="Enter SPRX ID"
+                          className="note-input"
                         />
                       </div>
-                    )}
-
-                    <div className="input-group">
-                      <label>Add Drug Volume (mL)</label>
-                      <textarea
-                        value={exportFormData.addDrugVolume}
-                        onChange={(e) => setExportFormData(prev => ({ ...prev, addDrugVolume: e.target.value }))}
-                        placeholder="e.g., 60"
-                        className="note-input note-textarea"
-                        rows="1"
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label>Prime Volume (mL)</label>
-                      <input
-                        type="text"
-                        value={exportFormData.primeVolume}
-                        onChange={(e) => setExportFormData(prev => ({ ...prev, primeVolume: e.target.value }))}
-                        placeholder="e.g., 10"
-                        className="note-input"
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label>Total Volume to Infuse (mL)</label>
-                      <input
-                        type="text"
-                        value={exportFormData.totalVolumeToBeInfused}
-                        onChange={(e) => setExportFormData(prev => ({ ...prev, totalVolumeToBeInfused: e.target.value }))}
-                        placeholder="e.g., 250"
-                        className="note-input"
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label>Total Infusion Time</label>
-                      <textarea
-                        value={exportFormData.totalInfusionTime}
-                        onChange={(e) => setExportFormData(prev => ({ ...prev, totalInfusionTime: e.target.value }))}
-                        placeholder="e.g., 4 hours and 32 minutes"
-                        className="note-input note-textarea"
-                        rows="1"
-                      />
+                      <div className="input-group" style={{ flex: '1' }}>
+                        <label>DOB</label>
+                        <input
+                          type="date"
+                          value={exportFormData.dob}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, dob: e.target.value }))}
+                          className="note-input"
+                        />
+                      </div>
                     </div>
 
-                    {/* Personnel Information */}
-                    <div className="input-group">
-                      <label>Program Written By</label>
-                      <textarea
-                        value={exportFormData.programWrittenBy}
-                        onChange={(e) => setExportFormData(prev => ({ ...prev, programWrittenBy: e.target.value }))}
-                        placeholder="Enter name"
-                        className="note-input note-textarea"
-                        rows="1"
-                      />
+                    {/* Row 2: Drug Information - Two fields */}
+                    <div className="export-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                      <div className="input-group" style={{ flex: '1' }}>
+                        <label>Drug Name</label>
+                        <textarea
+                          value={exportFormData.drugName}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, drugName: e.target.value }))}
+                          placeholder="e.g., Naglazyme"
+                          className="note-input note-textarea"
+                          rows="1"
+                        />
+                      </div>
+                      <div className="input-group" style={{ flex: '1' }}>
+                        <label>Sig</label>
+                        <textarea
+                          value={exportFormData.drugSig}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, drugSig: e.target.value }))}
+                          placeholder="e.g., INFUSE 60 MG IV IN 250 ML NS"
+                          className="note-input note-textarea"
+                          rows="1"
+                        />
+                      </div>
                     </div>
-                    <div className="input-group">
-                      <label>Program Date</label>
-                      <input
-                        type="date"
-                        value={exportFormData.programDate}
-                        onChange={(e) => setExportFormData(prev => ({ ...prev, programDate: e.target.value }))}
-                        className="note-input"
-                      />
+
+                    {/* Row 3: Volume Action Toggle - Full Width */}
+                    <div className="export-row" style={{ marginBottom: '1rem' }}>
+                      <div className="input-group" style={{ width: '100%' }}>
+                        <label>Volume Action</label>
+                        <div className="compliance-toggle-container">
+                          <button
+                            type="button"
+                            className={`compliance-btn ${volumeAction === 'remove' ? 'active' : ''}`}
+                            onClick={() => setVolumeAction('remove')}
+                          >
+                            Remove
+                          </button>
+                          <button
+                            type="button"
+                            className={`compliance-btn ${volumeAction === 'add' ? 'active' : ''}`}
+                            onClick={() => setVolumeAction('add')}
+                          >
+                            Add
+                          </button>
+                          <button
+                            type="button"
+                            className={`compliance-btn ${volumeAction === 'other' ? 'active' : ''}`}
+                            onClick={() => setVolumeAction('other')}
+                          >
+                            Other
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 4: Volume Input - Full Width */}
+                    <div className="export-row" style={{ marginBottom: '1rem' }}>
+                      {volumeAction !== 'other' ? (
+                        <div className="input-group" style={{ width: '100%' }}>
+                          <label>{volumeAction === 'remove' ? 'Remove' : 'Add'} Volume (mL)</label>
+                          <textarea
+                            value={exportFormData.volumeAmount}
+                            onChange={(e) => setExportFormData(prev => ({ ...prev, volumeAmount: e.target.value }))}
+                            placeholder="e.g., 90 mL or 90 cc"
+                            className="note-input note-textarea"
+                            rows="1"
+                          />
+                        </div>
+                      ) : (
+                        <div className="input-group" style={{ width: '100%' }}>
+                          <label>Custom Volume Text</label>
+                          <textarea
+                            value={exportFormData.volumeOtherText}
+                            onChange={(e) => setExportFormData(prev => ({ ...prev, volumeOtherText: e.target.value }))}
+                            placeholder="Enter custom volume instruction"
+                            className="note-input note-textarea"
+                            rows="2"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Row 5: Volume and Time Fields - Three fields */}
+                    <div className="export-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                      <div className="input-group" style={{ flex: '1' }}>
+                        <label>Prime Volume (mL)</label>
+                        <input
+                          type="text"
+                          value={exportFormData.primeVolume}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, primeVolume: e.target.value }))}
+                          placeholder="e.g., 10 mL"
+                          className="note-input"
+                        />
+                      </div>
+                      <div className="input-group" style={{ flex: '1' }}>
+                        <label>Total Volume to Infuse (mL)</label>
+                        <input
+                          type="text"
+                          value={exportFormData.totalVolumeToBeInfused}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, totalVolumeToBeInfused: e.target.value }))}
+                          placeholder="e.g., 250 mL"
+                          className="note-input"
+                        />
+                      </div>
+                      <div className="input-group" style={{ flex: '1' }}>
+                        <label>Total Infusion Time</label>
+                        <textarea
+                          value={exportFormData.totalInfusionTime}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, totalInfusionTime: e.target.value }))}
+                          placeholder="e.g., 4 hours and 32 minutes"
+                          className="note-input note-textarea"
+                          rows="1"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Row 6: Personnel Information - Two fields */}
+                    <div className="export-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                      <div className="input-group" style={{ flex: '1' }}>
+                        <label>Program Written By</label>
+                        <textarea
+                          value={exportFormData.programWrittenBy}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, programWrittenBy: e.target.value }))}
+                          placeholder="Enter name"
+                          className="note-input note-textarea"
+                          rows="1"
+                        />
+                      </div>
+                      <div className="input-group" style={{ flex: '1' }}>
+                        <label>Program Date</label>
+                        <input
+                          type="date"
+                          value={exportFormData.programDate}
+                          onChange={(e) => setExportFormData(prev => ({ ...prev, programDate: e.target.value }))}
+                          className="note-input"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -7923,7 +7940,6 @@ const RedesignedPumpCalculator = () => {
                           drugSig: '',
                           volumeAmount: '',
                           volumeOtherText: '',
-                          addDrugVolume: '',
                           primeVolume: '',
                           totalVolumeToBeInfused: '',
                           totalInfusionTime: '',

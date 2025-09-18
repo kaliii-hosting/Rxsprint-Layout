@@ -12689,6 +12689,34 @@ input[value="removed-from-vial"] + label,
   padding: 1.5rem;
 }
 
+/* New Export Pump Fields Layout */
+.export-pump-fields {
+  width: 100%;
+}
+
+.export-pump-fields .export-row {
+  width: 100%;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.export-pump-fields .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0; /* Prevent overflow */
+  flex: 1;
+}
+
+/* Ensure inputs fill their containers */
+.export-pump-fields .note-input,
+.export-pump-fields .note-textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Legacy grid support */
 .export-pump-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
